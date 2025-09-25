@@ -859,22 +859,61 @@ function checkAllAnswers(worksheetIndex) {
     const page = document.getElementById(`latihan-${worksheetIndex + 1}`);
     const activeSetKey = page.dataset.activeSet === 'A' ? 'setA' : 'setB';
     const questionSet = worksheets[worksheetIndex][activeSetKey];
-    
+
     const inputs = page.querySelectorAll('.answer-input');
-    
+
+    let correctCount = 0;
+    const userAnswers = [];
+
     inputs.forEach((input, index) => {
         const correctAnswer = questionSet[index].answer;
         const userAnswer = input.value.trim().replace(/[\s,.]+/g, '');
         const cleanedCorrectAnswer = correctAnswer.toString().trim().replace(/[\s,.]+/g, '');
 
+        userAnswers.push(userAnswer);
+
         input.classList.remove('correct', 'incorrect');
         if (userAnswer.toLowerCase() === cleanedCorrectAnswer.toLowerCase()) {
             input.classList.add('correct');
+            correctCount++;
         } else {
             input.classList.add('incorrect');
         }
         input.disabled = true;
         page.querySelectorAll('.solution-btn-single')[index].classList.add('visible');
+    });
+
+    // Collect and send data to Google Apps Script
+    const studentName = page.querySelector('.name-input').value;
+    const date = page.querySelector('.date-input').value;
+    const worksheetTitle = page.querySelector('.worksheet-title').textContent;
+    const totalQuestions = inputs.length;
+    const SPREADSHEET_URL = 'https://script.google.com/macros/s/AKfycbzypFI0063zpuHEMSjzvo5hEdFKBjulFTEmK65yw2jtzzk9OUzFvF4VhJhCENVhOwMZKA/exec'
+
+    const dataToSend = {
+        name: studentName,
+        date: date,
+        worksheet: worksheetTitle,
+        answers: userAnswers,
+        correctAnswers: correctCount,
+        totalQuestions: totalQuestions,
+        score: `${correctCount}/${totalQuestions}`
+    };
+
+    // Send data to Apps Script
+    fetch(SPREADSHEET_URL, {
+        method: 'POST',
+        body: JSON.stringify(dataToSend),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Data logged to spreadsheet:', data);
+    })
+    .catch(error => {
+        console.error('Error logging data:', error);
     });
 
     updateScore(page);
@@ -885,7 +924,7 @@ function checkAllAnswers(worksheetIndex) {
         <div class="feedback-message"></div>
     `;
     footerContainer.querySelector('.try-again-btn').addEventListener('click', () => retryWorksheet(worksheetIndex));
-    updateScore(page); // Call again to show feedback
+    updateScore(page);
 }
 
 function toggleSolution(itemWrapper) {
