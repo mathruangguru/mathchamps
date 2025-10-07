@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permainan Menjodohkan Nilai Tempat</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        :root {
+            --warna-dasar: #f0f8ff;
+            --warna-utama: #4a90e2;
+            --warna-teks: #333;
+            --warna-benar: #50c878;
+            --warna-salah: #e74c3c;
+            --warna-bayangan: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--warna-dasar);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--warna-teks);
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px var(--warna-bayangan);
+            text-align: center;
+            width: 90%;
+            max-width: 800px;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            color: var(--warna-utama);
+            margin-top: 0;
+            font-size: 2rem;
+        }
+
+        #info-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem 1rem;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        #nomor-soal {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 0.2rem;
+            color: var(--warna-teks);
+        }
+
+        #kesempatan {
+            font-size: 1.2rem;
+            font-weight: 600;
+            background-color: var(--warna-utama);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+
+        .permainan-area {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            gap: 20px;
+        }
+
+        .kolom {
+            width: 45%;
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            min-height: 300px;
+        }
+
+        .item {
+            padding: 1rem;
+            margin: 0.75rem auto;
+            border: 2px solid var(--warna-utama);
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            background-color: white;
+            box-shadow: 0 4px 8px var(--warna-bayangan);
+            max-width: 250px;
+        }
+        
+        .digit {
+            cursor: grab;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        
+        .digit:active {
+            cursor: grabbing;
+        }
+
+        .nilai.drag-over {
+            border: 2px dashed var(--warna-benar);
+            background-color: #e8f5e9;
+        }
+
+        .digit.terpasang {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .nilai.terpasang {
+            background-color: var(--warna-benar);
+            color: white;
+            border-color: var(--warna-benar);
+        }
+        
+        .digit.dragging {
+            opacity: 0.5;
+            transform: scale(1.1);
+        }
+
+        #pesan {
+            margin-top: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            height: 30px;
+        }
+
+        #tombol-mulai {
+            margin-top: 1rem;
+            padding: 0.8rem 2rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            background-color: var(--warna-utama);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        #tombol-mulai:hover {
+            background-color: #3a7ac2;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            #nomor-soal {
+                font-size: 1.8rem;
+            }
+            .permainan-area {
+                flex-direction: column;
+                align-items: center;
+            }
+            .kolom {
+                width: 90%;
+            }
+            .item {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Permainan Nilai Tempat</h1>
+    <p>Tarik angka dari kolom kiri dan jodohkan dengan nilai yang sesuai di kolom kanan.</p>
+    
+    <div id="info-area">
+        <h2 id="nomor-soal">12.345</h2>
+        <div id="kesempatan">Kesempatan: 3</div>
+    </div>
+
+    <div class="permainan-area">
+        <div id="bagian-kiri" class="kolom">
+            <!-- Digit akan muncul di sini -->
+        </div>
+        <div id="bagian-kanan" class="kolom">
+            <!-- Nilai akan muncul di sini -->
+        </div>
+    </div>
+
+    <div id="pesan"></div>
+    <button id="tombol-mulai">Mulai Babak Baru</button>
+</div>
+
+<script>
+    // --- Elemen DOM ---
+    const soalNomorEl = document.getElementById('nomor-soal');
+    const kesempatanEl = document.getElementById('kesempatan');
+    const bagianKiriEl = document.getElementById('bagian-kiri');
+    const bagianKananEl = document.getElementById('bagian-kanan');
+    const pesanEl = document.getElementById('pesan');
+    const tombolMulaiEl = document.getElementById('tombol-mulai');
+
+    // --- State Permainan ---
+    let kesempatan;
+    let soalSaatIni;
+    let pasanganBenar;
+    let totalPasangan;
+    let itemYangDiDrag = null;
+
+    // --- Daftar Soal ---
+    const daftarSoal = [
+        23529, 40618, 45023, 88888, 104682, 989219, 7501, 345, 90909
+    ];
+
+    // --- Fungsi Utama Permainan ---
+
+    /**
+     * Memulai permainan baru atau babak baru
+     */
+    function mulaiPermainan() {
+        kesempatan = 3;
+        pasanganBenar = 0;
+        pesanEl.textContent = '';
+        pesanEl.style.color = 'var(--warna-teks)';
+        tombolMulaiEl.textContent = 'Mulai Babak Baru';
+
+        const soalIndex = Math.floor(Math.random() * daftarSoal.length);
+        soalSaatIni = daftarSoal[soalIndex];
+        
+        buatPapanPermainan(soalSaatIni);
+        updateTampilan();
+    }
+
+    /**
+     * Membuat papan permainan berdasarkan nomor soal
+     * @param {number} nomor - Nomor soal yang akan ditampilkan
+     */
+    function buatPapanPermainan(nomor) {
+        const strNomor = nomor.toString();
+        totalPasangan = strNomor.length;
+
+        const dataKiri = [];
+        const dataKanan = [];
+
+        // Memecah nomor menjadi digit dan nilai tempatnya
+        for (let i = 0; i < strNomor.length; i++) {
+            const digit = strNomor[i];
+            const nilai = parseInt(digit) * Math.pow(10, strNomor.length - 1 - i);
+            if (digit !== '0') { // Opsi: hanya tampilkan yang bukan nol untuk disederhanakan
+                dataKiri.push({ digit: digit, nilai: nilai });
+                dataKanan.push({ nilai: nilai });
+            } else {
+                 totalPasangan--; // Kurangi total jika ada angka 0, karena tidak perlu dijodohkan
+            }
+        }
+        
+        // Acak urutan nilai di sebelah kanan
+        acakArray(dataKanan);
+
+        // Bersihkan papan
+        bagianKiriEl.innerHTML = '';
+        bagianKananEl.innerHTML = '';
+
+        // Tampilkan item di papan
+        dataKiri.forEach(item => buatItemKiri(item.digit, item.nilai));
+        dataKanan.forEach(item => buatItemKanan(item.nilai));
+    }
+
+    /**
+     * Membuat elemen digit yang bisa ditarik (draggable)
+     * @param {string} digit - Digit angka
+     * @param {number} nilai - Nilai tempat dari digit tersebut
+     */
+    function buatItemKiri(digit, nilai) {
+        const div = document.createElement('div');
+        div.textContent = digit;
+        div.className = 'item digit';
+        div.draggable = true;
+        div.dataset.nilai = nilai;
+        bagianKiriEl.appendChild(div);
+
+        // Event listener untuk drag and drop
+        div.addEventListener('dragstart', handleDragStart);
+        div.addEventListener('dragend', handleDragEnd);
+    }
+    
+    /**
+     * Membuat elemen nilai tempat sebagai target drop
+     * @param {number} nilai - Nilai tempat
+     */
+    function buatItemKanan(nilai) {
+        const div = document.createElement('div');
+        div.textContent = nilai.toLocaleString('id-ID'); // Format angka agar mudah dibaca
+        div.className = 'item nilai';
+        div.dataset.nilai = nilai;
+        bagianKananEl.appendChild(div);
+
+        // Event listener untuk target drop
+        div.addEventListener('dragover', handleDragOver);
+        div.addEventListener('dragleave', handleDragLeave);
+        div.addEventListener('drop', handleDrop);
+    }
+
+    // --- Fungsi Event Handler untuk Drag & Drop ---
+
+    function handleDragStart(e) {
+        itemYangDiDrag = e.target;
+        e.dataTransfer.setData('text/plain', e.target.dataset.nilai);
+        setTimeout(() => e.target.classList.add('dragging'), 0);
+    }
+
+    function handleDragEnd(e) {
+        e.target.classList.remove('dragging');
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        if (e.target.classList.contains('nilai') && !e.target.classList.contains('terpasang')) {
+            e.target.classList.add('drag-over');
+        }
+    }
+    
+    function handleDragLeave(e) {
+         e.target.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        e.target.classList.remove('drag-over');
+
+        const nilaiTarget = e.target.dataset.nilai;
+        const nilaiDrag = e.dataTransfer.getData('text/plain');
+
+        if (nilaiTarget === nilaiDrag) {
+            // Jawaban BENAR
+            pesanEl.textContent = 'Benar!';
+            pesanEl.style.color = 'var(--warna-benar)';
+            
+            itemYangDiDrag.classList.add('terpasang');
+            itemYangDiDrag.draggable = false;
+            
+            e.target.classList.add('terpasang');
+            e.target.textContent = `${itemYangDiDrag.textContent} = ${e.target.textContent}`;
+            
+            pasanganBenar++;
+
+            if (pasanganBenar === totalPasangan) {
+                // Menang
+                pesanEl.textContent = 'Selamat, Anda berhasil menyelesaikan babak ini!';
+                tombolMulaiEl.textContent = 'Main Lagi';
+            }
+        } else {
+            // Jawaban SALAH
+            kesempatan--;
+            updateTampilan();
+            pesanEl.textContent = 'Salah! Coba lagi.';
+            pesanEl.style.color = 'var(--warna-salah)';
+            
+            if (kesempatan <= 0) {
+                // Kalah
+                pesanEl.textContent = 'Kesempatan habis. Permainan selesai.';
+                tombolMulaiEl.textContent = 'Coba Lagi';
+                nonaktifkanPapan();
+            }
+        }
+    }
+
+    // --- Fungsi Bantu ---
+
+    /**
+     * Mengacak urutan elemen dalam sebuah array
+     * @param {Array} array - Array yang akan diacak
+     */
+    function acakArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    /**
+     * Menonaktifkan semua item di papan saat permainan berakhir
+     */
+    function nonaktifkanPapan() {
+        document.querySelectorAll('.digit').forEach(el => el.draggable = false);
+    }
+
+    /**
+     * Memperbarui tampilan info (nomor soal dan sisa kesempatan)
+     */
+    function updateTampilan() {
+        soalNomorEl.textContent = soalSaatIni.toLocaleString('id-ID');
+        kesempatanEl.innerHTML = `❤️ ${kesempatan}`;
+    }
+
+
+    // --- Inisialisasi ---
+    tombolMulaiEl.addEventListener('click', mulaiPermainan);
+    // Memulai permainan saat halaman dimuat
+    window.onload = mulaiPermainan;
+
+</script>
+</body>
+</html>
