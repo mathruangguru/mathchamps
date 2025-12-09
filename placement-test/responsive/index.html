@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Math Champs Placement Test</title>
+    <style>
+        :root {
+            --primary: #FF9F1C; /* Math Champs Orange */
+            --primary-dark: #e88b0b;
+            --secondary: #2EC4B6; /* Teal/Blueish */
+            --secondary-dark: #20a094;
+            --accent: #E71D36; /* Red */
+            --success: #4CC9F0; /* Blue/Greenish */
+            --dark: #011627;
+            --gray: #6c757d;
+            --light: #FDFFFC;
+            --bg: #f0f4f8;
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: var(--dark);
+            display: flex;
+            justify-content: center;
+            align-items: center; /* Center for Desktop */
+        }
+
+        /* --- CONTAINER (ADAPTIVE) --- */
+        .container {
+            background: white;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* DESKTOP STYLES (Default) */
+        @media (min-width: 769px) {
+            .container {
+                width: 100%;
+                max-width: 800px; /* Wider for desktop */
+                height: auto;
+                min-height: 600px;
+                max-height: 90vh; /* Don't overflow screen height */
+                border-radius: 24px;
+                box-shadow: var(--card-shadow);
+                margin: 20px;
+            }
+            
+            /* Scrollable content inside the fixed height card */
+            .screen {
+                overflow-y: auto;
+                /* Custom Scrollbar for desktop */
+                scrollbar-width: thin;
+                scrollbar-color: #ddd transparent;
+            }
+            
+            .screen::-webkit-scrollbar {
+                width: 6px;
+            }
+            .screen::-webkit-scrollbar-thumb {
+                background-color: #ddd;
+                border-radius: 20px;
+            }
+
+            .option-btn:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+                border-color: var(--secondary);
+                background-color: #f0fffd;
+            }
+        }
+
+        /* MOBILE STYLES */
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start; /* Top align for mobile */
+                background-color: white; /* Seamless look */
+            }
+
+            .container {
+                width: 100%;
+                min-height: 100vh; /* Full screen */
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .logo {
+                height: 40px; /* Smaller logo */
+            }
+
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1rem; }
+
+            .option-btn {
+                min-height: 70px; /* Larger touch target */
+                font-size: 1rem; /* Readable text */
+            }
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: white;
+            padding: 15px 25px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            height: 45px;
+            object-fit: contain;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 10px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff0f3; /* Light red bg */
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 0.95rem;
+            box-shadow: inset 0 0 0 1px rgba(231, 29, 54, 0.1);
+        }
+
+        /* --- SCREENS --- */
+        .screen {
+            flex: 1;
+            padding: 30px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- START SCREEN --- */
+        .welcome-hero {
+            margin: 20px 0 30px;
+        }
+        
+        h1 { color: var(--primary); margin: 0 0 10px; line-height: 1.2; }
+        h2 { color: var(--gray); font-weight: 400; margin: 0; }
+
+        .rules-box {
+            background: #fff8e1; /* Soft orange/yellow */
+            border-left: 5px solid var(--primary);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: left;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .rules-box h3 { margin-top: 0; color: var(--primary-dark); }
+        .rules-box ul { padding-left: 20px; margin-bottom: 0; }
+        .rules-box li { margin-bottom: 8px; color: #555; }
+
+        /* --- GAME SCREEN --- */
+        .level-badge {
+            background: var(--dark);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 20px;
+            align-self: center;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #FF7D00);
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .question-box {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 30px;
+            line-height: 1.6;
+            width: 100%;
+            text-align: left; /* Better reading flow */
+        }
+
+        .q-img {
+            max-width: 100%;
+            height: auto;
+            margin: 20px auto;
+            border-radius: 12px;
+            border: 2px solid #f0f0f0;
+            display: block;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        /* OPTIONS GRID */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Default 2 cols */
+            gap: 15px;
+            width: 100%;
+        }
+
+        /* Mobile specific grid adjustment */
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr; /* Stack on small mobile */
+            }
+            .options-grid.five-opts {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 16px;
+            font-size: 1rem;
+            color: var(--dark);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            outline: none;
+        }
+
+        .opt-img {
+            max-width: 100%;
+            max-height: 120px;
+            object-fit: contain;
+            margin: 5px 0;
+        }
+
+        /* STATE STYLES */
+        .option-btn.correct {
+            background-color: #e3f9e5;
+            border-color: #28a745;
+            color: #155724;
+            box-shadow: 0 0 0 1px #28a745;
+        }
+
+        .option-btn.wrong {
+            background-color: #ffeef0;
+            border-color: var(--accent);
+            color: #a71d2a;
+            opacity: 0.8;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        /* FEEDBACK AREA - FIXED BOTTOM ON MOBILE */
+        .feedback-container {
+            margin-top: 30px;
+            width: 100%;
+            display: none; 
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            animation: slideUp 0.3s ease-out;
+            padding-bottom: 20px; /* Safe area */
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feedback-msg {
+            font-weight: 800;
+            font-size: 1.2rem;
+        }
+
+        /* BUTTONS */
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 700;
+            box-shadow: 0 8px 20px rgba(255, 159, 28, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-next {
+            background: var(--secondary);
+            box-shadow: 0 8px 20px rgba(46, 196, 182, 0.3);
+        }
+        
+        .btn-next:hover {
+            background: var(--secondary-dark);
+        }
+
+        /* --- RESULT SCREEN --- */
+        .result-card {
+            background: linear-gradient(135deg, var(--primary), #FF7D00);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 24px;
+            width: 100%;
+            margin: 20px 0;
+            box-shadow: 0 15px 30px rgba(255, 125, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Decorative circle behind result */
+        .result-card::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+        }
+
+        .placement-level {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 15px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--dark);
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        /* Fraction Utility */
+        .fraction {
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 0.9em;
+        }
+        .fraction > span { display: block; padding: 0 2px; }
+        .fraction span.bottom { border-top: 2px solid currentColor; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="logo">
+        <div class="status-bar" id="statusBar" style="visibility: hidden;">
+            <div class="status-item">
+                <span class="heart">❤️</span> <span id="livesDisplay">3</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- SCREEN 1: START -->
+    <div id="startScreen" class="screen active">
+        <div class="welcome-hero">
+            <h1>Placement Test</h1>
+            <h2>Temukan level Math Champs kamu!</h2>
+        </div>
+
+        <div class="rules-box">
+            <h3>📝 Cara Bermain:</h3>
+            <ul>
+                <li>Kamu punya <strong>3 Nyawa</strong> ❤️</li>
+                <li>Jawab dengan jujur dan tenang.</li>
+                <li>Jika nyawa habis, levelmu ditentukan saat itu juga.</li>
+                <li>Kerjakan soal sebaik mungkin!</li>
+            </ul>
+        </div>
+
+        <button class="btn" onclick="startGame()">Mulai Tes 🚀</button>
+    </div>
+
+    <!-- SCREEN 2: GAME -->
+    <div id="gameScreen" class="screen">
+        <div class="level-badge" id="currentLevelName">Level D1</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="question-box" id="questionText">
+            <!-- Soal akan muncul di sini -->
+        </div>
+
+        <div class="options-grid" id="optionsContainer">
+            <!-- Pilihan akan muncul di sini -->
+        </div>
+
+        <!-- Feedback & Next Button Area -->
+        <div class="feedback-container" id="feedbackArea">
+            <div class="feedback-msg" id="feedbackMessage">Jawaban Benar!</div>
+            <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()">Soal Berikutnya ➔</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: RESULT -->
+    <div id="resultScreen" class="screen">
+        <h2 style="color: var(--dark);">Tes Selesai! 🎉</h2>
+        <p style="color: var(--gray);">Kamu direkomendasikan masuk ke:</p>
+        
+        <div class="result-card">
+            <div style="font-size: 0.9rem; opacity: 0.9;">LEVEL KAMU</div>
+            <div class="placement-level" id="finalPlacement">MASTERY 1</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-value" id="finalScore">0/60</div>
+                <div class="stat-label">Skor Akhir</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="timeUsed">00:00</div>
+                <div class="stat-label">Waktu</div>
+            </div>
+        </div>
+
+        <p style="margin-top: 30px; font-size: 0.9rem; color: var(--gray); line-height: 1.5;">
+            Silakan <strong>screenshot</strong> halaman ini dan kirimkan ke admin Math Champs untuk pendaftaran.
+        </p>
+        
+        <button class="btn" onclick="location.reload()" style="margin-top: 10px; background: var(--dark);">Ulangi Tes ↺</button>
+    </div>
+</div>
+
+<script>
+    // --- DATABASE SOAL (Database soal tetap sama persis seperti sebelumnya) ---
+    // Saya sembunyikan array ini di dalam komentar untuk keringkasan
+    // karena datanya SAMA PERSIS dengan kode yang kamu berikan di prompt.
+    // Kode di bawah tetap akan berjalan normal.
+    
+    const questions = [
+        // --- D1 ---
+        { level: "Discovery 1", text: "Perhatikan gambar di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_titfbd_7044.png' class='q-img'><br>Pilih jawaban yang sesuai dengan gambar di atas.", options: ["Jumlah bola basket 6 lebih banyak dari jumlah bola voli", "Jumlah bola voli 5 lebih sedikit dari jumlah bola basket", "Jumlah bola basket dan bola voli adalah 14", "Jumlah bola basket lebih sedikit dari jumlah bola voli"], answer: 1 },
+        { level: "Discovery 1", text: "15 anak sedang berbaris dalam sebuah antrean untuk membeli es krim. Ada 9 anak di belakang Ron. Ron berada pada posisi ke-berapa dari depan?", options: ["Ke-5", "Ke-6", "Ke-7", "Ke-10"], answer: 1 },
+        { level: "Discovery 1", text: "Gambar-gambar di bawah ini menunjukkan ikatan bilangan (number bonds).<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_97z5jc_7611.png' class='q-img'><br>Diberikan ikatan bilangan berantai di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_ijtcjt_9349.png' class='q-img'><br>Berapakah nilai dari ☆?", options: ["4", "3", "2", "1"], answer: 2 },
+        { level: "Discovery 1", text: "Berikut ini adalah gambar 4 buah penjepit.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_wd33ao_5162.png' class='q-img'><br>Selisih panjang penjepit terpanjang dengan penjepit terpendek adalah _____ satuan.", options: ["1", "2", "3", "4"], answer: 3 },
+        { level: "Discovery 1", text: "Di lapangan, jumlah anak laki-laki 5 lebih sedikit dari jumlah anak perempuan. Setelah 2 anak laki-laki pulang ke rumah, tersisa 3 anak laki-laki di lapangan. Ada berapa anak perempuan yang sedang berada di lapangan?", options: ["5 anak", "8 anak", "10 anak", "12 anak"], answer: 2 },
+        
+        // --- D2 ---
+        { level: "Discovery 2", text: "Pilih gambar atau angka yang menunjukkan jumlah terbanyak.", options: ["<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_cgtmnk_9396.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_aaxioe_4243.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_yseo9t_9467.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_9o44nk_7986.png' class='opt-img'>"], answer: 3 },
+        { level: "Discovery 2", text: "Joan membeli 3 ekor ikan hias.<br>Robin membeli 2 ekor ikan hias lebih banyak dari Joan.<br>Doni membeli 5 ekor ikan hias lebih banyak dari Robin.<br>Berapa banyak jumlah semua ikan hias milik Joan, Robin, dan Doni?", options: ["15 ekor", "18 ekor", "20 ekor", "23 ekor"], answer: 1 },
+        { level: "Discovery 2", text: "Beni menggambar jam dinding pada saat ia akan tidur dan pada waktu ia bangun keesokan harinya, seperti ditunjukkan pada gambar di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_97ulcy_7558.png' class='q-img'><br>Berapa jam Beni tertidur di malam itu?", options: ["7 jam", "7 jam, 30 menit", "8 jam", "8 jam, 30 menit"], answer: 3 },
+        { level: "Discovery 2", text: "Pilih satu yang berbeda dari gambar maupun simbol di bawah ini.", options: ["<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_xorsar_1261.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_43wc63_2087.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_loeumr_6814.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_6w6jdw_1911.png' class='opt-img'>"], answer: 0 },
+        { level: "Discovery 2", text: "Grafik berikut menunjukkan jumlah bintang yang dikumpulkan 3 orang siswa dalam satu semester.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_l45ksg_7783.png' class='q-img'><br>Banyak total bintang yang didapatkan oleh Evelyn adalah ….", options: ["10 poin", "15 poin", "20 poin", "25 poin"], answer: 1 },
+
+        // --- D3 ---
+        { level: "Discovery 3", text: "Perhatikan dua gambar di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_cifrej_2996.png' class='q-img'><br>Cari selisih jumlah kubus satuan di kedua gambar di atas.", options: ["4", "25", "136", "140"], answer: 2 },
+        { level: "Discovery 3", text: "Rara memiliki 3 balon lebih banyak dari Riri. Jumlah semua balon Rara dan Riri adalah 11 balon. Berapa balon Rara?", options: ["4 balon", "5 balon", "6 balon", "7 balon"], answer: 3 },
+        { level: "Discovery 3", text: "Tinggi kakak 1 meter dan 36 centimeter.<br>Tinggi adik 51 centimeter.<br>Berapa selisih tinggi kakak dan adik?", options: ["75 cm", "85 cm", "115 cm", "187 cm"], answer: 1 },
+        { level: "Discovery 3", text: "Perhatikan pola berikut: △▢◯◯△▢◯◯△▢◯◯△▢…<br>Gambar apakah yang ada di urutan ke-20 dan ke-30?", options: ["Ke-20: △, ke-30: ▢", "Ke-20: ▢, ke-30: ◯", "Ke-20: ◯, ke-30: △", "Ke-20: ◯, ke-30: ▢"], answer: 3 },
+        { level: "Discovery 3", text: "Sharon memiliki 25 buah mangga. Sharon membagikan sebanyak-banyaknya mangga tersebut kepada 3 adiknya sama banyak. Pilih jawaban yang tepat mengenai jumlah buah mangga milik Sharon dan adik-adiknya setelah buah mangga tersebut dibagikan.", options: ["Sharon: 1 mangga, masing-masing adiknya: 8 mangga", "Sharon: 2 mangga, masing-masing adiknya: 8 mangga", "Sharon: 4 mangga, masing-masing adiknya: 7 mangga", "Sharon: 1 mangga, masing-masing adiknya: 3 mangga"], answer: 0 },
+
+        // --- D4 ---
+        { level: "Discovery 4", text: "Perhatikan gambar di bawah ini. Manakah gambar yang menunjukkan pecahan yang berbeda dari yang lain?", options: ["<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_g85x8w_2888.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_jq4d6g_7512.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_68r0y6_8805.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_csyqtj_1706.png' class='opt-img'>"], answer: 3 },
+        { level: "Discovery 4", text: "Perhatikan sekumpulan bilangan di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_e8plka_7489.png' class='q-img'><br>Jumlah dari seluruh bilangan di atas adalah …", options: ["71", "68", "50", "48"], answer: 0 },
+        { level: "Discovery 4", text: "Berapa selisih jumlah sisi dengan jumlah titik sudut pada sebuah limas segiempat?<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_uonulg_778.png' class='q-img'>", options: ["4", "3", "1", "0"], answer: 3 },
+        { level: "Discovery 4", text: "Tuliskan bilangan yang tepat untuk melengkapi kalimat matematika di bawah ini.<br>16 + 12 - __ + 14 = 35", options: ["5", "6", "7", "8"], answer: 2 },
+        { level: "Discovery 4", text: "Hendro memiliki 2 lembar Rp10.000, 3 lembar Rp5.000, 4 lembar Rp2.000, dan 5 lembar Rp1.000. Ada berapa cara untuk membayar topi seharga Rp14.000 tanpa kembalian?", options: ["3 cara", "4 cara", "5 cara", "6 cara"], answer: 3 },
+
+        // --- E1 ---
+        { level: "Exploration 1", text: "Diberikan 5 angka berikut ini: 6, 1, 8, 3, 9.<br>Berapakah bilangan genap 4 digit terbesar yang dapat dibentuk dari angka-angka yang diberikan di atas?", options: ["9863", "9836", "9638", "8963"], answer: 1 },
+        { level: "Exploration 1", text: "Tuliskan bilangan yang tepat untuk melengkapi kalimat matematika di bawah ini.<br>4 × 11 + __ = 54", options: ["8", "9", "10", "12"], answer: 2 },
+        { level: "Exploration 1", text: "Panjang sebuah jalan raya adalah 2 km dan 400 m. Ibu walikota berencana untuk menanamkan pohon dari satu ujung jalan ke ujung jalan yang lain. Jika jarak antar pohon adalah 300 meter, ada berapa pohon yang ditanam oleh ibu walikota?", options: ["8 pohon", "9 pohon", "10 pohon", "12 pohon"], answer: 1 },
+        { level: "Exploration 1", text: "Tuliskan bilangan yang tepat untuk melengkapi kalimat matematika di bawah ini.<br>2 × 36 : __ = 12", options: ["4", "5", "6", "8"], answer: 2 },
+        { level: "Exploration 1", text: "Perhatikan diagram batang (tidak lengkap) di bawah ini.<br>Data Penjualan Laptop Toko iGloo<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_i5dh8e_3438.png' class='q-img'><br>Diketahui bahwa: Laptop yang terjual pada bulan Februari dua kali lebih banyak dibandingkan dengan laptop yang terjual pada bulan Januari. Penjualan pada bulan Maret 30 laptop lebih sedikit dari bulan Februari.<br>Berapakah jumlah semua laptop yang terjual pada bulan Januari sampai Maret?", options: ["150", "180", "195", "210"], answer: 2 },
+
+        // --- E2 ---
+        { level: "Exploration 2", text: "Jumlah penonton konser adalah 4.582 orang. Panitia konser mencatat jumlah penonton konser tersebut dengan pembulatan ke ratusan terdekat. Tuliskan lambang bilangan yang dicatat oleh panitia konser.", options: ["4.500", "4.600", "4.580", "5.000"], answer: 1 },
+        { level: "Exploration 2", text: "Perhatikan gambar di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_t5ceh3_8785.png' class='q-img'><br>Pilih operasi pecahan yang tidak sesuai dengan gambar di atas.", options: ["3/6 + 2/6 = 5/6", "1/3 + 1/2 = 5/6", "1/2 + 1/3 = 5/6", "1/6 + 2/3 = 5/6"], answer: 3 },
+        { level: "Exploration 2", text: "Perhatikan gambar dua persegi di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_raqfib_3385.png' class='q-img'><br>Diketahui panjang sisi Persegi B dua kali lebih panjang dari sisi Persegi A.<br>Luas Persegi B adalah ____ satuan luas.", options: ["18", "27", "36", "81"], answer: 2 },
+        { level: "Exploration 2", text: "Kelas 3A terdiri dari 27 siswa. Jika ⅔ dari seluruh kelas adalah penggemar Shakira, berapa siswa kelas 3A yang bukan penggemar Shakira?", options: ["9 siswa", "12 siswa", "18 siswa", "21 siswa"], answer: 0 },
+        { level: "Exploration 2", text: "Perhatikan diagram batang di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_dsszag_7310.png' class='q-img'><br>Berapa selisih jumlah pengunjung mal pada hari pengunjung paling banyak dengan pada hari pengunjung paling sedikit?", options: ["200 orang", "250 orang", "300 orang", "350 orang"], answer: 2 },
+
+        // --- E3 ---
+        { level: "Exploration 3", text: "Aku adalah bilangan kelipatan 4. Aku memiliki 5 faktor. Bilangan apakah aku?", options: ["12", "16", "20", "24"], answer: 1 },
+        { level: "Exploration 3", text: "Perhatikan gambar di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_svpudi_7183.png' class='q-img'><br>Pilih pernyataan yang tidak sesuai dengan gambar di atas.", options: ["3 × 6 = 18", "3 × (2 + 4) = 18", "3 × 2 + 3 × 4 = 18", "5 × 3 + 1 × 3 = 18"], answer: 3 },
+        { level: "Exploration 3", text: "Nena membeli kelereng dari dua toko: Toko A dan Toko B. Toko A menjual kelereng dalam satuan kodi (20 buah). Toko B menjual kelereng dalam satuan lusin (12 buah). Nena membeli 3 kodi dari toko A dan 4 lusin dari toko B. Berapa jumlah kelereng yang Nena beli?", options: ["100 butir", "108 butir", "112 butir", "120 butir"], answer: 1 },
+        { level: "Exploration 3", text: "Perhatikan proses perkalian vertikal di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_2txjur_4140.png' class='q-img'><br>Dari pilihan di bawah ini, pilihan mana yang tidak sesuai dengan proses perkalian vertikal di atas?", options: ["<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_mdfule_3005.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_jrztbl_6062.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_ach9y8_9754.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_5fklrz_9796.png' class='opt-img'>"], answer: 2 },
+        { level: "Exploration 3", text: "Perhatikan proses pembagian vertikal di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_wervuu_821.png' class='q-img'><br>Dari pilihan di bawah ini, pilihan mana yang tidak sesuai dengan proses pembagian vertikal di atas?", options: ["5 ratusan, 5 puluhan, 4 satuan dibagi 4...", "552 : 4 = (500 + 50 + 2) : 4 ...", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_rweh6q_3353.png' class='opt-img'>", "552 : 4 = 276 : 2 = 138"], answer: 3 },
+
+        // --- E4 ---
+        { level: "Exploration 4", text: "Pilih jawaban yang tidak tepat.<br>Anne sedang mencari jumlah dari ½ dan ⅓. Langkah pertama yang ia lakukan adalah mencari pecahan senilai dari ½ dan ⅓ dengan penyebut yang sama. Penyebut yang ia pilih adalah 6. Mengapa Anne harus melakukan hal tersebut?", options: ["Penjumlahan dan pengurangan bilangan hanya bisa dikerjakan ketika satuannya sama", "Sama seperti 1 kodi dan 1 lusin tidak bisa langsung dijumlahkan, 1 perdua dan 1 pertiga juga tidak bisa langsung dijumlahkan", "Cara terbaik untuk menyamakan penyebut beberapa pecahan adalah mengalikan penyebut-penyebutnya", "Tujuan Anne menggunakan kelipatan persekutuan terkecil dari kedua penyebut adalah untuk mempermudah penyederhanaan hasil penjumlahan kedua pecahan tersebut"], answer: 2 },
+        { level: "Exploration 4", text: "Perhatikan gambar di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_2nkzfe_9703.png' class='q-img'><br>Pilih bentuk penulisan bilangan yang tidak sesuai dengan gambar di atas.", options: ["213", "73", "7 pertiga", "2,33"], answer: 3 },
+        { level: "Exploration 4", text: "Juno sedang mengukur massa sebungkus jeruk dengan neraca. Neraca seimbang ketika Juno menempatkan 2 bandul 1 kg, 1 bandul 500 g, dan 3 bandul 100 g. Ada 8 jeruk dalam bungkusan tersebut. Jika massa jeruk dianggap sama, berapa massa 1 jeruk dalam satuan kilogram dibulatkan ke persepuluhan terdekat?", options: ["0,3 kg", "0,4 kg", "0,35 kg", "3,5 kg"], answer: 2 },
+        { level: "Exploration 4", text: "Manakah gambar yang menunjukkan segitiga tumpul sembarang?", options: ["<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_5mibom_8528.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_k0xjrx_1973.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_ev10zh_307.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_6ycrec_7724.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_eveu7b_4099.png' class='opt-img'>"], answer: 2 },
+        { level: "Exploration 4", text: "Diagram garis di bawah ini menunjukkan suhu udara harian di kota Zula.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_hjgndc_4521.png' class='q-img'><br>Kenaikan suhu terbesar terjadi dari tanggal ____", options: ["21 ke 22 Maret", "22 Maret ke 23 Maret", "23 Maret ke 24 Maret", "24 Maret ke 25 Maret", "25 Maret ke 26 Maret"], answer: 2 },
+
+        // --- M1 ---
+        { level: "Mastery 1", text: "Cari hasil operasi bilangan di bawah ini.<br>88 × 125 - 18 × 50 - 24 × 25 - 2 × 100 = ____", options: ["9.100", "9.200", "9.300", "9.400"], answer: 3 },
+        { level: "Mastery 1", text: "Lina mempunyai 3¼ meter pita merah di rumahnya. Dia membeli tambahan 2⅔ meter lagi untuk mendekorasi kelasnya. Pita merah yang terpakai untuk mendekorasi kelas adalah 4⅚ meter. Berapa meter sisa pita merah yang ia miliki?", options: ["1 meter", "1 3/12 meter", "2 1/12 meter", "3 meter"], answer: 2 },
+        { level: "Mastery 1", text: "Perhatikan dua kubus di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_xuqp8t_5152.png' class='q-img'><br>Diketahui panjang sisi kubus B 3 kali lebih panjang dari panjang sisi kubus A. Jika volume kubus A adalah 5 cm3, volume kubus B adalah _____ cm3.", options: ["15 cm³", "45 cm³", "135 cm³", "375 cm³"], answer: 1 },
+        { level: "Mastery 1", text: "Ibu membuat sejumlah kue. ½ dari seluruh kue diberikan kepada nenek. ⅔ dari sisanya diberikan kepada bibi. Jika jumlah kue yang tersisa adalah 5, berapakah jumlah kue yang ibu buat?", options: ["20 kue", "25 kue", "30 kue", "35 kue"], answer: 2 },
+        { level: "Mastery 1", text: "Cari kecepatan yang berbeda dari yang lain.", options: ["60 km/jam", "1 km/menit", "16 2/3 m/detik", "1000 km/menit"], answer: 2 },
+
+        // --- M2 ---
+        { level: "Mastery 2", text: "20 – 12 : 4 + 3 × 2 = ___", options: ["10", "16", "23", "25"], answer: 3 },
+        { level: "Mastery 2", text: "Ali membelanjakan uangnya 5 kali lebih banyak daripada Baba di sebuah toko. Ali membayar dengan selembar uang 20 ribuan dan menerima kembalian 2 ribu rupiah. Berapa banyak yang dibelanjakan Baba?", options: ["Rp 3.000", "Rp 3.600", "Rp 4.000", "Rp 4.500"], answer: 2 },
+        { level: "Mastery 2", text: "Pilih gambar dengan luas yang berbeda.", options: ["<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_jkmelp_2114.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_lwf87h_7322.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_estzst_8973.png' class='opt-img'>", "<img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_y6laon_6590.png' class='opt-img'>"], answer: 1 },
+        { level: "Mastery 2", text: "Sebuah bak mandi berbentuk balok akan terisi penuh dengan 450 liter air. Jika panjang bak mandi adalah 1 m dan lebar bak mandi 60 cm, berapakah tinggi bak mandi tersebut?", options: ["50 cm", "60 cm", "75 cm", "80 cm"], answer: 2 },
+        { level: "Mastery 2", text: "Tabel di bawah ini menunjukkan nilai ujian akhir matematika dari 5 orang siswa.<br><br>Albi: 81, Dian: 98, Helmi: 92, Renata: 72, Yesi: 86.<br><br>Ada berapa anak yang nilainya di atas rata-rata dari kelima siswa tersebut?", options: ["2 orang", "3 orang", "4 orang", "5 orang"], answer: 2 },
+
+        // --- M3 ---
+        { level: "Mastery 3", text: "Diketahui: A : B = 5 : 6, B : C = 4 : 5, C – A = 3. Cari nilai B + C.", options: ["4", "5", "6", "7"], answer: 1 },
+        { level: "Mastery 3", text: "⅓ uang Andi sama dengan ⅖ uang Budi. Jika selisih uang mereka Rp5.000, berapa total uang keduanya?", options: ["Rp5.000", "Rp25.000", "Rp30.000", "Rp55.000"], answer: 2 },
+        { level: "Mastery 3", text: "Sebuah segitiga sama kaki memiliki dua sudut yang sama besar dan satu sudut lain yang berbeda. Sudut yang berbeda itu merupakan sudut terbesar segitiga dan besarnya 70°. Berapakah hasil penjumlahan kedua sudut yang lain?", options: ["100°", "110°", "120°", "140°"], answer: 3 },
+        { level: "Mastery 3", text: "Harga mainan kesukaan kakak naik 20% dibandingkan dengan harga sebelumnya. Jika harga sekarang adalah Rp72.000, berapa harga mainan tersebut sebelum mengalami kenaikan?", options: ["Rp 57.600", "Rp 60.000", "Rp 64.000", "Rp 65.000"], answer: 1 },
+        { level: "Mastery 3", text: "Rata-rata dari 4 bilangan adalah 9. Jika salah satu bilangan dibuang, rata-ratanya menjadi 8. Berapakah bilangan yang dibuang tersebut?", options: ["8", "10", "12", "14"], answer: 1 },
+
+        // --- M4 ---
+        { level: "Mastery 4", text: "Perhatikan gambar di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_tmpt91_8057.png' class='q-img'><br>Tentukan operasi pecahan yang sedang diilustrasikan oleh gambar di atas.", options: ["2/3 + 1/3 = 1", "8/15 + 7/15 = 1", "4/5 + 2/3 = 8/15", "2/4 + 1/5 = 8/15"], answer: 2 },
+        { level: "Mastery 4", text: "Merisa menggunakan ¾ uangnya untuk membeli sebuah buku. Kemudian, ia menggunakan ½ dari sisanya untuk membeli sebuah kalkulator. Jika harga buku Rp30.000 lebih mahal dari harga kalkulator, berapakah harga buku tersebut?", options: ["Rp30.000", "Rp45.000", "Rp60.000", "Rp75.000"], answer: 2 },
+        { level: "Mastery 4", text: "Perhatikan gambar di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_ajuzjn_4657.png' class='q-img'><br>Gambar di atas terbentuk dari sebuah persegi dengan panjang sisi 10 cm dan seperempat lingkaran. Berapakah luas daerah yang diarsir? Gunakan pendekatan π ≈ 3,14.", options: ["21,5 cm²", "22 cm²", "22,5 cm²", "23 cm²"], answer: 1 },
+        { level: "Mastery 4", text: "Pada pk. 07.00, seorang anak bersepeda dari rumah ke perpustakaan dengan kecepatan 18 km/jam. Setelah 20 menit berselang, ibunya menyusul dengan sepeda listrik dengan kecepatan 24 km/jam. Jika jalan dari rumah ke perpustakaan lurus dan kecepatan mereka konstan, pada pukul berapa ibu tersebut akan menyusul anaknya?", options: ["08.00", "08.10", "08.20", "08.30"], answer: 0 },
+        { level: "Mastery 4", text: "Pada suatu kelas olahraga, diketahui 24% peserta mengikuti permainan voli. Sudut pembentuk juring bertuliskan SEPAKBOLA pada diagram lingkaran adalah 144°. Jika jumlah seluruh peserta kelas olahraga adalah 50 orang, berapa peserta yang mengikuti permainan basket?<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_mlbbcb_4279.png' class='q-img'>", options: ["12 orang", "15 orang", "18 orang", "20 orang"], answer: 2 }
+    ];
+
+    // --- GAME STATE ---
+    let currentQuestionIndex = 0;
+    let lives = 3;
+    let timerInterval;
+    let timeRemaining = 3600; // 60 minutes
+    let correctAnswers = 0;
+    let isAnswering = true;
+
+    // --- DOM ELEMENTS ---
+    const startScreen = document.getElementById('startScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const questionText = document.getElementById('questionText');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const progressBar = document.getElementById('progressBar');
+    const currentLevelName = document.getElementById('currentLevelName');
+    const livesDisplay = document.getElementById('livesDisplay');
+    const statusBar = document.getElementById('statusBar');
+    
+    // Feedback Elements
+    const feedbackArea = document.getElementById('feedbackArea');
+    const feedbackMessage = document.getElementById('feedbackMessage');
+    const nextBtn = document.getElementById('nextBtn');
+
+    // --- FUNCTIONS ---
+
+    function startGame() {
+        startScreen.classList.remove('active');
+        gameScreen.classList.add('active');
+        statusBar.style.visibility = 'visible';
+        
+        currentQuestionIndex = 0;
+        lives = 3;
+        correctAnswers = 0;
+        timeRemaining = 3600;
+        updateStats();
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimerLogic, 1000);
+        
+        loadQuestion();
+    }
+
+    function updateTimerLogic() {
+        timeRemaining--;
+        if (timeRemaining <= 0) {
+            endGame(false, true);
+        }
+    }
+
+    function updateStats() {
+        livesDisplay.innerText = lives;
+        const progress = ((currentQuestionIndex) / questions.length) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
+
+    function loadQuestion() {
+        feedbackArea.style.display = 'none';
+        isAnswering = true;
+        
+        // Scroll to top of game screen for mobile
+        if(window.innerWidth < 768) {
+             window.scrollTo(0,0);
+        } else {
+             // For desktop card, scroll the card content
+             gameScreen.scrollTop = 0;
+        }
+
+        if (currentQuestionIndex >= questions.length) {
+            endGame(true);
+            return;
+        }
+
+        const q = questions[currentQuestionIndex];
+        currentLevelName.innerText = q.level;
+        questionText.innerHTML = `${currentQuestionIndex + 1}. ${q.text}`;
+        
+        optionsContainer.innerHTML = '';
+        
+        if (q.options.length === 5) {
+            optionsContainer.classList.add('five-opts');
+        } else {
+            optionsContainer.classList.remove('five-opts');
+        }
+
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = opt;
+            // Add click/touch feedback
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsContainer.appendChild(btn);
+        });
+
+        updateStats();
+    }
+
+    function checkAnswer(selectedIndex, btnElement) {
+        if (!isAnswering) return; 
+        isAnswering = false;
+
+        const q = questions[currentQuestionIndex];
+        const allButtons = document.querySelectorAll('.option-btn');
+        
+        allButtons.forEach(b => b.disabled = true);
+
+        if (selectedIndex === q.answer) {
+            btnElement.classList.add('correct');
+            feedbackMessage.innerText = "Jawaban Benar! 🎉";
+            feedbackMessage.style.color = "var(--secondary)";
+            correctAnswers++;
+            
+            nextBtn.innerText = "Soal Berikutnya";
+            nextBtn.onclick = nextQuestion;
+        } else {
+            btnElement.classList.add('wrong');
+            lives--;
+            updateStats();
+            
+            if (lives <= 0) {
+                feedbackMessage.innerText = "Salah! Nyawa Habis 💔";
+                feedbackMessage.style.color = "var(--accent)";
+                nextBtn.innerText = "Lihat Hasil";
+                nextBtn.onclick = () => endGame(false);
+            } else {
+                feedbackMessage.innerText = "Jawaban Salah 😔";
+                feedbackMessage.style.color = "var(--accent)";
+                nextBtn.innerText = "Soal Berikutnya";
+                nextBtn.onclick = nextQuestion;
+            }
+        }
+
+        feedbackArea.style.display = 'flex';
+        // Auto scroll to feedback on mobile
+        feedbackArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        loadQuestion();
+    }
+
+    function endGame(completed = false, timeout = false) {
+        clearInterval(timerInterval);
+        gameScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+        statusBar.style.visibility = 'hidden';
+
+        let finalLevel = "";
+        
+        if (completed) {
+            finalLevel = "MASTERY 4 (GRADUATED)";
+        } else {
+            let idx = Math.min(currentQuestionIndex, questions.length - 1);
+            finalLevel = questions[idx].level;
+        }
+
+        document.getElementById('finalPlacement').innerText = finalLevel;
+        document.getElementById('finalScore').innerText = `${correctAnswers}/${questions.length}`;
+        
+        let timeUsedSeconds = 3600 - timeRemaining;
+        if (timeout) timeUsedSeconds = 3600;
+        
+        let m = Math.floor(timeUsedSeconds / 60);
+        let s = timeUsedSeconds % 60;
+        document.getElementById('timeUsed').innerText = `${m}m ${s}s`;
+    }
+</script>
+</body>
+</html>
