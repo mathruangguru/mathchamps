@@ -685,7 +685,7 @@
             display: none !important;
         }
         
-        /* DASHBOARD TABLES */
+        /* DASHBOARD TABLES (HIDDEN AS UNUSED) */
         .dashboard-table-container {
             overflow-x: auto;
             margin-top: 20px;
@@ -716,21 +716,6 @@
         .dashboard-table tr:hover {
             background: #f8f9fa;
         }
-        
-        /* Loading Overlay */
-        .loading-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 500;
-            font-weight: bold;
-            color: var(--primary);
-            font-size: 1.2rem;
-            border-radius: 24px;
-        }
     </style>
 </head>
 <body>
@@ -756,10 +741,6 @@
     <div class="game-stage">
         <div class="content-card" style="position: relative;">
             
-            <div id="loadingOverlay" class="loading-overlay">
-                Menyimpan Data... ☁️
-            </div>
-
             <!-- SCREEN 0: INPUT NAME -->
             <div id="inputNameScreen" class="screen active" style="text-align: center;">
                 <div style="font-size: 4rem; margin-bottom: 10px;">👋</div>
@@ -806,7 +787,7 @@
             <!-- SCREEN 3: RESULT -->
             <div id="resultScreen" class="screen" style="text-align: center;">
                 <h1>Tes Selesai! 🎉</h1>
-                <p style="font-size: 1.2rem; color: #7f8c8d;">Data kamu berhasil disimpan.</p>
+                <p style="font-size: 1.2rem; color: #7f8c8d;">Kerja Bagus!</p>
                 <div class="result-card-inner">
                     <div style="font-size: 1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 2px;">Level Kamu</div>
                     <div class="result-level" id="finalPlacement">MASTERY 1</div>
@@ -822,41 +803,14 @@
                     </div>
                 </div>
                 <button class="btn btn-report" onclick="toggleReport()" id="btnReportToggle">📋 Lihat Detail Jawaban Salah</button>
+                <button class="btn btn-dashboard" onclick="clearAndReload()" style="background: #e74c3c; border-bottom-color: #c0392b;">🔄 Reset & Main Lagi</button>
+                
                 <div id="reportCard" class="report-card">
                     <div class="report-header">
                         <span>Analisis Kesalahan</span>
                         <span style="font-size: 0.8rem; opacity: 0.8;">Untuk Advisor</span>
                     </div>
                     <ul id="reportList" class="report-list"></ul>
-                </div>
-            </div>
-            
-            <!-- SCREEN 4: TEACHER DASHBOARD -->
-            <div id="dashboardScreen" class="screen">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h1>📊 Dashboard Guru</h1>
-                    <button onclick="closeDashboard()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">❌</button>
-                </div>
-                <p>Data ini ter-update secara <strong>Real-time</strong> dari hasil pengerjaan siswa.</p>
-                
-                <button class="btn btn-csv" onclick="exportTableToCSV('math_champs_results.csv')">📥 Download Semua Data (.CSV)</button>
-
-                <div class="dashboard-table-container">
-                    <table class="dashboard-table" id="resultsTable">
-                        <thead>
-                            <tr>
-                                <th>Waktu Submit</th>
-                                <th>Nama Siswa</th>
-                                <th>Level Akhir</th>
-                                <th>Skor</th>
-                                <th>Durasi</th>
-                                <th>Detail Salah</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resultsTableBody">
-                            <tr><td colspan="6" style="text-align:center;">Memuat data...</td></tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
             
@@ -887,58 +841,24 @@
     </div>
 </div>
 
-<!-- SINGLE SCRIPT MODULE -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // 1. FIREBASE INIT
-    const firebaseConfig = JSON.parse(__firebase_config);
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'math-champs-v1';
+<!-- SINGLE SCRIPT (LOCAL LOGIC) -->
+<script>
+    // 1. STATE & LOCAL STORAGE KEY
+    const STORAGE_KEY = 'math_champs_local_v2';
     
-    let user = null;
-    let unsubscribeDashboard = null; 
-
-    // Auth Priority
-    const initAuth = async () => {
-        try {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-        } catch (error) {
-            console.error("Auth Failed:", error);
-        }
-    };
-    initAuth();
-
-    onAuthStateChanged(auth, (u) => {
-        if (u) {
-            user = u;
-            console.log("Connected as", user.uid);
-        }
-    });
-
-    // 2. STATE
-    const STORAGE_KEY = 'math_champs_progress';
     let currentQuestionIndex = 0;
     let lives = 3;
     let timerInterval;
     let timeRemaining = 3600; 
     let correctAnswers = 0;
     let isAnswering = true;
-    let currentLevelCorrect = 0; 
+    let currentLevelCorrect = 0; // Tracks correct answers in current block of 5
     let wrongAnswers = []; 
     let studentName = "";
 
-    // 3. DATABASE SOAL
+    // 2. DATABASE SOAL
     const questions = [
-        // --- D1 (New 1-5) ---
+        // --- D1 (Index 0-4) ---
         { 
             level: "Discovery 1", 
             text: "<div style='text-align:center; width:100%;'>Perhatikan gambar bola voli dan bola basket di bawah ini.<br><svg width='90%' height='auto' viewBox='0 0 560 200' style='max-width:500px;'><rect x='0' y='0' width='270' height='190' fill='none' stroke='#ccc' stroke-width='2'/><text x='135' y='180' text-anchor='middle' font-family='Nunito' font-weight='bold'>Bola Voli</text><g transform='translate(30, 60)'><circle cx='0' cy='0' r='25' fill='#E8F4FC' stroke='#007ACC' stroke-width='2'/><path d='M-12,21 Q0,0 12,21' fill='none' stroke='#007ACC' stroke-width='2'/><path d='M-21,-12 Q0,0 21,-12' fill='none' stroke='#007ACC' stroke-width='2'/></g><g transform='translate(100, 60)'><circle cx='0' cy='0' r='25' fill='#E8F4FC' stroke='#007ACC' stroke-width='2'/><path d='M-12,21 Q0,0 12,21' fill='none' stroke='#007ACC' stroke-width='2'/><path d='M-21,-12 Q0,0 21,-12' fill='none' stroke='#007ACC' stroke-width='2'/></g><g transform='translate(170, 60)'><circle cx='0' cy='0' r='25' fill='#E8F4FC' stroke='#007ACC' stroke-width='2'/><path d='M-12,21 Q0,0 12,21' fill='none' stroke='#007ACC' stroke-width='2'/><path d='M-21,-12 Q0,0 21,-12' fill='none' stroke='#007ACC' stroke-width='2'/></g><g transform='translate(240, 60)'><circle cx='0' cy='0' r='25' fill='#E8F4FC' stroke='#007ACC' stroke-width='2'/><path d='M-12,21 Q0,0 12,21' fill='none' stroke='#007ACC' stroke-width='2'/><path d='M-21,-12 Q0,0 21,-12' fill='none' stroke='#007ACC' stroke-width='2'/></g><rect x='290' y='0' width='270' height='190' fill='none' stroke='#ccc' stroke-width='2'/><text x='425' y='180' text-anchor='middle' font-family='Nunito' font-weight='bold'>Bola Basket</text><g transform='translate(330, 50)'><circle r='20' fill='#F39C12' stroke='#E67E22' stroke-width='2'/><path d='M-20,0 Q0,0 20,0 M0,-20 Q0,0 0,20' fill='none' stroke='#E67E22'/></g><g transform='translate(380, 50)'><circle r='20' fill='#F39C12' stroke='#E67E22' stroke-width='2'/><path d='M-20,0 Q0,0 20,0 M0,-20 Q0,0 0,20' fill='none' stroke='#E67E22'/></g><g transform='translate(430, 50)'><circle r='20' fill='#F39C12' stroke='#E67E22' stroke-width='2'/><path d='M-20,0 Q0,0 20,0 M0,-20 Q0,0 0,20' fill='none' stroke='#E67E22'/></g><g transform='translate(480, 50)'><circle r='20' fill='#F39C12' stroke='#E67E22' stroke-width='2'/><path d='M-20,0 Q0,0 20,0 M0,-20 Q0,0 0,20' fill='none' stroke='#E67E22'/></g><g transform='translate(530, 50)'><circle r='20' fill='#F39C12' stroke='#E67E22' stroke-width='2'/><path d='M-20,0 Q0,0 20,0 M0,-20 Q0,0 0,20' fill='none' stroke='#E67E22'/></g><g transform='translate(355, 100)'><circle r='20' fill='#F39C12' stroke='#E67E22' stroke-width='2'/><path d='M-20,0 Q0,0 20,0 M0,-20 Q0,0 0,20' fill='none' stroke='#E67E22'/></g><g transform='translate(405, 100)'><circle r='20' fill='#F39C12' stroke='#E67E22' stroke-width='2'/><path d='M-20,0 Q0,0 20,0 M0,-20 Q0,0 0,20' fill='none' stroke='#E67E22'/></g><g transform='translate(455, 100)'><circle r='20' fill='#F39C12' stroke='#E67E22' stroke-width='2'/><path d='M-20,0 Q0,0 20,0 M0,-20 Q0,0 0,20' fill='none' stroke='#E67E22'/></g><g transform='translate(505, 100)'><circle r='20' fill='#F39C12' stroke='#E67E22' stroke-width='2'/><path d='M-20,0 Q0,0 20,0 M0,-20 Q0,0 0,20' fill='none' stroke='#E67E22'/></g></svg></div><br>Pilih pernyataan yang <strong>benar</strong> sesuai gambar di atas:", 
@@ -970,7 +890,7 @@
             answer: 2 
         },
         
-        // --- D2 (New 6-10) ---
+        // --- D2 (Index 5-9) ---
         { 
             level: "Discovery 2", 
             text: "Manakah dari pilihan di bawah ini yang memiliki nilai atau jumlah <strong>terbesar</strong>?", 
@@ -1020,22 +940,66 @@
         // ... (Remaining questions would follow)
     ];
 
-    // --- FUNCTION DEFINITIONS (Assigned to window for HTML access) ---
+    // --- FUNCTION DEFINITIONS ---
+
+    window.onload = function() {
+        loadState();
+    };
+
+    function saveState() {
+        const state = {
+            studentName,
+            currentQuestionIndex,
+            lives,
+            wrongAnswers,
+            timeRemaining,
+            currentLevelCorrect
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const state = JSON.parse(saved);
+            // Only restore if user hasn't finished (lives > 0 and index < length)
+            if (state.lives > 0 && state.currentQuestionIndex < questions.length && state.studentName) {
+                studentName = state.studentName;
+                currentQuestionIndex = state.currentQuestionIndex;
+                lives = state.lives;
+                wrongAnswers = state.wrongAnswers || [];
+                timeRemaining = state.timeRemaining || 3600;
+                currentLevelCorrect = state.currentLevelCorrect || 0;
+                
+                inputNameScreen.classList.remove('active');
+                gameScreen.classList.add('active');
+                statusBar.style.visibility = 'visible';
+                updateStats();
+                loadQuestion();
+                
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    timeRemaining--;
+                    if (timeRemaining <= 0) endGame(false, true);
+                    if (timeRemaining % 10 === 0) saveState(); // Periodic save
+                }, 1000);
+            }
+        }
+    }
+
+    window.clearAndReload = function() {
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+    };
 
     window.saveNameAndContinue = function() {
-        const name = studentNameInput.value.trim();
+        const name = document.getElementById('studentNameInput').value.trim();
         
-        // SECRET ACCESS
-        if (name.toLowerCase() === 'admin') {
-            openDashboard();
-            return;
-        }
-
         if (name) {
             studentName = name;
             inputNameScreen.classList.remove('active');
             startScreen.classList.add('active');
-            saveState(); 
+            saveState();
         } else {
             alert("Silakan masukkan nama kamu.");
         }
@@ -1060,27 +1024,22 @@
         timerInterval = setInterval(() => {
             timeRemaining--;
             if (timeRemaining <= 0) endGame(false, true);
+            if (timeRemaining % 5 === 0) saveState(); // Save every 5s just in case
         }, 1000);
         
         loadQuestion();
-    };
-
-    window.openDashboard = function() {
-        inputNameScreen.classList.remove('active');
-        dashboardScreen.classList.add('active');
-        if(window.initDashboardListener) window.initDashboardListener();
+        saveState();
     };
 
     window.closeDashboard = function() {
         dashboardScreen.classList.remove('active');
         inputNameScreen.classList.add('active');
-        if(window.stopDashboardListener) window.stopDashboardListener();
     };
 
     window.nextQuestion = function() {
         currentQuestionIndex++;
         loadQuestion();
-        saveState(); 
+        saveState();
     };
     
     window.toggleReport = function() {
@@ -1094,11 +1053,6 @@
                 reportCard.scrollIntoView({ behavior: 'smooth' });
             }, 100);
         }
-    };
-
-    window.clearAndReload = function() {
-        clearState();
-        location.reload();
     };
 
     window.closeCheckpoint = function() {
@@ -1121,11 +1075,16 @@
         isAnswering = true;
         
         if (currentQuestionIndex >= questions.length) { 
-            if(questions.length < 60) currentQuestionIndex = 0; 
-            else { endGame(true); return; }
+            // if we run out of questions but logic is good, end game as finished
+            endGame(true); 
+            return;
         }
 
         const q = questions[currentQuestionIndex];
+        
+        // Safety check if q is undefined (in case index goes out of bounds)
+        if(!q) { endGame(true); return; }
+
         questionText.innerHTML = q.text;
         optionsContainer.innerHTML = '';
         
@@ -1194,23 +1153,38 @@
     }
 
     function handleLevelTransition() {
+        // Check if we are at the end of a level block (index 4, 9, 14, etc.)
+        // (index + 1) is divisible by 5
         if ((currentQuestionIndex + 1) % 5 === 0) {
-            let bonusText = "Tetap Semangat! 💪";
             let gotBonus = false;
+            let bonusText = "Level Selesai!";
             
+            // Logic: if correct >= 4 in this level, add +1 life (max 3)
             if (currentLevelCorrect >= 4) {
-                if (lives < 3) { lives++; gotBonus = true; bonusText = "+1 Nyawa ❤️"; }
-                else { bonusText = "Nyawa Penuh! ❤️"; }
+                if (lives < 3) { 
+                    lives++; 
+                    gotBonus = true; 
+                    bonusText = "Hebat! +1 Nyawa ❤️"; 
+                } else { 
+                    bonusText = "Sempurna! ❤️"; 
+                }
+            } else {
+                bonusText = "Lanjut ke Level Berikutnya";
             }
             
+            // Show Checkpoint
             checkpointMsg.innerText = bonusText;
             checkpointMsg.style.color = gotBonus ? "#27ae60" : "#f39c12";
             if(gotBonus) lifeContainer.classList.add('pulse-green');
             
             checkpointModal.style.display = 'flex';
             updateStats();
+            
+            // Reset tracking for next level
             currentLevelCorrect = 0;
+            saveState();
         } else {
+            // Not end of level, just go next
             window.nextQuestion();
         }
     }
@@ -1220,8 +1194,23 @@
         gameScreen.classList.remove('active');
         resultScreen.classList.add('active');
         statusBar.style.visibility = 'hidden';
-
-        let finalLevel = completed ? "MASTERY 4 (GRADUATED)" : questions[Math.min(currentQuestionIndex, questions.length-1)].level;
+        
+        // Clear local storage so next refresh starts new (or keep it if you want them to see result forever)
+        // Here we keep it, so they see result. 'clearAndReload' button handles reset.
+        
+        // Determine level based on where they stopped
+        let finalLevel = "Placement Test";
+        if (completed) {
+            finalLevel = "MASTERY 4 (GRADUATED)";
+        } else {
+            // If stopped at index 7 (in D2), level is D2.
+            // Using logic from questions array
+            if (questions[currentQuestionIndex]) {
+                finalLevel = questions[currentQuestionIndex].level;
+            } else if (questions[currentQuestionIndex-1]) {
+                finalLevel = questions[currentQuestionIndex-1].level;
+            }
+        }
         
         let timeUsed = 3600 - timeRemaining;
         let m = Math.floor(timeUsed / 60);
@@ -1231,18 +1220,9 @@
         document.getElementById('finalPlacement').innerText = finalLevel.toUpperCase();
         document.getElementById('finalScore').innerText = `${correctAnswers}/60`;
         document.getElementById('timeUsed').innerText = timeString;
-
-        if(window.saveResultToCloud) {
-            window.saveResultToCloud({
-                studentName: studentName,
-                finalLevel: finalLevel,
-                score: `${correctAnswers}/60`,
-                timeUsed: timeString,
-                wrongAnswers: wrongAnswers.map(w => ({index: w.index, level: w.level, text: w.text}))
-            });
-        }
         
         generateReportCard();
+        localStorage.removeItem(STORAGE_KEY); // Optional: clear state on finish so next visit is fresh
     }
 
     function generateReportCard() {
