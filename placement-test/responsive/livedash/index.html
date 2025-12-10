@@ -314,6 +314,19 @@
             border: 4px solid #fff;
         }
 
+        /* GRID DI REPORT CARD */
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+        
+        /* Mobile Report Grid: 1 Column */
+        @media(max-width: 600px) {
+            .report-grid { grid-template-columns: 1fr !important; }
+        }
+
         .options-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -374,6 +387,16 @@
             border-bottom-color: #c0392b;
             color: #c0392b;
         }
+        
+        /* Small variant for report card buttons */
+        .option-btn.report-variant {
+            padding: 15px;
+            font-size: 1rem;
+            min-height: auto;
+            border-bottom-width: 3px;
+            cursor: default;
+            pointer-events: none; /* Make unclickable */
+        }
 
         .btn {
             background: var(--primary);
@@ -416,12 +439,6 @@
         .btn-report:active {
             border-bottom-width: 2px;
             margin-top: 18px;
-        }
-        
-        .btn-csv {
-            background: #27ae60;
-            border-bottom: 5px solid #219150;
-            margin-top: 15px;
         }
         
         .btn-dashboard {
@@ -578,29 +595,6 @@
             border: 1px solid #eee;
         }
 
-        /* GRID DI REPORT CARD */
-        .report-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            width: 100%;
-        }
-        
-        /* Mobile Report Grid: 1 Column */
-        @media(max-width: 600px) {
-            .report-grid { grid-template-columns: 1fr !important; }
-        }
-
-        /* Small variant for report card buttons */
-        .option-btn.report-variant {
-            padding: 15px;
-            font-size: 1rem;
-            min-height: auto;
-            border-bottom-width: 3px;
-            cursor: default;
-            pointer-events: none; /* Make unclickable */
-        }
-
         .screen { display: none; width: 100%; }
         .screen.active { display: block; }
 
@@ -729,11 +723,6 @@
                 </div>
 
                 <button class="btn" onclick="saveNameAndContinue()">Lanjut</button>
-                
-                <!-- Secret Teacher Button -->
-                <div style="margin-top: 30px; opacity: 0.5;">
-                    <button class="btn-dashboard" onclick="openDashboard()">🔐 Dashboard Guru</button>
-                </div>
             </div>
 
             <!-- SCREEN 1: START -->
@@ -746,9 +735,8 @@
                     <h3 style="margin: 0 0 15px 0; color: #F57F17;">📜 Aturan Main:</h3>
                     <ul style="margin: 0; padding-left: 20px; color: #5d4037; font-size: 1.1rem; line-height: 1.6;">
                         <li>Kamu punya <strong>3 Nyawa</strong> ❤️</li>
-                        <li>Waktu pengerjaan maksimal <strong>60 Menit</strong> (Internal) ⏱️</li>
                         <li>Jawab benar minimal 4 soal dalam satu level untuk mendapatkan <strong>+1 Nyawa</strong>! 🎁</li>
-                        <li>Tes berhenti jika nyawa habis atau waktu selesai.</li>
+                        <li>Tes berhenti jika nyawa habis.</li>
                     </ul>
                 </div>
 
@@ -800,9 +788,6 @@
                 <!-- Report Card Toggle Button -->
                 <button class="btn btn-report" onclick="toggleReport()" id="btnReportToggle">📋 Lihat Detail Jawaban Salah</button>
                 
-                <!-- Export CSV Button (New) -->
-                <button class="btn btn-csv" onclick="exportTableToCSV('math_champs_results.csv')">📥 Download Semua Data (.CSV)</button>
-                
                 <!-- Report Card Container -->
                 <div id="reportCard" class="report-card">
                     <div class="report-header">
@@ -813,8 +798,6 @@
                         <!-- List items will be injected here -->
                     </ul>
                 </div>
-                
-                <button class="btn" style="background: var(--dark); border-bottom-color: black; margin-top: 10px;" onclick="clearAndReload()">Selesai (Kembali ke Awal)</button>
             </div>
             
             <!-- SCREEN 4: TEACHER DASHBOARD (NEW) -->
@@ -824,8 +807,6 @@
                     <button onclick="closeDashboard()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">❌</button>
                 </div>
                 <p>Data ini ter-update secara <strong>Real-time</strong> dari hasil pengerjaan siswa.</p>
-                
-                <button class="btn btn-csv" onclick="exportTableToCSV('math_champs_results.csv')">📥 Download Semua Data (.CSV)</button>
 
                 <div class="dashboard-table-container">
                     <table class="dashboard-table" id="resultsTable">
@@ -1014,8 +995,79 @@
 </script>
 
 <script>
+    // --- STATE MANAGEMENT FUNCTIONS (MOVED UP FOR SAFETY) ---
+    const STORAGE_KEY = 'math_champs_progress';
+    let currentQuestionIndex = 0;
+    let lives = 3;
+    let timerInterval;
+    let timeRemaining = 3600; 
+    let correctAnswers = 0;
+    let isAnswering = true;
+    let currentLevelCorrect = 0; 
+    let wrongAnswers = []; 
+    let studentName = "";
+
+    function saveState() {
+        const activeEl = document.querySelector('.screen.active');
+        const activeId = activeEl ? activeEl.id : 'inputNameScreen';
+
+        const state = {
+            studentName,
+            currentQuestionIndex,
+            lives,
+            timeRemaining,
+            correctAnswers,
+            currentLevelCorrect,
+            wrongAnswers,
+            activeScreen: activeId
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const state = JSON.parse(saved);
+            
+            // Restore Name
+            if (state.studentName) {
+                studentName = state.studentName;
+                document.getElementById('studentNameInput').value = studentName;
+            }
+
+            // Restore Progress if active game
+            if (state.activeScreen !== 'inputNameScreen' && state.lives > 0 && state.timeRemaining > 0) {
+                currentQuestionIndex = state.currentQuestionIndex;
+                lives = state.lives;
+                timeRemaining = state.timeRemaining;
+                correctAnswers = state.correctAnswers;
+                currentLevelCorrect = state.currentLevelCorrect;
+                wrongAnswers = state.wrongAnswers || [];
+                
+                // Hide input/start screens
+                document.getElementById('inputNameScreen').classList.remove('active');
+                document.getElementById('startScreen').classList.remove('active');
+                
+                // Show game if that was active
+                if (state.activeScreen === 'gameScreen') {
+                    document.getElementById('gameScreen').classList.add('active');
+                    document.getElementById('statusBar').style.visibility = 'visible';
+                    updateStats();
+                    loadQuestion();
+                    startTimer();
+                } else if (state.activeScreen) {
+                    const el = document.getElementById(state.activeScreen);
+                    if(el) el.classList.add('active');
+                }
+            }
+        }
+    }
+
+    function clearState() {
+        localStorage.removeItem(STORAGE_KEY);
+    }
+    
     // --- MAIN GAME SCRIPT (Vanilla JS) ---
-    // Copied and adapted logic
     
     const questions = [
         // --- D1 ---
@@ -1103,43 +1155,56 @@
         { level: "Mastery 4", text: "Pada suatu kelas olahraga, diketahui 24% peserta mengikuti permainan voli. Sudut pembentuk juring bertuliskan SEPAKBOLA pada diagram lingkaran adalah 144°. Jika jumlah seluruh peserta kelas olahraga adalah 50 orang, berapa peserta yang mengikuti permainan basket?<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_mlbbcb_4279.png' class='q-img'>", options: ["12 orang", "15 orang", "18 orang", "20 orang"], answer: 2 }
     ];
 
-    let currentQuestionIndex = 0;
-    let lives = 3;
-    let timerInterval;
-    let timeRemaining = 3600; 
-    let correctAnswers = 0;
-    let isAnswering = true;
-    let currentLevelCorrect = 0; 
-    let wrongAnswers = []; 
-    let studentName = ""; 
+    // DOM Elements (Initialized in window.onload to ensure DOM is ready)
+    let inputNameScreen, studentNameInput, startScreen, gameScreen, resultScreen, dashboardScreen;
+    let questionText, optionsContainer, progressBar, livesDisplay, lifeContainer, statusBar;
+    let feedbackArea, feedbackMessage, nextBtn, qNum, timerDisplay, reportCard, reportList, btnReportToggle;
+    let checkpointModal, checkpointMsg;
 
-    // DOM Elements
-    const inputNameScreen = document.getElementById('inputNameScreen');
-    const studentNameInput = document.getElementById('studentNameInput');
-    const startScreen = document.getElementById('startScreen');
-    const gameScreen = document.getElementById('gameScreen');
-    const resultScreen = document.getElementById('resultScreen');
-    const dashboardScreen = document.getElementById('dashboardScreen');
-    const questionText = document.getElementById('questionText');
-    const optionsContainer = document.getElementById('optionsContainer');
-    const progressBar = document.getElementById('progressBar');
-    const livesDisplay = document.getElementById('livesDisplay');
-    const lifeContainer = document.getElementById('lifeContainer');
-    const statusBar = document.getElementById('statusBar');
-    const feedbackArea = document.getElementById('feedbackArea');
-    const feedbackMessage = document.getElementById('feedbackMessage');
-    const nextBtn = document.getElementById('nextBtn');
-    const checkpointModal = document.getElementById('checkpointModal');
-    const checkpointMsg = document.getElementById('checkpointMsg');
+    window.onload = function() {
+        // Initialize DOM elements
+        inputNameScreen = document.getElementById('inputNameScreen');
+        studentNameInput = document.getElementById('studentNameInput');
+        startScreen = document.getElementById('startScreen');
+        gameScreen = document.getElementById('gameScreen');
+        resultScreen = document.getElementById('resultScreen');
+        dashboardScreen = document.getElementById('dashboardScreen');
+        questionText = document.getElementById('questionText');
+        optionsContainer = document.getElementById('optionsContainer');
+        progressBar = document.getElementById('progressBar');
+        livesDisplay = document.getElementById('livesDisplay');
+        lifeContainer = document.getElementById('lifeContainer');
+        statusBar = document.getElementById('statusBar');
+        feedbackArea = document.getElementById('feedbackArea');
+        feedbackMessage = document.getElementById('feedbackMessage');
+        nextBtn = document.getElementById('nextBtn');
+        qNum = document.getElementById('qNum');
+        timerDisplay = document.getElementById('timerDisplay');
+        reportCard = document.getElementById('reportCard');
+        reportList = document.getElementById('reportList');
+        btnReportToggle = document.getElementById('btnReportToggle');
+        checkpointModal = document.getElementById('checkpointModal');
+        checkpointMsg = document.getElementById('checkpointMsg');
+
+        loadState();
+    };
 
     // --- NAVIGATION FUNCTIONS ---
 
     function saveNameAndContinue() {
         const name = studentNameInput.value.trim();
+        
+        // SECRET ACCESS
+        if (name.toLowerCase() === 'admin') {
+            openDashboard();
+            return;
+        }
+
         if (name) {
             studentName = name;
             inputNameScreen.classList.remove('active');
             startScreen.classList.add('active');
+            saveState(); 
         } else {
             alert("Silakan masukkan nama kamu.");
         }
@@ -1185,11 +1250,11 @@
     // --- GAME LOGIC ---
 
     function updateStats() {
-        livesDisplay.innerText = lives;
+        if(livesDisplay) livesDisplay.innerText = lives;
         // Mock full question length if abbreviated
         const totalQ = 60; 
         const progress = ((currentQuestionIndex) / totalQ) * 100;
-        progressBar.style.width = `${progress}%`;
+        if(progressBar) progressBar.style.width = `${progress}%`;
     }
 
     function loadQuestion() {
@@ -1198,8 +1263,6 @@
         
         // Simple logic to prevent crash if array is short in this demo
         if (currentQuestionIndex >= questions.length) { 
-            // Loop back to start or end game for demo stability if array is partial
-            // In full version, this triggers endGame(true)
             if(questions.length < 60) currentQuestionIndex = 0; 
             else { endGame(true); return; }
         }
@@ -1220,7 +1283,9 @@
         });
 
         // KaTeX Render
-        renderMathInElement(gameScreen, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
+        if(window.renderMathInElement) {
+             renderMathInElement(gameScreen, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
+        }
         
         // Scroll top
         if(window.innerWidth < 768) window.scrollTo({top:0, behavior:'smooth'});
@@ -1272,6 +1337,7 @@
             }
         }
         feedbackArea.style.display = 'flex';
+        saveState(); // Save state after answer
     }
 
     function handleLevelTransition() {
@@ -1306,6 +1372,7 @@
     function nextQuestion() {
         currentQuestionIndex++;
         loadQuestion();
+        saveState(); // Save state after moving to next question
     }
 
     function endGame(completed = false) {
