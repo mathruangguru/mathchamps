@@ -519,15 +519,51 @@
             display: block;
             margin: 10px 0;
         }
+        
+        /* ANSWER FEEDBACK IN REPORT */
+        .report-feedback {
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .report-feedback-item {
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            border: 1px solid transparent;
+        }
+        
+        .report-user {
+            background: #fff5f5;
+            border-color: #feb2b2;
+            color: #c53030;
+        }
+        
+        .report-correct {
+            background: #f0fff4;
+            border-color: #9ae6b4;
+            color: #2f855a;
+        }
+        
+        .report-label {
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
 
         .screen { display: none; width: 100%; }
         .screen.active { display: block; }
 
         .result-level {
-            font-size: 3.5rem;
+            /* FIX FONT SIZE CLIPPING ON MOBILE */
+            font-size: clamp(2rem, 8vw, 3.5rem); 
             font-weight: 900;
             color: white;
             text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+            word-wrap: break-word;
+            line-height: 1.1;
         }
         
         .result-card-inner {
@@ -592,7 +628,7 @@
                     <h3 style="margin: 0 0 15px 0; color: #F57F17;">📜 Aturan Main:</h3>
                     <ul style="margin: 0; padding-left: 20px; color: #5d4037; font-size: 1.1rem; line-height: 1.6;">
                         <li>Kamu punya <strong>3 Nyawa</strong> ❤️</li>
-                    
+                        <li>Waktu pengerjaan maksimal <strong>60 Menit</strong> (Internal) ⏱️</li>
                         <li>Jawab benar minimal 4 soal dalam satu level untuk mendapatkan <strong>+1 Nyawa</strong>! 🎁</li>
                         <li>Tes berhenti jika nyawa habis atau waktu selesai.</li>
                     </ul>
@@ -965,11 +1001,17 @@
             lives--;
             updateStats();
             
-            // Record Wrong Answer
+            // Record Wrong Answer with Details
+            const correctAnswerText = q.options[q.answer];
+            // Capture image tag if present, or just text
+            const userAnswerText = btnElement.innerHTML; 
+
             wrongAnswers.push({
                 index: currentQuestionIndex + 1,
                 level: q.level,
-                text: q.text
+                text: q.text,
+                userAnswer: userAnswerText,
+                correctAnswer: correctAnswerText
             });
             
             if (lives <= 0) {
@@ -1084,11 +1126,18 @@
         wrongAnswers.forEach(item => {
             const li = document.createElement('li');
             li.className = 'report-item';
-            // Clean up text for preview (remove huge br tags if needed, or keep them)
-            // Just ensure images scale
+            
             li.innerHTML = `
                 <div class="report-meta">Soal ${item.index} • ${item.level}</div>
-                <div class="report-q-text">${item.text}</div>
+                <div class="report-q-text" style="margin-bottom: 10px;">${item.text}</div>
+                <div class="report-feedback-item report-user">
+                    <div class="report-label">Jawaban Kamu:</div>
+                    <div>${item.userAnswer}</div>
+                </div>
+                <div class="report-feedback-item report-correct">
+                    <div class="report-label">Jawaban Benar:</div>
+                    <div>${item.correctAnswer}</div>
+                </div>
             `;
             reportList.appendChild(li);
         });
