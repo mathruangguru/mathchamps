@@ -251,8 +251,7 @@
             background: #d1f7c4; border-color: #2ecc71; border-bottom-color: #27ae60; color: #27ae60;
         }
         .option-btn.wrong {
-            background: #fadbd8; border-color: #e74c3c; border-bottom-color: #c0392b; color: #c0392b;
-        }
+            background: #fadbd8; border-color: #e74c3c; border-bottom-color: #c0392b; color: #c0392b;        }
         
         /* Report variant */
         .option-btn.report-variant {
@@ -382,7 +381,7 @@
                 <div style="background: #FFF8E1; padding: 25px; border-radius: 20px; text-align: left; border: 2px solid #FFE082; margin-bottom: 30px;">
                     <h3 style="margin: 0 0 15px 0; color: #F57F17;">📜 Cara Kerja Tes:</h3>
                     <ul style="margin: 0; padding-left: 20px; color: #5d4037; font-size: 1.1rem; line-height: 1.6;">
-                        <li>Tes dimulai dari <strong>soal yang kami pilih khusus untuk kamu</strong>.</li>
+                        <li>Tes dimulai dari <strong>soal yang kami pilih khusus kamu</strong>.</li>
                         <li>Sistem akan menyesuaikan soal menjadi lebih mudah/sulit berdasarkan jawabanmu.</li>
                     </ul>
                 </div>
@@ -450,6 +449,9 @@
 </div>
 
 <script>
+    // --- GOOGLE APPS SCRIPT URL ---
+    const googleScriptURL = 'https://script.google.com/macros/s/AKfycby3YStD8PiSJHomxLbUgTqDFuuic2QjXbgWW5AsfLd7Yg0MwBdOfZOFBIu7h_eyL9SMEg/exec';
+
     // 1. DATA SOAL (60 Soal)
     const questions = [
         // --- Discovery 1 (Soal 1-5) ---
@@ -787,25 +789,81 @@
         resultScreen.classList.add('active');
         statusBar.style.visibility = 'hidden';
 
-        // PENTING: Sembunyikan Area Feedback (Kurang Tepat / Lanjut)
+        // Sembunyikan Area Feedback
         document.getElementById('feedbackArea').style.display = 'none';
 
         // Hitung Waktu
-        let timeUsed = 3600 - timeRemaining;
-        let m = Math.floor(timeUsed / 60);
-        let s = timeUsed % 60;
+        let timeUsedSeconds = 3600 - timeRemaining;
+        let m = Math.floor(timeUsedSeconds / 60);
+        let s = timeUsedSeconds % 60;
         let timeString = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
 
-        // Fallback jika gagal di level paling awal (Discovery 1)
+        // Fallback logic
         if (bestLevelReached === "Placement Start" && maxIndex < 0) {
-            bestLevelReached = "Discovery 1"; // EDITED: Default to Discovery 1 instead of Foundation
+            bestLevelReached = "Discovery 1";
         }
 
+        // Tampilkan di UI
         document.getElementById('finalPlacement').innerText = bestLevelReached.toUpperCase();
         document.getElementById('finalScore').innerText = totalCorrectAnswers; 
         document.getElementById('timeUsed').innerText = timeString;
 
         generateReportCard();
+
+        // --- LOGIKA KIRIM KE GOOGLE SHEETS ---
+        sendToGoogleSheet(timeString);
+    }
+
+    function sendToGoogleSheet(timeString) {
+        // 1. Siapkan data laporan salah agar rapi di excel
+        let laporanSalah = "";
+        if(wrongAnswers.length > 0) {
+            laporanSalah = wrongAnswers.map(w => `[${w.level}] ${w.text.substring(0, 20)}... (Jawab: ${w.options[w.userIndex]})`).join(" | ");
+        } else {
+            laporanSalah = "Sempurna";
+        }
+
+        // 2. Bungkus data jadi objek
+        const dataToSend = {
+            nama: studentName,
+            kelas: studentClass,
+            level: bestLevelReached,
+            skor: totalCorrectAnswers,
+            waktu: timeString,
+            laporan: laporanSalah
+        };
+
+        // 3. Ubah tombol report sementara jadi indikator loading
+        const btnReport = document.getElementById('btnReportToggle');
+        const originalText = btnReport.innerText;
+        btnReport.innerText = "⏳ Menyimpan Nilai...";
+        btnReport.disabled = true;
+
+        // 4. Kirim menggunakan Fetch API
+        fetch(googleScriptURL, {
+            method: 'POST',
+            mode: 'no-cors', // Penting untuk Apps Script agar tidak kena blokir browser
+            cache: 'no-cache',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            redirect: 'follow',
+            body: JSON.stringify(dataToSend)
+        })
+        .then(response => {
+            // Karena mode no-cors, kita tidak bisa baca response JSON, tapi asumsi sukses jika tidak error network
+            btnReport.innerText = "✅ Tersimpan! " + originalText;
+            btnReport.disabled = false;
+            setTimeout(() => {
+                btnReport.innerText = originalText;
+            }, 3000);
+            console.log("Data terkirim!");
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            btnReport.innerText = "⚠️ Gagal Simpan (Cek Koneksi)";
+            btnReport.disabled = false;
+        });
     }
 
     function generateReportCard() {
