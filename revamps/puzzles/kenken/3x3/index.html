@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs Challenge - KenKen Worksheet 8</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout Bank Soal) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS DARI LAYOUT BANK SOAL --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --border-color: #dddddd;
+        --header-top-bg: #e0f7fa;
+        --header-bottom-bg: #f0f0f0;
+        --header-title-color: #00838f;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 8.5pt;
+        line-height: 1.6;
+        color: var(--primary-text);
+        background-color: #e0e0e0;
+        margin: 0;
+        padding: 0;
+      }
+
+      .page-container {
+        counter-reset: page;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        height: auto;
+        padding: 1.8cm 2.5cm 1.5cm 2.5cm;
+        margin: 1cm auto;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- FOOTER PERSIS CONTOH --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 2px;
+        margin-top: auto;
+        border-top: 2.5px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+      }
+
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          margin: 0;
+          padding: 0;
+        }
+        .page-container {
+            padding: 0;
+            display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          height: 100%;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1.8cm 2.5cm 1.5cm 2.5cm;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .math-champs-header {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+
+      /* --- CUSTOM STYLES HEADER --- */
+      .math-champs-header {
+        background-color: black;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+      }
+
+      /* Tabel Identitas */
+      .identity-table td {
+        padding: 4px 0;
+        font-size: 9pt;
+        font-weight: 600;
+        vertical-align: bottom;
+      }
+
+      /* --- KENKEN SPECIFIC STYLES --- */
+      .puzzles-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        column-gap: 15mm;
+        row-gap: 15mm;
+        width: 100%;
+        justify-items: center;
+        margin-top: 20px;
+      }
+
+      .puzzle-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .puzzle-title {
+        font-size: 10pt;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+      }
+
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        width: 65mm;
+        height: 65mm;
+        border: 3px solid #000; /* Outer border thickened */
+        position: relative;
+        background: #fff;
+      }
+
+      .cell {
+        border: 1px solid #ddd;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.6rem;
+        font-weight: bold;
+        color: #333;
+        font-family: 'Open Sans', sans-serif;
+      }
+      
+      .answer-key .cell {
+          color: #000;
+      }
+      .answer-number {
+          z-index: 1;
+      }
+
+      .clue {
+        position: absolute;
+        top: 2px;
+        left: 3px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        color: #000;
+        z-index: 2;
+        line-height: 1;
+      }
+
+      /* Borders / Cages Logic - THICK 3px */
+      .bt-thick { border-top: 3px solid #000; }
+      .bb-thick { border-bottom: 3px solid #000; }
+      .bl-thick { border-left: 3px solid #000; }
+      .br-thick { border-right: 3px solid #000; }
+      
+      .bt-none { border-top: 1px solid #ddd; }
+      .bb-none { border-bottom: 1px solid #ddd; }
+      .bl-none { border-left: 1px solid #ddd; }
+      .br-none { border-right: 1px solid #ddd; }
+
+      .page-label {
+        position: absolute;
+        top: 1.8cm;
+        right: 2.5cm;
+        transform: translateY(-120%);
+        font-size: 8pt;
+        color: #999;
+        text-transform: uppercase;
+        font-weight: bold;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1: SOAL -->
+      <section class="page">
+        <div class="page-label">Lembar Soal</div>
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="h-10 md:h-12 object-contain">
+                <div class="text-right">
+                    <div class="text-base font-bold text-white">Math Champs Challenge</div>
+                    <div class="text-[10px] text-white opacity-80">3 x 3 - Worksheet 8</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="mb-6 pb-2 border-b border-gray-300">
+                <table class="identity-table" style="width: 100%;">
+                    <tr>
+                        <td style="width: 60px;">Name</td>
+                        <td>: <div style="display: inline-block; border-bottom: 1.5px dotted #999; width: 80%; height: 1em;"></div></td>
+                    </tr>
+                    <tr>
+                        <td>Class</td>
+                        <td>: <div style="display: inline-block; border-bottom: 1.5px dotted #999; width: 80%; height: 1em;"></div></td>
+                    </tr>
+                    <tr>
+                        <td>Date</td>
+                        <td>: <div style="display: inline-block; border-bottom: 1.5px dotted #999; width: 80%; height: 1em;"></div></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="puzzles-wrapper">
+                <!-- Puzzle 1 -->
+                <!-- Grid: 2 1 3 / 3 2 1 / 1 3 2 -->
+                <div class="puzzle-item">
+                    <div class="puzzle-title">Puzzle No 1</div>
+                    <div class="grid-container">
+                        <!-- R1: "5+" (V), "2-" (H) -->
+                        <div class="cell bb-none br-thick"><span class="clue">5+</span></div>
+                        <div class="cell bb-thick br-none bl-thick"><span class="clue">2-</span></div>
+                        <div class="cell bb-thick bl-none"></div>
+                        
+                        <!-- R2: cont 5+, "2x" (H) -->
+                        <div class="cell bt-none br-thick bb-thick"></div>
+                        <div class="cell bb-thick br-none bl-thick"><span class="clue">2x</span></div>
+                        <div class="cell bb-thick bl-none"></div>
+                        
+                        <!-- R3: "3x" (H), "2" (S) -->
+                        <div class="cell bt-thick br-none"><span class="clue">3x</span></div>
+                        <div class="cell bt-thick br-thick bl-none"></div>
+                        <div class="cell bt-thick bl-thick"><span class="clue">2</span></div>
+                    </div>
+                </div>
+
+                <!-- Puzzle 2 -->
+                <!-- Grid: 3 2 1 / 1 3 2 / 2 1 3 -->
+                <div class="puzzle-item">
+                    <div class="puzzle-title">Puzzle No 2</div>
+                    <div class="grid-container">
+                        <!-- R1: "3" (S), "3+" (H) -->
+                        <div class="cell bb-thick br-thick"><span class="clue">3</span></div>
+                        <div class="cell bb-thick br-none bl-thick"><span class="clue">3+</span></div>
+                        <div class="cell bb-thick bl-none"></div>
+                        
+                        <!-- R2: "3+" (V), "3x" (V), "6x" (V) -->
+                        <div class="cell bt-thick br-thick bb-none"><span class="clue">3+</span></div>
+                        <div class="cell bb-none br-thick bl-thick"><span class="clue">3x</span></div>
+                        <div class="cell bb-none bl-thick"><span class="clue">6x</span></div>
+                        
+                        <!-- R3: cont 3+, cont 3x, cont 6x -->
+                        <div class="cell bt-none br-thick"></div>
+                        <div class="cell bt-none br-thick bl-thick"></div>
+                        <div class="cell bt-none bl-thick"></div>
+                    </div>
+                </div>
+
+                <!-- Puzzle 3 -->
+                <!-- Grid: 1 3 2 / 2 1 3 / 3 2 1 -->
+                <div class="puzzle-item">
+                    <div class="puzzle-title">Puzzle No 3</div>
+                    <div class="grid-container">
+                        <!-- R1: "6+" (V-Col), "6x" (H) -->
+                        <div class="cell bb-none br-thick"><span class="clue">6+</span></div>
+                        <div class="cell bb-thick br-none bl-thick"><span class="clue">6x</span></div>
+                        <div class="cell bb-thick bl-none"></div>
+                        
+                        <!-- R2: cont 6+, "3+" (H) -->
+                        <div class="cell bt-none bb-none br-thick"></div>
+                        <div class="cell bb-thick br-none bl-thick"><span class="clue">3+</span></div>
+                        <div class="cell bb-thick bl-none"></div>
+                        
+                        <!-- R3: cont 6+, "3÷" (H) -->
+                        <div class="cell bt-none br-thick"></div>
+                        <div class="cell bt-thick br-none bl-thick"><span class="clue">3÷</span></div>
+                        <div class="cell bt-thick bl-none"></div>
+                    </div>
+                </div>
+
+                <!-- Puzzle 4 -->
+                <!-- Grid: 2 1 3 / 1 3 2 / 3 2 1 -->
+                <div class="puzzle-item">
+                    <div class="puzzle-title">Puzzle No 4</div>
+                    <div class="grid-container">
+                        <!-- R1: "3+" (V), "3x" (V), "6+" (V-Col) -->
+                        <div class="cell bb-none br-thick"><span class="clue">3+</span></div>
+                        <div class="cell bb-none br-thick bl-thick"><span class="clue">3x</span></div>
+                        <div class="cell bb-none bl-thick"><span class="clue">6+</span></div>
+                        
+                        <!-- R2: cont 3+, cont 3x, cont 6+ -->
+                        <div class="cell bt-none br-thick bb-thick"></div>
+                        <div class="cell bt-none br-thick bl-thick bb-thick"></div>
+                        <div class="cell bt-none bb-none bl-thick"></div>
+                        
+                        <!-- R3: "1-" (H), cont 6+ -->
+                        <div class="cell bt-thick br-none"><span class="clue">1-</span></div>
+                        <div class="cell bt-thick br-thick bl-none"></div>
+                        <div class="cell bt-none bl-thick"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2: KUNCI JAWABAN -->
+      <section class="page answer-key">
+        <div class="page-label">Kunci Jawaban</div>
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="h-10 md:h-12 object-contain">
+                <div class="text-right">
+                    <div class="text-base font-bold text-white">Math Champs Challenge</div>
+                    <div class="text-[10px] text-white opacity-80">Key Answer - 3 x 3 - Worksheet 8</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+             <div class="mb-6 pb-2 border-b border-gray-300">
+                <h3 class="font-bold text-base text-gray-800">Kunci Jawaban</h3>
+                <p class="text-[9pt] text-gray-600">Berikut adalah solusi untuk puzzle di halaman sebelumnya.</p>
+            </div>
+
+            <div class="puzzles-wrapper">
+                 <!-- Puzzle 1 Solution -->
+                 <div class="puzzle-item">
+                    <div class="puzzle-title">Puzzle No 1</div>
+                    <div class="grid-container">
+                        <div class="cell bb-none br-thick"><span class="clue">5+</span><span class="answer-number">2</span></div>
+                        <div class="cell bb-thick br-none bl-thick"><span class="clue">2-</span><span class="answer-number">1</span></div>
+                        <div class="cell bb-thick bl-none"><span class="answer-number">3</span></div>
+                        
+                        <div class="cell bt-none br-thick bb-thick"><span class="answer-number">3</span></div>
+                        <div class="cell bb-thick br-none bl-thick"><span class="clue">2x</span><span class="answer-number">2</span></div>
+                        <div class="cell bb-thick bl-none"><span class="answer-number">1</span></div>
+                        
+                        <div class="cell bt-thick br-none"><span class="clue">3x</span><span class="answer-number">1</span></div>
+                        <div class="cell bt-thick br-thick bl-none"><span class="answer-number">3</span></div>
+                        <div class="cell bt-thick bl-thick"><span class="clue">2</span><span class="answer-number">2</span></div>
+                    </div>
+                </div>
+
+                <!-- Puzzle 2 Solution -->
+                <div class="puzzle-item">
+                    <div class="puzzle-title">Puzzle No 2</div>
+                    <div class="grid-container">
+                        <div class="cell bb-thick br-thick"><span class="clue">3</span><span class="answer-number">3</span></div>
+                        <div class="cell bb-thick br-none bl-thick"><span class="clue">3+</span><span class="answer-number">2</span></div>
+                        <div class="cell bb-thick bl-none"><span class="answer-number">1</span></div>
+                        
+                        <div class="cell bt-thick br-thick bb-none"><span class="clue">3+</span><span class="answer-number">1</span></div>
+                        <div class="cell bb-none br-thick bl-thick"><span class="clue">3x</span><span class="answer-number">3</span></div>
+                        <div class="cell bb-none bl-thick"><span class="clue">6x</span><span class="answer-number">2</span></div>
+                        
+                        <div class="cell bt-none br-thick"><span class="answer-number">2</span></div>
+                        <div class="cell bt-none br-thick bl-thick"><span class="answer-number">1</span></div>
+                        <div class="cell bt-none bl-thick"><span class="answer-number">3</span></div>
+                    </div>
+                </div>
+
+                <!-- Puzzle 3 Solution -->
+                <div class="puzzle-item">
+                    <div class="puzzle-title">Puzzle No 3</div>
+                    <div class="grid-container">
+                        <div class="cell bb-none br-thick"><span class="clue">6+</span><span class="answer-number">1</span></div>
+                        <div class="cell bb-thick br-none bl-thick"><span class="clue">6x</span><span class="answer-number">3</span></div>
+                        <div class="cell bb-thick bl-none"><span class="answer-number">2</span></div>
+                        
+                        <div class="cell bt-none bb-none br-thick"><span class="answer-number">2</span></div>
+                        <div class="cell bb-thick br-none bl-thick"><span class="clue">3+</span><span class="answer-number">1</span></div>
+                        <div class="cell bb-thick bl-none"><span class="answer-number">3</span></div>
+                        
+                        <div class="cell bt-none br-thick"><span class="answer-number">3</span></div>
+                        <div class="cell bt-thick br-none bl-thick"><span class="clue">3÷</span><span class="answer-number">2</span></div>
+                        <div class="cell bt-thick bl-none"><span class="answer-number">1</span></div>
+                    </div>
+                </div>
+
+                <!-- Puzzle 4 Solution -->
+                <div class="puzzle-item">
+                    <div class="puzzle-title">Puzzle No 4</div>
+                    <div class="grid-container">
+                        <div class="cell bb-none br-thick"><span class="clue">3+</span><span class="answer-number">2</span></div>
+                        <div class="cell bb-none br-thick bl-thick"><span class="clue">3x</span><span class="answer-number">1</span></div>
+                        <div class="cell bb-none bl-thick"><span class="clue">6+</span><span class="answer-number">3</span></div>
+                        
+                        <div class="cell bt-none br-thick bb-thick"><span class="answer-number">1</span></div>
+                        <div class="cell bt-none br-thick bl-thick bb-thick"><span class="answer-number">3</span></div>
+                        <div class="cell bt-none bb-none bl-thick"><span class="answer-number">2</span></div>
+                        
+                        <div class="cell bt-thick br-none"><span class="clue">1-</span><span class="answer-number">3</span></div>
+                        <div class="cell bt-thick br-thick bl-none"><span class="answer-number">2</span></div>
+                        <div class="cell bt-none bl-thick"><span class="answer-number">1</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
