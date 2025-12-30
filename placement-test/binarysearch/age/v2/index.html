@@ -591,17 +591,19 @@
         gameScreen.classList.add('active');
         statusBar.style.visibility = 'visible';
 
-        // Determinisikan Start Level Berdasarkan Kelas
+        // Determinisikan Start Level Berdasarkan Kelas (Updated Logic)
         const classVal = parseInt(studentClass || document.getElementById('studentClassInput').value);
         
-        if (classVal >= 1 && classVal <= 3) {
-            startLevelOverride = 4; // Exploration 1
-        } else if (classVal >= 4 && classVal <= 6) {
-            startLevelOverride = 6; // Exploration 3
+        if (classVal >= 1 && classVal <= 2) {
+            startLevelOverride = 2; // Discovery 3 (Level Index 2)
+        } else if (classVal >= 3 && classVal <= 4) {
+            startLevelOverride = 5; // Exploration 2 (Level Index 5)
+        } else if (classVal >= 5 && classVal <= 6) {
+            startLevelOverride = 8; // Mastery 1 (Level Index 8)
         } else if (classVal >= 7 && classVal <= 9) {
-            startLevelOverride = 9; // Mastery 2
+            startLevelOverride = 9; // Mastery 2 (Level Index 9)
         } else {
-            startLevelOverride = 5; // Fallback (Exploration 2)
+            startLevelOverride = 2; // Fallback ke Discovery 3
         }
 
         // RESET VARS
@@ -716,8 +718,12 @@
             
             currentLevelWrong++; // Catat kesalahan di level ini
 
+            // Hitung nomor soal asli (index di array questions + 1)
+            const questionNumber = questions.indexOf(q) + 1;
+
             // Catat salah untuk report
             wrongAnswers.push({
+                qNum: questionNumber, // ADDED: Simpan nomor soal
                 level: q.level,
                 text: q.text,
                 options: q.options,
@@ -828,7 +834,7 @@
         // 1. Siapkan data laporan salah agar rapi di excel
         let laporanSalah = "";
         if(wrongAnswers.length > 0) {
-            laporanSalah = wrongAnswers.map(w => `[${w.level}] ${w.text.substring(0, 20)}... (Jawab: ${w.options[w.userIndex]})`).join(" | ");
+            laporanSalah = wrongAnswers.map(w => `[Soal #${w.qNum}|${w.level}] ${w.text.substring(0, 20)}... (Jawab: ${w.options[w.userIndex]})`).join(" | ");
         } else {
             laporanSalah = "Sempurna";
         }
@@ -899,8 +905,9 @@
             });
             gridHtml += `</div>`;
 
+            // ADDED: Tampilkan No. Soal di meta info
             li.innerHTML = `
-                <div class="report-meta">${item.level}</div>
+                <div class="report-meta">No. ${item.qNum} • ${item.level}</div>
                 <div class="report-q-text">${item.text}</div>
                 ${gridHtml}
             `;
