@@ -452,7 +452,7 @@
     // --- GOOGLE APPS SCRIPT URL ---
     const googleScriptURL = 'https://script.google.com/macros/s/AKfycby3YStD8PiSJHomxLbUgTqDFuuic2QjXbgWW5AsfLd7Yg0MwBdOfZOFBIu7h_eyL9SMEg/exec';
 
-    // 1. DATA SOAL (60 Soal)
+    // 1. DATA SOAL (60 Soal) - KEMBALI KE DATA ASLI (Ruangguru + LaTeX)
     const questions = [
         // --- Discovery 1 (Soal 1-5) ---
         { level: "Discovery 1", text: "Perhatikan gambar bola voli dan bola basket di bawah ini.<br><img src='https://imgix3.ruangguru.com/assets/miscellaneous/png_fexpep_4306.png' class='q-img'><br>Pilih pernyataan yang <strong>benar</strong> sesuai gambar di atas:", options: ["\\( 4 > 9 \\)", "Bola basket berjumlah 6 bola <strong>lebih banyak</strong> dari jumlah bola voli", "Bola voli berjumlah 5 bola <strong>lebih sedikit</strong> dari jumlah bola basket", "Jumlah bola basket dan bola voli adalah 14", "Jumlah bola basket lebih sedikit dari jumlah bola voli"], answer: 2 },
@@ -538,20 +538,20 @@
 
     let studentName = "";
     let studentClass = "";  // Tambahan state untuk menyimpan kelas
-    let minIndex = 0;                   
+    let minIndex = 0;                    
     let maxIndex = LEVEL_ORDER.length - 1; 
     let currentLevelIndex = 0;          
     let startLevelOverride = null;  // NEW: State for class-based override
 
     let questionsInCurrentLevel = []; 
-    let currentQuestionPointer = 0;       
-    let currentLevelScore = 0;          
+    let currentQuestionPointer = 0;        
+    let currentLevelScore = 0;           
     let currentLevelWrong = 0; // NEW: Track consecutive wrongs in a level
     let totalCorrectAnswers = 0;
-    let timeRemaining = 3600;           
+    let timeRemaining = 3600;            
     let timerInterval;
     let isAnswering = true;
-    let wrongAnswers = [];              
+    let wrongAnswers = [];               
     let bestLevelReached = "Foundation"; 
 
     // --- MAIN FUNCTIONS ---
@@ -581,17 +581,19 @@
         gameScreen.classList.add('active');
         statusBar.style.visibility = 'visible';
 
-        // Determinisikan Start Level Berdasarkan Kelas
+        // Determinisikan Start Level Berdasarkan Kelas (Updated Logic dari kode referensi)
         const classVal = parseInt(studentClass || document.getElementById('studentClassInput').value);
         
-        if (classVal >= 1 && classVal <= 3) {
-            startLevelOverride = 4; // Exploration 1
-        } else if (classVal >= 4 && classVal <= 6) {
-            startLevelOverride = 6; // Exploration 3
+        if (classVal >= 1 && classVal <= 2) {
+            startLevelOverride = 2; // Discovery 3 (Level Index 2)
+        } else if (classVal >= 3 && classVal <= 4) {
+            startLevelOverride = 5; // Exploration 2 (Level Index 5)
+        } else if (classVal >= 5 && classVal <= 6) {
+            startLevelOverride = 8; // Mastery 1 (Level Index 8)
         } else if (classVal >= 7 && classVal <= 9) {
-            startLevelOverride = 9; // Mastery 2
+            startLevelOverride = 9; // Mastery 2 (Level Index 9)
         } else {
-            startLevelOverride = 5; // Fallback (Exploration 2)
+            startLevelOverride = 2; // Fallback ke Discovery 3
         }
 
         // RESET VARS
@@ -706,8 +708,12 @@
             
             currentLevelWrong++; // Catat kesalahan di level ini
 
+            // Hitung nomor soal asli (index di array questions + 1)
+            const questionNumber = questions.indexOf(q) + 1;
+
             // Catat salah untuk report
             wrongAnswers.push({
+                qNum: questionNumber, // ADDED: Simpan nomor soal
                 level: q.level,
                 text: q.text,
                 options: q.options,
@@ -725,8 +731,9 @@
     function nextQuestionLogic() {
         currentQuestionPointer++;
 
-        // Modified Logic: Cek apakah 5 soal habis ATAU sudah salah >= 2 kali (Early Exit)
-        if (currentQuestionPointer >= questionsInCurrentLevel.length || currentLevelWrong >= 2) {
+        // MODIFIED LOGIC: Early Exit hanya jika salah >= 3 kali
+        // (Karena kalau salah 2 kali, masih bisa dapet score 3/5 = 60% = Lulus)
+        if (currentQuestionPointer >= questionsInCurrentLevel.length || currentLevelWrong >= 3) {
             evaluateLevelBlock();
         } else {
             loadQuestion();
@@ -734,9 +741,9 @@
     }
 
     function evaluateLevelBlock() {
-        // Logika Penentuan Nasib:
-        // Lulus jika Benar >= 4 dari 5 soal
-        const isPassed = currentLevelScore >= 4;
+        // Logika Penentuan Nasib (MODIFIED):
+        // Lulus jika Benar >= 3 dari 5 soal (60% passing grade)
+        const isPassed = currentLevelScore >= 3;
         const currentLevelName = LEVEL_ORDER[currentLevelIndex];
 
         let titleMsg = "";
@@ -757,7 +764,8 @@
             maxIndex = currentLevelIndex - 1;
 
             titleMsg = "Analisis Selesai 📉";
-            if (currentLevelWrong >= 2) {
+            // Pesan disesuaikan karena batas salahnya sekarang 3
+            if (currentLevelWrong >= 3) {
                 bodyMsg = `Tampaknya level ini terlalu menantang. Kami akan menyesuaikan soal untukmu.`;
             } else {
                 bodyMsg = `Level ini terlalu menantang. Kami akan menyesuaikan soal untukmu.`;
@@ -818,7 +826,8 @@
         // 1. Siapkan data laporan salah agar rapi di excel
         let laporanSalah = "";
         if(wrongAnswers.length > 0) {
-            laporanSalah = wrongAnswers.map(w => `[${w.level}] ${w.text.substring(0, 20)}... (Jawab: ${w.options[w.userIndex]})`).join(" | ");
+            // Format baru: [Soal #12|Discovery 2] ...
+            laporanSalah = wrongAnswers.map(w => `[Soal #${w.qNum}|${w.level}] ${w.text.substring(0, 20)}... (Jawab: ${w.options[w.userIndex]})`).join(" | ");
         } else {
             laporanSalah = "Sempurna";
         }
@@ -889,8 +898,9 @@
             });
             gridHtml += `</div>`;
 
+            // ADDED: Tampilkan No. Soal di meta info
             li.innerHTML = `
-                <div class="report-meta">${item.level}</div>
+                <div class="report-meta">No. ${item.qNum} • ${item.level}</div>
                 <div class="report-q-text">${item.text}</div>
                 ${gridHtml}
             `;
