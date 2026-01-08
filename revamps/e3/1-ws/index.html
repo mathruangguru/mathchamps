@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Exploration 3 - Numbers to 100,000</title>
+    
+    <!-- Tailwind for responsive layout and utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MathJax for beautiful math rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- MAIN CSS & VARIABLES --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --bg-page: #e0e0e0;
+        --shaded-color: #cbd5e1;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt; 
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: var(--bg-page);
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Paper Page Container */
+      .page-container {
+        counter-reset: page;
+        padding-bottom: 2rem;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm; 
+        margin: 1cm auto;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header Style */
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+
+      .math-champs-header {
+        background-color: black;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      /* Footer Style */
+      .page-footer {
+        text-align: left;
+        font-size: 7pt;
+        color: var(--grey-text);
+        padding-top: 8px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+      }
+
+      /* Student Identity */
+      .identity-table td {
+        padding: 4px 0;
+        font-size: 10pt;
+        font-weight: 600;
+      }
+      .dotted-line {
+        border-bottom: 1.5px dotted #999;
+        display: inline-block;
+        width: 100%;
+        height: 1em;
+      }
+
+      /* Bilingual Text Helper */
+      .bilingual-sub {
+        display: block;
+        font-size: 0.85em;
+        font-style: italic;
+        font-weight: normal;
+        color: #555;
+        margin-top: 2px;
+        line-height: 1.2;
+      }
+
+      /* Question Styles */
+      .soal-item {
+        break-inside: avoid;
+        padding-bottom: 0.5rem;
+      }
+
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        margin-bottom: 4px;
+      }
+      
+      .choice-box {
+        width: 22px; 
+        height: 22px; 
+        border: 1.5px solid #333;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        flex-shrink: 0;
+        background: white;
+        font-size: 10px; 
+        font-weight: bold;
+      }
+
+      .input-line {
+        border: none;
+        border-bottom: 1.5px solid #333;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        background: transparent;
+        outline: none;
+        font-family: 'Montserrat', sans-serif;
+      }
+
+      /* Singapore Math Visuals */
+      .num-disc {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid #666;
+        background-color: #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        font-weight: 700;
+        box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        color: #333;
+      }
+
+      .pv-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      .pv-table th {
+        background-color: #e5e7eb;
+        border: 1px solid #000;
+        padding: 8px;
+        font-size: 0.8rem;
+        text-align: center;
+      }
+      .pv-table td {
+        border: 1px solid #000;
+        padding: 10px;
+        vertical-align: top;
+        height: 60px;
+      }
+
+      .flow-box {
+        border: 1.5px solid #333;
+        padding: 8px 16px;
+        background: white;
+        font-weight: 600;
+        min-width: 80px;
+        text-align: center;
+      }
+      
+      .flow-box.dashed {
+        border-style: dashed;
+        background-color: #f9fafb;
+      }
+
+      /* Grid Wrapper */
+      .question-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        align-items: start;
+      }
+
+      /* Print Settings */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          margin: 0;
+        }
+        .page-container {
+            padding-bottom: 0;
+        }
+        .page {
+          width: 100%;
+          height: auto;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          border: none;
+          padding: 1cm;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .math-champs-header, .num-disc, .pv-table th, .bg-blue-50, .bg-gray-50, .bg-white {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .question-grid {
+             display: grid !important;
+             grid-template-columns: repeat(2, 1fr) !important;
+             gap: 1.5rem !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= PAGE 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="h-10 object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-bold text-white">Primary 4 Mathematics</div>
+                    <div class="text-[10px] text-white opacity-80">
+                        Topic: Numbers to 100,000
+                    </div>
+                    <div class="text-[10px] text-white opacity-90 font-semibold leading-tight">
+                        Skill: Counting to 100,000
+                    </div>
+                    <div class="text-[10px] text-white opacity-80 mt-1">
+                        Exploration 3 &bull; Worksheet 1
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- IDENTITY -->
+            <div class="mb-2 pb-2 border-b-2 border-gray-300">
+                <table class="identity-table" style="width: 100%;">
+                    <tr>
+                        <td style="width: 60px;">Name</td>
+                        <td style="width: 15px;">:</td>
+                        <td style="width: 55%;"><div class="dotted-line"></div></td>
+                        <td style="width: 30px;"></td>
+                        <td style="width: 50px;">Date</td>
+                        <td style="width: 15px;">:</td>
+                        <td><div class="dotted-line"></div></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="bg-gray-100 border border-gray-400 p-2 rounded-lg shadow-sm mb-2">
+                <p class="text-xs text-center font-semibold italic">
+                    Instructions: Analyze the visual models and patterns to answer the questions.
+                    <span class="bilingual-sub">Instruksi: Analisis model visual dan pola untuk menjawab pertanyaan.</span>
+                </p>
+            </div>
+
+            <!-- QUESTION 1 -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-200">
+                <div class="font-bold mb-3 text-sm">
+                    1. Count the number discs below. What number is represented?
+                    <span class="bilingual-sub">Hitung cakram bilangan di bawah ini. Bilangan berapa yang diwakili?</span>
+                </div>
+                
+                <div class="flex flex-wrap gap-4 justify-center items-center my-4 bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300">
+                    <!-- 10,000s -->
+                    <div class="flex gap-1">
+                        <div class="num-disc">10,000</div>
+                        <div class="num-disc">10,000</div>
+                        <div class="num-disc">10,000</div>
+                    </div>
+                    <!-- 1,000s -->
+                    <div class="flex gap-1">
+                        <div class="num-disc">1,000</div>
+                        <div class="num-disc">1,000</div>
+                    </div>
+                    <!-- 100s -->
+                    <div class="flex gap-1">
+                        <div class="num-disc">100</div>
+                        <div class="num-disc">100</div>
+                        <div class="num-disc">100</div>
+                        <div class="num-disc">100</div>
+                    </div>
+                    <!-- 10s -->
+                    <div class="flex gap-1">
+                        <div class="num-disc">10</div>
+                    </div>
+                    <!-- 1s -->
+                    <div class="flex gap-1">
+                        <div class="num-disc">1</div>
+                        <div class="num-disc">1</div>
+                        <div class="num-disc">1</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-4 mt-2">
+                    <label class="choice-item"><div class="choice-box">A</div> <span class="text-sm">32,413</span></label>
+                    <label class="choice-item"><div class="choice-box">B</div> <span class="text-sm">30,243</span></label>
+                    <label class="choice-item"><div class="choice-box">C</div> <span class="text-sm">32,403</span></label>
+                    <label class="choice-item"><div class="choice-box">D</div> <span class="text-sm">32,513</span></label>
+                </div>
+            </div>
+
+            <!-- QUESTION 2 -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-200">
+                <div class="font-bold mb-1 text-sm">
+                    2. Look at the Place Value Chart. Write the number in numerals.
+                    <span class="bilingual-sub">Lihat Tabel Nilai Tempat. Tuliskan bilangannya dalam angka.</span>
+                </div>
+
+                <table class="pv-table">
+                    <thead>
+                        <tr>
+                            <th>Ten Thousands</th>
+                            <th>Thousands</th>
+                            <th>Hundreds</th>
+                            <th>Tens</th>
+                            <th>Ones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="flex flex-wrap gap-1 justify-center">
+                                    <div class="num-disc">10,000</div>
+                                    <div class="num-disc">10,000</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex flex-wrap gap-1 justify-center">
+                                    <div class="num-disc">1,000</div>
+                                    <div class="num-disc">1,000</div>
+                                    <div class="num-disc">1,000</div>
+                                    <div class="num-disc">1,000</div>
+                                    <div class="num-disc">1,000</div>
+                                </div>
+                            </td>
+                            <td><!-- Empty --></td>
+                            <td>
+                                <div class="flex flex-wrap gap-1 justify-center">
+                                    <div class="num-disc">10</div>
+                                    <div class="num-disc">10</div>
+                                    <div class="num-disc">10</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex flex-wrap gap-1 justify-center">
+                                    <div class="num-disc">1</div>
+                                    <div class="num-disc">1</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="text-center mt-4">
+                    <b class="text-sm">Answer:</b> <input type="text" class="input-line w-32 text-lg">
+                </div>
+            </div>
+
+            <!-- QUESTION 3 -->
+            <div class="soal-item bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <div class="font-bold mb-3 text-sm">
+                    3. In the number <span class="underline underline-offset-4">5</span>8,204, what is the value of the digit 5?
+                    <span class="bilingual-sub">Pada bilangan <span class="underline">5</span>8.204, berapakah nilai dari angka 5?</span>
+                </div>
+                <div class="grid grid-cols-4 gap-4 mt-2">
+                    <label class="choice-item"><div class="choice-box">A</div> <span class="text-sm">50</span></label>
+                    <label class="choice-item"><div class="choice-box">B</div> <span class="text-sm">500</span></label>
+                    <label class="choice-item"><div class="choice-box">C</div> <span class="text-sm">5,000</span></label>
+                    <label class="choice-item"><div class="choice-box">D</div> <span class="text-sm">50,000</span></label>
+                </div>
+            </div>
+
+            <!-- QUESTION 4 -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-200">
+                <div class="font-bold mb-3 text-sm">
+                    4. Complete the number pattern below.
+                    <span class="bilingual-sub">Lengkapi pola bilangan di bawah ini.</span>
+                </div>
+
+                <div class="flex items-center justify-center gap-2 my-4">
+                    <div class="flow-box">45,200</div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    <div class="flow-box">46,200</div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    <div class="flow-box">47,200</div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    <div class="flow-box dashed text-gray-500">?</div>
+                </div>
+
+                <div class="text-sm mb-2 font-semibold text-gray-700">
+                    The missing number is:
+                    <span class="bilingual-sub font-normal">Bilangan yang hilang adalah:</span>
+                </div>
+                <div class="grid grid-cols-4 gap-4">
+                    <label class="choice-item"><div class="choice-box">A</div> <span class="text-sm">47,300</span></label>
+                    <label class="choice-item"><div class="choice-box">B</div> <span class="text-sm">48,200</span></label>
+                    <label class="choice-item"><div class="choice-box">C</div> <span class="text-sm">49,200</span></label>
+                    <label class="choice-item"><div class="choice-box">D</div> <span class="text-sm">57,200</span></label>
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 2 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="h-10 object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-bold text-white">Primary 4 Mathematics</div>
+                    <div class="text-[10px] text-white opacity-80">Worksheet 1 (Cont.)</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Reduced gap for this specific page wrapper -->
+        <div class="content-wrapper" style="gap: 0.6rem;">
+            
+            <div class="question-grid" style="gap: 1.2rem;">
+                <!-- QUESTION 5 -->
+                <!-- Reduced Padding to p-3 -->
+                <div class="soal-item bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <div class="font-bold mb-2 text-sm">
+                        5. Which of the following shows the number <i class="text-blue-700">seventy-two thousand and five</i>?
+                        <span class="bilingual-sub">Manakah di bawah ini yang menunjukkan bilangan <i class="text-blue-700">tujuh puluh dua ribu lima</i>?</span>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="choice-item"><div class="choice-box">A</div> <span class="text-sm">72,005</span></label>
+                        <label class="choice-item"><div class="choice-box">B</div> <span class="text-sm">72,050</span></label>
+                        <label class="choice-item"><div class="choice-box">C</div> <span class="text-sm">72,500</span></label>
+                        <label class="choice-item"><div class="choice-box">D</div> <span class="text-sm">7,205</span></label>
+                    </div>
+                </div>
+
+                <!-- QUESTION 6 -->
+                <!-- Reduced Padding to p-3 -->
+                <div class="soal-item bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <div class="font-bold mb-2 text-sm">
+                        6. Look at the number pattern. What is the rule?
+                        <span class="bilingual-sub">Lihat pola bilangan tersebut. Apa aturannya?</span>
+                    </div>
+                    <!-- Reduced margin from mb-3 to mb-2 -->
+                    <div class="text-center font-bold text-sm bg-white p-2 rounded border border-gray-200 mb-2">
+                        98,500 &nbsp; 98,400 &nbsp; 98,300 &nbsp; 98,200
+                    </div>
+                    <!-- Reduced gap from gap-2 to gap-1 -->
+                    <div class="flex flex-col gap-1">
+                        <label class="choice-item">
+                            <div class="choice-box">A</div> 
+                            <div class="text-xs">
+                                Counting on by 10s
+                                <div class="text-[9px] text-gray-500 italic font-normal">Maju 10-10</div>
+                            </div>
+                        </label>
+                        <label class="choice-item">
+                            <div class="choice-box">B</div> 
+                            <div class="text-xs">
+                                Counting back by 10s
+                                <div class="text-[9px] text-gray-500 italic font-normal">Mundur 10-10</div>
+                            </div>
+                        </label>
+                        <label class="choice-item">
+                            <div class="choice-box">C</div> 
+                            <div class="text-xs">
+                                Counting on by 100s
+                                <div class="text-[9px] text-gray-500 italic font-normal">Maju 100-100</div>
+                            </div>
+                        </label>
+                        <label class="choice-item">
+                            <div class="choice-box">D</div> 
+                            <div class="text-xs">
+                                Counting back by 100s
+                                <div class="text-[9px] text-gray-500 italic font-normal">Mundur 100-100</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUESTION 7 -->
+            <!-- Reduced Padding to p-3 -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-200">
+                <div class="font-bold mb-2 text-sm">
+                    7. Write the missing number for the expanded form below.
+                    <span class="bilingual-sub">Tuliskan bilangan yang hilang untuk bentuk panjang di bawah ini.</span>
+                </div>
+                
+                <!-- Reduced vertical margin -->
+                <div class="text-center my-2 font-bold text-lg">
+                    \( 64,912 = 60,000 + \underline{\hspace{2cm}} + 900 + 10 + 2 \)
+                </div>
+
+                <div class="text-center">
+                    <b class="text-sm">Answer:</b> <input type="text" class="input-line w-32 text-lg">
+                </div>
+            </div>
+
+            <!-- QUESTION 8 -->
+            <!-- Reduced Padding to p-3 -->
+            <div class="soal-item bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <div class="font-bold mb-2 text-sm">
+                    8. Arrange the numbers in order, beginning with the <b>smallest</b>.
+                    <span class="bilingual-sub">Urutkan bilangan-bilangan berikut, dimulai dari yang <b>terkecil</b>.</span>
+                </div>
+                
+                <!-- Reduced vertical margin -->
+                <div class="flex justify-center gap-4 my-2">
+                    <div class="bg-white px-3 py-1 border-2 border-gray-700 rounded font-bold text-base shadow-sm">15,060</div>
+                    <div class="bg-white px-3 py-1 border-2 border-gray-700 rounded font-bold text-base shadow-sm">15,600</div>
+                    <div class="bg-white px-3 py-1 border-2 border-gray-700 rounded font-bold text-base shadow-sm">14,999</div>
+                </div>
+
+                <div class="text-center pb-1">
+                    <b class="text-sm">Answer:</b> 
+                    <input type="text" class="input-line w-20 text-base text-center"> , 
+                    <input type="text" class="input-line w-20 text-base text-center"> , 
+                    <input type="text" class="input-line w-20 text-base text-center">
+                </div>
+            </div>
+
+            <!-- QUESTION 9 -->
+            <!-- Reduced Padding to p-3 -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-200">
+                <div class="font-bold mb-2 text-sm">
+                    9. Analyze the number line below. What is the value of X?
+                    <span class="bilingual-sub">Analisis garis bilangan di bawah ini. Berapakah nilai X?</span>
+                </div>
+                
+                <!-- Reduced vertical margin -->
+                <div class="flex justify-center my-2">
+                    <svg width="400" height="50" viewBox="0 0 400 50">
+                        <!-- Main Line -->
+                        <line x1="20" y1="20" x2="380" y2="20" stroke="black" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow-start)" />
+                        <!-- Ticks -->
+                        <line x1="50" y1="10" x2="50" y2="30" stroke="black" stroke-width="2" />
+                        <text x="50" y="45" font-family="Montserrat" font-size="10" text-anchor="middle" font-weight="bold">82,000</text>
+
+                        <line x1="125" y1="15" x2="125" y2="25" stroke="black" stroke-width="2" />
+
+                        <line x1="200" y1="10" x2="200" y2="30" stroke="black" stroke-width="2" />
+                        <text x="200" y="45" font-family="Montserrat" font-size="10" text-anchor="middle" font-weight="bold">X</text>
+
+                        <line x1="275" y1="15" x2="275" y2="25" stroke="black" stroke-width="2" />
+
+                        <line x1="350" y1="10" x2="350" y2="30" stroke="black" stroke-width="2" />
+                        <text x="350" y="45" font-family="Montserrat" font-size="10" text-anchor="middle" font-weight="bold">86,000</text>
+                    </svg>
+                </div>
+
+                <div class="grid grid-cols-4 gap-4 mt-2">
+                    <label class="choice-item"><div class="choice-box">A</div> <span class="text-xs">83,000</span></label>
+                    <label class="choice-item"><div class="choice-box">B</div> <span class="text-xs">84,000</span></label>
+                    <label class="choice-item"><div class="choice-box">C</div> <span class="text-xs">85,000</span></label>
+                    <label class="choice-item"><div class="choice-box">D</div> <span class="text-xs">82,500</span></label>
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 3 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="h-10 object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-bold text-white">Primary 4 Mathematics</div>
+                    <div class="text-[10px] text-white opacity-80">Worksheet 1 (Cont.)</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- QUESTION 10 -->
+            <div class="soal-item bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <div class="font-bold mb-3 text-sm">
+                    10. I am a 5-digit number.
+                    <span class="bilingual-sub">Aku adalah bilangan 5 angka.</span>
+                </div>
+                <div class="bg-white p-4 rounded border border-purple-100 shadow-sm text-sm">
+                    <ul class="list-disc ml-5 space-y-1">
+                        <li>My digit in the ten thousands place is 2. <br><span class="text-gray-500 italic text-[11px] font-normal">Angkaku di tempat puluh ribuan adalah 2.</span></li>
+                        <li>My digit in the thousands place is 3 more than the digit in the ten thousands place. <br><span class="text-gray-500 italic text-[11px] font-normal">Angkaku di tempat ribuan 3 lebih banyak daripada angka di tempat puluh ribuan.</span></li>
+                        <li>My digit in the hundreds place is 0. <br><span class="text-gray-500 italic text-[11px] font-normal">Angkaku di tempat ratusan adalah 0.</span></li>
+                        <li>The value of my tens digit is 90. <br><span class="text-gray-500 italic text-[11px] font-normal">Nilai angkaku di tempat puluhan adalah 90.</span></li>
+                        <li>My ones digit is 1. <br><span class="text-gray-500 italic text-[11px] font-normal">Angkaku di tempat satuan adalah 1.</span></li>
+                    </ul>
+                </div>
+                <div class="font-bold text-sm mt-3">
+                    What number am I?
+                    <span class="bilingual-sub">Bilangan berapakah aku?</span>
+                </div>
+                <div class="text-center mt-3">
+                    <b class="text-sm">Answer:</b> <input type="text" class="input-line w-40 text-lg text-center">
+                </div>
+            </div>
+
+            <div class="mt-8 text-center bg-yellow-50 p-4 rounded-xl border border-yellow-200">
+                <p class="font-bold text-yellow-800 text-xl">Math Detective Badge</p>
+                <p class="text-sm text-yellow-700 italic mt-1">You solved the mystery of numbers!</p>
+                <div class="text-4xl mt-2">🕵️‍♂️🔍</div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
