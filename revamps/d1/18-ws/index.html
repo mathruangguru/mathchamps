@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Numbers to 20</title>
+    
+    <!-- Tailwind for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- VARIABLES & BASE STYLES --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --bg-page: #e0e0e0;
+        --header-bg: #1e1e1e;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt; 
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: var(--bg-page);
+        margin: 0; padding: 0;
+      }
+
+      /* --- PAGE LAYOUT --- */
+      .page-container {
+        counter-reset: page;
+        padding-bottom: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        height: 29.7cm; /* A4 Height */
+        padding: 1cm; 
+        margin: 1cm 0;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* --- HEADER & FOOTER --- */
+      .page-header { width: 100%; margin-bottom: 10px; flex-shrink: 0; }
+      
+      .math-champs-header {
+        background-color: var(--header-bg);
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 7pt;
+        color: var(--grey-text);
+        padding-top: 8px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        flex-shrink: 0;
+      }
+
+      /* --- UTILITY & COMPONENTS --- */
+      .identity-table td { padding: 4px 0; font-size: 10pt; font-weight: 600; }
+      .dotted-line { border-bottom: 1.5px dotted #999; display: inline-block; width: 100%; height: 1em; }
+
+      .section-title {
+        font-weight: 700;
+        font-size: 0.9rem;
+        border-bottom: 1px solid #9ca3af;
+        display: inline-block;
+        color: #1d4ed8; /* blue-700 */
+        margin-bottom: 0.25rem;
+        margin-top: 0.5rem;
+      }
+
+      .soal-item { break-inside: avoid; padding: 0.2rem; }
+      
+      .input-line {
+        border: none;
+        border-bottom: 1.5px solid #333;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        background: transparent;
+        outline: none;
+        font-family: 'Montserrat', sans-serif;
+        display: inline-block;
+      }
+
+      .question-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; align-items: start; }
+      .question-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; align-items: start; }
+
+      /* --- VISUAL MATH COMPONENTS --- */
+      
+      /* Ten Frame */
+      .ten-frame {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        border: 2px solid black;
+        width: 100px;
+        height: 40px;
+        background: white;
+      }
+      .ten-frame-cell {
+        border: 1px solid black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .dot {
+        width: 12px; height: 12px;
+        background-color: black;
+        border-radius: 50%;
+      }
+
+      /* Base 10 Blocks UPDATED */
+      .place-value-container { display: flex; align-items: flex-end; gap: 6px; height: 85px; }
+      
+      .tens-rod {
+        width: 15px; 
+        height: 80px; /* 8px * 10 units */
+        background-color: #e5e7eb; /* gray-200 */
+        border: 1px solid #374151;
+        display: flex; 
+        flex-direction: column;
+      }
+      .tens-rod div { 
+        flex: 1; 
+        border-bottom: 1px solid #9ca3af; 
+      }
+      .tens-rod div:last-child { border-bottom: none; }
+      
+      .ones-unit {
+        width: 15px; 
+        height: 8px; /* Same height as one segment of rod */
+        background-color: white;
+        border: 1px solid #374151;
+      }
+
+      /* Shapes */
+      .shape-icon { font-size: 1.2rem; line-height: 1; }
+
+      /* --- PRINT MEDIA --- */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; margin: 0; }
+        .page-container { padding-bottom: 0; display: block; }
+        .page {
+          width: 100%; height: 29.7cm; margin: 0;
+          box-shadow: none; page-break-after: always;
+          border: none; padding: 1cm;
+        }
+        .page:last-child { page-break-after: avoid; }
+        .math-champs-header, .bg-gray-50, .bg-blue-50, .bg-yellow-50 {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+    </style>
+
+    <!-- JS HELPERS FOR GENERATING CONTENT -->
+    <script>
+      function qItem(num, content, width="2rem") {
+        return `
+          <div class="soal-item border-l-2 border-blue-100 pl-2 mb-1">
+            <div class="flex items-baseline">
+              <span class="font-bold w-8 text-xs text-gray-500 mr-1">${num}.</span>
+              <div class="flex-1 text-[10px]">
+                ${content.replace(/__+/g, `<input class="input-line" style="width:${width}">`)}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function drawTenFrame(n) {
+        let html = '<div class="ten-frame inline-grid align-middle mx-1">';
+        for (let i = 0; i < 10; i++) {
+            let isFilled = false;
+            if (i < 5) { // Top row
+                if (n > i) isFilled = true;
+            } else { // Bottom row
+                if (n > i) isFilled = true;
+            }
+            html += `<div class="ten-frame-cell">${isFilled ? '<div class="dot"></div>' : ''}</div>`;
+        }
+        html += '</div>';
+        return html;
+      }
+
+      function drawShapes(count, type) {
+        let icon = '';
+        if(type === 'star') icon = '★';
+        if(type === 'circle') icon = '●';
+        if(type === 'square') icon = '■';
+        
+        let html = `<div class="flex flex-wrap gap-1 max-w-[150px]">`;
+        for(let i=0; i<count; i++) {
+           html += `<span class="shape-icon">${icon}</span>`;
+        }
+        html += `</div>`;
+        return html;
+      }
+
+      function drawBase10(tens, ones) {
+        let html = `<div class="place-value-container inline-flex">`;
+        // Draw Tens
+        for(let t=0; t<tens; t++) {
+            // Draw 10 segments inside the rod
+            html += `<div class="tens-rod">`;
+            for(let i=0; i<10; i++) {
+                html += `<div></div>`;
+            }
+            html += `</div>`;
+        }
+        
+        // Spacer if needed
+        if(tens > 0 && ones > 0) html += `<div style="width:8px"></div>`;
+        
+        // Draw Ones
+        html += `<div class="flex flex-col gap-1 justify-end h-full">`;
+        if(ones > 0) {
+             html += `<div class="grid grid-cols-3 gap-1">`;
+             for(let o=0; o<ones; o++) {
+                html += `<div class="ones-unit"></div>`;
+             }
+             html += `</div>`;
+        }
+        html += `</div></div>`;
+        return html;
+      }
+
+      function cmpQ(n, a, b) {
+            return `<div class="soal-item border-b border-dotted border-gray-300 flex items-center gap-4">
+                <span class="font-bold text-xs text-gray-500">${n}.</span>
+                <span class="font-mono text-lg">${a}</span>
+                <span class="text-gray-400">vs</span>
+                <span class="font-mono text-lg">${b}</span>
+            </div>`;
+      }
+
+      function picCmp(n, aHtml, bHtml, question) {
+            return `<div class="soal-item border border-gray-100 rounded p-1 mb-1">
+                <div class="text-xs font-bold text-gray-500 mb-1">${n}. ${question}</div>
+                <div class="flex justify-around items-center">
+                    <div class="text-center p-1 bg-gray-50 rounded">A<br>${aHtml}</div>
+                    <div class="font-bold text-gray-400">vs</div>
+                    <div class="text-center p-1 bg-gray-50 rounded">B<br>${bHtml}</div>
+                </div>
+                <div class="text-right mt-1 text-[10px]">Answer (A/B): <input class="input-line" style="width:2rem"></div>
+            </div>`;
+        }
+        
+        function yesNo(n, txt) {
+            return qItem(n, txt + " (Yes/No)");
+        }
+    </script>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= PAGE 1 ================= -->
+      <!-- Skills: 1, 2, 3 -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="h-10 object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-bold text-white">Primary Mathematics</div>
+                    <div class="text-[10px] text-white opacity-80">Topic: Numbers up to 20</div>
+                    <div class="text-[10px] text-white opacity-90 font-semibold leading-tight">Discovery 1</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- IDENTITY -->
+            <div class="mb-2 pb-1 border-b-2 border-gray-300">
+                <table class="identity-table" style="width: 100%;">
+                    <tr>
+                        <td style="width: 60px;">Name</td>
+                        <td style="width: 15px;">:</td>
+                        <td style="width: 55%;"><div class="dotted-line"></div></td>
+                        <td style="width: 30px;"></td>
+                        <td style="width: 50px;">Score</td>
+                        <td style="width: 15px;">:</td>
+                        <td><div class="dotted-line"></div></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- SKILL 1: COUNT TO 20 -->
+            <div><h3 class="section-title">Skill 1: Count to 20 in numbers</h3></div>
+            <div class="question-grid-2">
+                <script>
+                    document.write(qItem(1, "1, 2, 3, ____, 5"));
+                    document.write(qItem(2, "8, 9, ____, 11"));
+                    document.write(qItem(3, "14, 15, 16, ____"));
+                    document.write(qItem(4, "____, 19, 20"));
+                    document.write(qItem(5, "10, ____, 12, 13"));
+                    document.write(qItem(6, "5, 6, ____, ____, 9"));
+                    document.write(qItem(7, "11, ____, 13, 14"));
+                    document.write(qItem(8, "____, 2, 3, 4"));
+                    document.write(qItem(9, "17, 18, ____, 20"));
+                    document.write(qItem(10, "13, 14, 15, ____, 17"));
+                </script>
+            </div>
+
+            <!-- SKILL 2: WORDS -->
+            <div><h3 class="section-title">Skill 2: Count to 20 in words</h3></div>
+            <div class="question-grid-2">
+                <script>
+                    document.write(qItem(11, "Write as number: <b>Seven</b> &rarr; ____"));
+                    document.write(qItem(12, "Write as number: <b>Twelve</b> &rarr; ____"));
+                    document.write(qItem(13, "Write as number: <b>Fifteen</b> &rarr; ____"));
+                    document.write(qItem(14, "Write as number: <b>Twenty</b> &rarr; ____"));
+                    document.write(qItem(15, "Write as number: <b>Eighteen</b> &rarr; ____"));
+                    document.write(qItem(16, "Write word: <b>3</b> &rarr; ____", "4rem"));
+                    document.write(qItem(17, "Write word: <b>10</b> &rarr; ____", "4rem"));
+                    document.write(qItem(18, "Write word: <b>13</b> &rarr; ____", "4rem"));
+                    document.write(qItem(19, "Write word: <b>11</b> &rarr; ____", "4rem"));
+                    document.write(qItem(20, "Write word: <b>5</b> &rarr; ____", "4rem"));
+                </script>
+            </div>
+
+            <!-- SKILL 3: MAKE A TEN -->
+            <div><h3 class="section-title">Skill 3: Make a ten and count on</h3></div>
+            <div class="question-grid-2">
+                <script>
+                    document.write(qItem(21, `${drawTenFrame(10)} + ${drawTenFrame(1)} = ____`));
+                    document.write(qItem(22, `${drawTenFrame(10)} + ${drawTenFrame(3)} = ____`));
+                    document.write(qItem(23, `${drawTenFrame(10)} + ${drawTenFrame(5)} = ____`));
+                    document.write(qItem(24, `${drawTenFrame(10)} + ${drawTenFrame(2)} = ____`));
+                    document.write(qItem(25, `${drawTenFrame(10)} + ${drawTenFrame(6)} = ____`));
+                    document.write(qItem(26, "10 and 4 make ____"));
+                    document.write(qItem(27, "10 and 7 make ____"));
+                    document.write(qItem(28, "10 and 9 make ____"));
+                    document.write(qItem(29, "10 + 8 = ____"));
+                    document.write(qItem(30, "10 + 10 = ____"));
+                </script>
+            </div>
+            
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>130 Questions: Numbers to 20</b> | Copyright Ⓒ 2025 - PT Ruang Raya Indonesia
+        </footer>
+      </section>
+
+
+      <!-- ================= PAGE 2 ================= -->
+      <!-- Skills: 4 (ONLY) -->
+      <section class="page">
+        <header class="page-header"><div class="math-champs-header"><img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="h-8 object-contain"><div class="text-right text-white text-[10px]">Worksheet (Cont.)</div></div></header>
+
+        <div class="content-wrapper">
+            <!-- SKILL 4: COUNT OBJECTS -->
+            <div><h3 class="section-title">Skill 4: Count objects</h3></div>
+            <div class="question-grid-2">
+                <script>
+                    function countQ(n, count, type) {
+                        return `<div class="soal-item border border-gray-200 rounded p-2 mb-1">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-bold text-gray-500">${n}.</span>
+                                ${drawShapes(count, type)}
+                            </div>
+                            <div class="text-right mt-1">Answer: <input class="input-line" style="width:2rem"></div>
+                        </div>`;
+                    }
+                    document.write(countQ(31, 5, 'star'));
+                    document.write(countQ(32, 8, 'circle'));
+                    document.write(countQ(33, 12, 'square'));
+                    document.write(countQ(34, 15, 'star'));
+                    document.write(countQ(35, 7, 'circle'));
+                    document.write(countQ(36, 11, 'square'));
+                    document.write(countQ(37, 19, 'star'));
+                    document.write(countQ(38, 14, 'circle'));
+                    document.write(countQ(39, 10, 'star'));
+                    document.write(countQ(40, 16, 'square'));
+                </script>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>130 Questions: Numbers to 20</b> | Copyright Ⓒ 2025 - PT Ruang Raya Indonesia
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 3 (NEW) ================= -->
+      <!-- Skills: 5 (Moved here) -->
+      <section class="page">
+        <header class="page-header"><div class="math-champs-header"><img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="h-8 object-contain"><div class="text-right text-white text-[10px]">Worksheet (Cont.)</div></div></header>
+
+        <div class="content-wrapper">
+             <!-- SKILL 5: PLACE VALUE -->
+            <div><h3 class="section-title">Skill 5: Place Value Charts</h3></div>
+            <div class="question-grid-3">
+                <script>
+                    function pvQ(n, tens, ones) {
+                         return `<div class="soal-item text-center p-2 border border-gray-100 rounded">
+                            <div class="text-xs font-bold text-left text-gray-500">${n}.</div>
+                            <div class="flex justify-center my-2">${drawBase10(tens, ones)}</div>
+                            <div class="text-xs">= <input class="input-line" style="width:2rem"></div>
+                        </div>`;
+                    }
+                    document.write(pvQ(41, 1, 1));
+                    document.write(pvQ(42, 1, 2));
+                    document.write(pvQ(43, 1, 5));
+                    document.write(pvQ(44, 1, 3));
+                    document.write(pvQ(45, 1, 7));
+                    document.write(pvQ(46, 1, 9));
+                    document.write(pvQ(47, 2, 0));
+                    document.write(pvQ(48, 0, 8));
+                </script>
+                <!-- Text based PV -->
+                <div class="soal-item p-4 text-center border border-gray-100 rounded">
+                    <div class="text-xs font-bold text-gray-500 text-left">49.</div>
+                    <div class="text-[10px] mt-4 font-bold">1 ten 4 ones</div>
+                    <div class="text-xs mt-2">= <input class="input-line" style="width:2rem"></div>
+                </div>
+                <div class="soal-item p-4 text-center border border-gray-100 rounded">
+                    <div class="text-xs font-bold text-gray-500 text-left">50.</div>
+                    <div class="text-[10px] mt-4 font-bold">1 ten 6 ones</div>
+                    <div class="text-xs mt-2">= <input class="input-line" style="width:2rem"></div>
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>130 Questions: Numbers to 20</b> | Copyright Ⓒ 2025 - PT Ruang Raya Indonesia
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 4 ================= -->
+      <!-- Skills: 6, 7 -->
+      <section class="page">
+        <header class="page-header"><div class="math-champs-header"><img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="h-8 object-contain"><div class="text-right text-white text-[10px]">Worksheet (Cont.)</div></div></header>
+
+        <div class="content-wrapper">
+            <!-- SKILL 6: COMPARE TWO NUMBERS -->
+            <div><h3 class="section-title">Skill 6: Compare two numbers</h3></div>
+            <p class="text-[9px] italic mb-1">Circle the <b>greater</b> number (51-55). Circle the <b>smaller</b> number (56-60).</p>
+            <div class="question-grid-2">
+                <script>
+                    document.write(cmpQ(51, 12, 15));
+                    document.write(cmpQ(52, 19, 9));
+                    document.write(cmpQ(53, 20, 10));
+                    document.write(cmpQ(54, 11, 17));
+                    document.write(cmpQ(55, 14, 13));
+                    document.write(cmpQ(56, 5, 15));
+                    document.write(cmpQ(57, 18, 8));
+                    document.write(cmpQ(58, 16, 19));
+                    document.write(cmpQ(59, 13, 11));
+                    document.write(cmpQ(60, 20, 12));
+                </script>
+            </div>
+
+            <!-- SKILL 7: COMPARE 3 NUMBERS -->
+            <div class="mt-6"><h3 class="section-title">Skill 7: Order three numbers</h3></div>
+            <div class="flex flex-col gap-1">
+                <script>
+                    document.write(qItem(61, "Smallest to Greatest: 5, 12, 9 &rarr; ____", "4rem"));
+                    document.write(qItem(62, "Smallest to Greatest: 18, 11, 20 &rarr; ____", "4rem"));
+                    document.write(qItem(63, "Smallest to Greatest: 14, 4, 10 &rarr; ____", "4rem"));
+                    document.write(qItem(64, "Smallest to Greatest: 16, 19, 13 &rarr; ____", "4rem"));
+                    document.write(qItem(65, "Smallest to Greatest: 7, 17, 2 &rarr; ____", "4rem"));
+                    document.write(qItem(66, "Greatest to Smallest: 10, 20, 15 &rarr; ____", "4rem"));
+                    document.write(qItem(67, "Greatest to Smallest: 3, 13, 8 &rarr; ____", "4rem"));
+                    document.write(qItem(68, "Greatest to Smallest: 12, 11, 19 &rarr; ____", "4rem"));
+                    document.write(qItem(69, "Greatest to Smallest: 6, 16, 10 &rarr; ____", "4rem"));
+                    document.write(qItem(70, "Greatest to Smallest: 1, 20, 10 &rarr; ____", "4rem"));
+                </script>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>130 Questions: Numbers to 20</b> | Copyright Ⓒ 2025 - PT Ruang Raya Indonesia
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 5 ================= -->
+      <!-- Skills: 8, 9 -->
+      <section class="page">
+        <header class="page-header"><div class="math-champs-header"><img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="h-8 object-contain"><div class="text-right text-white text-[10px]">Worksheet (Cont.)</div></div></header>
+
+        <div class="content-wrapper">
+            <!-- SKILL 8: MORE THAN -->
+            <div><h3 class="section-title">Skill 8: More than...</h3></div>
+            <div class="question-grid-2">
+                <script>
+                    document.write(qItem(71, "1 more than 5 is ____"));
+                    document.write(qItem(72, "1 more than 10 is ____"));
+                    document.write(qItem(73, "1 more than 15 is ____"));
+                    document.write(qItem(74, "1 more than 19 is ____"));
+                    document.write(qItem(75, "1 more than 8 is ____"));
+                    document.write(qItem(76, "2 more than 4 is ____"));
+                    document.write(qItem(77, "2 more than 12 is ____"));
+                    document.write(qItem(78, "2 more than 10 is ____"));
+                    document.write(qItem(79, "2 more than 18 is ____"));
+                    document.write(qItem(80, "2 more than 16 is ____"));
+                </script>
+            </div>
+
+            <!-- SKILL 9: LESS THAN -->
+            <div class="mt-4"><h3 class="section-title">Skill 9: Less than...</h3></div>
+            <div class="question-grid-2">
+                <script>
+                    document.write(qItem(81, "1 less than 10 is ____"));
+                    document.write(qItem(82, "1 less than 6 is ____"));
+                    document.write(qItem(83, "1 less than 15 is ____"));
+                    document.write(qItem(84, "1 less than 20 is ____"));
+                    document.write(qItem(85, "1 less than 12 is ____"));
+                    document.write(qItem(86, "2 less than 10 is ____"));
+                    document.write(qItem(87, "2 less than 20 is ____"));
+                    document.write(qItem(88, "2 less than 14 is ____"));
+                    document.write(qItem(89, "2 less than 5 is ____"));
+                    document.write(qItem(90, "2 less than 8 is ____"));
+                </script>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>130 Questions: Numbers to 20</b> | Copyright Ⓒ 2025 - PT Ruang Raya Indonesia
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 6 ================= -->
+      <!-- Skills: 10 -->
+      <section class="page">
+        <header class="page-header"><div class="math-champs-header"><img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="h-8 object-contain"><div class="text-right text-white text-[10px]">Worksheet (Cont.)</div></div></header>
+
+        <div class="content-wrapper">
+             <!-- SKILL 10: CONCEPT OF MORE -->
+            <div><h3 class="section-title">Skill 10: Comparison (Which has MORE?)</h3></div>
+            <div class="question-grid-2">
+                <script>
+                    document.write(picCmp(91, drawShapes(3,'circle'), drawShapes(5,'circle'), "Which has more?"));
+                    document.write(picCmp(92, drawShapes(8,'star'), drawShapes(6,'star'), "Which has more?"));
+                    document.write(picCmp(93, drawShapes(10,'square'), drawShapes(12,'square'), "Which has more?"));
+                    document.write(picCmp(94, drawTenFrame(5), drawTenFrame(8), "Which has more?"));
+                    document.write(picCmp(95, drawTenFrame(12), drawTenFrame(10), "Which has more?"));
+                    
+                    document.write(yesNo(96, `Does ${drawTenFrame(5)} have more than 3?`));
+                    document.write(yesNo(97, `Does ${drawTenFrame(2)} have more than 4?`));
+                    document.write(yesNo(98, `Does ${drawShapes(7,'star')} have more than 5?`));
+                    document.write(yesNo(99, `Does ${drawShapes(9,'circle')} have more than 10?`));
+                    document.write(yesNo(100, `Does ${drawShapes(15,'square')} have more than 12?`));
+                </script>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>130 Questions: Numbers to 20</b> | Copyright Ⓒ 2025 - PT Ruang Raya Indonesia
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 7 ================= -->
+      <!-- Skills: 11 -->
+      <section class="page">
+        <header class="page-header"><div class="math-champs-header"><img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="h-8 object-contain"><div class="text-right text-white text-[10px]">Worksheet (Cont.)</div></div></header>
+
+        <div class="content-wrapper">
+            <!-- SKILL 11: CONCEPT OF LESS -->
+            <div><h3 class="section-title">Skill 11: Comparison (Which has LESS?)</h3></div>
+            <div class="question-grid-2">
+                <script>
+                    document.write(picCmp(101, drawShapes(4,'circle'), drawShapes(2,'circle'), "Which has less?"));
+                    document.write(picCmp(102, drawShapes(7,'star'), drawShapes(9,'star'), "Which has less?"));
+                    document.write(picCmp(103, drawShapes(15,'square'), drawShapes(11,'square'), "Which has less?"));
+                    document.write(picCmp(104, drawTenFrame(6), drawTenFrame(4), "Which has less?"));
+                    document.write(picCmp(105, drawTenFrame(13), drawTenFrame(17), "Which has less?"));
+                    
+                    document.write(yesNo(106, `Is 5 less than ${drawTenFrame(8)}?`));
+                    document.write(yesNo(107, `Is 10 less than ${drawTenFrame(9)}?`));
+                    document.write(yesNo(108, `Is 12 less than ${drawShapes(15,'star')}?`));
+                    document.write(yesNo(109, `Is 20 less than ${drawShapes(19,'circle')}?`));
+                    document.write(yesNo(110, `Is 3 less than ${drawShapes(1,'square')}?`));
+                </script>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>130 Questions: Numbers to 20</b> | Copyright Ⓒ 2025 - PT Ruang Raya Indonesia
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 8 ================= -->
+      <!-- Skills: 12, 13 -->
+      <section class="page">
+        <header class="page-header"><div class="math-champs-header"><img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="h-8 object-contain"><div class="text-right text-white text-[10px]">Worksheet (Cont.)</div></div></header>
+
+        <div class="content-wrapper">
+             <!-- SKILL 12: BEFORE / AFTER -->
+            <div><h3 class="section-title">Skill 12: Just Before / Just After</h3></div>
+            <div class="question-grid-2">
+                <script>
+                    document.write(qItem(111, "Number just before 10 is ____"));
+                    document.write(qItem(112, "Number just before 5 is ____"));
+                    document.write(qItem(113, "Number just before 20 is ____"));
+                    document.write(qItem(114, "Number just before 13 is ____"));
+                    document.write(qItem(115, "Number just before 17 is ____"));
+                    document.write(qItem(116, "Number just after 9 is ____"));
+                    document.write(qItem(117, "Number just after 11 is ____"));
+                    document.write(qItem(118, "Number just after 19 is ____"));
+                    document.write(qItem(119, "Number just after 14 is ____"));
+                    document.write(qItem(120, "Number just after 7 is ____"));
+                </script>
+            </div>
+
+            <!-- SKILL 13: GREATER / SMALLER THAN -->
+            <div class="mt-4"><h3 class="section-title">Skill 13: Name a number...</h3></div>
+            <div class="question-grid-2">
+                <script>
+                    document.write(qItem(121, "Name a number greater than 10: ____"));
+                    document.write(qItem(122, "Name a number greater than 15: ____"));
+                    document.write(qItem(123, "Name a number greater than 19: ____"));
+                    document.write(qItem(124, "Name a number greater than 8: ____"));
+                    document.write(qItem(125, "Name a number greater than 12: ____"));
+                    document.write(qItem(126, "Name a number smaller than 5: ____"));
+                    document.write(qItem(127, "Name a number smaller than 10: ____"));
+                    document.write(qItem(128, "Name a number smaller than 2: ____"));
+                    document.write(qItem(129, "Name a number smaller than 20: ____"));
+                    document.write(qItem(130, "Name a number smaller than 14: ____"));
+                </script>
+            </div>
+
+            <div class="mt-8 text-center bg-yellow-100 p-4 rounded-xl border border-yellow-200 w-3/4 mx-auto">
+                <p class="font-bold text-yellow-800 text-lg">Great Job! Worksheet Complete.</p>
+                <div class="text-4xl mt-2">🌟 🌟 🌟</div>
+                <div class="text-sm text-yellow-700 mt-2">You mastered numbers to 20!</div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>130 Questions: Numbers to 20</b> | Copyright Ⓒ 2025 - PT Ruang Raya Indonesia
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
