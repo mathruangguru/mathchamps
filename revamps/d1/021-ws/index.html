@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Mencari Jumlah Total (D1-S021)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .nb-circle,
+        .nb-line,
+        .circle-icon-filled,
+        .bar-model-rect {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 {
+            background-color: #f9fafb !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 40px;
+        height: 35px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 32px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.5cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* SVG Icons Styles */
+      .icon-filled {
+        fill: #333;
+      }
+      .icon-stroke {
+        stroke: #333;
+        fill: none;
+        stroke-width: 2;
+      }
+      
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-4) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Penjumlahan Lingkup Sepuluh
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Mencari Jumlah Total
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : D1-S021
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-4 mt-2">
+                <h1 class="text-xl font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: PENJUMLAHAN
+                </h1>
+            </div>
+
+       
+
+            <!-- INSTRUCTION -->
+            <div class="instruction-text mb-3">
+                Petunjuk: Hitunglah jumlah benda yang dimiliki oleh kedua karakter. Lihat gambar untuk membantumu.
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 (Bintang) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        1. <span class="text-blue-700">Bintang Siti dan Dayu.</span> Siti memiliki 2 bintang. Dayu memiliki 3 bintang.
+                    </div>
+                    
+                    <div class="flex justify-center items-center gap-6 mb-2"> 
+                        <!-- 2 Stars -->
+                        <div class="flex gap-1 border border-gray-300 p-2 rounded">
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" class="icon-filled"/></svg>
+                        </div>
+                        <div class="font-bold text-lg">+</div>
+                        <!-- 3 Stars -->
+                        <div class="flex gap-1 border border-gray-300 p-2 rounded">
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" class="icon-filled"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-center gap-2 mt-1">
+                        <span class="font-bold text-sm">2 + 3 = </span>
+                        <span class="input-box" style="width: 60px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 (Apel/Bola) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        2. <span class="text-blue-700">Apel Edo dan Beni.</span> Edo punya 4 apel. Beni punya 1 apel.
+                    </div>
+                    
+                    <div class="flex justify-center items-center gap-4 mb-2">
+                         <!-- 4 Balls -->
+                         <div class="flex gap-1 border border-gray-300 p-2 rounded">
+                            <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                         </div>
+                         <span class="font-bold text-lg">+</span>
+                         <!-- 1 Ball -->
+                         <div class="flex gap-1 border border-gray-300 p-2 rounded">
+                            <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                         </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-center gap-2 mt-1">
+                        <span class="font-bold text-sm">4 + 1 = </span>
+                        <span class="input-box" style="width: 60px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+                
+                <!-- SOAL 3 (Kotak) -->
+                <div class="soal-item">
+                     <div class="font-bold mb-2">
+                        3. <span class="text-blue-700">Mainan Udin dan Lani.</span> Udin membawa 3 kotak mainan. Lani membawa 3 kotak mainan.
+                    </div>
+                    
+                    <div class="flex justify-center items-center gap-4 mb-2">
+                        <!-- 3 Squares -->
+                        <div class="flex gap-1 border border-gray-300 p-2 rounded">
+                           <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                           <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                           <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                        </div>
+                        <span class="font-bold text-lg">+</span>
+                        <!-- 3 Squares -->
+                        <div class="flex gap-1 border border-gray-300 p-2 rounded">
+                           <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                           <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                           <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                        </div>
+                   </div>
+                   
+                   <div class="flex items-center justify-center gap-2 mt-1">
+                       <span class="font-bold text-sm">Jumlah semua:</span>
+                       <span class="input-box" style="width: 60px;"></span>
+                   </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 (Segitiga) -->
+                <div class="soal-item">
+                     <div class="font-bold mb-2">
+                        4. <span class="text-blue-700">Segitiga Mira dan Bayu.</span> Mira punya 5 segitiga. Bayu punya 0 segitiga.
+                    </div>
+                    
+                    <div class="flex justify-center items-center gap-4 mb-2">
+                        <!-- 5 Triangles -->
+                        <div class="flex gap-1 border border-gray-300 p-2 rounded">
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                        </div>
+                        <span class="font-bold text-lg">+</span>
+                        <!-- 0 Triangles -->
+                        <div class="flex gap-1 border border-gray-300 p-2 rounded w-12 justify-center items-center font-bold text-gray-400">
+                           0
+                        </div>
+                   </div>
+                   
+                   <div class="flex items-center justify-center gap-2 mt-1">
+                       <span class="font-bold text-sm">5 + 0 = </span>
+                       <span class="input-box" style="width: 60px;"></span>
+                   </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 5-7) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Penjumlahan Lingkup Sepuluh
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Mencari Jumlah Total
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : D1-S021
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 5 (Kelereng) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-3">
+                        5. <span class="text-blue-700">Kelereng Adi dan Budi.</span> Adi punya 6 kelereng. Budi punya 2 kelereng.
+                    </div>
+                    
+                    <div class="flex justify-center items-center gap-6 mb-4">
+                        <!-- 6 Balls -->
+                        <div class="flex gap-1 border border-gray-300 p-2 rounded">
+                            <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                        </div>
+                        <span class="font-bold text-lg">+</span>
+                        <!-- 2 Balls -->
+                        <div class="flex gap-1 border border-gray-300 p-2 rounded">
+                            <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="text-center font-bold">
+                        Berapa jumlah semuanya? <span class="input-box" style="margin-left: 10px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 (Buku - Pilihan Ganda) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-3">
+                        6. <span class="text-blue-700">Buku Rina dan Rani.</span> Rina punya 3 buku. Rani punya 4 buku.
+                    </div>
+
+                    <div class="flex justify-center items-center gap-6 mb-2"> 
+                        <div class="flex gap-1 bg-gray-100 p-2 rounded border border-gray-300">
+                            <!-- 3 Squares -->
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                        </div>
+                        <div class="font-bold text-lg">+</div>
+                        <div class="flex gap-1 bg-gray-100 p-2 rounded border border-gray-300">
+                            <!-- 4 Squares -->
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-center items-center gap-2 mt-2">
+                        <div class="choice-container" style="margin-top:0;">
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 6</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 7</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 8</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 (Balok - Pilihan Ganda) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-3">
+                        7. <span class="text-blue-700">Balok Ali dan Baba.</span> Ali menyusun 2 balok. Baba menyusun 5 balok.
+                    </div>
+
+                    <div class="flex justify-center items-center gap-6 mb-2"> 
+                         <div class="flex gap-1 bg-gray-100 p-2 rounded border border-gray-300">
+                            <!-- 2 Squares -->
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                         </div>
+                         <div class="font-bold text-lg">+</div>
+                         <div class="flex gap-1 bg-gray-100 p-2 rounded border border-gray-300">
+                            <!-- 5 Squares -->
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                            <svg width="24" height="24"><rect x="2" y="2" width="20" height="20" class="icon-filled"/></svg>
+                         </div>
+                    </div>
+                    
+                    <div class="flex justify-center items-center gap-2 mt-2 font-bold">
+                        Berapa jumlah balok semuanya?
+                    </div>
+                    <div class="flex justify-center items-center gap-2 mt-1">
+                        <div class="choice-container" style="margin-top:0;">
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 7</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 6</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 8</label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 8-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Penjumlahan Lingkup Sepuluh
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Mencari Jumlah Total
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : D1-S021
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+             <div class="soal-grid mb-6">
+                
+                <!-- SOAL 8 (Bunga) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-3">
+                        8. <span class="text-blue-700">Bunga Ayu dan Tini.</span> Ayu memetik 4 bunga. Tini memetik 4 bunga.
+                    </div>
+
+                    <div class="flex items-center justify-center my-4 gap-4">
+                         <!-- 4 Stars/Flowers -->
+                         <div class="flex gap-1">
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" class="icon-filled"/></svg>
+                         </div>
+                         <div class="font-bold text-xl">+</div>
+                         <!-- 4 Stars/Flowers -->
+                         <div class="flex gap-1">
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" class="icon-filled"/></svg>
+                         </div>
+                    </div>
+
+                    <div class="text-center mb-2 font-semibold">Berapa total bunga?</div>
+
+                    <div class="flex items-center justify-center gap-2">
+                        <div class="choice-container" style="margin-top:0;">
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 7</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 8</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 9</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 (Permen) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-3">
+                        9. <span class="text-blue-700">Permen Doni dan Diki.</span> Doni punya 1 permen. Diki punya 8 permen.
+                    </div>
+
+                    <div class="flex justify-center gap-4 mb-4 items-center">
+                         <!-- 1 dot -->
+                         <div class="flex flex-col items-center">
+                             <div class="border p-2 rounded bg-gray-50">
+                                 <svg width="24" height="24"><circle cx="12" cy="12" r="10" class="icon-filled"/></svg>
+                             </div>
+                             <span class="text-sm mt-1 font-bold">1</span>
+                         </div>
+                         <div class="font-bold text-xl">+</div>
+                         <!-- 8 dots -->
+                         <div class="flex flex-col items-center">
+                             <div class="border p-2 rounded bg-gray-50 flex gap-1 flex-wrap w-32 justify-center">
+                                 <svg width="20" height="20"><circle cx="10" cy="10" r="8" class="icon-filled"/></svg>
+                                 <svg width="20" height="20"><circle cx="10" cy="10" r="8" class="icon-filled"/></svg>
+                                 <svg width="20" height="20"><circle cx="10" cy="10" r="8" class="icon-filled"/></svg>
+                                 <svg width="20" height="20"><circle cx="10" cy="10" r="8" class="icon-filled"/></svg>
+                                 <svg width="20" height="20"><circle cx="10" cy="10" r="8" class="icon-filled"/></svg>
+                                 <svg width="20" height="20"><circle cx="10" cy="10" r="8" class="icon-filled"/></svg>
+                                 <svg width="20" height="20"><circle cx="10" cy="10" r="8" class="icon-filled"/></svg>
+                                 <svg width="20" height="20"><circle cx="10" cy="10" r="8" class="icon-filled"/></svg>
+                             </div>
+                             <span class="text-sm mt-1 font-bold">8</span>
+                         </div>
+                    </div>
+                    
+                    <div class="flex justify-center items-center gap-2 mt-2 font-bold text-xl">
+                        1 + 8 = ?
+                    </div>
+                    
+                    <div class="flex items-center justify-center gap-2 mt-2">
+                        <div class="choice-container" style="margin-top:0;">
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 8</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 9</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 10</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 (Ikan - Segitiga) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        10. <span class="text-blue-700">Ikan di Kolam.</span> Kolam A ada 5 ikan. Kolam B ada 5 ikan. (Ikan digambar segitiga).
+                    </div>
+
+                    <div class="flex justify-center items-center gap-6 mb-4"> 
+                        <div class="flex gap-1">
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                        </div>
+                        <div class="font-bold">+</div>
+                        <div class="flex gap-1">
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 2,22 22,22" class="icon-filled"/></svg>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="choice-container" style="margin-top:0;">
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 8</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 9</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 10</label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- MOTIVATION -->
+            <div class="mt-8 mb-4 p-4 bg-gray-100 rounded-lg border-l-4 border-black text-center">
+                <p class="font-bold text-lg text-gray-800">"Semangat Belajar, Kamu Pasti Bisa!"</p>
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
