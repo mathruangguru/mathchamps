@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Menulis Bilangan (M1-S004)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .icon-filled,
+        .icon-stroke,
+        .input-box,
+        .disc-fill,
+        .disc-stroke,
+        table {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border-bottom: 1.5px solid #333;
+        min-width: 45px;
+        height: 25px;
+        display: inline-block;
+        color: #333;
+        vertical-align: bottom;
+        background: transparent;
+        padding: 0 5px;
+      }
+      
+      .input-box-bordered {
+        border: 1.5px solid #333;
+        height: 35px;
+        border-radius: 4px;
+        vertical-align: middle;
+      }
+
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        padding-left: 1rem;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 3px;
+        background-color: white;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.5cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* Visual Math Singapore Specifics */
+      .disc-fill {
+        fill: #eff6ff; /* blue-50 */
+        stroke: #1e3a8a; /* blue-900 */
+        stroke-width: 1.5;
+      }
+
+      .disc-fill-secondary {
+        fill: #fdf2f8; /* pink-50 */
+        stroke: #831843; /* pink-900 */
+        stroke-width: 1.5;
+      }
+
+      .disc-fill-tertiary {
+        fill: #f0fdf4; /* green-50 */
+        stroke: #14532d; /* green-900 */
+        stroke-width: 1.5;
+      }
+      
+      .disc-text {
+        font-family: 'Noto Sans', sans-serif;
+        font-weight: 700;
+        font-size: 9px;
+        fill: #333;
+        text-anchor: middle;
+        dominant-baseline: central;
+      }
+
+      /* Tables */
+      .pv-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-family: 'Noto Sans', sans-serif;
+      }
+      .pv-table th {
+        background-color: #f3f4f6;
+        border: 1px solid #333;
+        padding: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .pv-table td {
+        border: 1px solid #333;
+        padding: 10px;
+        text-align: center;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-3) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Menuliskan Bilangan dalam Kata
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S004
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-4 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: NAMA BILANGAN
+                </h1>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text">
+                Bagian A: Pilihlah jawaban yang paling tepat.
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. <span class="text-blue-700">Tabel Nilai Tempat.</span> Perhatikan tabel berikut:
+                    </div>
+                    
+                    <table class="pv-table">
+                        <thead>
+                            <tr>
+                                <th>Ratusan Ribu</th>
+                                <th>Puluhan Ribu</th>
+                                <th>Ribuan</th>
+                                <th>Ratusan</th>
+                                <th>Puluhan</th>
+                                <th>Satuan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2</td>
+                                <td>4</td>
+                                <td>5</td>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="mb-1 text-sm font-semibold">Bagaimana cara menuliskan bilangan di atas dalam kata-kata?</div>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. Dua ratus empat puluh lima</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. Dua ratus empat puluh lima ribu</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. Dua puluh empat ribu lima ratus</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. Dua juta empat ratus lima puluh ribu</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. <span class="text-blue-700">Membaca Bilangan.</span> Bilangan <b>715.000</b> dibaca sebagai...
+                    </div>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. Tujuh ratus lima belas</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. Tujuh ratus lima puluh ribu</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. Tujuh ratus lima belas ribu</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. Tujuh ratus lima puluh satu ribu</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                         3. <span class="text-blue-700">Identifikasi Angka.</span> Bilangan manakah yang mewakili <b>"Delapan ratus ribu empat ratus"</b>?
+                    </div>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 800.400</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 804.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 840.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 800.040</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 4-5) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Menuliskan Bilangan dalam Kata
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S004
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <div class="instruction-text mt-4">
+                Bagian A (Lanjutan): Pilihlah jawaban yang paling tepat.
+            </div>
+
+            <div class="soal-grid mb-4">
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1">
+                        4. <span class="text-blue-700">Nama Bilangan.</span> Perhatikan bilangan: <b>360.205</b>. Nama bilangan yang tepat adalah...
+                    </div>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-1"></span> <span>a. Tiga ratus enam puluh ribu dua ratus lima</span></label>
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-1"></span> <span>b. Tiga ratus enam ribu dua ratus lima puluh</span></label>
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-1"></span> <span>c. Tiga ratus enam puluh ribu dua ratus lima puluh</span></label>
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-1"></span> <span>d. Tiga enam nol dua nol lima</span></label>
+                    </div>
+                </div>
+                
+                 <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        5. <span class="text-blue-700">Komposisi Bilangan.</span> Bilangan yang terbentuk dari <b>5 ratusan ribu + 9 ribuan + 2 ratusan</b> adalah...
+                    </div>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. Lima ratus sembilan ribu dua ratus (509.200)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. Lima ratus sembilan puluh ribu dua ratus (590.200)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. Lima ratus sembilan puluh dua ribu (592.000)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. Lima ratus ribu sembilan ratus dua (500.902)</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 6-8) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Menuliskan Bilangan dalam Kata
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S004
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <!-- INSTRUCTION B -->
+            <div class="instruction-text mt-4">
+                Bagian B: Tuliskan jawabanmu dengan jelas pada tempat yang disediakan.
+            </div>
+
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. <span class="text-blue-700">Kepingan Bilangan.</span> Lihatlah komposisi kepingan bilangan berikut. Tuliskan nama bilangannya.
+                    </div>
+
+                    <div class="flex flex-col items-start gap-3 mb-2 ml-4">
+                        <!-- Group 100.000 -->
+                        <div class="flex items-center gap-3">
+                            <div class="flex gap-1">
+                                <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" class="disc-fill" /><text x="20" y="20" class="disc-text">100.000</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" class="disc-fill" /><text x="20" y="20" class="disc-text">100.000</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" class="disc-fill" /><text x="20" y="20" class="disc-text">100.000</text></svg>
+                            </div>
+                            <span class="text-sm font-semibold text-gray-500">= 300.000</span>
+                        </div>
+
+                         <!-- Group 10.000 -->
+                        <div class="flex items-center gap-3">
+                             <div class="flex gap-1">
+                                <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" class="disc-fill-secondary" /><text x="20" y="20" class="disc-text">10.000</text></svg>
+                            </div>
+                            <span class="text-sm font-semibold text-gray-500">= 10.000</span>
+                        </div>
+
+                         <!-- Group 1.000 -->
+                         <div class="flex items-center gap-3">
+                            <div class="flex gap-1 flex-wrap max-w-[280px]">
+                                <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" class="disc-fill-tertiary" /><text x="20" y="20" class="disc-text">1.000</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" class="disc-fill-tertiary" /><text x="20" y="20" class="disc-text">1.000</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" class="disc-fill-tertiary" /><text x="20" y="20" class="disc-text">1.000</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" class="disc-fill-tertiary" /><text x="20" y="20" class="disc-text">1.000</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" class="disc-fill-tertiary" /><text x="20" y="20" class="disc-text">1.000</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" class="disc-fill-tertiary" /><text x="20" y="20" class="disc-text">1.000</text></svg>
+                           </div>
+                           <span class="text-sm font-semibold text-gray-500">= 6.000</span>
+                       </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <span class="font-bold mr-2">Jawab:</span> <span class="input-box" style="width: 80%;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. <span class="text-blue-700">Tulis Nama Bilangan.</span> Tuliskan nama bilangan untuk <b>950.050</b>.
+                    </div>
+
+                    <div class="mt-2">
+                         <span class="font-bold mr-2">Jawab:</span> <span class="input-box" style="width: 80%;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. <span class="text-blue-700">Lambang Bilangan.</span> Tulislah lambang bilangan dari:
+                        <br><i>"Empat ratus dua puluh satu ribu tiga ratus enam puluh enam"</i>
+                    </div>
+
+                    <div class="mt-2">
+                         <span class="font-bold mr-2">Jawab:</span> <span class="input-box input-box-bordered w-48"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 4 (Soal 9-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Menuliskan Bilangan dalam Kata
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S004
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <div class="instruction-text mt-4">
+                Bagian B (Lanjutan): Tuliskan jawabanmu dengan jelas pada tempat yang disediakan.
+            </div>
+
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. <span class="text-blue-700">Nilai Tempat.</span> Lengkapi kalimat berikut:
+                    </div>
+                    <div class="p-3 bg-gray-50 border border-gray-200 rounded">
+                        "Pada bilangan <b>125.600</b>, angka 1 menempati nilai tempat <span class="input-box" style="width: 150px;"></span> yang bernilai Seratus ribu."
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. <span class="text-blue-700">Koreksi Logika.</span> Seorang siswa menulis bilangan <b>602.015</b> dengan kata-kata:
+                        <br><i class="text-red-600 font-bold">"Enam ratus dua puluh ribu lima belas"</i>
+                    </div>
+                    <div class="mb-2">
+                        Apakah penulisan siswa tersebut benar? Jika salah, tuliskan pembenaran yang tepat.
+                    </div>
+
+                    <div class="mt-2">
+                         <span class="font-bold mr-2">Jawab:</span> <span class="input-box" style="width: 80%;"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
