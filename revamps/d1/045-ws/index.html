@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Discovery 1: Find Number in List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --page-bg: #e0e0e0;
+      }
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 11pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: var(--page-bg);
+        margin: 0; padding: 0;
+      }
+      h1, h2, h3, .header-text, .font-montserrat { font-family: "Montserrat", sans-serif; }
+      
+      .page-container {
+        padding-top: 2rem; padding-bottom: 2rem;
+        display: flex; flex-direction: column; align-items: center; gap: 2rem;
+      }
+      
+      .page {
+        background: white; width: 21cm; height: 29.7cm;
+        padding: 1.5cm 2cm 1.2cm 2cm; 
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        position: relative; display: flex; flex-direction: column; overflow: hidden;
+      }
+      
+      /* --- HEADER STYLE --- */
+      .page-header {
+        width: 100%; margin-bottom: 10px; flex-shrink: 0;
+      }
+
+      .math-champs-header {
+        padding: 0.2rem 0 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #333; 
+        padding-bottom: 8px;
+      }
+
+      .header-logo { height: 45px; object-fit: contain; }
+      
+      .header-right { text-align: right; }
+      .header-level { font-size: 14px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 0.5px; }
+      .header-topic { font-size: 10px; font-weight: 600; color: #000; margin-top: 2px; }
+      .header-skill { font-size: 10px; font-weight: 500; color: #000; }
+      .header-code { font-size: 10px; font-weight: 500; color: #000; margin-top: 2px; }
+      
+      .content-wrapper { position: relative; z-index: 1; width: 100%; flex-grow: 1; display: flex; flex-direction: column; }
+      
+      .page-footer {
+        text-align: left; font-size: 6pt; color: var(--grey-text);
+        padding-top: 4px; margin-top: auto; border-top: 2.5px solid var(--grey-text);
+        width: 100%; flex-shrink: 0; display: flex; justify-content: flex-start; gap: 5px; align-items: center; flex-wrap: wrap;
+      }
+      
+      .soal-list { display: flex; flex-direction: column; gap: 0.8rem; }
+      
+      .soal-item {
+        break-inside: avoid; position: relative; padding: 0.6rem 0.8rem;
+        background-color: #f9fafb; border-radius: 10px; border: 1px solid #e5e7eb;
+      }
+      
+      /* Visual Containers */
+      .visual-container {
+        display: flex; align-items: center; justify-content: center; 
+        margin: 10px 0; padding: 5px;
+        background: white; border: 1px dashed #ccc; border-radius: 8px;
+        position: relative;
+      }
+
+      .choice-container {
+        display: flex; gap: 15px; margin-top: 8px; font-size: 10pt; color: #4b5563; align-items: center; justify-content: flex-start; flex-wrap: wrap;
+      }
+      .choice-item {
+        display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px;
+        background: white; border: 1px solid #d1d5db; border-radius: 20px; transition: all 0.2s;
+      }
+      .choice-item:hover { border-color: #2563eb; background-color: #eff6ff; }
+      .choice-circle { width: 14px; height: 14px; border: 2px solid #9ca3af; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+      
+      .info-box {
+        background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 8px;
+        margin-bottom: 12px; border-radius: 4px; font-size: 10pt;
+      }
+
+      /* Keywords highlight */
+      .kw-pos { color: #2563eb; font-weight: 800; }  /* Blue for Position (1st, 2nd) */
+      .kw-val { color: #dc2626; font-weight: 800; }  /* Red for Value (5, 10, 20) */
+      
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; -webkit-print-color-adjust: exact; }
+        .page-container { padding: 0; display: block; }
+        .page { width: 21cm; height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; border: none; padding: 1.5cm 2cm; }
+        .page:last-child { page-break-after: avoid; }
+        .soal-item, .choice-item, .info-box, .visual-container { border-style: solid !important; border-color: #ccc !important; -webkit-print-color-adjust: exact; }
+        .math-champs-header { border-bottom: 2px solid #333 !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= PAGE 1: Horizontal List (Cards) ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://mathruangguru.github.io/mathchamps/revamps/logoMC-2026.png" alt="Math Champs" class="header-logo">
+                <div class="header-right font-montserrat">
+                    <div class="header-level">Discovery 1</div>
+                    <div class="header-topic">Urutan Bilangan</div>
+                    <div class="header-skill">Menemukan Bilangan dalam Daftar</div>
+                    <div class="header-code">Kode : D1-S045</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-4">
+                <h1 class="text-2xl font-bold uppercase tracking-wide text-gray-800 font-montserrat">
+                    Deretan Kartu Angka
+                </h1>
+                <p class="text-sm text-gray-500 mt-1">Perhatikan angkanya, ingat urutannya.</p>
+            </div>
+
+            <div class="info-box">
+                <p class="mb-1"><b>Cara Membaca:</b> Urutkan dari <b class="text-blue-600">KIRI (1st)</b> ke KANAN.</p>
+                <div class="text-xs text-gray-600 mt-1 italic">Jangan tertukar antara Angka (Merah) dan Posisi (Biru).</div>
+            </div>
+
+            <!-- Visual: Horizontal Cards -->
+            <div class="visual-container mb-6 overflow-hidden py-6">
+                <div id="canvas-cards" class="w-full flex justify-center"></div>
+            </div>
+
+            <div class="soal-list">
+                <!-- Soal 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">1.</div>
+                    <div class="text-sm mb-2">Bilangan manakah yang berada di urutan <span class="kw-pos">ke-1 (Pertama)</span>?</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">5</span></div>
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">12</span></div>
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">8</span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">2.</div>
+                    <div class="text-sm mb-2">Bilangan <span class="kw-val">20</span> berada di urutan ke...</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-3 (3rd)</div>
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-4 (4th)</div>
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-5 (5th)</div>
+                    </div>
+                </div>
+
+                <!-- Soal 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">3.</div>
+                    <div class="text-sm mb-2">Bilangan manakah yang berada di urutan <span class="kw-pos">ke-3 (Ketiga)</span>?</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">8</span></div>
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">12</span></div>
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">3</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 2: Vertical List (Books/Stack) ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://mathruangguru.github.io/mathchamps/revamps/logoMC-2026.png" alt="Math Champs" class="header-logo">
+                <div class="header-right font-montserrat">
+                    <div class="header-level">Discovery 1</div>
+                    <div class="header-topic">Urutan Bilangan</div>
+                    <div class="header-skill">Menemukan Bilangan dalam Daftar</div>
+                    <div class="header-code">Kode : D1-S045</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-4">
+                <h1 class="text-xl font-bold uppercase tracking-wide text-gray-800 font-montserrat">
+                    Tumpukan Buku
+                </h1>
+                <p class="text-xs text-gray-500 mt-1">Siapa yang paling atas?</p>
+            </div>
+
+            <div class="info-box text-center">
+                Urutan dimulai dari <b class="text-blue-600">ATAS (1st)</b> ke BAWAH.
+            </div>
+
+            <!-- Visual: Stack of Books -->
+            <div class="visual-container mb-4 overflow-hidden py-2 border-none bg-transparent">
+                 <div id="canvas-books" class="w-full flex justify-center"></div>
+            </div>
+
+            <div class="soal-list">
+                <!-- Soal 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">4.</div>
+                    <div class="text-sm mb-1">Buku bernomor berapakah yang ada di urutan <span class="kw-pos">ke-1 (Paling Atas)</span>?</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">100</span></div>
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">90</span></div>
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">60</span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">5.</div>
+                    <div class="text-sm mb-1">Angka <span class="kw-val">70</span> berada di urutan ke...</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-3 (3rd)</div>
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-4 (4th)</div>
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-5 (5th)</div>
+                    </div>
+                </div>
+
+                <!-- Soal 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">6.</div>
+                    <div class="text-sm mb-1">Buku mana yang berada di urutan <span class="kw-pos">ke-5 (Paling Bawah)</span>?</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">60</span></div>
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">80</span></div>
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">100</span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">7.</div>
+                    <div class="text-sm mb-1">Angka <span class="kw-val">90</span> berada di urutan ke...</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-1</div>
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-2</div>
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-3</div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 3: Logic Challenge ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://mathruangguru.github.io/mathchamps/revamps/logoMC-2026.png" alt="Math Champs" class="header-logo">
+                <div class="header-right font-montserrat">
+                    <div class="header-level">Discovery 1</div>
+                    <div class="header-topic">Urutan Bilangan</div>
+                    <div class="header-skill">Menemukan Bilangan dalam Daftar</div>
+                    <div class="header-code">Kode : D1-S045</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-4">
+                <h1 class="text-xl font-bold uppercase tracking-wide text-gray-800 font-montserrat">
+                    Gerbong Kereta
+                </h1>
+                <p class="text-xs text-gray-500 mt-1">Perhatikan nomor di setiap gerbong.</p>
+            </div>
+
+            <!-- Visual: Train (Updated) -->
+            <div class="visual-container mb-4 overflow-hidden py-4 border-none bg-transparent">
+                <div id="canvas-train" class="w-full flex justify-center"></div>
+            </div>
+
+            <div class="soal-list">
+                <!-- Soal 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">8.</div>
+                    <div class="text-sm mb-1">Gerbong urutan <span class="kw-pos">ke-2 (Kedua)</span> bernomor...</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">20</span></div>
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">40</span></div>
+                        <div class="choice-item"><span class="choice-circle"></span> <span class="kw-val">60</span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">9.</div>
+                    <div class="text-sm mb-1">Nomor <span class="kw-val">80</span> ada di gerbong urutan ke...</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-3</div>
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-4</div>
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-5</div>
+                    </div>
+                </div>
+
+                <!-- Soal 10 (Logic Challenge) -->
+                <div class="soal-item bg-yellow-50 border-yellow-200">
+                    <div class="font-bold mb-1">10. TANTANGAN</div>
+                    <div class="text-sm mb-1">
+                        Jika ada gerbong baru bernomor <span class="kw-val">100</span> dipasang <b>setelah</b> gerbong terakhir (<span class="kw-val">80</span>),<br>
+                        maka nomor <span class="kw-val">100</span> akan menjadi gerbong urutan ke...
+                    </div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-4</div>
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-5</div>
+                        <div class="choice-item"><span class="choice-circle"></span> Ke-6</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center text-gray-500 text-xs italic">
+                Hebat! Kamu bisa membedakan angka dan urutannya.
+            </div>
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+
+    <!-- MAIN SCRIPT TO RENDER SVGS -->
+    <script>
+      // Function for Page 1: Cards (Horizontal)
+      function drawCards() {
+        const numbers = [
+            { val: "5", color: "#fca5a5" },
+            { val: "12", color: "#fcd34d" },
+            { val: "8", color: "#86efac" },
+            { val: "20", color: "#93c5fd" },
+            { val: "3", color: "#d8b4fe" }
+        ];
+
+        let svg = `<svg width="500" height="150" viewBox="0 0 500 150">`;
+        
+        // Start Arrow
+        svg += `<text x="40" y="80" font-family="Montserrat" font-size="12" fill="#333" font-weight="bold">START</text>`;
+        svg += `<line x1="85" y1="75" x2="480" y2="75" stroke="#ccc" stroke-width="2" stroke-dasharray="5,5" />`;
+        svg += `<path d="M480,75 L470,70 L470,80 Z" fill="#ccc" />`;
+
+        numbers.forEach((n, index) => {
+            let x = 110 + (index * 75);
+            let y = 50; 
+            
+            // Card Shape
+            svg += `<rect x="${x}" y="${y}" width="50" height="60" rx="5" fill="${n.color}" stroke="#333" stroke-width="2" />`;
+            // Number Value
+            svg += `<text x="${x+25}" y="${y+38}" font-family="Montserrat" font-size="24" fill="#dc2626" text-anchor="middle" font-weight="bold">${n.val}</text>`;
+            // Order Label below
+            svg += `<text x="${x+25}" y="${y+80}" font-family="Noto Sans" font-size="10" fill="#2563eb" text-anchor="middle" font-weight="bold">${index+1}${['st','nd','rd','th','th'][index]}</text>`;
+        });
+        svg += `</svg>`;
+        document.getElementById('canvas-cards').innerHTML = svg;
+      }
+
+      // Function for Page 2: Stack of Books (Vertical)
+      function drawBooks() {
+        const books = [
+            { val: "100", color: "#ef4444" }, // Top
+            { val: "90", color: "#f97316" },
+            { val: "80", color: "#eab308" },
+            { val: "70", color: "#22c55e" },
+            { val: "60", color: "#3b82f6" }  // Bottom
+        ];
+
+        let svg = `<svg width="500" height="230" viewBox="0 0 500 230">`;
+        
+        // Label Side
+        svg += `<text x="70" y="20" font-family="Montserrat" font-size="12" fill="#333" font-weight="bold">ATAS (1st)</text>`;
+        svg += `<line x1="100" y1="30" x2="100" y2="190" stroke="#ccc" stroke-width="2" stroke-dasharray="5,5" />`;
+        svg += `<path d="M100,190 L95,180 L105,180 Z" fill="#ccc" />`;
+        svg += `<text x="70" y="205" font-family="Montserrat" font-size="10" fill="#666" font-weight="bold">BAWAH (Last)</text>`;
+
+        books.forEach((b, index) => {
+            let x = 180;
+            let y = 30 + (index * 32); 
+            
+            // Realistic Book Spine
+            svg += `<rect x="${x}" y="${y}" width="180" height="32" rx="3" fill="${b.color}" stroke="#333" stroke-width="1.5" />`;
+            svg += `<line x1="${x+6}" y1="${y}" x2="${x+6}" y2="${y+32}" stroke="rgba(0,0,0,0.2)" stroke-width="2"/>`;
+            svg += `<line x1="${x+174}" y1="${y}" x2="${x+174}" y2="${y+32}" stroke="rgba(0,0,0,0.2)" stroke-width="2"/>`;
+            svg += `<rect x="${x+60}" y="${y+6}" width="60" height="20" rx="2" fill="white" stroke="#333" stroke-width="0.5" />`;
+            svg += `<text x="${x+90}" y="${y+21}" font-family="Montserrat" font-size="14" fill="#333" text-anchor="middle" font-weight="bold">${b.val}</text>`;
+            svg += `<text x="${x+195}" y="${y+20}" font-family="Noto Sans" font-size="11" fill="#2563eb" text-anchor="start" font-weight="bold">${index+1}${['st','nd','rd','th','th'][index]}</text>`;
+        });
+        svg += `</svg>`;
+        document.getElementById('canvas-books').innerHTML = svg;
+      }
+
+      // Function for Page 3: "Maximal" Train
+      function drawTrain() {
+        const wagons = [
+            { val: "20" },
+            { val: "40" },
+            { val: "60" },
+            { val: "80" }
+        ];
+
+        // Canvas height increased to 180 for "Maximal" details
+        let svg = `<svg width="500" height="180" viewBox="0 0 500 180">`;
+        
+        // -- Tracks --
+        // Two Rails
+        svg += `<line x1="10" y1="135" x2="490" y2="135" stroke="#555" stroke-width="2" />`;
+        svg += `<line x1="10" y1="145" x2="490" y2="145" stroke="#555" stroke-width="2" />`;
+        // Sleepers (Bantalan Kayu) - loop every 15px
+        for(let i=20; i<480; i+=20) {
+             svg += `<rect x="${i}" y="132" width="10" height="16" fill="#8b4513" opacity="0.8" />`;
+        }
+
+        // -- Locomotive (Head) --
+        // Cowcatcher (Front)
+        svg += `<path d="M40,135 L60,135 L60,110 Z" fill="#333" stroke="#000" />`;
+        // Main Body (Slightly lighter dark gray)
+        svg += `<rect x="60" y="80" width="70" height="55" rx="2" fill="#333" stroke="#000" stroke-width="2"/>`;
+        // Rivets (Bolts) detailing
+        svg += `<circle cx="65" cy="85" r="1.5" fill="#777" />`;
+        svg += `<circle cx="125" cy="85" r="1.5" fill="#777" />`;
+        svg += `<circle cx="65" cy="130" r="1.5" fill="#777" />`;
+        svg += `<circle cx="125" cy="130" r="1.5" fill="#777" />`;
+
+        // Cabin
+        svg += `<rect x="95" y="60" width="45" height="40" rx="2" fill="#c0392b" stroke="#000" stroke-width="2"/>`;
+        svg += `<rect x="105" y="65" width="25" height="20" fill="#a5f3fc" stroke="#333" />`; // Window Lighter Blue
+        // Roof
+        svg += `<path d="M90,60 L145,60 L145,55 L95,55 Z" fill="#111" />`;
+        // Chimney
+        svg += `<rect x="70" y="60" width="15" height="20" fill="#444" stroke="#000"/>`;
+        svg += `<ellipse cx="77.5" cy="60" rx="10" ry="3" fill="#222"/>`; // Chimney Rim
+
+        // Wheels Loco
+        svg += `<circle cx="80" cy="135" r="14" fill="#333" stroke="#aaa" stroke-width="2"/>`;
+        svg += `<circle cx="80" cy="135" r="4" fill="#aaa"/>`;
+        svg += `<circle cx="115" cy="135" r="14" fill="#333" stroke="#aaa" stroke-width="2"/>`;
+        svg += `<circle cx="115" cy="135" r="4" fill="#aaa"/>`;
+        // Connecting Rod
+        svg += `<line x1="80" y1="140" x2="115" y2="140" stroke="#ccc" stroke-width="4" stroke-linecap="round" />`;
+
+        // Smoke
+        svg += `<circle cx="70" cy="45" r="8" fill="#ddd" opacity="0.6"/>`;
+        svg += `<circle cx="60" cy="30" r="12" fill="#ddd" opacity="0.5"/>`;
+        svg += `<circle cx="85" cy="25" r="10" fill="#ddd" opacity="0.4"/>`;
+        
+        // Nameplate for "EXPRESS"
+        svg += `<rect x="62" y="95" width="66" height="16" rx="3" fill="#dc2626" stroke="#000" stroke-width="1"/>`;
+        // Label EXPRESS (Yellow, Centered on Nameplate)
+        svg += `<text x="95" y="107" font-family="Montserrat" font-size="10" fill="#facc15" font-weight="900" text-anchor="middle">EXPRESS</text>`;
+
+        // -- Wagons --
+        wagons.forEach((w, index) => {
+            let x = 150 + (index * 85);
+            let y = 85; 
+            
+            // Linker
+            svg += `<rect x="${x-10}" y="${y+35}" width="10" height="6" fill="#111" />`;
+
+            // Wagon Box
+            svg += `<rect x="${x}" y="${y}" width="75" height="50" rx="2" fill="#ef4444" stroke="#333" stroke-width="2" />`;
+            // Wagon Detail: Top bar
+            svg += `<rect x="${x}" y="${y}" width="75" height="5" fill="#c0392b" />`;
+            // Wagon Detail: Vertical ribs
+            svg += `<line x1="${x+20}" y1="${y+5}" x2="${x+20}" y2="${y+50}" stroke="rgba(0,0,0,0.1)" stroke-width="2"/>`;
+            svg += `<line x1="${x+55}" y1="${y+5}" x2="${x+55}" y2="${y+50}" stroke="rgba(0,0,0,0.1)" stroke-width="2"/>`;
+
+            // Number Plate (White box)
+            svg += `<rect x="${x+17}" y="${y+15}" width="40" height="20" rx="3" fill="white" stroke="#333" stroke-width="1"/>`;
+            // Number Value
+            svg += `<text x="${x+37}" y="${y+30}" font-family="Montserrat" font-size="16" fill="#dc2626" text-anchor="middle" font-weight="bold">${w.val}</text>`;
+
+            // Wheels Wagon
+            svg += `<circle cx="${x+15}" cy="${y+50}" r="9" fill="#333" stroke="#555" stroke-width="2"/>`;
+            svg += `<circle cx="${x+60}" cy="${y+50}" r="9" fill="#333" stroke="#555" stroke-width="2"/>`;
+            
+            // Order Label (Below Tracks)
+            // Background pill for label (White bg for cleanliness)
+            svg += `<rect x="${x+18}" y="${y+75}" width="40" height="16" rx="8" fill="white" stroke="#2563eb" stroke-width="1"/>`;
+            svg += `<text x="${x+38}" y="${y+86}" font-family="Noto Sans" font-size="10" fill="#2563eb" text-anchor="middle" font-weight="bold">${index+1}${['st','nd','rd','th'][index]}</text>`;
+        });
+
+        svg += `</svg>`;
+        document.getElementById('canvas-train').innerHTML = svg;
+      }
+
+      window.onload = function() {
+        drawCards();
+        drawBooks();
+        drawTrain();
+      };
+    </script>
+  </body>
+</html>
