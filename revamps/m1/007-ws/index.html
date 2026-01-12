@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Menulis Bilangan (M1-S007)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --header-blue: #e6f0ff;
+        --place-value-bg: #f0f0f0;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .visual-table,
+        .visual-table th,
+        .visual-table td {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem; /* Diperkecil dari 0.8rem */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 100px;
+        height: 35px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 32px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+
+      .input-line {
+        border-bottom: 1.5px solid #333;
+        display: inline-block;
+        min-width: 200px;
+      }
+      
+      .choice-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* 2 Columns like multicols{2} */
+        gap: 0.5rem 1.5rem;
+        margin-top: 4px;
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+
+      .choice-container.single-col {
+        grid-template-columns: 1fr;
+      }
+
+      .choice-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        cursor: pointer;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        flex-shrink: 0;
+        margin-top: 2px;
+        border-radius: 3px;
+        background: white;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.1cm 0; /* Diperkecil dari 0.2cm */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.25rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- TABEL VISUAL (Singapore Math Style) --- */
+      .visual-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 0.85rem;
+        text-align: center;
+        border: 1px solid #000;
+      }
+      .visual-table th {
+        background-color: var(--place-value-bg);
+        border: 1px solid #000;
+        padding: 8px 4px;
+        font-weight: 700;
+      }
+      .visual-table td {
+        border: 1px solid #000;
+        padding: 8px 4px;
+        font-weight: 600;
+      }
+      .visual-guide-box {
+        border: 1px solid #000;
+        background-color: var(--header-blue);
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+      }
+
+      /* --- MATCHING QUESTION --- */
+      .matching-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        background-color: black;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO (Placeholder) -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Menuliskan Bilangan dibawah 10.000.000 dalam kata
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S007
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-2 mt-0">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: BILANGAN CACAH
+                </h1>
+            </div>
+
+
+
+            <!-- VISUAL GUIDE -->
+            <div class="visual-guide-box">
+                <h3 class="font-bold text-sm mb-2">Panduan Visual: Nilai Tempat</h3>
+                <p class="text-xs mb-2">Untuk membaca bilangan besar, kita membaginya menjadi kelompok "Jutaan" dan "Ribuan".</p>
+                
+                <table class="visual-table bg-white">
+                    <tr>
+                        <th width="14%">Jutaan</th>
+                        <th width="14%">Ratus Ribuan</th>
+                        <th width="14%">Puluh Ribuan</th>
+                        <th width="14%">Ribuan</th>
+                        <th width="14%">Ratusan</th>
+                        <th width="14%">Puluhan</th>
+                        <th width="14%">Satuan</th>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>0</td>
+                        <td>7</td>
+                        <td>1</td>
+                        <td>9</td>
+                    </tr>
+                </table>
+                <p class="text-xs mt-2 font-semibold">
+                    Bilangan di atas dibaca: <i>Dua juta empat ratus lima puluh ribu tujuh ratus sembilan belas</i>.
+                </p>
+            </div>
+
+            <div class="instruction-text mb-3 py-1.5 text-sm">
+                Bagian A: Pilihan Ganda. Pilih jawaban yang benar.
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">
+                        1. Bagaimana cara menulis bilangan <span class="text-blue-700">3.500.000</span> dalam kata-kata?
+                    </div>
+                    <div class="choice-container">
+                        <label class="choice-item"><span class="choice-box"></span> a. Tiga juta lima ribu</label>
+                        <label class="choice-item"><span class="choice-box"></span> b. Tiga juta lima ratus ribu</label>
+                        <label class="choice-item"><span class="choice-box"></span> c. Tiga puluh lima juta</label>
+                        <label class="choice-item"><span class="choice-box"></span> d. Tiga ratus lima ribu</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">
+                        2. Angka <span class="text-blue-700">7.025.000</span> dibaca sebagai...
+                    </div>
+                    <div class="choice-container">
+                        <label class="choice-item"><span class="choice-box"></span> a. Tujuh juta dua puluh lima ribu</label>
+                        <label class="choice-item"><span class="choice-box"></span> b. Tujuh juta dua ratus lima puluh ribu</label>
+                        <label class="choice-item"><span class="choice-box"></span> c. Tujuh juta dua puluh lima</label>
+                        <label class="choice-item"><span class="choice-box"></span> d. Tujuh ratus dua puluh lima ribu</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1 text-sm">
+                        3. Manakah penulisan yang benar untuk <span class="text-blue-700">1.110.100</span>?
+                    </div>
+                    <div class="choice-container single-col">
+                        <label class="choice-item"><span class="choice-box"></span> a. Satu juta seratus sepuluh ribu seratus</label>
+                        <label class="choice-item"><span class="choice-box"></span> b. Satu juta seratus satu ribu seratus</label>
+                        <label class="choice-item"><span class="choice-box"></span> c. Satu juta seribu seratus</label>
+                        <label class="choice-item"><span class="choice-box"></span> d. Satu juta seratus ribu seratus</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1 text-sm">
+                        4. Bilangan "<b>Empat juta delapan ribu</b>" ditulis dalam angka adalah...
+                    </div>
+                    <div class="choice-container">
+                        <label class="choice-item"><span class="choice-box"></span> a. 4.800.000</label>
+                        <label class="choice-item"><span class="choice-box"></span> b. 4.080.000</label>
+                        <label class="choice-item"><span class="choice-box"></span> c. 4.008.000</label>
+                        <label class="choice-item"><span class="choice-box"></span> d. 4.000.800</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1 text-sm">
+                        5. Bilangan "<b>Enam juta dua ratus lima puluh ribu tiga ratus</b>" ditulis dalam angka adalah...
+                    </div>
+                    <div class="choice-container">
+                        <label class="choice-item"><span class="choice-box"></span> a. 6.250.300</label>
+                        <label class="choice-item"><span class="choice-box"></span> b. 6.205.300</label>
+                        <label class="choice-item"><span class="choice-box"></span> c. 6.025.300</label>
+                        <label class="choice-item"><span class="choice-box"></span> d. 6.250.003</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Menuliskan Bilangan dibawah 10.000.000 dalam kata
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S007
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">
+                        6. Perhatikan tabel nilai tempat berikut:
+                    </div>
+
+                    <div class="w-3/4 mx-auto mb-3">
+                        <table class="visual-table">
+                            <tr>
+                                <th class="text-[10px]">Jutaan</th>
+                                <th class="text-[10px]">Rat. Ribuan</th>
+                                <th class="text-[10px]">Pul. Ribuan</th>
+                                <th class="text-[10px]">Ribuan</th>
+                                <th class="text-[10px]">Ratusan</th>
+                                <th class="text-[10px]">Puluhan</th>
+                                <th class="text-[10px]">Satuan</th>
+                            </tr>
+                            <tr>
+                                <td class="font-bold">5</td>
+                                <td class="font-bold">0</td>
+                                <td class="font-bold">9</td>
+                                <td class="font-bold">2</td>
+                                <td class="font-bold">0</td>
+                                <td class="font-bold">4</td>
+                                <td class="font-bold">0</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <p class="text-sm mb-2">Bagaimana cara membaca bilangan pada tabel di atas?</p>
+                    <div class="choice-container single-col">
+                        <label class="choice-item"><span class="choice-box"></span> a. Lima juta sembilan puluh dua ribu empat puluh</label>
+                        <label class="choice-item"><span class="choice-box"></span> b. Lima juta sembilan ratus dua ribu empat puluh</label>
+                        <label class="choice-item"><span class="choice-box"></span> c. Lima puluh sembilan juta dua ribu empat puluh</label>
+                        <label class="choice-item"><span class="choice-box"></span> d. Lima juta sembilan puluh dua ribu empat ratus</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SECTION B INSTRUCTION -->
+                <div class="instruction-text mb-3 py-1.5 text-sm">
+                    Bagian B: Isian Singkat. Tuliskan jawaban yang tepat.
+                </div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-3 text-sm">
+                        7. Tuliskan bilangan berikut dalam kata-kata:
+                    </div>
+                    
+                    <div class="flex items-center gap-2 text-sm mb-4">
+                        <span class="font-bold text-lg mr-2">9.000.005</span> = 
+                        <span class="input-line flex-grow border-b-2 border-black border-dotted h-6"></span>
+                    </div>
+                </div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-3 text-sm">
+                        8. Tuliskan lambang bilangannya:
+                    </div>
+                    
+                    <div class="mb-2 italic text-sm font-semibold text-gray-700">
+                        "Dua juta seratus empat ribu enam ratus lima puluh"
+                    </div>
+                    
+                    <div class="flex items-center gap-2 mt-2">
+                        <span class="font-bold text-sm">Jawaban:</span>
+                        <span class="input-box" style="width: 200px; height: 40px; line-height: 38px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">
+                        9. Lengkapi tabel nilai tempat untuk bilangan: <br>
+                        <span class="text-blue-700">"Tiga juta lima belas ribu dua"</span>.
+                    </div>
+
+                    <div class="w-full mt-3">
+                        <table class="visual-table">
+                            <tr>
+                                <th class="bg-gray-100">Jutaan</th>
+                                <th class="bg-gray-100">Rat. Ribuan</th>
+                                <th class="bg-gray-100">Pul. Ribuan</th>
+                                <th class="bg-gray-100">Ribuan</th>
+                                <th class="bg-gray-100">Ratusan</th>
+                                <th class="bg-gray-100">Puluhan</th>
+                                <th class="bg-gray-100">Satuan</th>
+                            </tr>
+                            <tr>
+                                <td style="height: 40px;"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4 text-sm">
+                        10. Hubungkanlah dengan garis (tarik garis) antara angka dan kata yang sesuai:
+                    </div>
+
+                    <div class="px-8 font-semibold text-sm">
+                        <!-- Row 1 -->
+                        <div class="matching-row">
+                            <div class="w-1/3 text-right pr-4">A. 5.500.000</div>
+                            <div class="w-16 flex justify-between px-2">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                            <div class="w-1/2 text-left pl-4">1. Lima juta lima puluh ribu</div>
+                        </div>
+
+                        <!-- Row 2 -->
+                        <div class="matching-row">
+                            <div class="w-1/3 text-right pr-4">B. 5.050.000</div>
+                            <div class="w-16 flex justify-between px-2">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                            <div class="w-1/2 text-left pl-4">2. Lima juta lima ribu</div>
+                        </div>
+
+                        <!-- Row 3 -->
+                        <div class="matching-row">
+                            <div class="w-1/3 text-right pr-4">C. 5.005.000</div>
+                            <div class="w-16 flex justify-between px-2">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                            <div class="w-1/2 text-left pl-4">3. Lima juta lima ratus ribu</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
