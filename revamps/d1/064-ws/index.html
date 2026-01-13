@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Penjumlahan Hingga 20 (D1-S064)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .disc-fill,
+        .digit-card {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-yellow-100 { background-color: #fef9c3 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border-bottom: 2px solid #333;
+        min-width: 80px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: bottom;
+        background: transparent;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 0.5rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+        position: relative;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.5cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* Visual Math Specifics for Counting On */
+      .counting-node {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        background-color: white;
+        position: relative;
+        z-index: 2;
+      }
+      .counting-node.filled {
+        background-color: #e5e7eb; /* gray-200 */
+      }
+      .arrow-connector {
+        flex-grow: 1;
+        height: 2px;
+        background-color: black;
+        position: relative;
+        min-width: 30px;
+      }
+      .arrow-connector::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: -4px;
+        width: 0; 
+        height: 0; 
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+        border-left: 8px solid black;
+      }
+      .counting-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin: 1rem 0;
+        overflow-x: auto;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Bagian A: Latihan Menghitung Maju) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Penjumlahan Hingga 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Menghitung Maju
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S064</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="h-separator" style="margin-top: 0;"></div>
+
+            <!-- Bagian A -->
+            <h2 class="font-bold text-lg mb-2">Bagian A: Latihan Menghitung Maju</h2>
+            <div class="instruction-text">
+                Instruksi: Simpan angka yang lebih besar di dalam kepala, lalu <b>hitung maju</b> untuk menemukan jawabannya. Isilah lingkaran yang kosong!
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-lg">
+                        1. <span class="ml-2 font-normal">8 + 3 = ....</span>
+                    </div>
+                    <div class="text-sm italic text-gray-600 mb-2 ml-6">Mulai dari 8, hitung maju 3 langkah:</div>
+                    
+                    <div class="counting-wrapper justify-center">
+                        <!-- Start Node -->
+                        <div class="counting-node filled">8</div>
+                        
+                        <!-- Step 1 -->
+                        <div class="arrow-connector"></div>
+                        <div class="counting-node"></div>
+                        
+                        <!-- Step 2 -->
+                        <div class="arrow-connector"></div>
+                        <div class="counting-node"></div>
+                        
+                        <!-- Step 3 -->
+                        <div class="arrow-connector"></div>
+                        <div class="counting-node"></div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-lg">
+                        2. <span class="ml-2 font-normal">11 + 2 = ....</span>
+                    </div>
+                    <div class="text-sm italic text-gray-600 mb-2 ml-6">Mulai dari 11, hitung maju 2 langkah:</div>
+                    
+                    <div class="counting-wrapper justify-center">
+                        <!-- Start Node -->
+                        <div class="counting-node filled">11</div>
+                        
+                        <!-- Step 1 -->
+                        <div class="arrow-connector"></div>
+                        <div class="counting-node"></div>
+                        
+                        <!-- Step 2 -->
+                        <div class="arrow-connector"></div>
+                        <div class="counting-node"></div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-lg">
+                        3. <span class="ml-2 font-normal">14 + 4 = ....</span>
+                    </div>
+                    <div class="text-sm italic text-gray-600 mb-4 ml-6">Simpan 14 di kepala, angkat 4 jari, lalu hitung:</div>
+                    
+                    <div class="flex items-center justify-center gap-4 text-xl font-bold mb-4 flex-wrap">
+                        <div class="px-4 py-2 bg-gray-200 rounded-lg border border-gray-400">14</div>
+                        <span>→</span>
+                        <div class="w-16 border-b-2 border-black h-8"></div>
+                        <span>→</span>
+                        <div class="w-16 border-b-2 border-black h-8"></div>
+                        <span>→</span>
+                        <div class="w-16 border-b-2 border-black h-8"></div>
+                        <span>→</span>
+                        <div class="w-16 border-b-2 border-black h-8"></div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-lg">
+                        4. <span class="ml-2 font-normal">5 + 12 = ....</span>
+                    </div>
+                    <div class="text-sm italic text-gray-600 mb-2 ml-6">(Tips: Mulai dari angka yang lebih besar yaitu 12!)</div>
+                    
+                    <div class="flex items-center justify-center gap-2 mt-4">
+                        <div class="w-16 h-16 bg-gray-200 rounded-lg border-2 border-gray-400 flex items-center justify-center text-2xl font-bold">12</div>
+                        <div class="text-2xl font-bold mx-2">+</div>
+                        <div class="flex gap-2">
+                             <!-- 5 dots visual -->
+                             <div class="w-8 h-8 rounded-full border-2 border-black bg-white"></div>
+                             <div class="w-8 h-8 rounded-full border-2 border-black bg-white"></div>
+                             <div class="w-8 h-8 rounded-full border-2 border-black bg-white"></div>
+                             <div class="w-8 h-8 rounded-full border-2 border-black bg-white"></div>
+                             <div class="w-8 h-8 rounded-full border-2 border-black bg-white"></div>
+                        </div>
+                        <div class="text-2xl font-bold mx-2">=</div>
+                        <div class="w-20 h-12 border-2 border-black rounded bg-white"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Bagian B: Soal Cerita) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Penjumlahan Hingga 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Menghitung Maju
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S064</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <h2 class="font-bold text-lg mb-2">Bagian B: Soal Cerita</h2>
+            <div class="instruction-text">
+                Instruksi: Gambarlah lingkaran kecil jika perlu membantumu menghitung!
+            </div>
+
+            <div class="soal-grid">
+                 
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. Budi memiliki <span class="text-blue-700 font-black">9</span> kelereng. Ayah memberinya <span class="text-blue-700 font-black">3</span> kelereng lagi. Berapa jumlah kelereng Budi sekarang?
+                    </div>
+                    
+                    <div class="bg-gray-50 border border-gray-200 rounded p-4 mx-4 my-2">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="text-xl font-bold text-gray-400">9</span>
+                            <span class="text-sm italic text-gray-500">(di kepala)</span>
+                        </div>
+                        <div class="flex gap-3 mb-4 ml-8">
+                             <!-- Visual hints for counting on -->
+                             <div class="w-8 h-8 rounded-full border border-dashed border-gray-400 flex items-center justify-center text-xs text-gray-400">1</div>
+                             <div class="w-8 h-8 rounded-full border border-dashed border-gray-400 flex items-center justify-center text-xs text-gray-400">2</div>
+                             <div class="w-8 h-8 rounded-full border border-dashed border-gray-400 flex items-center justify-center text-xs text-gray-400">3</div>
+                        </div>
+                        <div class="flex items-center gap-2 text-lg font-bold">
+                            Jawaban: 9 + 3 = <span class="input-box" style="width: 80px;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-2">
+                        6. Ada <span class="text-blue-700 font-black">15</span> burung di pohon. Datang lagi <span class="text-blue-700 font-black">2</span> burung. Berapa jumlah burung semuanya?
+                    </div>
+                    
+                    <div class="mx-4 my-6">
+                        <div class="flex items-center justify-center gap-3 text-xl font-bold">
+                            <span class="input-box"></span>
+                            <span>+</span>
+                            <span class="input-box"></span>
+                            <span>=</span>
+                            <span class="input-box bg-yellow-50"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+                
+                 <!-- SOAL 7 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-2">
+                       7. Siti mempunyai <span class="text-blue-700 font-black">13</span> permen. Ibu memberinya <span class="text-blue-700 font-black">5</span> permen lagi. Hitunglah jumlah permen Siti.
+                   </div>
+                   
+                   <div class="bg-blue-50 border border-blue-200 p-4 mx-4 my-2 rounded-lg">
+                       <div class="mb-2 font-semibold text-gray-700">Hitung Maju:</div>
+                       <div class="flex gap-4 text-lg font-bold items-center mb-4 flex-wrap">
+                           <span>13,</span>
+                           <span class="border-b-2 border-black w-10 text-center inline-block h-8"></span>,
+                           <span class="border-b-2 border-black w-10 text-center inline-block h-8"></span>,
+                           <span class="border-b-2 border-black w-10 text-center inline-block h-8"></span>,
+                           <span class="border-b-2 border-black w-10 text-center inline-block h-8"></span>,
+                           <span class="border-b-2 border-black w-10 text-center inline-block h-8"></span>
+                       </div>
+                       <div class="font-bold">
+                           Total: <span class="input-box" style="width: 100px;"></span> permen.
+                       </div>
+                   </div>
+               </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Bagian C: Pilihan Ganda) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Penjumlahan Hingga 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Menghitung Maju
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S064</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <h2 class="font-bold text-lg mb-2">Bagian C: Pilihan Ganda</h2>
+            <div class="instruction-text">
+                Instruksi: Berilah tanda silang (X) pada kotak di depan jawaban yang benar.
+            </div>
+            
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Hitunglah: 16 + 3 = ....
+                    </div>
+
+                    <div class="choice-container flex-col gap-3 ml-8">
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box bg-white group-hover:bg-gray-100"></span> 
+                            <span class="text-lg">a. 18</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box bg-white group-hover:bg-gray-100"></span> 
+                            <span class="text-lg">b. 19</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box bg-white group-hover:bg-gray-100"></span> 
+                            <span class="text-lg">c. 20</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. Angka berapakah setelah menghitung maju 4 langkah dari 7?
+                    </div>
+                    <div class="text-sm italic text-gray-500 ml-4 mb-2">
+                        (7 &rarr; 8 &rarr; 9 &rarr; 10 &rarr; ...)
+                    </div>
+
+                    <div class="choice-container flex-col gap-3 ml-8">
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box bg-white group-hover:bg-gray-100"></span> 
+                            <span class="text-lg">a. 10</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box bg-white group-hover:bg-gray-100"></span> 
+                            <span class="text-lg">b. 11</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box bg-white group-hover:bg-gray-100"></span> 
+                            <span class="text-lg">c. 12</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. Mana yang hasilnya <span class="text-blue-700">20</span>?
+                    </div>
+
+                    <div class="choice-container flex-col gap-3 ml-8">
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box bg-white group-hover:bg-gray-100"></span> 
+                            <span class="text-lg">a. 18 + 1</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box bg-white group-hover:bg-gray-100"></span> 
+                            <span class="text-lg">b. 17 + 3</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box bg-white group-hover:bg-gray-100"></span> 
+                            <span class="text-lg">c. 15 + 4</span>
+                        </label>
+                    </div>
+                </div>
+                
+
+
+            </div>
+            
+            <div class="text-center italic text-xs text-gray-500 mt-8">
+                "Matematika menjadi mudah jika kita terus berlatih."
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
