@@ -1,0 +1,511 @@
+
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Menghitung sampai 100</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --bg-page: #e0e0e0;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm; 
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px;
+        flex-shrink: 0;
+      }
+
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      .soal-item {
+        margin-bottom: 0;
+        height: 100%;
+        padding: 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        background-color: #f9fafb;
+        display: flex;
+        flex-direction: column;
+        break-inside: avoid;
+      }
+
+      .choice-container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: auto;
+        padding-top: 1rem;
+        justify-content: center;
+      }
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        font-size: 0.9em;
+      }
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #333;
+        border-radius: 4px;
+        display: inline-block;
+        position: relative;
+        flex-shrink: 0;
+        background: white;
+      }
+
+      .input-line {
+        border: none;
+        border-bottom: 1.5px solid #333;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        background: transparent;
+        outline: none;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.1em;
+      }
+
+      /* --- BLOCKS --- */
+      .blocks-container {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        padding: 10px;
+        justify-content: center;
+        transform: scale(0.9);
+        transform-origin: bottom center;
+      }
+      .tens-group { display: flex; gap: 3px; }
+      .rod { display: flex; flex-direction: column; gap: 1px; }
+      .unit, .cube {
+        width: 12px; height: 12px;
+        border: 1px solid #475569;
+        box-shadow: 1px 1px 0px rgba(0,0,0,0.1);
+      }
+      .unit { background-color: #cbd5e1; }
+      .cube { background-color: #fff; }
+      .ones-group {
+        display: grid; grid-template-columns: repeat(2, 1fr);
+        gap: 2px; align-content: end; margin-left: 5px;
+      }
+
+      /* --- NUMBER BOND --- */
+      .number-bond {
+        position: relative; width: 120px; height: 80px; margin: 0 auto;
+      }
+      .bond-circle {
+        width: 40px; height: 40px;
+        border: 2px solid #333; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: bold; background-color: white;
+        position: absolute; z-index: 2;
+      }
+      .bond-whole { top: 0; left: 50%; transform: translateX(-50%); background-color: #f3f4f6; }
+      .bond-part-left { bottom: 0; left: 0; }
+      .bond-part-right { bottom: 0; right: 0; }
+      .bond-lines {
+        position: absolute; top: 20px; left: 0;
+        width: 100%; height: 60px; z-index: 1;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; margin: 0; padding: 0; }
+        .page-container { display: block; }
+        .page {
+          width: 21cm; 
+          height: auto;
+          min-height: 29.7cm; 
+          margin: 0;
+          box-shadow: none; 
+          page-break-after: always;
+          padding: 1.5cm 2cm; /* Samakan padding dengan layar */
+          border: none;
+        }
+        .page:last-child { page-break-after: avoid; }
+        
+        /* Force background colors exact matching */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        .bg-gray-50, .soal-item { background-color: #f9fafb !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .unit { background-color: #cbd5e1 !important; }
+        
+        /* Ensure layout structure remains */
+        .soal-item {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan sampai 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Menghitung sampai 100 dalam puluhan dan satuan
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Kode : D2-S092
+                    </div>
+                </div>
+            </div>
+            <!-- Garis pemisah header -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- JUDUL -->
+            <div class="text-center mb-6 mt-4">
+                <h1 class="text-xl font-black uppercase tracking-wider text-gray-800">
+                    Menghitung dalam Puluhan dan Satuan
+                </h1>
+            </div>
+
+            <div class="mb-6 p-3 bg-blue-50 border-l-4 border-blue-500 rounded text-sm text-gray-700">
+                <p class="font-bold mb-1">Instruksi:</p>
+                Lihat gambar balok. Batang panjang adalah <b>1 puluhan</b>. Kotak kecil adalah <b>1 satuan</b>. Hitung dan jawab pertanyaannya.
+            </div>
+
+            <div class="mb-4 font-bold text-lg border-b border-gray-400 pb-1 text-[#1f2937]">
+                Bagian A: Hitung Baloknya
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <!-- Q1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">1. Hitung baloknya</div>
+                    <div class="text-xs italic text-gray-500 mb-2">Berapa bilangannya?</div>
+                    <div class="blocks-container my-auto">
+                        <div class="tens-group">
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                        </div>
+                        <div class="ones-group"><div class="cube"></div><div class="cube"></div><div class="cube"></div><div class="cube"></div></div>
+                    </div>
+                    <div class="mt-4 text-center font-medium text-sm">Jawab: <input type="text" class="input-line w-12"></div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">2. Puluhan dan Satuan</div>
+                    <div class="text-xs italic text-gray-500 mb-2">Hitung puluhan dan satuannya.</div>
+                    <div class="blocks-container my-auto">
+                        <div class="tens-group">
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                        </div>
+                        <div class="ones-group"><div class="cube"></div><div class="cube"></div></div>
+                    </div>
+                    <div class="mt-4 text-center text-xs">
+                        Ini menunjukkan <input type="text" class="input-line w-8 text-center"> puluhan dan <input type="text" class="input-line w-8 text-center"> satuan.
+                    </div>
+                    <div class="mt-2 text-center font-medium text-sm">Bilangan: <input type="text" class="input-line w-12"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 mb-4">
+                <!-- Q3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">3. Pilih bilangan yang tepat</div>
+                    <div class="text-xs italic text-gray-500 mb-2">Manakah bilangan yang sesuai?</div>
+                    <div class="blocks-container my-auto">
+                        <div class="tens-group">
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                        </div>
+                        <div class="ones-group"><div class="cube"></div><div class="cube"></div><div class="cube"></div><div class="cube"></div><div class="cube"></div><div class="cube"></div></div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="choice-item"><div class="choice-box"></div> <span>62</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>26</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>20</span></label>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">4. Hitung jumlahnya</div>
+                    <div class="text-xs italic text-gray-500 mb-2">Berapa jumlah total balok?</div>
+                    <div class="blocks-container my-auto">
+                        <div class="tens-group">
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                            <div class="rod"><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-center font-medium text-sm">Jawab: <input type="text" class="input-line w-12"></div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Bilangan sampai 100</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">Count to 100 in tens and ones</div>
+                    <div class="text-[11px] text-black font-medium mt-1">Kode : D2-S092</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+             <div class="mb-4 font-bold text-lg border-b border-gray-400 pb-1 mt-2 text-[#1f2937]">Bagian B: Nilai Tempat</div>
+
+             <div class="grid grid-cols-2 gap-6 mb-6">
+                 <!-- Q5 -->
+                 <div class="soal-item">
+                    <div class="font-bold text-sm mb-1">5. Cek Konsep</div>
+                    <div class="text-sm italic text-gray-600 mb-4">7 puluhan dan 3 satuan sama dengan:</div>
+                    <div class="choice-container !justify-start !pt-0">
+                        <label class="choice-item"><div class="choice-box"></div> <span>37</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>73</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>10</span></label>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="soal-item">
+                     <div class="font-bold text-sm mb-3">6. Uraikan 89</div>
+                     <div class="text-center text-sm my-auto">
+                         Bilangan ini memiliki:<br><br>
+                         <input type="text" class="input-line w-8 text-center"> puluhan<br>dan<br>
+                         <input type="text" class="input-line w-8 text-center"> satuan.
+                     </div>
+                </div>
+             </div>
+
+            <!-- Q7 -->
+            <div class="soal-item mb-8">
+                <div class="font-bold text-sm mb-2">7. Memahami Nilai Tempat</div>
+                <div class="text-sm mb-3 text-gray-700">Manakah pernyataan yang benar tentang bilangan <b>45</b>?</div>
+                <div class="flex flex-col gap-3 mt-2 ml-2">
+                    <label class="choice-item"><div class="choice-box"></div> <span>Memiliki 4 satuan dan 5 puluhan.</span></label>
+                    <label class="choice-item"><div class="choice-box"></div> <span>Memiliki 40 puluhan dan 5 satuan.</span></label>
+                    <label class="choice-item"><div class="choice-box"></div> <span>Memiliki 4 puluhan dan 5 satuan.</span></label>
+                </div>
+            </div>
+
+            <div class="mb-4 font-bold text-lg border-b border-gray-400 pb-1 text-[#1f2937]">Bagian C: Berpikir Tentang Bilangan</div>
+
+            <div class="grid grid-cols-2 gap-6 mb-4">
+                <!-- Q8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">8. Ikatan Bilangan</div>
+                    <div class="text-xs italic text-gray-500 mb-2">Lengkapi ikatan bilangan ini.</div>
+                    <div class="my-auto py-4">
+                        <div class="number-bond">
+                            <svg class="bond-lines" viewBox="0 0 120 60">
+                                <line x1="60" y1="0" x2="20" y2="60" stroke="#9ca3af" stroke-width="2" />
+                                <line x1="60" y1="0" x2="100" y2="60" stroke="#9ca3af" stroke-width="2" />
+                            </svg>
+                            <div class="bond-circle bond-whole">64</div>
+                            <div class="bond-circle bond-part-left">60</div>
+                            <div class="bond-circle bond-part-right text-blue-600">?</div>
+                        </div>
+                    </div>
+                    <div class="mt-auto text-center font-medium text-sm">
+                        Bilangan yang hilang: <br><input type="text" class="input-line w-12 mt-2">
+                    </div>
+                </div>
+
+                <!-- Q9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">9. Lengkapi Pola</div>
+                    <div class="text-xs italic text-gray-500 mb-2">Isi bilangan yang hilang.</div>
+                    <div class="my-auto flex flex-wrap justify-center items-center gap-3 text-lg font-bold">
+                        <span>50,</span><span>60,</span><span>70,</span>
+                        <input type="text" class="input-line w-12 text-blue-600 text-center">,
+                        <span>90</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Bilangan sampai 100</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Menghitung sampai 100 dalam puluhan dan satuan
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">Kode : D2-S092</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="mb-4 font-bold text-lg border-b border-gray-400 pb-1 text-[#1f2937]">Bagian C (Lanjutan): Soal Cerita</div>
+
+            <!-- Q10 -->
+            <div class="soal-item mb-4">
+                <div class="font-bold mb-2 text-sm">10. Pemecahan Masalah</div>
+                <div class="text-sm mb-3 leading-relaxed">
+                    Ibu Lim memiliki <b>9 ikat</b> pensil (1 ikat isi 10 pensil) dan <b>5 pensil lepasan</b>. Berapa banyak pensil yang dia miliki semuanya?
+                </div>
+                <div class="flex items-center justify-center p-3 bg-white rounded border border-gray-200">
+                    <div class="font-medium text-sm text-center">
+                        Jawab: <input type="text" class="input-line w-20 mx-2 text-center text-lg"> pensil
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-3 mt-2 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
+                <div class="font-bold text-gray-500 text-xs mb-1 uppercase tracking-wide">Tips</div>
+                <p class="text-xs text-gray-600">Hitung kelompok "puluhan" terlebih dahulu, kemudian hitung "satuan" tambahannya.</p>
+            </div>
+
+            <div id="encouragement-message" class="mt-12 text-center text-gray-500 italic font-medium"></div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const messages = [
+                "Mantap! Kamu benar-benar Math Champs!", "Keren banget! Dua jempol buat kamu!",
+                "Hebat! Kamu sudah latihan dengan serius dan fokus.", "Good job! Kamu sudah berani menghadapi soal-soal menantang.",
+                "Luar biasa! Hari ini kamu makin kuat di matematika.", "Sudah yakin semua benar? Coba cek ulang sekali lagi ya. 😊",
+                "Biasakan periksa ulang ya—juara itu teliti!", "Kalau ada yang ragu, ulang hitung pelan-pelan biar yakin.",
+                "Kalau ada yang salah, itu bukan masalah. Perbaiki dan maju terus!", "Jatuh itu wajar—yang penting bangkit lagi.",
+                "Setiap latihan bikin kamu naik level!", "Konsisten latihan = makin jago.",
+                "Beri nilai untuk dirimu: hari ini fokusmu 1–5 berapa?", "Refleksi: bagian mana yang ingin kamu kuasai lebih baik?",
+                "Hasil tidak pernah mengkhianati kerja keras.", "Bangga sama kamu—kamu tidak menyerah dan menyelesaikannya.",
+                "Mantap! Tutup dengan senyum—kamu sudah bekerja luar biasa. 😊", "Teliti bikin juara.",
+                "Cek ulang, menang besar.", "Latihan hari ini, hebat esok.", "Rapi langkah, rapi hasil.",
+                "Sabar hitung, yakin benar.", "Berani mencoba, makin bisa.", "Konsisten kecil, hasil besar.",
+                "Rajin latihan, naik level.", "Hitung cermat, hati tenang.", "Hasil harus tepat, jangan asal cepat.",
+                "Ragu? Periksa dulu.", "Kerja rapi, nilai menghampiri.", "Tekun itu kunci.",
+                "Belajar dari salah, tiap langkah makin tangguh."
+            ];
+            const randomIndex = Math.floor(Math.random() * messages.length);
+            const messageElement = document.getElementById("encouragement-message");
+            if (messageElement) { messageElement.textContent = messages[randomIndex]; }
+        });
+    </script>
+  </body>
+</html>
