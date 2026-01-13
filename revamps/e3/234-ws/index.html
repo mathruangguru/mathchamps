@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Bilangan Hingga 100.000 (E3-S234)</title>
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax untuk rendering matematika -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        
+        /* Warna Pastel Modern */
+        --soft-purple: #d8b4e2;
+        --soft-blue: #aed9e0;
+        --soft-green: #b8e986;
+        --soft-orange: #ffd8b1;
+        --soft-red: #ffb7b2;
+      }
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.2; /* Line height dikurangi */
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 0.8cm; /* Padding halaman diperkecil */
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .page-header {
+        width: 100%;
+        margin-bottom: 5px; /* Margin header dikurangi */
+      }
+      .math-champs-header {
+        background-color: white; 
+        padding: 0.3rem 0; /* Padding header dikurangi */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black; 
+      }
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem; /* Gap antar soal dikurangi */
+      }
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      
+      /* --- STYLE KONTEN --- */
+      .soal-item {
+        margin-bottom: 0.4rem; /* Margin item soal dikurangi */
+        break-inside: avoid;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.2rem;
+        font-size: 0.9rem;
+      }
+
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6cm;
+        align-items: stretch;
+      }
+
+      /* Input & Choice */
+      .input-line {
+        border: none;
+        border-bottom: 1.5px solid #333;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        background: transparent;
+        outline: none;
+        font-family: inherit;
+        padding: 0 2px;
+      }
+      .choice-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        cursor: pointer;
+        margin-bottom: 2px; /* Margin choice dikurangi */
+        font-size: 0.9rem;
+      }
+      .choice-box {
+        width: 16px; /* Box diperkecil */
+        height: 16px;
+        border: 1.5px solid #333;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-top: 2px;
+        background: white;
+      }
+
+      /* Identity Table Compact */
+      .identity-table td {
+        padding: 1px 0; /* Padding diperkecil */
+        font-size: 10pt;
+        font-weight: 600;
+      }
+
+      /* Train Car Visualization */
+      .train-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0;
+          margin: 0.8rem 0; /* Margin normal */
+      }
+      .train-car {
+          width: 80px; /* Ukuran normal */
+          height: 40px;
+          border: 2px solid #333;
+          background-color: #dbeafe; /* Soft Blue */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 0.8rem;
+          margin-right: 5px;
+          position: relative;
+          border-radius: 4px;
+      }
+      .train-car::after {
+          content: '';
+          position: absolute;
+          right: -7px;
+          top: 50%;
+          width: 5px;
+          height: 2px;
+          background: black;
+      }
+      .train-car:last-child::after {
+          content: none;
+      }
+      .train-car.dashed {
+          border-style: dashed;
+          background-color: white;
+      }
+
+      /* --- PRINT --- */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 0.8cm; }
+        .page:last-child { page-break-after: avoid; }
+        .math-champs-header, .train-car, .bg-blue-50, .bg-yellow-50, .bg-red-50, .bg-green-50, .bg-gray-100 {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+            
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                        Exploration 3
+                    </div>
+                    <div class="text-[11px] text-black font-semibold mt-0.5">
+                        Bilangan Hingga 100.000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Pola bilangan hingga 100.000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : E3-S234
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam -->
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- INFO SISWA -->
+            <div class="flex justify-between items-end mb-4 pb-2 border-b border-gray-300 font-semibold text-sm">
+                <div class="flex gap-2 w-3/4">
+                    <span>Nama:</span>
+                    <div class="border-b border-dotted border-gray-400 flex-grow"></div>
+                </div>
+                <div class="flex gap-2 w-1/4">
+                    <span>Tanggal:</span>
+                    <div class="border-b border-dotted border-gray-400 flex-grow"></div>
+                </div>
+            </div>
+
+            <!-- INSTRUKSI MISI -->
+            <div class="bg-gray-100 border border-gray-400 p-3 rounded-lg shadow-sm mb-4">
+                <h3 class="font-bold text-sm mb-1">Instruksi Misi:</h3>
+                <div class="text-xs text-gray-700 leading-relaxed italic">
+                    Temukan aturan rahasia di balik setiap barisan bilangan dan lengkapi bagian yang hilang untuk menyelesaikan kasus ini!
+                </div>
+            </div>
+
+            <!-- Q1: Identifikasi Pola -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-300 mb-2">
+                <div class="font-bold mb-2 text-sm">
+                    1. Temukan aturan dari pola bilangan berikut:
+                </div>
+                
+                <div class="flex justify-center gap-6 my-4 text-lg font-mono">
+                    <span>24.500,</span>
+                    <span>24.600,</span>
+                    <span>24.700,</span>
+                    <span>24.800</span>
+                </div>
+
+                <div class="text-center mt-2">
+                    <b class="text-sm mr-2">Aturan:</b>
+                    <input type="text" class="input-line w-48 text-center text-sm">
+                </div>
+            </div>
+
+            <!-- Q2: Gerbong Kereta -->
+            <div class="soal-item bg-gray-50 p-4 rounded-lg border border-gray-200 mt-2">
+                <div class="font-bold mb-2 text-sm">
+                    2. Lengkapi bilangan yang hilang pada gerbong kereta ini!
+                </div>
+                
+                <div class="train-container my-4">
+                    <div class="train-car">50.000</div>
+                    <div class="train-car">52.000</div>
+                    <div class="train-car">54.000</div>
+                    <div class="train-car dashed text-gray-500">?</div>
+                </div>
+
+                <div class="text-center mt-3">
+                    <b class="text-sm mr-2">Bilangan selanjutnya adalah:</b>
+                    <input type="text" class="input-line w-32 text-center text-lg">
+                </div>
+            </div>
+
+            <!-- Q3: Melengkapi Pola Mundur -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-300 mt-2">
+                <div class="font-bold mb-2 text-sm">
+                    3. Perhatikan pola bilangan mundur berikut. Berapakah nilai X dan Y?
+                </div>
+                
+                <div class="flex flex-wrap items-center justify-center gap-4 my-4 font-bold text-lg font-mono">
+                    <span>98.500,</span>
+                    <span>98.400,</span>
+                    <span>98.300,</span>
+                    <span class="text-blue-600 bg-gray-100 px-3 py-1 rounded border border-blue-200">X</span>,
+                    <span class="text-blue-600 bg-gray-100 px-3 py-1 rounded border border-blue-200">Y</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-2 text-sm">
+                    <label class="choice-item"><div class="choice-box">A</div> X = 98.200, Y = 98.100</label>
+                    <label class="choice-item"><div class="choice-box">B</div> X = 98.350, Y = 98.400</label>
+                    <label class="choice-item"><div class="choice-box">C</div> X = 99.000, Y = 99.100</label>
+                    <label class="choice-item"><div class="choice-box">D</div> X = 98.200, Y = 98.000</label>
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                        Exploration 3
+                    </div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan Hingga 100.000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Pola bilangan hingga 100.000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : E3-S234
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <!-- Q4: Pola Loncat -->
+            <div class="soal-item bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <div class="font-bold mb-2 text-sm">
+                    4. Aku melompat 50 langkah setiap kali. Jika aku mulai di 12.050, di manakah aku mendarat pada lompatan ketiga?
+                </div>
+                
+                <div class="flex flex-wrap items-center justify-center gap-2 my-4 text-sm">
+                    <span class="font-bold text-lg">12.050</span>
+                    <span class="text-xs text-blue-600 font-bold mx-1">→ (+50)</span>
+                    <span class="border-b-2 border-black w-16 inline-block"></span>
+                    <span class="text-xs text-blue-600 font-bold mx-1">→ (+50)</span>
+                    <span class="border-b-2 border-black w-16 inline-block"></span>
+                    <span class="text-xs text-blue-600 font-bold mx-1">→ (+50)</span>
+                    <input type="text" class="input-line w-20 text-center border-2 border-black rounded shadow-sm bg-white font-bold text-lg" placeholder="?">
+                </div>
+
+                <div class="text-center text-sm mt-2">
+                    <b class="mr-2">Jawab:</b> <input type="text" class="input-line w-24 text-center">
+                </div>
+            </div>
+
+            <!-- Q5: Analisis Kesalahan -->
+             <div class="soal-item bg-red-50 p-4 rounded-lg border border-red-200 mt-2">
+                <div class="font-bold mb-2 text-sm">
+                    5. Budi membuat pola:
+                </div>
+                <div class="text-center font-bold text-lg my-3 font-mono bg-white p-2 rounded border border-red-100 shadow-sm">
+                    15.000, 20.000, 25.000, 35.000
+                </div>
+                <div class="text-sm mb-3 font-medium">Apakah pola Budi benar secara konsisten? Jika tidak, bilangan mana yang salah dan apa seharusnya?</div>
+                <div class="flex flex-col gap-2 text-sm ml-2">
+                    <label class="choice-item"><div class="choice-box">A</div> Benar, semuanya kelipatan 5.000.</label>
+                    <label class="choice-item"><div class="choice-box">B</div> Salah, 35.000 harusnya 30.000.</label>
+                    <label class="choice-item"><div class="choice-box">C</div> Salah, 20.000 harusnya 16.000.</label>
+                    <label class="choice-item"><div class="choice-box">D</div> Salah, 15.000 harusnya 10.000.</label>
+                </div>
+            </div>
+
+            <!-- Q6: Pola Visual (Kartu) -->
+            <div class="soal-item bg-white p-4 rounded-lg border border-gray-300 mt-2">
+                <div class="font-bold mb-2 text-sm">
+                    6. Perhatikan perubahan nilai pada kartu-kartu ini.
+                </div>
+                
+                <div class="flex justify-center gap-0 my-4 text-sm text-center">
+                    <div class="border-2 border-r-0 border-black p-2 bg-gray-50 w-24">
+                        <div class="font-bold text-xs border-b border-gray-400 mb-1 pb-1">Kartu 1</div>
+                        <div class="text-base font-bold">30.100</div>
+                    </div>
+                    <div class="border-2 border-r-0 border-black p-2 bg-gray-50 w-24">
+                        <div class="font-bold text-xs border-b border-gray-400 mb-1 pb-1">Kartu 2</div>
+                        <div class="text-base font-bold">30.200</div>
+                    </div>
+                    <div class="border-2 border-black p-2 bg-gray-50 w-24">
+                        <div class="font-bold text-xs border-b border-gray-400 mb-1 pb-1">Kartu 3</div>
+                        <div class="text-base font-bold">30.300</div>
+                    </div>
+                </div>
+
+                <div class="text-center text-sm mt-3">
+                    Jika pola berlanjut, berapakah nilai pada <b>Kartu ke-5</b>?<br>
+                    <div class="mt-2">
+                        <b class="mr-2">Jawab:</b> <input type="text" class="input-line w-32 text-center text-lg">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                        Exploration 3
+                    </div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan Hingga 100.000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Pola bilangan hingga 100.000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : E3-S234
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <!-- Q7 (Previously Q7): Teka-teki Pola -->
+            <div class="soal-item bg-green-50 p-3 rounded-lg border border-green-200">
+                <div class="font-bold mb-2 text-sm">
+                    7. Aku adalah sebuah bilangan dalam pola:
+                </div>
+                <div class="text-center font-bold font-mono text-xl my-3 bg-white p-2 rounded inline-block mx-auto border border-green-100">
+                    42.000, &nbsp; 44.000, &nbsp; 46.000, &nbsp; ...
+                </div>
+                <div class="text-sm font-medium mt-2 text-center">
+                    Aku muncul tepat setelah 48.000. Siapakah aku?
+                </div>
+                <div class="mt-3 text-center">
+                    <b class="text-sm mr-2">Jawab:</b>
+                    <input type="text" class="input-line w-32 text-lg text-center font-bold">
+                </div>
+            </div>
+
+            <!-- Q8: Mencari Aturan -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-300 mt-2">
+                <div class="font-bold mb-3 text-sm">
+                    8. Manakah dari barisan berikut yang memiliki aturan <b>"Bertambah 100"</b>?
+                </div>
+                <div class="flex flex-col gap-2 text-sm ml-2">
+                    <label class="choice-item"><div class="choice-box">A</div> 5.100, 5.200, 5.300, 5.400</label>
+                    <label class="choice-item"><div class="choice-box">B</div> 5.100, 5.110, 5.120, 5.130</label>
+                    <label class="choice-item"><div class="choice-box">C</div> 5.100, 6.100, 7.100, 8.100</label>
+                    <label class="choice-item"><div class="choice-box">D</div> 5.100, 5.101, 5.102, 5.103</label>
+                </div>
+            </div>
+
+            <!-- Q9: Pola Ganda -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-300 mt-2">
+                <div class="font-bold mb-3 text-sm">
+                    9. Perhatikan pola unik ini:
+                </div>
+                <div class="text-center font-bold text-lg my-3 font-mono">
+                    10.000, 10.050, 10.100, 10.150, <span class="text-purple-600 bg-purple-50 px-3 py-1 border border-purple-200 rounded">Z</span>
+                </div>
+                <div class="text-center text-sm mt-3">
+                    Berapakah nilai <b>Z</b>? &nbsp; <input type="text" class="input-line w-32 text-center text-lg">
+                </div>
+            </div>
+
+            <!-- Q10: Kotak Misteri -->
+            <div class="soal-item bg-yellow-50 p-3 rounded-lg border border-yellow-200 mt-2">
+                <div class="font-bold mb-3 text-sm">
+                    10. Tantangan Akhir (Kotak Misteri). Temukan bilangan yang hilang!
+                </div>
+                
+                <div class="bg-white p-3 rounded border border-orange-300 text-center font-bold text-sm shadow-sm my-3 leading-relaxed">
+                    Pola: Kurangi 1.000 setiap langkah.<br>
+                    <span class="font-mono text-lg mt-2 block">85.400 &rarr; 84.400 &rarr; <span class="border-2 border-black px-2 py-0.5 rounded bg-yellow-50">A</span> &rarr; 82.400</span>
+                </div>
+
+                <div class="text-sm mt-3 font-semibold">Bilangan A adalah...</div>
+                <div class="grid grid-cols-4 gap-2 mt-2 text-sm">
+                    <label class="choice-item"><div class="choice-box">A</div> 83.400</label>
+                    <label class="choice-item"><div class="choice-box">B</div> 84.300</label>
+                    <label class="choice-item"><div class="choice-box">C</div> 85.300</label>
+                    <label class="choice-item"><div class="choice-box">D</div> 83.000</label>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <span class="font-bold text-gray-700">--- Misi Selesai ---</span><br>
+                <span class="text-xs italic text-gray-500">Kamu telah memecahkan kode pola bilangan dengan sukses!</span>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
