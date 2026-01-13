@@ -1,0 +1,711 @@
+
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Ganjil dan Genap</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659; /* Background luar abu-abu gelap agar kertas terlihat */
+        margin: 0;
+        padding: 20px 0;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 210mm; /* A4 Width exact */
+        height: 297mm; /* A4 Height exact */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Ensure content doesn't break layout */
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+        flex-shrink: 0; /* Header jangan mengecil */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; /* Push ke paling bawah jika flex */
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-shrink: 0; /* Footer jangan mengecil */
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0; /* Nol margin di @page, kita atur padding manual di .page */
+        }
+        
+        body {
+          background-color: white;
+          padding: 0;
+          margin: 0;
+          width: 210mm;
+          height: 100%;
+        }
+
+        .page-container {
+          display: block;
+          width: 210mm;
+        }
+
+        .page {
+          margin: 0;
+          padding: 1.5cm 2cm 1cm 2cm; /* Sedikit kurangi padding bawah agar footer aman */
+          border: none;
+          box-shadow: none;
+          width: 210mm;
+          height: 296mm; /* Sedikit kurang dari 297mm untuk mencegah blank page */
+          page-break-after: always;
+          break-after: page;
+          position: relative;
+          overflow: hidden;
+          display: flex; /* Tetap flex agar footer di bawah */
+          flex-direction: column;
+        }
+
+        /* Halaman terakhir tidak perlu break */
+        .page:last-child {
+          page-break-after: avoid;
+          break-after: avoid;
+          height: auto; /* Biarkan auto untuk halaman terakhir */
+          min-height: 296mm;
+        }
+        
+        /* Memaksa background color tercetak (Chrome/Safari) */
+        .math-champs-header,
+        .concept-box,
+        .concept-title,
+        .bg-gray-100,
+        .bg-yellow-50,
+        .bg-blue-50,
+        .page,
+        body {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        
+        .no-break {
+            break-inside: avoid;
+        }
+
+        /* Paksa layout baris saat print */
+        .concept-content {
+            display: flex !important;
+            flex-direction: row !important;
+        }
+      }
+
+      /* --- KOMPONEN LAINNYA --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+      }
+
+      .soal-number {
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        font-size: 1.1em;
+      }
+
+      .object-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 4px;
+        align-items: center;
+      }
+
+      .input-line {
+        border: none;
+        border-bottom: 2px solid #333;
+        width: 80px;
+        height: 25px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        background: transparent;
+        font-family: inherit;
+        font-size: 1rem;
+      }
+
+      .input-box {
+        border: 2px solid #333;
+        width: 60px;
+        height: 40px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        vertical-align: middle;
+      }
+      
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 10px;
+        font-weight: 500;
+      }
+
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+      }
+
+      .radio-circle {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #333;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.8cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        font-size: 1.1em;
+      }
+
+      .concept-box {
+        border: 2px solid #000;
+        background-color: #f3f4f6; 
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+      }
+      .concept-title {
+        background-color: #e5e7eb; 
+        padding: 8px;
+        font-weight: 800;
+        text-align: center;
+        border-bottom: 2px solid #000;
+        font-size: 1em;
+      }
+      .concept-content {
+        display: flex;
+        flex-direction: row; /* FORCE ROW DISPLAY */
+      }
+      
+      .concept-col {
+        flex: 1;
+        padding: 10px; /* Reduced padding */
+        text-align: center;
+        border-right: 1px solid #ccc;
+        font-size: 0.85rem; /* Font size reduced */
+      }
+      
+      .concept-col:last-child {
+        border-right: none;
+      }
+
+      .dot-pair-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 10px 0;
+      }
+      .dot-column {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .dot {
+        width: 12px; /* Slightly smaller dots */
+        height: 12px;
+        background-color: black;
+        border-radius: 50%;
+      }
+      .pairing-loop {
+        border: 2px solid #666;
+        border-radius: 20px;
+        padding: 2px 4px;
+        margin: -4px;
+        display: flex;
+        gap: 4px;
+      }
+
+      .no-break {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .section-title {
+        font-size: 1.2rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        color: #111;
+        border-bottom: 2px solid #111;
+        display: inline-block;
+        padding-bottom: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan Hingga 1000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Mengidentifikasi Bilangan Ganjil dan Genap
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : D3-S170
+                    </div>
+                </div>
+            </div>
+            <!-- Garis pemisah header -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-6 mt-2">
+                <h1 class="text-2xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                    GANJIL DAN GENAP
+                </h1>
+            </div>
+
+            <!-- KONSEP SECTION -->
+            <div class="concept-box no-break">
+                <div class="concept-title">Konsep: Memasangkan Bilangan</div>
+                <div class="concept-content">
+                    <!-- Bilangan GENAP -->
+                    <div class="concept-col">
+                        <div class="font-bold text-base mb-1">Bilangan GENAP</div>
+                        <p class="mb-2 leading-tight">Bisa dipasangkan, tidak ada sisa.</p>
+                        
+                        <div class="flex justify-center my-3">
+                            <!-- Visual representation of 4 paired -->
+                            <div class="flex flex-col gap-2">
+                                <div class="pairing-loop"><div class="dot"></div><div class="dot"></div></div>
+                                <div class="pairing-loop"><div class="dot"></div><div class="dot"></div></div>
+                            </div>
+                        </div>
+
+                        <p class="font-semibold text-xs">Contoh: 4 adalah Genap.</p>
+                        <p class="mt-1">Angka Satuan: <br><span class="font-bold text-base">0, 2, 4, 6, 8</span></p>
+                    </div>
+
+                    <!-- Bilangan GANJIL -->
+                    <div class="concept-col">
+                        <div class="font-bold text-base mb-1">Bilangan GANJIL</div>
+                        <p class="mb-2 leading-tight">Ada sisa satu jika dipasangkan.</p>
+                        
+                        <div class="flex justify-center my-3">
+                            <!-- Visual representation of 5 (2 pairs + 1 leftover) -->
+                            <div class="flex flex-col gap-2">
+                                <div class="pairing-loop"><div class="dot"></div><div class="dot"></div></div>
+                                <div class="pairing-loop"><div class="dot"></div><div class="dot"></div></div>
+                                <div class="flex gap-2 px-1"><div class="dot"></div></div> <!-- Sisa -->
+                            </div>
+                        </div>
+
+                        <p class="font-semibold text-xs">Contoh: 5 adalah Ganjil.</p>
+                        <p class="mt-1">Angka Satuan: <br><span class="font-bold text-base">1, 3, 5, 7, 9</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="instruction-text mb-6">
+                Instruksi: Jawablah pertanyaan di bawah ini. Perhatikan angka satuannya untuk bilangan yang besar!
+            </div>
+
+            <!-- BAGIAN A -->
+            <div class="mb-2"><span class="section-title">Bagian A: Konsep Dasar dan Visual</span></div>
+
+            <div class="soal-grid mb-5">
+                <!-- No 1 -->
+                <div class="soal-item no-break">
+                    <div class="soal-number">1. Melihat Pola</div>
+                    <p class="mb-2">Perhatikan kotak-kotak di bawah ini. Pasangkanlah kotak-kotak tersebut.</p>
+                    
+                    <div class="flex gap-1 my-3 justify-start">
+                        <!-- 7 squares visualization -->
+                        <div class="w-8 h-8 border-2 border-black bg-white"></div>
+                        <div class="w-8 h-8 border-2 border-black bg-white"></div>
+                        <div class="w-8 h-8 border-2 border-black bg-white"></div>
+                        <div class="w-8 h-8 border-2 border-black bg-white"></div>
+                        <div class="w-8 h-8 border-2 border-black bg-white"></div>
+                        <div class="w-8 h-8 border-2 border-black bg-white"></div>
+                        <div class="w-8 h-8 border-2 border-black bg-gray-300"></div> <!-- Last one shaded differently to imply remainder visually if wanted, or plain -->
+                    </div>
+                    
+                    <p class="mb-2">Ada 7 kotak. Apakah 7 bilangan ganjil atau genap?</p>
+                    <div class="choice-container">
+                        <label class="choice-item">
+                            <span class="radio-circle"></span> Ganjil (Ada sisa)
+                        </label>
+                        <label class="choice-item">
+                            <span class="radio-circle"></span> Genap (Semua berpasangan)
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan Hingga 1000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Mengidentifikasi Bilangan Ganjil dan Genap
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : D3-S170
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+
+            <!-- Lanjutan Bagian A (Nomor 2 & 3) -->
+            <div class="soal-grid mb-8">
+                <!-- No 2 -->
+                <div class="soal-item no-break">
+                    <div class="soal-number">2. Analisis Angka Satuan</div>
+                    <p class="mb-2">Lihatlah angka terakhir (angka satuan) dari bilangan <span class="font-black text-xl">48</span>.</p>
+                    <p class="mb-2">Apakah angka 8 bisa dipasangkan tanpa sisa?</p>
+                    
+                    <div class="mt-2">
+                        Jawab (Ya/Tidak): <input type="text" class="input-line">
+                    </div>
+                    <div class="mt-2">
+                        Jadi, 48 adalah bilangan <input type="text" class="input-line" style="width: 150px;">.
+                    </div>
+                </div>
+
+                <!-- No 3 -->
+                <div class="soal-item no-break">
+                    <div class="soal-number">3. Pengelompokkan</div>
+                    <p class="mb-3">Kelompokkan bilangan-bilangan berikut ke dalam kotak yang benar:</p>
+                    <div class="flex justify-center gap-4 mb-4 text-lg font-bold">
+                        <span class="bg-gray-200 px-3 py-1 rounded">15</span>
+                        <span class="bg-gray-200 px-3 py-1 rounded">22</span>
+                        <span class="bg-gray-200 px-3 py-1 rounded">108</span>
+                        <span class="bg-gray-200 px-3 py-1 rounded">337</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 border-2 border-black">
+                        <!-- Header Table -->
+                        <div class="border-r-2 border-b-2 border-black p-2 text-center bg-gray-100">
+                            <div class="font-bold">Bilangan Ganjil</div>
+                            <div class="text-xs">(Angka belakang 1, 3, 5, 7, 9)</div>
+                        </div>
+                        <div class="border-b-2 border-black p-2 text-center bg-gray-100">
+                            <div class="font-bold">Bilangan Genap</div>
+                            <div class="text-xs">(Angka belakang 0, 2, 4, 6, 8)</div>
+                        </div>
+                        <!-- Content Table -->
+                        <div class="border-r-2 border-black p-2 h-24"></div>
+                        <div class="p-2 h-24"></div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan Hingga 1000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Mengidentifikasi Bilangan Ganjil dan Genap
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : D3-S170
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- BAGIAN B -->
+            <div class="mb-4"><span class="section-title">Bagian B: Bilangan Hingga 1000 (Pilihan Ganda)</span></div>
+
+            <div class="grid grid-cols-2 gap-x-8 gap-y-6 mb-8">
+                <!-- No 4 -->
+                <div class="soal-item no-break flex gap-2">
+                    <div class="soal-number whitespace-nowrap mb-0">4.</div>
+                    <div class="w-full">
+                        <p class="mb-2 leading-tight">Manakah dari bilangan berikut yang merupakan bilangan <span class="font-bold">GANJIL</span>?</p>
+                        <div class="choice-container">
+                            <label class="choice-item"><span class="radio-circle"></span> (a) 456</label>
+                            <label class="choice-item"><span class="radio-circle"></span> (b) 890</label>
+                            <label class="choice-item"><span class="radio-circle"></span> (c) 121</label>
+                            <label class="choice-item"><span class="radio-circle"></span> (d) 668</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No 5 -->
+                <div class="soal-item no-break flex gap-2">
+                    <div class="soal-number whitespace-nowrap mb-0">5.</div>
+                    <div class="w-full">
+                        <p class="mb-2 leading-tight">Manakah dari bilangan berikut yang merupakan bilangan <span class="font-bold">GENAP</span>?</p>
+                        <div class="choice-container">
+                            <label class="choice-item"><span class="radio-circle"></span> (a) 333</label>
+                            <label class="choice-item"><span class="radio-circle"></span> (b) 507</label>
+                            <label class="choice-item"><span class="radio-circle"></span> (c) 99</label>
+                            <label class="choice-item"><span class="radio-circle"></span> (d) 1000</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No 6 -->
+                <div class="soal-item no-break col-span-2">
+                    <div class="soal-number">6. Soal Cerita</div>
+                    <p class="mb-2">Ibu Guru memiliki <span class="font-bold">245</span> lembar kertas. Ia ingin membagikannya kepada murid secara berpasangan. Karena angka satuannya adalah 5, maka:</p>
+                    <div class="choice-container">
+                        <label class="choice-item">
+                            <span class="radio-circle"></span> (a) Kertas itu jumlahnya Genap (bisa dipasangkan semua)
+                        </label>
+                        <label class="choice-item">
+                            <span class="radio-circle"></span> (b) Kertas itu jumlahnya Ganjil (akan bersisa 1 lembar)
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- BAGIAN C (Nomor 7-8) -->
+            <div class="mb-4"><span class="section-title">Bagian C: Pola dan Logika (Discovery)</span></div>
+
+            <div class="flex flex-col gap-6">
+                <!-- No 7 -->
+                <div class="soal-item no-break p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div class="soal-number">7. Melengkapi Pola</div>
+                    <p class="mb-2">Perhatikan barisan bilangan genap berikut. Isilah titik-titik dengan bilangan selanjutnya.</p>
+                    <div class="text-2xl font-bold tracking-widest text-center mt-4">
+                        214, 216, 218, <input type="text" class="input-line" style="width: 100px; font-size: 1.5rem;">
+                    </div>
+                </div>
+
+                <!-- No 8 -->
+                <div class="soal-item no-break">
+                    <div class="soal-number">8. Logika Penjumlahan</div>
+                    <p class="mb-2">Hitunglah: <span class="font-bold font-mono">10 + 3 = 13</span></p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>10 adalah bilangan Genap.</li>
+                        <li>3 adalah bilangan Ganjil.</li>
+                        <li>Hasilnya (13) adalah bilangan <input type="text" class="input-line" style="width: 120px;">.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 4 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan Hingga 1000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Mengidentifikasi Bilangan Ganjil dan Genap
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : D3-S170
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- Lanjutan BAGIAN C (Nomor 9-10) -->
+            <div class="mb-4"><span class="section-title">Bagian C: Lanjutan</span></div>
+
+            <div class="flex flex-col gap-6">
+                <!-- No 9 -->
+                <div class="soal-item no-break p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="soal-number">9. Teka-teki Bilangan</div>
+                    <div class="flex flex-col md:flex-row gap-4 items-center">
+                        <div class="flex-1">
+                            <ul class="list-none space-y-2">
+                                <li>🔍 Aku lebih besar dari 300 tapi lebih kecil dari 310.</li>
+                                <li>🔍 Aku adalah bilangan Ganjil.</li>
+                                <li>🔍 Angka satuanku adalah 5.</li>
+                            </ul>
+                        </div>
+                        <div class="flex-none bg-white p-3 rounded shadow-sm border border-blue-100 text-center">
+                            <div class="text-xs text-gray-500 mb-1">Siapakah aku?</div>
+                            <input type="text" class="input-box" style="width: 80px; height: 50px; font-size: 1.5rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No 10 -->
+                <div class="soal-item no-break">
+                    <div class="soal-number">10. Eksplorasi</div>
+                    <p class="mb-2">Jika kamu menjumlahkan dua bilangan Ganjil (contoh: 3 + 5), apakah hasilnya akan selalu Ganjil atau Genap?</p>
+                    <div class="choice-container flex-row gap-8">
+                        <label class="choice-item"><span class="radio-circle"></span> (a) Selalu Ganjil</label>
+                        <label class="choice-item"><span class="radio-circle"></span> (b) Selalu Genap</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center italic text-gray-500 font-medium">
+                "Matematika itu menyenangkan! Teruslah berlatih."
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
