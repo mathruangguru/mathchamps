@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Menggabungkan dan Memisahkan Bangun Datar (D4-S265)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        /* Pastel Colors converted from LaTeX */
+        --pastel-blue: #ADD8E6;
+        --pastel-red: #FFB6C1;
+        --pastel-green: #98FB98;
+        --pastel-yellow: #FFFDD0;
+        --pastel-orange: #FFCC99;
+        --soft-purple: #D8BFD8;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        /* Padding atas disesuaikan agar header masuk dalam border */
+        padding: 1.2cm 1.5cm 0.6cm 1.5cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1.2cm 1.5cm 0.6cm 1.5cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .instruction-text,
+        .page-border,
+        .encouragement-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- PAGE BORDER DECORATION --- */
+      .page-border {
+        position: absolute;
+        top: 1cm;
+        left: 1cm;
+        right: 1cm;
+        bottom: 1cm;
+        border: 3px solid var(--pastel-green);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 2; /* Above border */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-line {
+        display: inline-block;
+        border-bottom: 1.5px solid #333;
+        min-width: 100px;
+        text-align: center;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-left: 1rem;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.5cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+        position: relative;
+        z-index: 2;
+      }
+
+      /* Encouragement Box */
+      .encouragement-box {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background-color: #fef3c7; /* yellow-100 */
+        border-left: 4px solid #d97706; /* yellow-600 */
+        border-radius: 0.5rem;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+      }
+      .encouragement-text {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #92400e; /* yellow-800 */
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Bagian A) ================= -->
+      <section class="page">
+        <!-- Page Border Decoration -->
+        <div class="page-border"></div>
+
+        <!-- HEADER -->
+        <header class="page-header relative z-10">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bangun Datar 2D
+                    </div>
+                    <div class="text-[11px] text-black font-medium" style="max-width: 250px; line-height: 1.2;">
+                        Menggabungkan dan memisahkan bangun datar
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Kode : D4-S265
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- SECTION A -->
+            <div class="instruction-text mt-4">
+                Bagian A: Pilihan Ganda<br>
+                <span class="font-normal italic">Pilihlah jawaban yang tepat berdasarkan gambar.</span>
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        1. Jika dua buah persegi ini ditempelkan berdampingan, bentuk baru apa yang terbentuk?
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4 gap-4">
+                        <!-- Square 1 -->
+                        <div class="relative">
+                            <svg width="60" height="60">
+                                <rect x="0" y="0" width="60" height="60" fill="#ADD8E6" stroke="#333" stroke-width="2"/>
+                                <text x="30" y="35" text-anchor="middle" font-weight="bold">1</text>
+                            </svg>
+                        </div>
+                        
+                        <span class="text-2xl font-bold">+</span>
+                        
+                        <!-- Square 2 -->
+                        <div class="relative">
+                            <svg width="60" height="60">
+                                <rect x="0" y="0" width="60" height="60" fill="#ADD8E6" stroke="#333" stroke-width="2"/>
+                                <text x="30" y="35" text-anchor="middle" font-weight="bold">2</text>
+                            </svg>
+                        </div>
+                        
+                        <!-- Arrow -->
+                        <svg width="40" height="20" viewBox="0 0 40 20" class="mx-2">
+                             <line x1="0" y1="10" x2="35" y2="10" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                             <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                                </marker>
+                            </defs>
+                        </svg>
+
+                        <!-- Result -->
+                        <div class="relative">
+                             <svg width="120" height="60">
+                                <rect x="0" y="0" width="120" height="60" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="5,5"/>
+                                <text x="60" y="35" text-anchor="middle" font-size="20" font-weight="bold">?</text>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. Persegi Panjang</label>
+                        <label class="flex items-center cursor-pointer">b. Segitiga</label>
+                        <label class="flex items-center cursor-pointer">c. Lingkaran</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        2. Sebuah kertas persegi digunting menjadi 4 bagian seperti gambar di bawah. Setiap bagian kecil berbentuk...
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4 gap-6">
+                         <!-- Big Square Cut -->
+                         <svg width="80" height="80">
+                             <rect x="0" y="0" width="80" height="80" fill="#FFB6C1" stroke="#333" stroke-width="2"/>
+                             <line x1="40" y1="0" x2="40" y2="80" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                             <line x1="0" y1="40" x2="80" y2="40" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                         </svg>
+                         
+                         <!-- Arrow -->
+                         <svg width="30" height="20" viewBox="0 0 30 20">
+                             <line x1="0" y1="10" x2="25" y2="10" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                         </svg>
+
+                         <!-- Separated Pieces -->
+                         <div class="grid grid-cols-2 gap-2">
+                             <svg width="30" height="30"><rect x="0" y="0" width="30" height="30" fill="#FFB6C1" stroke="#333" stroke-width="1.5"/></svg>
+                             <svg width="30" height="30"><rect x="0" y="0" width="30" height="30" fill="#FFB6C1" stroke="#333" stroke-width="1.5"/></svg>
+                             <svg width="30" height="30"><rect x="0" y="0" width="30" height="30" fill="#FFB6C1" stroke="#333" stroke-width="1.5"/></svg>
+                             <svg width="30" height="30"><rect x="0" y="0" width="30" height="30" fill="#FFB6C1" stroke="#333" stroke-width="1.5"/></svg>
+                         </div>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. 4 Persegi Kecil</label>
+                        <label class="flex items-center cursor-pointer">b. 4 Segitiga</label>
+                        <label class="flex items-center cursor-pointer">c. 2 Persegi Panjang</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        3. Sarang lebah ini berbentuk Segienam. Ia tersusun dari 6 buah bangun datar kecil yang sama. Bangun apakah itu?
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- Hexagon -->
+                         <svg width="100" height="100" viewBox="0 0 100 100">
+                             <polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" fill="#FFFDD0" stroke="#333" stroke-width="2"/>
+                             <line x1="25" y1="6.7" x2="75" y2="93.3" stroke="#333" stroke-width="1"/>
+                             <line x1="75" y1="6.7" x2="25" y2="93.3" stroke="#333" stroke-width="1"/>
+                             <line x1="100" y1="50" x2="0" y2="50" stroke="#333" stroke-width="1"/>
+                         </svg>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. Segitiga</label>
+                        <label class="flex items-center cursor-pointer">b. Persegi</label>
+                        <label class="flex items-center cursor-pointer">c. Layang-layang</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        4. Sebuah lingkaran dipotong tepat di tengah. Hasilnya adalah 2 buah...
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- Circle Cut -->
+                         <svg width="100" height="100">
+                             <circle cx="50" cy="50" r="40" fill="#98FB98" stroke="#333" stroke-width="2"/>
+                             <line x1="10" y1="50" x2="90" y2="50" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                             <text x="50" y="30" text-anchor="middle" font-weight="bold">1</text>
+                             <text x="50" y="70" text-anchor="middle" font-weight="bold">2</text>
+                         </svg>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. Setengah lingkaran</label>
+                        <label class="flex items-center cursor-pointer">b. Seperempat lingkaran</label>
+                        <label class="flex items-center cursor-pointer">c. Lingkaran penuh</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. Perhatikan gambar "Ikan" ini. Ekornya berbentuk...
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- Fish -->
+                         <!-- Widen SVG to accommodate label -->
+                         <svg width="180" height="80" viewBox="0 0 180 80">
+                             <!-- Body (Rhombus) -->
+                             <polygon points="10,40 50,70 90,40 50,10" fill="#FFCC99" stroke="#333" stroke-width="2"/>
+                             <!-- Tail (Triangle) -->
+                             <polygon points="90,40 120,60 120,20" fill="#FFB6C1" stroke="#333" stroke-width="2"/>
+                             <!-- Eye -->
+                             <circle cx="40" cy="35" r="3" fill="black"/>
+                             <!-- Label Arrow -->
+                             <text x="130" y="15" font-size="12">Ekor</text>
+                             <line x1="130" y1="18" x2="110" y2="30" stroke="#333" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+                         </svg>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. Persegi</label>
+                        <label class="flex items-center cursor-pointer">b. Segitiga</label>
+                        <label class="flex items-center cursor-pointer">c. Lingkaran</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer relative z-10">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i class="ml-auto">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Bagian B) ================= -->
+      <section class="page">
+        <!-- Page Border Decoration -->
+        <div class="page-border"></div>
+
+        <!-- HEADER -->
+        <header class="page-header relative z-10">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bangun Datar 2D
+                    </div>
+                    <div class="text-[11px] text-black font-medium" style="max-width: 250px; line-height: 1.2;">
+                        Menggabungkan dan memisahkan bangun datar
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Kode : D4-S265
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- SECTION B -->
+            <div class="instruction-text mt-4">
+                Bagian B: Isian & Menggambar<br>
+                <span class="font-normal italic">Jawablah atau gambarlah sesuai perintah.</span>
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. Tantangan Memotong.
+                    </div>
+                    <div class="mb-2">
+                        Tariklah satu garis lurus di dalam kotak ini agar terbagi menjadi <b>1 Persegi Panjang dan 1 Segitiga Siku-siku</b>.
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- Right Trapezoid -->
+                         <svg width="150" height="80" viewBox="0 0 150 80">
+                             <!-- (0,0) -- (5,0) -- (3,2) -- (0,2) -- cycle -->
+                             <!-- Scaled up for visibility -->
+                             <polygon points="10,70 140,70 90,10 10,10" fill="white" stroke="#333" stroke-width="2"/>
+                             <text x="75" y="45" text-anchor="middle" fill="#888" font-size="10">(Gambar garis di sini)</text>
+                         </svg>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. Matematika Bentuk.
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4 gap-2">
+                         <!-- Quarter Circles -->
+                         <svg width="30" height="30"><path d="M 0,30 L 30,30 A 30,30 0 0,0 0,0 Z" fill="#D8BFD8" stroke="#333" stroke-width="2"/></svg>
+                         <span class="font-bold">+</span>
+                         <svg width="30" height="30"><path d="M 0,30 L 0,0 A 30,30 0 0,1 30,30 Z" fill="#D8BFD8" stroke="#333" stroke-width="2"/></svg>
+                         <span class="font-bold">+</span>
+                         <svg width="30" height="30"><path d="M 0,0 L 30,0 A 30,30 0 0,1 0,30 Z" fill="#D8BFD8" stroke="#333" stroke-width="2"/></svg>
+                         <span class="font-bold">+</span>
+                         <svg width="30" height="30"><path d="M 30,0 L 30,30 A 30,30 0 0,1 0,0 Z" fill="#D8BFD8" stroke="#333" stroke-width="2"/></svg>
+                         
+                         <span class="font-bold text-xl">=</span>
+                         
+                         <!-- Result -->
+                         <div class="relative flex items-center justify-center">
+                             <svg width="50" height="50">
+                                 <circle cx="25" cy="25" r="23" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                                 <text x="25" y="30" text-anchor="middle" font-weight="bold">?</text>
+                             </svg>
+                         </div>
+                    </div>
+
+                    <div class="mb-2">
+                        Jika 4 buah seperempat lingkaran disatukan, akan membentuk sebuah <span class="input-line" style="width: 200px;"></span>.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Menghitung Ubin.
+                    </div>
+                    <div class="mb-2">
+                        Berapa banyak persegi kecil yang dibutuhkan untuk menutupi persegi besar ini?
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- 2x2 Grid -->
+                         <svg width="80" height="80">
+                             <rect x="0" y="0" width="80" height="80" fill="white" stroke="#333" stroke-width="2"/>
+                             <line x1="40" y1="0" x2="40" y2="80" stroke="#333" stroke-width="2"/>
+                             <line x1="0" y1="40" x2="80" y2="40" stroke="#333" stroke-width="2"/>
+                         </svg>
+                    </div>
+
+                    <div class="mb-2">
+                        Jawab: Dibutuhkan <span class="input-line" style="width: 50px;"></span> persegi kecil.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. Teka-Teki Logika.
+                    </div>
+                    <div class="bg-yellow-50 p-3 rounded border border-yellow-200 text-center italic mb-3 text-sm">
+                        "Aku adalah Persegi. Jika kamu memotongku dari pojok atas kiri ke pojok bawah kanan, aku akan berubah menjadi 2 Segitiga."
+                    </div>
+                    <div class="mb-2 text-center">
+                        Benar atau Salah? <span class="input-line" style="width: 150px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. Ayo Berkreasi.
+                    </div>
+                    <div class="mb-2">
+                        Gambarlah sebuah <b>Rumah</b> sederhana menggunakan gabungan <b>1 Persegi</b> (untuk dinding) dan <b>1 Segitiga</b> (untuk atap).
+                    </div>
+                    <div class="flex justify-center mt-2">
+                        <div class="w-full h-32 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center bg-gray-50">
+                            <span class="text-gray-400 font-bold">(Gambar Rumah di sini)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ENCOURAGEMENT MESSAGE -->
+                <div class="encouragement-box">
+                    <p class="encouragement-text">"Keren banget! Dua jempol buat kamu!"</p>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer relative z-10">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i class="ml-auto">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
