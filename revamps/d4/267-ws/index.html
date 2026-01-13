@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Discovery 4 - Bangun Datar</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts: Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- GLOBAL STYLES --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --bg-color: #525659;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 11pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: var(--bg-color);
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      /* --- PAGE STRUCTURE (A4) --- */
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 1.5cm 1.5cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .content-wrapper {
+        width: 100%;
+        flex-grow: 1;
+        position: relative;
+        z-index: 10;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 7pt;
+        color: var(--grey-text);
+        padding-top: 8px;
+        margin-top: auto;
+        border-top: 1px solid #ccc;
+        width: 100%;
+        font-family: 'Noto Sans', sans-serif;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* --- PRINT STYLES --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1.5cm 1.5cm;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .no-print {
+          display: none;
+        }
+        .bg-blue-50, .bg-yellow-50, .bg-green-50 {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+
+      /* --- COMPONENT STYLES --- */
+      
+      /* Header */
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #000;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+
+      /* Inputs */
+      .input-line {
+        border: none;
+        border-bottom: 2px solid #333;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        background: transparent;
+        outline: none;
+        font-family: 'Montserrat', sans-serif;
+        display: inline-block;
+        padding: 0 5px;
+      }
+
+      /* Grid for Questions */
+      .question-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        align-items: start;
+      }
+
+      .single-col {
+        grid-column: span 2;
+      }
+
+      /* Choice Containers */
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 10px;
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 0.95rem;
+      }
+      
+      .choice-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        cursor: pointer;
+      }
+
+      .circle-check {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #333;
+        border-radius: 50%;
+        display: inline-block;
+        flex-shrink: 0;
+        margin-top: 3px;
+      }
+
+      /* SVGs */
+      .svg-shape {
+        fill: none;
+        stroke: black;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .svg-fill-blue { fill: #bfdbfe; } /* blue-200 */
+      .svg-fill-red { fill: #fecaca; } /* red-200 */
+      .svg-fill-yellow { fill: #fef08a; } /* yellow-200 */
+      .svg-fill-green { fill: #bbf7d0; } /* green-200 */
+      .svg-fill-orange { fill: #fed7aa; } /* orange-200 */
+      .svg-fill-pink { fill: #fbcfe8; } /* pink-200 */
+      .svg-fill-gray { fill: #e5e7eb; } /* gray-200 */
+      .svg-fill-white { fill: #ffffff; }
+
+      /* --- PAGE STRUCTURE (A4) --- */
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .page {
+        background: white;
+      }
+      
+      .quote-box {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f0fdf4; /* green-50 */
+        border: 2px dashed #4ade80; /* green-400 */
+        border-radius: 10px;
+        text-align: center;
+        font-weight: bold;
+        color: #15803d; /* green-700 */
+      }
+
+    </style>
+  </head>
+  <body>
+
+    <div class="page-container">
+      
+      <!-- ================= PAGE 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="math-champs-header">
+          <!-- LOGO -->
+          <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+          
+          <!-- INFO KANAN ATAS -->
+          <div class="text-right">
+            <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+            <div class="text-[11px] text-black font-semibold mt-1">Bangun Datar</div>
+            <div class="text-[11px] text-black font-medium">Membuat bentuk dari bangun datar yang berbeda</div>
+            <div class="text-[11px] text-black font-medium">Kode : D4-S266</div>
+          </div>
+        </header>
+
+        <div class="content-wrapper">
+          
+          <!-- INSTRUKSI -->
+          <div class="mb-6 bg-gray-50 p-3 rounded-lg border border-gray-200">
+            <p class="text-sm italic text-gray-700"><strong>Petunjuk:</strong> Perhatikan gambar dengan teliti. Jawablah pertanyaan dengan memilih jawaban yang benar atau mengisi titik-titik yang tersedia.</p>
+          </div>
+
+          <div class="question-grid">
+            
+            <!-- Q1: Rumah -->
+            <div class="question-box">
+              <div class="font-bold mb-2">1. Perhatikan gambar rumah di bawah ini.</div>
+              <div class="flex items-center justify-center my-4">
+                <svg width="120" height="120" viewBox="0 0 100 100">
+                    <!-- Roof -->
+                    <polygon points="20,40 80,40 50,10" class="svg-shape svg-fill-red" />
+                    <!-- Body -->
+                    <rect x="20" y="40" width="60" height="60" class="svg-shape svg-fill-blue" />
+                </svg>
+              </div>
+              <div class="text-sm font-semibold mb-2">Bangun datar apa saja yang menyusun gambar rumah tersebut?</div>
+              <div class="choice-container">
+                <label class="choice-item">A. 1 Segitiga dan 1 Lingkaran</label>
+                <label class="choice-item">B. 1 Segitiga dan 1 Persegi</label>
+                <label class="choice-item">C. 2 Persegi Panjang</label>
+              </div>
+            </div>
+
+            <!-- Q2: Segitiga jadi Persegi Panjang -->
+            <div class="question-box">
+              <div class="font-bold mb-2">2. Menggabungkan Bentuk</div>
+              <div class="text-sm mb-2">Jika kita menggabungkan dua buah segitiga siku-siku yang sama persis seperti di bawah ini, bangun apa yang akan terbentuk?</div>
+              <div class="flex items-center justify-center gap-2 my-4">
+                <svg width="60" height="60" viewBox="0 0 50 50">
+                    <polygon points="0,0 0,50 40,0" class="svg-shape svg-fill-yellow" />
+                </svg>
+                <span class="text-2xl font-bold">+</span>
+                <svg width="60" height="60" viewBox="0 0 50 50">
+                   <polygon points="40,50 40,0 0,50" class="svg-shape svg-fill-yellow" />
+                </svg>
+              </div>
+              <div class="mt-4">
+                  <strong>Jawaban:</strong> <input type="text" class="input-line w-40 text-base">
+              </div>
+            </div>
+
+            <div class="h-separator single-col"></div>
+
+            <!-- Q3: Es Krim -->
+            <div class="question-box">
+              <div class="font-bold mb-2">3. Perhatikan gambar es krim di bawah ini.</div>
+              <div class="flex items-center justify-center my-4">
+                <svg width="100" height="120" viewBox="0 0 100 120">
+                    <!-- Cone -->
+                    <polygon points="20,40 80,40 50,110" class="svg-shape svg-fill-orange" />
+                    <!-- Scoop -->
+                    <circle cx="50" cy="40" r="30" class="svg-shape svg-fill-pink" />
+                    <!-- Cherry -->
+                    <circle cx="50" cy="15" r="5" fill="red" stroke="black" stroke-width="1" />
+                    <line x1="50" y1="10" x2="55" y2="2" stroke="black" stroke-width="2" />
+                </svg>
+              </div>
+              <div class="text-sm font-semibold mb-2">Gambar es krim tersebut tersusun dari gabungan bangun datar...</div>
+              <div class="choice-container">
+                <label class="choice-item">A. Persegi dan Lingkaran</label>
+                <label class="choice-item">B. Segitiga dan Lingkaran</label>
+                <label class="choice-item">C. Segitiga dan Persegi Panjang</label>
+              </div>
+            </div>
+
+            <!-- Q4: Memotong Kertas -->
+            <div class="question-box">
+              <div class="font-bold mb-2">4. Memotong Kertas</div>
+              <div class="text-sm mb-2">Ani memiliki kertas persegi. Ia mengguntingnya tepat di tengah secara mendatar (garis putus-putus).</div>
+              <div class="flex items-center justify-center my-4">
+                <svg width="100" height="100" viewBox="0 0 100 100">
+                    <rect x="10" y="10" width="80" height="80" class="svg-shape svg-fill-green" />
+                    <line x1="10" y1="50" x2="90" y2="50" stroke="red" stroke-width="2" stroke-dasharray="5,5" />
+                    <text x="95" y="55" font-size="20" fill="red">✂</text>
+                </svg>
+              </div>
+              <div class="text-sm font-semibold mb-2">Dua bangun datar baru apa yang terbentuk?</div>
+              <div class="choice-container">
+                <label class="choice-item">A. 2 Segitiga</label>
+                <label class="choice-item">B. 2 Persegi Panjang</label>
+                <label class="choice-item">C. 2 Lingkaran</label>
+              </div>
+            </div>
+
+            <div class="h-separator single-col"></div>
+            
+            <!-- Q5: Grid Pattern -->
+            <div class="question-box single-col">
+              <div class="font-bold mb-2">5. Menghitung Luas dengan Satuan Persegi</div>
+              <div class="flex flex-row items-center gap-8 mt-2">
+                  <div class="flex flex-col items-center">
+                    <div class="mb-1 text-xs">Persegi Panjang Besar</div>
+                    <svg width="150" height="100" viewBox="0 0 150 100">
+                        <rect x="0" y="0" width="150" height="100" class="svg-shape svg-fill-white" />
+                        <rect x="0" y="50" width="50" height="50" class="svg-shape svg-fill-gray" />
+                        <text x="25" y="80" text-anchor="middle" font-weight="bold">1</text>
+                    </svg>
+                  </div>
+                  <div class="flex flex-col justify-center gap-2">
+                      <p class="text-sm">Berapa banyak persegi kecil yang dibutuhkan untuk menutupi persegi panjang besar ini sepenuhnya?</p>
+                      <div class="mt-2">
+                          <strong>Jawaban:</strong> <input type="text" class="input-line w-20 text-base"> persegi kecil.
+                      </div>
+                  </div>
+              </div>
+            </div>
+
+          </div> <!-- End Grid -->
+        </div> <!-- End Content Wrapper -->
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Repeated) -->
+        <header class="math-champs-header">
+           <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+           <div class="text-right">
+             <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+             <div class="text-[11px] text-black font-semibold mt-1">Bangun Datar</div>
+             <div class="text-[11px] text-black font-medium">Membuat bentuk dari bangun datar yang berbeda</div>
+             <div class="text-[11px] text-black font-medium">Kode : D4-S266</div>
+           </div>
+        </header>
+
+        <div class="content-wrapper">
+          
+          <div class="question-grid">
+            
+            <!-- Q6: Roket -->
+            <div class="question-box">
+              <div class="font-bold mb-2">6. Identifikasi Komponen</div>
+              <div class="text-sm mb-2">Gambar roket di bawah ini tersusun dari bangun datar apa saja?</div>
+              <div class="flex items-center justify-center my-4">
+                <svg width="100" height="140" viewBox="0 0 100 140">
+                    <!-- Top -->
+                    <polygon points="20,40 80,40 50,0" class="svg-shape svg-fill-red" />
+                    <!-- Body -->
+                    <rect x="20" y="40" width="60" height="80" class="svg-shape svg-fill-blue" />
+                    <!-- Window -->
+                    <circle cx="50" cy="80" r="15" class="svg-shape svg-fill-yellow" />
+                </svg>
+              </div>
+              <div class="choice-container">
+                <label class="choice-item">A. Segitiga, Persegi Panjang, Lingkaran</label>
+                <label class="choice-item">B. Segitiga, Persegi, Segilima</label>
+                <label class="choice-item">C. Lingkaran, Persegi Panjang, Persegi</label>
+              </div>
+            </div>
+
+            <!-- Q7: Robot (Negative) -->
+            <div class="question-box">
+              <div class="font-bold mb-2">7. Mencari yang BUKAN</div>
+              <div class="text-sm mb-2">Bangun datar manakah yang <strong>TIDAK</strong> digunakan untuk membuat robot tersebut?</div>
+              <div class="flex items-center justify-center my-4">
+                <svg width="100" height="140" viewBox="0 0 100 140">
+                    <!-- Hat -->
+                    <polygon points="30,30 70,30 50,10" class="svg-shape svg-fill-orange" />
+                    <!-- Head -->
+                    <rect x="30" y="30" width="40" height="30" class="svg-shape svg-fill-gray" />
+                    <!-- Body -->
+                    <rect x="20" y="60" width="60" height="50" class="svg-shape svg-fill-blue" />
+                    <!-- Eyes -->
+                    <rect x="35" y="40" width="10" height="10" class="svg-shape svg-fill-white" />
+                    <rect x="55" y="40" width="10" height="10" class="svg-shape svg-fill-white" />
+                </svg>
+              </div>
+              <div class="choice-container">
+                <label class="choice-item">A. Segitiga</label>
+                <label class="choice-item">B. Lingkaran</label>
+                <label class="choice-item">C. Persegi</label>
+              </div>
+            </div>
+
+            <div class="h-separator single-col"></div>
+
+            <!-- Q8: Puzzle -->
+            <div class="question-box">
+              <div class="font-bold mb-2">8. Teka-teki Bentuk</div>
+              <div class="text-sm mb-2">Bangun manakah yang hilang untuk melengkapi persegi (Puzzle) ini?</div>
+              <div class="flex items-center justify-center gap-6 my-4">
+                <!-- Main Puzzle -->
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                    <polygon points="0,0 60,0 60,60 30,60 30,30 0,30" class="svg-shape fill-white" />
+                    <rect x="0" y="30" width="30" height="30" fill="#ddd" stroke="none"/>
+                    <text x="10" y="50" font-size="20" fill="gray">?</text>
+                </svg>
+                
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold">A</span>
+                        <svg width="30" height="30" viewBox="0 0 30 30">
+                            <rect x="0" y="0" width="30" height="30" class="svg-shape svg-fill-gray" />
+                        </svg>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold">B</span>
+                        <svg width="60" height="30" viewBox="0 0 60 30">
+                            <rect x="0" y="0" width="60" height="30" class="svg-shape svg-fill-gray" />
+                        </svg>
+                    </div>
+                </div>
+              </div>
+              <div class="mt-2 text-center">
+                  <strong>Jawaban:</strong> <input type="text" class="input-line w-20 text-base"> (Pilih A atau B)
+              </div>
+            </div>
+
+            <!-- Q9: Layang-layang -->
+            <div class="question-box">
+              <div class="font-bold mb-2">9. Membuat Layang-layang</div>
+              <div class="text-sm mb-2">Budi ingin membuat layang-layang dari 2 segitiga sama kaki. Bagaimana cara menyusunnya?</div>
+              <div class="flex items-center justify-center my-4">
+                <svg width="160" height="60" viewBox="0 0 160 60">
+                   <!-- Segitiga 1 (Tegak) -->
+                   <polygon points="10,50 35,10 60,50" class="svg-shape svg-fill-orange" />
+                   
+                   <!-- Tanda Tambah -->
+                   <text x="80" y="35" font-weight="bold" font-size="20" text-anchor="middle">+</text>
+                   
+                   <!-- Segitiga 2 (Terbalik) -->
+                   <polygon points="100,10 125,50 150,10" class="svg-shape svg-fill-orange" />
+                </svg>
+              </div>
+              <div class="choice-container">
+                <label class="choice-item">A. Menempelkan sisi alas segitiga satu sama lain</label>
+                <label class="choice-item">B. Menempelkan ujung lancip segitiga</label>
+                <label class="choice-item">C. Menumpuk segitiga tersebut</label>
+              </div>
+            </div>
+
+            <div class="h-separator single-col"></div>
+
+            <!-- Q10: Sedotan -->
+            <div class="question-box single-col">
+               <div class="flex flex-col md:flex-row gap-6 items-center bg-yellow-50 p-4 rounded-xl border border-yellow-200">
+                   <div class="flex-grow">
+                     <div class="font-bold text-yellow-800 mb-1">Soal Tantangan</div>
+                     <div class="font-bold mb-1">10. Menyusun Sedotan</div>
+                     <p class="text-sm mb-2">Rini memiliki 4 batang sedotan yang sama panjang. Jika ia menyusun keempat sedotan tersebut menjadi sebuah bangun datar tertutup, bangun apa yang terbentuk?</p>
+                     <div class="mt-4">
+                        <strong>Jawaban:</strong> <input type="text" class="input-line w-40 text-base">
+                     </div>
+                   </div>
+                   <div class="flex-shrink-0">
+                        <svg width="100" height="100" viewBox="0 0 100 100">
+                            <line x1="20" y1="20" x2="20" y2="80" stroke="#a0522d" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="40" y1="20" x2="40" y2="80" stroke="#a0522d" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="60" y1="20" x2="60" y2="80" stroke="#a0522d" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="80" y1="20" x2="80" y2="80" stroke="#a0522d" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                   </div>
+               </div>
+            </div>
+
+            <!-- QUOTE BOX -->
+            <div class="single-col quote-box">
+                Mantap! Kamu benar-benar Math Champs! 🌟
+            </div>
+
+          </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
