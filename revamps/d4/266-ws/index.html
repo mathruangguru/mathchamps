@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Membuat Bentuk dari Bangun Datar (D4-S266)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        /* Pastel Colors converted from LaTeX */
+        --pastel-blue: #ADD8E6;
+        --pastel-red: #FFB6C1;
+        --pastel-green: #98FB98;
+        --pastel-yellow: #FFFDD0;
+        --pastel-orange: #FFCC99;
+        --soft-purple: #D8BFD8;
+        --soft-brown: #DEB887;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1.2cm 1.5cm 0.6cm 1.5cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1.2cm 1.5cm 0.6cm 1.5cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .page-border,
+        .encouragement-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- PAGE BORDER DECORATION --- */
+      .page-border {
+        position: absolute;
+        top: 1cm;
+        left: 1cm;
+        right: 1cm;
+        bottom: 1cm;
+        border: 3px solid var(--pastel-orange);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 2; /* Above border */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-line {
+        display: inline-block;
+        border-bottom: 1.5px solid #333;
+        min-width: 100px;
+        text-align: center;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-left: 1rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 3px;
+        background: white;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.5cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+        position: relative;
+        z-index: 2;
+      }
+
+      /* Encouragement Box */
+      .encouragement-box {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background-color: #fef3c7; /* yellow-100 */
+        border-left: 4px solid #d97706; /* yellow-600 */
+        border-radius: 0.5rem;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+      }
+      .encouragement-text {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #92400e; /* yellow-800 */
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Bagian A) ================= -->
+      <section class="page">
+        <!-- Page Border Decoration -->
+        <div class="page-border"></div>
+
+        <!-- HEADER -->
+        <header class="page-header relative z-10">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bangun Datar 2D
+                    </div>
+                    <div class="text-[11px] text-black font-medium" style="max-width: 250px; line-height: 1.2;">
+                        Membuat bentuk dari bangun datar
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Kode : D4-S266
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- SECTION A -->
+            <div class="instruction-text mt-4">
+                Bagian A: Pilihan Ganda<br>
+                <span class="font-normal italic">Pilihlah jawaban yang tepat berdasarkan gambar yang disusun.</span>
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        1. Perhatikan gambar Kereta Api di bawah ini. Bagian rodanya terbuat dari bentuk...
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                        <!-- Train SVG -->
+                        <svg width="200" height="100" viewBox="0 0 200 100">
+                            <!-- Engine Body -->
+                            <rect x="20" y="30" width="80" height="50" fill="#ADD8E6" stroke="#333" stroke-width="2"/>
+                            <!-- Cabin -->
+                            <rect x="100" y="30" width="50" height="70" fill="#FFB6C1" stroke="#333" stroke-width="2" transform="translate(0, -20)"/>
+                            <!-- Roof -->
+                            <rect x="95" y="5" width="60" height="10" fill="#FFFDD0" stroke="#333" stroke-width="2"/>
+                            <!-- Chimney -->
+                            <rect x="30" y="5" width="20" height="25" fill="#aaa" stroke="#333" stroke-width="2"/>
+                            <!-- Wheels -->
+                            <circle cx="40" cy="80" r="12" fill="black"/>
+                            <circle cx="80" cy="80" r="12" fill="black"/>
+                            <circle cx="125" cy="80" r="12" fill="black"/>
+                        </svg>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. Persegi</label>
+                        <label class="flex items-center cursor-pointer">b. Lingkaran</label>
+                        <label class="flex items-center cursor-pointer">c. Segitiga</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        2. Bentuk apakah yang digunakan untuk membuat "Topi Ulang Tahun" ini?
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- Hat SVG -->
+                         <svg width="100" height="120" viewBox="0 0 100 120">
+                             <polygon points="50,10 10,110 90,110" fill="#98FB98" stroke="#333" stroke-width="2"/>
+                             <circle cx="50" cy="50" r="5" fill="white" opacity="0.8"/>
+                             <circle cx="30" cy="80" r="6" fill="white" opacity="0.8"/>
+                             <circle cx="70" cy="80" r="6" fill="white" opacity="0.8"/>
+                             <circle cx="50" cy="95" r="5" fill="white" opacity="0.8"/>
+                         </svg>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. Segitiga</label>
+                        <label class="flex items-center cursor-pointer">b. Persegi Panjang</label>
+                        <label class="flex items-center cursor-pointer">c. Setengah Lingkaran</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        3. Robot ini disusun dari bangun datar. Bagian kepalanya berbentuk...
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- Robot SVG -->
+                         <svg width="120" height="150" viewBox="0 0 120 150">
+                             <!-- Antenna -->
+                             <line x1="60" y1="30" x2="60" y2="10" stroke="#333" stroke-width="2"/>
+                             <circle cx="60" cy="10" r="5" fill="red"/>
+                             <!-- Head (Square) -->
+                             <rect x="35" y="30" width="50" height="50" fill="#FFCC99" stroke="#333" stroke-width="2"/>
+                             <!-- Eyes -->
+                             <circle cx="50" cy="50" r="5" fill="white" stroke="#333"/>
+                             <circle cx="70" cy="50" r="5" fill="white" stroke="#333"/>
+                             <!-- Body (Rect) -->
+                             <rect x="25" y="80" width="70" height="60" fill="#ADD8E6" stroke="#333" stroke-width="2"/>
+                         </svg>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. Persegi Panjang</label>
+                        <label class="flex items-center cursor-pointer">b. Persegi</label>
+                        <label class="flex items-center cursor-pointer">c. Lingkaran</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        4. Es Krim lezat! Bagian atas (es krimnya) berbentuk...
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- Ice Cream SVG -->
+                         <svg width="100" height="150" viewBox="0 0 100 150">
+                             <!-- Cone (Inverted Triangle) -->
+                             <polygon points="10,60 90,60 50,140" fill="#DEB887" stroke="#333" stroke-width="2"/>
+                             <!-- Scoop (Semicircle) -->
+                             <path d="M 10,60 A 40,40 0 0,1 90,60" fill="#FFB6C1" stroke="#333" stroke-width="2"/>
+                             <line x1="10" y1="60" x2="90" y2="60" stroke="#333" stroke-width="2"/>
+                         </svg>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. Lingkaran penuh</label>
+                        <label class="flex items-center cursor-pointer">b. Setengah lingkaran</label>
+                        <label class="flex items-center cursor-pointer">c. Seperempat lingkaran</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. Ulat bulu ini tersusun dari gabungan banyak bentuk...
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- Caterpillar SVG -->
+                         <svg width="200" height="60" viewBox="0 0 200 60">
+                             <circle cx="30" cy="30" r="20" fill="#98FB98" stroke="#333" stroke-width="2"/>
+                             <circle cx="60" cy="30" r="20" fill="#98FB98" stroke="#333" stroke-width="2"/>
+                             <circle cx="90" cy="30" r="20" fill="#98FB98" stroke="#333" stroke-width="2"/>
+                             <circle cx="120" cy="30" r="20" fill="#98FB98" stroke="#333" stroke-width="2"/>
+                             <!-- Head -->
+                             <circle cx="155" cy="25" r="22" fill="#FFFDD0" stroke="#333" stroke-width="2"/>
+                             <!-- Face -->
+                             <circle cx="150" cy="20" r="2" fill="black"/>
+                             <circle cx="160" cy="20" r="2" fill="black"/>
+                             <path d="M 150,30 Q 155,35 160,30" stroke="black" stroke-width="1.5" fill="none"/>
+                         </svg>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. Lingkaran</label>
+                        <label class="flex items-center cursor-pointer">b. Oval</label>
+                        <label class="flex items-center cursor-pointer">c. Persegi</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer relative z-10">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i class="ml-auto">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Bagian B) ================= -->
+      <section class="page">
+        <!-- Page Border Decoration -->
+        <div class="page-border"></div>
+
+        <!-- HEADER -->
+        <header class="page-header relative z-10">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bangun Datar 2D
+                    </div>
+                    <div class="text-[11px] text-black font-medium" style="max-width: 250px; line-height: 1.2;">
+                        Membuat bentuk dari bangun datar
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Kode : D4-S266
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- SECTION B -->
+            <div class="instruction-text mt-4">
+                Bagian B: Isian Singkat<br>
+                <span class="font-normal italic">Jawablah dengan nama bangun datar yang tepat (contoh: Segitiga, Lingkaran, Persegi).</span>
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. Menghitung Bentuk pada Rumah.
+                    </div>
+                    <div class="mb-2">
+                        Perhatikan gambar rumah di bawah ini.
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- House SVG -->
+                         <svg width="150" height="150" viewBox="0 0 150 150">
+                             <!-- Body (Square) -->
+                             <rect x="30" y="60" width="90" height="90" fill="#ADD8E6" stroke="#333" stroke-width="2"/>
+                             <!-- Roof (Triangle) -->
+                             <polygon points="10,60 75,10 140,60" fill="#FFB6C1" stroke="#333" stroke-width="2"/>
+                             <!-- Door (Rect) -->
+                             <rect x="65" y="100" width="20" height="50" fill="#DEB887" stroke="#333" stroke-width="2"/>
+                             <!-- Window 1 (Square) -->
+                             <rect x="40" y="75" width="20" height="20" fill="#FFFDD0" stroke="#333" stroke-width="2"/>
+                             <!-- Window 2 (Square) -->
+                             <rect x="90" y="75" width="20" height="20" fill="#FFFDD0" stroke="#333" stroke-width="2"/>
+                         </svg>
+                    </div>
+
+                    <div class="mb-2">
+                        Ada berapa banyak bentuk <b>Persegi (Kotak)</b> pada gambar rumah di atas (termasuk dinding dan jendela)?<br>
+                        Jawab: <span class="input-line" style="width: 100px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. Lampu Lalu Lintas.
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- Traffic Light SVG -->
+                         <svg width="80" height="150" viewBox="0 0 80 150">
+                             <!-- Pole -->
+                             <rect x="35" y="120" width="10" height="30" fill="#aaa"/>
+                             <!-- Body -->
+                             <rect x="20" y="10" width="40" height="110" fill="#555" stroke="#333" stroke-width="2"/>
+                             <!-- Lights -->
+                             <circle cx="40" cy="30" r="12" fill="#FF4444" stroke="#333"/>
+                             <circle cx="40" cy="65" r="12" fill="#FFD700" stroke="#333"/>
+                             <circle cx="40" cy="100" r="12" fill="#44FF44" stroke="#333"/>
+                         </svg>
+                    </div>
+
+                    <div class="mb-2">
+                        Lampu lalu lintas ini tersusun dari 1 Persegi Panjang dan 3 buah <span class="input-line" style="width: 200px;"></span>.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Pohon Cemara.
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- Tree SVG -->
+                         <svg width="120" height="150" viewBox="0 0 120 150">
+                             <!-- Trunk -->
+                             <rect x="50" y="120" width="20" height="30" fill="#DEB887" stroke="#333" stroke-width="2"/>
+                             <!-- Leaves (Triangles) -->
+                             <polygon points="10,120 60,60 110,120" fill="#98FB98" stroke="#333" stroke-width="2"/>
+                             <polygon points="20,80 60,30 100,80" fill="#98FB98" stroke="#333" stroke-width="2"/>
+                             <polygon points="30,40 60,0 90,40" fill="#98FB98" stroke="#333" stroke-width="2"/>
+                         </svg>
+                    </div>
+
+                    <div class="mb-2">
+                        Daun pohon cemara di atas berbentuk <span class="input-line" style="width: 200px;"></span>.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. Kado Ulang Tahun.
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- Gift Box SVG -->
+                         <svg width="100" height="120" viewBox="0 0 100 120">
+                             <!-- Box -->
+                             <rect x="10" y="30" width="80" height="80" fill="#ADD8E6" stroke="#333" stroke-width="2"/>
+                             <!-- Ribbon Vertical -->
+                             <rect x="40" y="30" width="20" height="80" fill="#FFB6C1" stroke="#333" stroke-width="1"/>
+                             <!-- Ribbon Horizontal -->
+                             <rect x="10" y="60" width="80" height="20" fill="#FFB6C1" stroke="#333" stroke-width="1"/>
+                             <!-- Bow -->
+                             <ellipse cx="35" cy="25" rx="15" ry="10" fill="#FFB6C1" stroke="#333"/>
+                             <ellipse cx="65" cy="25" rx="15" ry="10" fill="#FFB6C1" stroke="#333"/>
+                             <circle cx="50" cy="30" r="5" fill="#FFB6C1" stroke="#333"/>
+                         </svg>
+                    </div>
+
+                    <div class="mb-2">
+                        Kotak kado (wadahnya) berbentuk <span class="input-line" style="width: 200px;"></span>.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. Lebah Kecil.
+                    </div>
+                    
+                    <div class="flex justify-center items-center my-4">
+                         <!-- Bee SVG -->
+                         <svg width="150" height="100" viewBox="0 0 150 100">
+                             <!-- Wings -->
+                             <path d="M 80,40 A 30,30 0 0,1 120,40 Z" fill="#E6E6FA" stroke="#333" stroke-width="1.5" transform="rotate(-20, 80, 40)"/>
+                             <path d="M 50,40 A 30,30 0 0,0 10,40 Z" fill="#E6E6FA" stroke="#333" stroke-width="1.5" transform="rotate(20, 50, 40)"/>
+                             <!-- Body -->
+                             <circle cx="65" cy="60" r="25" fill="#FFD700" stroke="#333" stroke-width="2"/>
+                             <line x1="45" y1="50" x2="85" y2="50" stroke="#333" stroke-width="2"/>
+                             <line x1="40" y1="60" x2="90" y2="60" stroke="#333" stroke-width="2"/>
+                             <line x1="45" y1="70" x2="85" y2="70" stroke="#333" stroke-width="2"/>
+                             <!-- Face -->
+                             <circle cx="55" cy="55" r="2" fill="black"/>
+                             <circle cx="75" cy="55" r="2" fill="black"/>
+                             <path d="M 60,65 Q 65,70 70,65" stroke="black" stroke-width="1.5" fill="none"/>
+                         </svg>
+                    </div>
+
+                    <div class="mb-2">
+                        Sayap lebah ini berbentuk <span class="input-line" style="width: 200px;"></span>.
+                    </div>
+                </div>
+
+                <!-- ENCOURAGEMENT MESSAGE -->
+                <div class="encouragement-box">
+                    <p class="encouragement-text">"Wah, kamu kreatif sekali menyusun bangun datar!"</p>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer relative z-10">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i class="ml-auto">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
