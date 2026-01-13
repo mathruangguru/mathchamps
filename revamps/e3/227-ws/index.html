@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Bilangan Hingga 100.000 (E3-S227)</title>
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax untuk rendering matematika -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        
+        /* Warna Cakram Pastel */
+        --disc-10000: #f5d0fe; /* Magenta Muda */
+        --disc-1000: #dbeafe;  /* Biru Muda */
+        --disc-100: #dcfce7;   /* Hijau Muda */
+        --disc-10: #ffedd5;    /* Oranye Muda */
+        --disc-1: #fee2e2;     /* Merah Muda */
+      }
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 1cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      .math-champs-header {
+        background-color: white; 
+        padding: 0.4rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black; 
+      }
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      
+      /* --- STYLE KONTEN --- */
+      .soal-item {
+        margin-bottom: 0.5rem;
+        break-inside: avoid;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.3rem;
+        font-size: 0.9rem;
+      }
+
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8cm;
+        align-items: stretch;
+      }
+
+      /* Number Discs */
+      .disc-container {
+          display: flex;
+          gap: 2px;
+          align-items: center;
+          justify-content: center;
+          flex-wrap: wrap;
+          min-height: 28px;
+      }
+      .num-disc {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          border: 1px solid #555;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 0.6rem;
+          box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+          color: #333;
+          flex-shrink: 0;
+      }
+      .disc-10000 { background-color: var(--disc-10000); width: 36px; height: 36px; font-size: 0.65rem; }
+      .disc-1000 { background-color: var(--disc-1000); }
+      .disc-100 { background-color: var(--disc-100); }
+      .disc-10 { background-color: var(--disc-10); }
+      .disc-1 { background-color: var(--disc-1); }
+
+      /* Place Value Table */
+      .pv-table {
+          width: 100%;
+          border-collapse: collapse;
+          text-align: center;
+          background: white;
+          font-size: 0.85rem;
+          margin: 4px 0;
+      }
+      .pv-table th, .pv-table td {
+          border: 1px solid #333;
+          padding: 8px 4px;
+          vertical-align: top;
+      }
+      .pv-table th {
+          background-color: #f3f4f6;
+          font-weight: 700;
+          font-size: 0.7rem;
+      }
+      .pv-table td {
+          height: 60px;
+          vertical-align: middle;
+      }
+
+      /* Flow Box (Pattern) */
+      .flow-box {
+        border: 1.5px solid #333;
+        padding: 6px 12px;
+        background: white;
+        font-weight: 600;
+        min-width: 70px;
+        text-align: center;
+        border-radius: 4px;
+      }
+      .flow-box.dashed {
+        border-style: dashed;
+        background-color: #f9fafb;
+        color: #9ca3af;
+      }
+
+      /* Input & Choice */
+      .input-line {
+        border: none;
+        border-bottom: 1.5px solid #333;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        background: transparent;
+        outline: none;
+        font-family: inherit;
+        padding: 0 4px;
+      }
+      .choice-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        cursor: pointer;
+        margin-bottom: 4px;
+        font-size: 0.9rem;
+      }
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1.5px solid #333;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-top: 2px;
+        background: white;
+      }
+
+      /* Identity Table Compact */
+      .identity-table td {
+        padding: 2px 0;
+        font-size: 10pt;
+        font-weight: 600;
+      }
+
+      /* --- PRINT --- */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 1cm; }
+        .page:last-child { page-break-after: avoid; }
+        .math-champs-header, .num-disc, .pv-table th, .flow-box, .bg-blue-50, .bg-yellow-50, .bg-red-50, .bg-green-50, .bg-gray-50, .bg-purple-50, .bg-gray-100 {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+            
+      <!-- HALAMAN 1 (SOAL 1-3) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                        Exploration 3
+                    </div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan Hingga 100.000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Menulis bilangan hingga 100.000 dalam angka
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : E3-S227
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- INFO SISWA -->
+            <div class="flex justify-between items-end mb-4 pb-2 border-b border-gray-300 font-semibold text-sm">
+                <div class="flex gap-2 w-3/4">
+                    <span>Nama:</span>
+                    <div class="border-b border-dotted border-gray-400 flex-grow"></div>
+                </div>
+                <div class="flex gap-2 w-1/4">
+                    <span>Tanggal:</span>
+                    <div class="border-b border-dotted border-gray-400 flex-grow"></div>
+                </div>
+            </div>
+
+            <!-- INSTRUKSI -->
+            <div class="bg-gray-100 border border-gray-400 p-3 rounded-lg shadow-sm mb-4">
+                <h3 class="font-bold text-sm mb-1">Instruksi:</h3>
+                <div class="text-xs text-gray-700 leading-relaxed">
+                    Analisis model visual dan pola yang diberikan untuk menjawab pertanyaan. Beberapa soal berbentuk pilihan ganda, dan beberapa berbentuk isian singkat.
+                </div>
+            </div>
+
+            <!-- Q1: Tulis Bilangan -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-200 shadow-sm mb-2">
+                <div class="font-bold mb-1 text-sm">
+                    1. Tuliskan bilangan berikut dalam angka:
+                </div>
+                <div class="text-center italic text-base my-2 font-serif text-gray-700 bg-gray-50 p-2 rounded">
+                    "Delapan puluh enam ribu, empat ratus dua puluh tujuh."
+                </div>
+                <div class="text-center mt-2">
+                    <b class="text-sm">Jawaban:</b> <input type="text" class="input-line w-48 text-lg">
+                </div>
+            </div>
+
+            <!-- Q2: Nol Pelengkap -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-200 shadow-sm mb-2">
+                <div class="font-bold mb-1 text-sm">
+                    2. Tuliskan bilangan berikut dalam angka:
+                </div>
+                <div class="text-center italic text-base my-2 font-serif text-gray-700 bg-gray-50 p-2 rounded">
+                    "Lima puluh ribu sembilan."
+                </div>
+                <div class="flex items-center justify-center gap-2 text-xs text-red-500 font-bold mb-1">
+                    <span class="text-lg">⚠️</span>
+                    Hati-hati dengan angka nol!
+                </div>
+                <div class="text-center mt-1">
+                    <b class="text-sm">Jawaban:</b> <input type="text" class="input-line w-48 text-lg">
+                </div>
+            </div>
+
+            <!-- Q3: Tabel Nilai Tempat -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                <div class="font-bold mb-1 text-sm">
+                    3. Lihat Tabel Nilai Tempat di bawah ini. Bilangan apa yang ditunjukkan?
+                </div>
+                <table class="pv-table">
+                    <thead>
+                        <tr>
+                            <th>Puluh Ribuan</th>
+                            <th>Ribuan</th>
+                            <th>Ratusan</th>
+                            <th>Puluhan</th>
+                            <th>Satuan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="flex flex-wrap justify-center gap-1">
+                                    <div class="num-disc disc-10000">10.000</div>
+                                    <div class="num-disc disc-10000">10.000</div>
+                                    <div class="num-disc disc-10000">10.000</div>
+                                    <div class="num-disc disc-10000">10.000</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex flex-wrap justify-center gap-1">
+                                    <div class="num-disc disc-1000">1.000</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex flex-wrap justify-center gap-1">
+                                    <div class="num-disc disc-100">100</div>
+                                    <div class="num-disc disc-100">100</div>
+                                    <div class="num-disc disc-100">100</div>
+                                    <div class="num-disc disc-100">100</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex flex-wrap justify-center gap-1">
+                                    <div class="num-disc disc-10">10</div>
+                                    <div class="num-disc disc-10">10</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex flex-wrap justify-center gap-1">
+                                    <div class="num-disc disc-1">1</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="text-center mt-2">
+                    <b class="text-sm">Jawaban:</b> <input type="text" class="input-line w-48 text-lg">
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 (SOAL 4-8) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                        Exploration 3
+                    </div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan Hingga 100.000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Menulis bilangan hingga 100.000 dalam angka
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : E3-S227
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <!-- Q4: Bentuk Baku -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-200">
+                <div class="font-bold mb-1 text-sm">
+                    4. Apa bentuk bilangan standar dari penjabaran berikut?
+                </div>
+                <div class="text-center text-lg font-bold my-2 bg-blue-50 p-2 rounded text-blue-800 tracking-wider">
+                    \( 60.000 + 4.000 + 80 + 3 \)
+                </div>
+                <div class="text-center mt-2">
+                    <b class="text-sm">Jawaban:</b> <input type="text" class="input-line w-40 text-lg">
+                </div>
+            </div>
+
+            <!-- Q5: Pengelompokan Ulang -->
+            <div class="soal-item bg-yellow-50 p-3 rounded-lg border border-yellow-200 relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-yellow-300 text-yellow-900 text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                    EKSPLORASI
+                </div>
+                <div class="font-bold mb-1 text-sm">
+                    5. Tantangan Pengelompokan Ulang:
+                </div>
+                <div class="my-2 text-sm ml-2">
+                    Saya punya <b class="text-red-600">4 puluhan ribu</b>, <b class="text-blue-600">15 ratusan</b>, dan <b class="text-green-600">6 satuan</b>.
+                    <br>Tuliskan bilangan ini dalam angka.
+                </div>
+                <div class="bg-white border border-yellow-300 p-2 rounded text-xs flex items-center gap-3 mb-2">
+                    <div class="text-xl">💡</div>
+                    <div>
+                        <b>Petunjuk:</b> Kelompokkan ratusannya terlebih dahulu.
+                        <br><i>15 Ratusan sama dengan <b>1 Ribuan</b> dan <b>5 Ratusan</b>.</i>
+                    </div>
+                </div>
+                <div class="text-center mt-2">
+                    <b class="text-sm">Jawaban:</b> <input type="text" class="input-line w-40 text-lg">
+                </div>
+            </div>
+
+            <!-- Q6: MCQ -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-200">
+                <div class="font-bold mb-2 text-sm">
+                    6. Manakah yang menunjukkan bilangan <b>tiga puluh dua ribu, empat ratus enam</b> dalam angka?
+                </div>
+                <div class="grid grid-cols-2 gap-2 ml-2">
+                    <label class="choice-item p-1 hover:bg-gray-50 rounded transition">
+                        <div class="choice-box">A</div>
+                        <span class="font-medium text-sm">32.460</span>
+                    </label>
+                    <label class="choice-item p-1 hover:bg-gray-50 rounded transition">
+                        <div class="choice-box">B</div>
+                        <span class="font-medium text-sm">32.406</span>
+                    </label>
+                    <label class="choice-item p-1 hover:bg-gray-50 rounded transition">
+                        <div class="choice-box">C</div>
+                        <span class="font-medium text-sm">32.046</span>
+                    </label>
+                    <label class="choice-item p-1 hover:bg-gray-50 rounded transition">
+                        <div class="choice-box">D</div>
+                        <span class="font-medium text-sm">30.246</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Q7: Nilai Relatif -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-200">
+                <div class="font-bold mb-1 text-sm">
+                    7. Bilangan berapakah yang nilainya <b>1.000 lebih banyak dari</b> 89.250?
+                </div>
+                <div class="text-center mt-4">
+                    <b class="text-sm">Jawaban:</b> <input type="text" class="input-line w-40 text-lg">
+                </div>
+            </div>
+
+            <!-- Q8: Teka-teki Logika -->
+            <div class="soal-item bg-purple-50 p-3 rounded-lg border border-purple-200">
+                <div class="font-bold mb-1 text-sm">
+                    8. Teka-teki Logika:
+                </div>
+                <p class="text-sm mb-2">
+                    Gunakan angka <b>2, 0, 5, 8, 9</b> untuk membentuk <b>bilangan ganjil 5 angka terkecil yang mungkin</b>. Setiap angka hanya boleh digunakan sekali.
+                </p>
+                <div class="flex justify-center gap-2 mb-2">
+                    <div class="w-8 h-10 border-b-2 border-black bg-white flex items-center justify-center text-xl font-bold"></div>
+                    <div class="w-8 h-10 border-b-2 border-black bg-white flex items-center justify-center text-xl font-bold"></div>
+                    <div class="w-8 h-10 border-b-2 border-black bg-white flex items-center justify-center text-xl font-bold"></div>
+                    <div class="w-8 h-10 border-b-2 border-black bg-white flex items-center justify-center text-xl font-bold"></div>
+                    <div class="w-8 h-10 border-b-2 border-black bg-purple-200 flex items-center justify-center text-xl font-bold text-purple-800">?</div>
+                </div>
+                <div class="text-center mt-2">
+                    <b class="text-sm">Jawaban:</b> <input type="text" class="input-line w-40 text-lg">
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 (SOAL 9-10) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                        Eksplorasi 3
+                    </div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan Hingga 100.000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Menulis bilangan hingga 100.000 dalam angka
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : E3-S227
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <!-- Q9: Pola Bilangan -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-200 mb-2">
+                <div class="font-bold mb-2 text-sm">
+                    9. Perhatikan pola di bawah ini. Berapakah angka yang hilang?
+                </div>
+                <div class="flex items-center justify-center gap-2 my-2 flex-wrap">
+                    <div class="bg-gray-100 border border-gray-400 px-2 py-1.5 rounded font-bold text-sm">45.200</div>
+                    <div class="text-gray-400 text-sm">➜</div>
+                    <div class="bg-gray-100 border border-gray-400 px-2 py-1.5 rounded font-bold text-sm">45.300</div>
+                    <div class="text-gray-400 text-sm">➜</div>
+                    <div class="bg-blue-100 border-2 border-blue-400 px-2 py-1.5 rounded font-bold text-blue-700 min-w-[60px] text-center text-sm">?</div>
+                    <div class="text-gray-400 text-sm">➜</div>
+                    <div class="bg-gray-100 border border-gray-400 px-2 py-1.5 rounded font-bold text-sm">45.500</div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 ml-2 max-w-md mx-auto">
+                    <label class="choice-item p-1 hover:bg-gray-50 rounded transition">
+                        <div class="choice-box">A</div>
+                        <span class="font-medium text-sm">45.310</span>
+                    </label>
+                    <label class="choice-item p-1 hover:bg-gray-50 rounded transition">
+                        <div class="choice-box">B</div>
+                        <span class="font-medium text-sm">45.400</span>
+                    </label>
+                    <label class="choice-item p-1 hover:bg-gray-50 rounded transition">
+                        <div class="choice-box">C</div>
+                        <span class="font-medium text-sm">46.300</span>
+                    </label>
+                    <label class="choice-item p-1 hover:bg-gray-50 rounded transition">
+                        <div class="choice-box">D</div>
+                        <span class="font-medium text-sm">55.300</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Q10: Soal Cerita -->
+            <div class="soal-item bg-green-50 p-3 rounded-lg border border-green-200 mt-1">
+                <div class="font-bold mb-1 text-sm">
+                    10. Soal Cerita:
+                </div>
+                <div class="bg-white p-2 rounded border border-green-100 text-sm mb-2">
+                    Pak Tan menyetor <b>$10.000</b> ke Bank A dan <b>$8.050</b> ke Bank B.
+                    <br>Tuliskan jumlah total uang yang disetor dalam angka.
+                </div>
+                <div class="text-center mt-2">
+                    <b class="text-sm">Jawaban:</b> $ <input type="text" class="input-line w-40 text-lg">
+                </div>
+            </div>
+
+            <!-- Badge Reward -->
+            <div class="mt-4 text-center bg-yellow-50 p-4 rounded-xl border border-yellow-200">
+                <div class="inline-block bg-yellow-400 text-white rounded-full p-3 mb-2 shadow-lg">
+                    <span class="text-3xl">🏆</span>
+                </div>
+                <p class="font-bold text-yellow-800 text-lg">Ahli Nilai Tempat!</p>
+                <p class="text-sm text-yellow-700 italic mt-0.5">Kamu telah menyelesaikan Eksplorasi 3.</p>
+            </div>
+            
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
