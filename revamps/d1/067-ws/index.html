@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Penjumlahan Hingga 20 (D1-S067)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .disc-fill,
+        .digit-card {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border-bottom: 2px solid #333;
+        min-width: 80px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: bottom;
+        background: transparent;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 0.5rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+        position: relative;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.5cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* Visual Math Specifics */
+      .svg-center {
+          display: block;
+          margin: 10px auto;
+      }
+      .number-bond-circle {
+          fill: white;
+          stroke: #333;
+          stroke-width: 2;
+      }
+      .number-bond-text {
+          font-family: "Noto Sans", sans-serif;
+          font-weight: bold;
+          font-size: 18px;
+          text-anchor: middle;
+          dominant-baseline: middle;
+      }
+      .bar-part {
+          stroke: #333;
+          stroke-width: 2;
+      }
+      .bar-text {
+          font-family: "Noto Sans", sans-serif;
+          font-weight: bold;
+          font-size: 14px;
+          text-anchor: middle;
+          dominant-baseline: middle;
+      }
+      .bar-brace {
+          fill: none;
+          stroke: #333;
+          stroke-width: 1.5;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Penjumlahan Hingga 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Soal Cerita Satu Langkah (Pendekatan Visual)
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S067</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+
+            <div class="h-separator" style="margin-top: 0;"></div>
+
+            <!-- Bagian A -->
+            <h2 class="font-bold text-lg mb-1">Bagian A: Penjumlahan dengan Gambar</h2>
+            <div class="instruction-text">
+                Instruksi: Perhatikan gambar di bawah ini. Hitunglah jumlah bendanya.
+            </div>
+            
+            <!-- Margin antar soal dirapatkan (gap: 0) -->
+            <div class="soal-grid" style="gap: 0;">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. Lihat gambar di bawah ini. Ada 4 lingkaran abu-abu dan 3 lingkaran putih. Berapa jumlah semuanya?
+                    </div>
+                    
+                    <!-- Margin container gambar diperkecil (my-2) -->
+                    <div class="flex justify-center my-2">
+                        <svg width="310" height="60" viewBox="0 0 310 60">
+                            <!-- 4 Gray circles -->
+                            <circle cx="30" cy="30" r="15" fill="#d1d5db" stroke="#9ca3af" />
+                            <circle cx="70" cy="30" r="15" fill="#d1d5db" stroke="#9ca3af" />
+                            <circle cx="110" cy="30" r="15" fill="#d1d5db" stroke="#9ca3af" />
+                            <circle cx="150" cy="30" r="15" fill="#d1d5db" stroke="#9ca3af" />
+                            
+                            <!-- Plus Sign -->
+                            <text x="180" y="35" font-family="Montserrat" font-size="24" font-weight="bold" text-anchor="middle">+</text>
+
+                            <!-- 3 White circles -->
+                            <circle cx="210" cy="30" r="15" fill="white" stroke="#333" stroke-width="2" />
+                            <circle cx="250" cy="30" r="15" fill="white" stroke="#333" stroke-width="2" />
+                            <circle cx="290" cy="30" r="15" fill="white" stroke="#333" stroke-width="2" />
+                        </svg>
+                    </div>
+                    
+                    <div class="choice-container mt-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 5</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 6</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 7</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 8</label>
+                    </div>
+                </div>
+
+                <!-- Margin separator diperkecil (margin: 0.25rem 0) -->
+                <div class="h-separator" style="margin: 0.25rem 0;"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. Ibu membeli 5 apel merah dan 4 apel hijau. Berapa banyak apel ibu seluruhnya?
+                    </div>
+                    
+                    <!-- Margin container gambar diperkecil (my-2) -->
+                    <div class="flex justify-center items-center gap-4 my-2">
+                        <!-- 5 Red Circles -->
+                        <svg width="120" height="40">
+                            <circle cx="15" cy="20" r="10" fill="#ef4444" />
+                            <circle cx="38" cy="20" r="10" fill="#ef4444" />
+                            <circle cx="61" cy="20" r="10" fill="#ef4444" />
+                            <circle cx="84" cy="20" r="10" fill="#ef4444" />
+                            <circle cx="107" cy="20" r="10" fill="#ef4444" />
+                        </svg>
+                        <span class="text-xl font-bold">+</span>
+                        <!-- 4 Green Circles -->
+                        <svg width="100" height="40">
+                            <circle cx="15" cy="20" r="10" fill="#22c55e" />
+                            <circle cx="38" cy="20" r="10" fill="#22c55e" />
+                            <circle cx="61" cy="20" r="10" fill="#22c55e" />
+                            <circle cx="84" cy="20" r="10" fill="#22c55e" />
+                        </svg>
+                    </div>
+
+                    <div class="ml-4 font-semibold">
+                        Jawaban: <span class="input-box" style="width: 100px;"></span> apel.
+                    </div>
+                </div>
+
+                <!-- Margin separator diperkecil -->
+                <div class="h-separator" style="margin: 0.25rem 0;"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        3. Perhatikan <i>Number Bond</i> (Ikatan Bilangan) di bawah ini. Angka berapa yang melengkapi tanda tanya?
+                    </div>
+
+                    <!-- Margin container gambar diperkecil (my-2) -->
+                    <div class="flex justify-center my-2">
+                        <svg width="200" height="150" viewBox="0 0 200 150">
+                            <!-- Lines -->
+                            <line x1="100" y1="45" x2="60" y2="100" stroke="#333" stroke-width="3" />
+                            <line x1="100" y1="45" x2="140" y2="100" stroke="#333" stroke-width="3" />
+
+                            <!-- Whole (Top) -->
+                            <circle cx="100" cy="35" r="30" class="number-bond-circle" />
+                            <text x="100" y="35" class="number-bond-text" fill="#ef4444">?</text>
+
+                            <!-- Parts (Bottom) -->
+                            <circle cx="50" cy="115" r="28" class="number-bond-circle" />
+                            <text x="50" y="115" class="number-bond-text">6</text>
+
+                            <circle cx="150" cy="115" r="28" class="number-bond-circle" />
+                            <text x="150" y="115" class="number-bond-text">3</text>
+                        </svg>
+                    </div>
+
+                    <div class="choice-container mt-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 8</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 9</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 10</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 7</label>
+                    </div>
+                </div>
+
+                <!-- Margin separator diperkecil -->
+                <div class="h-separator" style="margin: 0.25rem 0;"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        4. Andi memiliki <b>8</b> kelereng. Budi memberinya <b>2</b> kelereng lagi. Lengkapi diagram di bawah ini.
+                    </div>
+
+                    <!-- Margin container gambar diperkecil (my-2) -->
+                    <div class="flex justify-center my-2">
+                        <svg width="200" height="150" viewBox="0 0 200 150">
+                            <!-- Lines -->
+                            <line x1="100" y1="45" x2="60" y2="100" stroke="#333" stroke-width="3" />
+                            <line x1="100" y1="45" x2="140" y2="100" stroke="#333" stroke-width="3" />
+
+                            <!-- Whole (Top) -->
+                            <circle cx="100" cy="35" r="30" class="number-bond-circle" />
+                            <text x="100" y="35" class="number-bond-text">...</text>
+
+                            <!-- Parts (Bottom) -->
+                            <circle cx="50" cy="115" r="28" class="number-bond-circle" />
+                            <text x="50" y="115" class="number-bond-text">8</text>
+
+                            <circle cx="150" cy="115" r="28" class="number-bond-circle" />
+                            <text x="150" y="115" class="number-bond-text">2</text>
+                        </svg>
+                    </div>
+
+                    <div class="ml-4 font-semibold">
+                        Jawaban: <span class="input-box" style="width: 100px;"></span> kelereng.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Penjumlahan Hingga 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Soal Cerita Satu Langkah (Pendekatan Visual)
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S067</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <h2 class="font-bold text-lg mb-2">Bagian B: Model Batang (Bar Model)</h2>
+            <div class="instruction-text">
+                Instruksi: Gunakan diagram batang untuk membantu menyelesaikan soal penjumlahan.
+            </div>
+
+            <div class="soal-grid">
+                  
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. Siti mempunyai 10 pita. Dia membeli 5 pita lagi. Gambar manakah yang benar?
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-8 justify-items-center my-4">
+                        <div class="flex flex-col items-center">
+                            <span class="font-bold mb-2">Pilihan A</span>
+                            <svg width="180" height="80" viewBox="0 0 180 80">
+                                <rect x="10" y="10" width="100" height="30" fill="white" stroke="black" stroke-width="2" />
+                                <text x="60" y="30" class="bar-text">10</text>
+                                <rect x="110" y="10" width="50" height="30" fill="white" stroke="black" stroke-width="2" />
+                                <text x="135" y="30" class="bar-text">5</text>
+                                <!-- Brace -->
+                                <path d="M10,45 Q10,55 20,55 L80,55 Q90,55 85,65 Q90,55 100,55 L150,55 Q160,55 160,45" class="bar-brace" />
+                            </svg>
+                        </div>
+                        
+                        <div class="flex flex-col items-center">
+                            <span class="font-bold mb-2">Pilihan B</span>
+                            <svg width="180" height="80" viewBox="0 0 180 80">
+                                <rect x="10" y="10" width="100" height="30" fill="white" stroke="black" stroke-width="2" />
+                                <text x="60" y="30" class="bar-text">10</text>
+                                <!-- Pattern rect -->
+                                <defs>
+                                    <pattern id="diagonalHatch" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                                        <line x1="0" y1="0" x2="0" y2="10" style="stroke:black; stroke-width:1" />
+                                    </pattern>
+                                </defs>
+                                <rect x="10" y="10" width="30" height="30" fill="url(#diagonalHatch)" stroke="black" stroke-width="2" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="ml-4">
+                        Pilihan Anda (a/b): <span class="input-box" style="width: 60px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. Ada 11 buku biru dan 4 buku merah. Berapa total buku?
+                    </div>
+
+                    <div class="flex justify-center my-4">
+                        <svg width="250" height="100" viewBox="0 0 250 100">
+                            <!-- Part 11 -->
+                            <rect x="20" y="20" width="140" height="40" fill="#f3f4f6" stroke="black" stroke-width="2" />
+                            <text x="90" y="45" class="bar-text">11</text>
+                            
+                            <!-- Part 4 -->
+                            <rect x="160" y="20" width="60" height="40" fill="white" stroke="black" stroke-width="2" />
+                            <text x="190" y="45" class="bar-text">4</text>
+                            
+                            <!-- Brace Total -->
+                            <path d="M20,65 Q20,75 30,75 L110,75 Q120,75 120,85 Q120,75 130,75 L210,75 Q220,75 220,65" class="bar-brace" />
+                            <text x="120" y="98" font-family="Noto Sans" font-size="12" font-weight="bold" text-anchor="middle">Total: ?</text>
+                        </svg>
+                    </div>
+
+                    <div class="ml-4 font-bold text-lg">
+                        11 + 4 = <span class="input-box" style="width: 80px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+                
+                 <!-- SOAL 7 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-2">
+                      7. Menghitung Maju. Doni punya 12 mainan. Dia mendapat 3 lagi.
+                    </div>
+                    
+                    <div class="bg-gray-50 border border-gray-200 p-6 mx-4 my-2 rounded-lg text-lg text-center font-bold flex justify-center items-center gap-4">
+                        <div class="bg-white px-4 py-2 border rounded shadow">12</div>
+                        <span>&rarr;</span>
+                        <div class="input-box w-12"></div>
+                        <span>&rarr;</span>
+                        <div class="input-box w-12"></div>
+                        <span>&rarr;</span>
+                        <div class="bg-blue-100 px-4 py-2 border border-blue-300 rounded shadow">Hasil?</div>
+                    </div>
+                    
+                    <div class="ml-4 mt-2 font-semibold">
+                        Jawaban: <span class="input-box" style="width: 100px;"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Penjumlahan Hingga 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Soal Cerita Satu Langkah (Pendekatan Visual)
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S067</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <h2 class="font-bold text-lg mb-2">Bagian C: Strategi & Soal Cerita</h2>
+            
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Di dalam kotak ada 13 donat. Ibu memasukkan 5 donat lagi. Kalimat matematika yang benar adalah:
+                    </div>
+
+                    <div class="choice-container flex-col gap-2 ml-8">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 13 - 5 = 8</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 13 + 5 = 18</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 13 + 5 = 15</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 5 + 5 = 10</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. Strategi Membuat 10 (Making 10). Kita ingin menjumlahkan 9 + 4.
+                    </div>
+                    
+                    <div class="instruction-text mx-4 text-sm font-normal">
+                        Kita ambil 1 dari angka 4, lalu berikan ke angka 9 agar menjadi 10.
+                    </div>
+                    
+                    <div class="flex justify-center my-6">
+                        <svg width="300" height="80" viewBox="0 0 300 80">
+                            <!-- Box 9 -->
+                            <rect x="10" y="20" width="135" height="40" fill="white" stroke="black" stroke-width="2" />
+                            <text x="77" y="45" class="bar-text">9</text>
+                            
+                            <!-- Box 1 (moved) -->
+                            <rect x="145" y="20" width="15" height="40" fill="#d1d5db" stroke="black" stroke-width="2" />
+                            <text x="152" y="45" font-family="Noto Sans" font-size="10" text-anchor="middle">1</text>
+                            
+                            <!-- Box 3 (remaining) -->
+                            <rect x="170" y="20" width="45" height="40" fill="white" stroke="black" stroke-width="2" />
+                            <text x="192" y="45" class="bar-text">3</text>
+                            
+                            <!-- Brace Top -->
+                            <path d="M10,18 Q10,5 25,5 L78,5 Q85,5 85,0 Q85,5 92,5 L145,5 Q160,5 160,18" fill="none" stroke="black" />
+                            <text x="85" y="12" font-size="10" font-weight="bold" text-anchor="middle">Jadikan 10</text>
+                        </svg>
+                    </div>
+
+                    <div class="ml-4 font-bold text-lg">
+                        Jadi, 10 + 3 = <span class="input-box" style="width: 80px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. Sebuah bus membawa 12 penumpang. Di halte berikutnya, naik 6 penumpang lagi. Berapa jumlah penumpang sekarang?
+                    </div>
+
+                    <div class="text-sm italic text-gray-500 ml-4 mb-2">
+                        (Kamu boleh menggambar kotak atau lingkaran di bawah ini untuk membantu berhitung)
+                    </div>
+
+                    <div class="w-full h-32 border-2 border-dashed border-gray-300 rounded bg-gray-50 mb-4"></div>
+                    
+                    <div class="ml-4 font-semibold">
+                        Jawaban: <span class="input-box" style="width: 100px;"></span> penumpang.
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="text-center italic text-xs text-gray-500 mt-8">
+                "Belajar matematika itu asyik dan menyenangkan!"
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
