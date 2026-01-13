@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Pengurangan dalam 10.000</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        /* Singapore Math Colors */
+        --thou-color: #0072B2; /* Blue */
+        --hund-color: #009E73; /* Green */
+        --tens-color: #D55E00; /* Red/Orange */
+        --ones-color: #F0E442; /* Yellow */
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1.5cm 2cm;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .bg-thou, .bg-hund, .bg-tens, .bg-ones, .disk, .disk.crossed::after, .disk.crossed::before {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        text-align: left;
+      }
+
+      /* --- SPECIFIC MATH STYLES --- */
+      
+      /* New Disk Style */
+      .bg-thou { background-color: #0072B2; color: white; }
+      .bg-hund { background-color: #009E73; color: white; }
+      .bg-tens { background-color: #D55E00; color: white; }
+      .bg-ones { background-color: #F0E442; color: #333; }
+      
+      .text-thou { color: #0072B2; }
+      .text-hund { color: #009E73; }
+      .text-tens { color: #D55E00; }
+      .text-ones { color: #bcae12; }
+
+      .disk {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 9px;
+          font-weight: 800;
+          margin: 1px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+          border: 1px solid rgba(0,0,0,0.05);
+          position: relative; /* For pseudo elements */
+      }
+
+      /* CROSSED OUT DISK STYLE */
+      .disk.crossed {
+        opacity: 0.6;
+      }
+      .disk.crossed::after, .disk.crossed::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 80%;
+        height: 2px;
+        background-color: #ef4444; /* Red color for cross */
+        border-radius: 2px;
+      }
+      .disk.crossed::after {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .disk.crossed::before {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+
+      /* Vertical Addition Layout */
+      .vertical-math {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-align: right;
+        display: inline-block;
+      }
+      .vertical-math .line {
+        border-bottom: 2px solid black;
+        margin-bottom: 4px;
+        padding-bottom: 2px;
+      }
+      .input-box {
+        width: 28px;
+        height: 28px;
+        border: 1px solid #333;
+        background: #f9fafb;
+        display: inline-block;
+        margin-left: 2px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 1rem;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.8cm 0;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 1</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Penjumlahan & Pengurangan dalam 10.000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Pengurangan bilangan 4 angka tanpa meminjam
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : E1-S017
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-4 mt-2">
+                <h1 class="text-xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                    PENGURANGAN BILANGAN 4 ANGKA
+                </h1>
+            </div>
+
+            <!-- Bagian A -->
+            <div class="instruction-text">
+                Bagian A: Kurangkan. Gunakan keping bilangan untuk membantumu mengisi kotak-kotak di sebelah kanan.
+            </div>
+
+            <div class="mb-4">
+                <!-- SOAL 1 -->
+                <div class="mb-8 mt-4 flex gap-3">
+                    <div class="font-bold text-lg pt-0.5">1.</div>
+                    <div class="w-full">
+                        <div class="font-bold mb-4">Hitunglah 3.568 - 1.243</div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            
+                            <!-- Visual Part -->
+                            <div class="md:col-span-2">
+                                <div class="border rounded-xl overflow-hidden bg-white">
+                                    <div class="grid grid-cols-4 bg-gray-100 text-center py-2 text-xs font-bold text-gray-500 border-b">
+                                        <div class="text-thou">Ribuan</div>
+                                        <div class="text-hund">Ratusan</div>
+                                        <div class="text-tens">Puluhan</div>
+                                        <div class="text-ones">Satuan</div>
+                                    </div>
+                                    <!-- Row 1: 3568 with crossed out items -->
+                                    <div class="grid grid-cols-4 min-h-[50px]">
+                                        <!-- 3 Ribuan - 1 -->
+                                        <div class="p-2 border-r border-gray-50 flex flex-wrap content-center justify-center gap-1">
+                                            <div class="disk bg-thou">1000</div><div class="disk bg-thou">1000</div><div class="disk bg-thou crossed">1000</div>
+                                        </div>
+                                        <!-- 5 Ratusan - 2 -->
+                                        <div class="p-2 border-r border-gray-50 flex flex-wrap content-center justify-center gap-1">
+                                            <div class="disk bg-hund">100</div><div class="disk bg-hund">100</div><div class="disk bg-hund">100</div><div class="disk bg-hund crossed">100</div><div class="disk bg-hund crossed">100</div>
+                                        </div>
+                                        <!-- 6 Puluhan - 4 -->
+                                        <div class="p-2 border-r border-gray-50 flex flex-wrap content-center justify-center gap-1">
+                                            <div class="disk bg-tens">10</div><div class="disk bg-tens">10</div><div class="disk bg-tens crossed">10</div><div class="disk bg-tens crossed">10</div><div class="disk bg-tens crossed">10</div><div class="disk bg-tens crossed">10</div>
+                                        </div>
+                                        <!-- 8 Satuan - 3 -->
+                                        <div class="p-2 flex flex-wrap content-center justify-center gap-1">
+                                            <div class="disk bg-ones">1</div><div class="disk bg-ones">1</div><div class="disk bg-ones">1</div><div class="disk bg-ones">1</div><div class="disk bg-ones">1</div><div class="disk bg-ones crossed">1</div><div class="disk bg-ones crossed">1</div><div class="disk bg-ones crossed">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Abstract Part -->
+                            <div class="flex flex-col items-center">
+                                <div class="text-sm font-bold mb-4">Bentuk Bersusun:</div>
+                                <div class="vertical-math" style="font-size: 1.5rem;">
+                                    <div>3 5 6 8</div>
+                                    <div class="line">- 1 2 4 3</div>
+                                    <div class="w-full h-10 border-2 border-dashed border-gray-400 rounded-lg mt-1 bg-white"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="mb-4 flex gap-3">
+                    <div class="font-bold text-lg pt-0.5">2.</div>
+                    <div class="w-full">
+                        <div class="font-bold mb-4">Hitunglah 4.875 - 2.531</div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            
+                            <!-- Visual Part -->
+                            <div class="md:col-span-2">
+                                <div class="border rounded-xl overflow-hidden bg-white">
+                                    <div class="grid grid-cols-4 bg-gray-100 text-center py-2 text-xs font-bold text-gray-500 border-b">
+                                        <div class="text-thou">Ribuan</div>
+                                        <div class="text-hund">Ratusan</div>
+                                        <div class="text-tens">Puluhan</div>
+                                        <div class="text-ones">Satuan</div>
+                                    </div>
+                                    <!-- Row 1: 4875 -->
+                                    <div class="grid grid-cols-4 min-h-[50px]">
+                                        <div class="p-2 border-r border-gray-50 flex flex-wrap content-center justify-center gap-1">
+                                            <div class="disk bg-thou">1000</div><div class="disk bg-thou">1000</div><div class="disk bg-thou">1000</div><div class="disk bg-thou">1000</div>
+                                        </div>
+                                        <div class="p-2 border-r border-gray-50 flex flex-wrap content-center justify-center gap-1">
+                                            <div class="disk bg-hund">100</div><div class="disk bg-hund">100</div><div class="disk bg-hund">100</div><div class="disk bg-hund">100</div><div class="disk bg-hund">100</div><div class="disk bg-hund">100</div><div class="disk bg-hund">100</div><div class="disk bg-hund">100</div>
+                                        </div>
+                                        <div class="p-2 border-r border-gray-50 flex flex-wrap content-center justify-center gap-1">
+                                            <div class="disk bg-tens">10</div><div class="disk bg-tens">10</div><div class="disk bg-tens">10</div><div class="disk bg-tens">10</div><div class="disk bg-tens">10</div><div class="disk bg-tens">10</div><div class="disk bg-tens">10</div>
+                                        </div>
+                                        <div class="p-2 flex flex-wrap content-center justify-center gap-1">
+                                            <div class="disk bg-ones">1</div><div class="disk bg-ones">1</div><div class="disk bg-ones">1</div><div class="disk bg-ones">1</div><div class="disk bg-ones">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Abstract Part -->
+                            <div class="flex flex-col items-center">
+                                <div class="text-sm font-bold mb-4">Bentuk Bersusun:</div>
+                                <div class="vertical-math" style="font-size: 1.5rem;">
+                                    <div>4 8 7 5</div>
+                                    <div class="line">- 2 5 3 1</div>
+                                    <div class="w-full h-10 border-2 border-dashed border-gray-400 rounded-lg mt-1 bg-white"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 1</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Penjumlahan & Pengurangan dalam 10.000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Pengurangan bilangan 4 angka tanpa meminjam
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : E1-S017
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mb-6">
+                Bagian B: Kerjakan pengurangan berikut dengan teliti.
+            </div>
+
+            <!-- Bagian B: With Sentence AND Vertical Math -->
+            <div class="flex flex-col gap-8 mb-8 px-2 md:px-4">
+                
+                <!-- Q3 -->
+                <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-gray-100 pb-4">
+                    <div class="flex gap-3 md:w-1/2">
+                        <div class="font-bold text-gray-800 text-lg">3.</div>
+                        <div class="font-bold text-gray-800 text-sm md:text-base pt-1">
+                            Hasil dari <span style="color:var(--thou-color)">6.859</span> dikurangi <span style="color:var(--thou-color)">2.415</span> adalah...
+                        </div>
+                    </div>
+                    <div class="vertical-math">
+                        <div>6 8 5 9</div>
+                        <div class="line">- 2 4 1 5</div>
+                        <div class="w-full h-10 border-2 border-dashed border-gray-400 rounded-lg mt-1 bg-white"></div>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-gray-100 pb-4">
+                    <div class="flex gap-3 md:w-1/2">
+                        <div class="font-bold text-gray-800 text-lg">4.</div>
+                        <div class="font-bold text-gray-800 text-sm md:text-base pt-1">
+                            Hasil dari <span style="color:var(--thou-color)">5.976</span> dikurangi <span style="color:var(--thou-color)">3.254</span> adalah...
+                        </div>
+                    </div>
+                    <div class="vertical-math">
+                        <div>5 9 7 6</div>
+                        <div class="line">- 3 2 5 4</div>
+                        <div class="w-full h-10 border-2 border-dashed border-gray-400 rounded-lg mt-1 bg-white"></div>
+                    </div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-gray-100 pb-4">
+                    <div class="flex gap-3 md:w-1/2">
+                        <div class="font-bold text-gray-800 text-lg">5.</div>
+                        <div class="font-bold text-gray-800 text-sm md:text-base pt-1">
+                            Hasil dari <span style="color:var(--thou-color)">8.764</span> dikurangi <span style="color:var(--thou-color)">5.321</span> adalah...
+                        </div>
+                    </div>
+                    <div class="vertical-math">
+                        <div>8 7 6 4</div>
+                        <div class="line">- 5 3 2 1</div>
+                        <div class="w-full h-10 border-2 border-dashed border-gray-400 rounded-lg mt-1 bg-white"></div>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-gray-100 pb-4">
+                    <div class="flex gap-3 md:w-1/2">
+                        <div class="font-bold text-gray-800 text-lg">6.</div>
+                        <div class="font-bold text-gray-800 text-sm md:text-base pt-1">
+                            Hasil dari <span style="color:var(--thou-color)">4.385</span> dikurangi <span style="color:var(--thou-color)">1.263</span> adalah...
+                        </div>
+                    </div>
+                    <div class="vertical-math">
+                        <div>4 3 8 5</div>
+                        <div class="line">- 1 2 6 3</div>
+                        <div class="w-full h-10 border-2 border-dashed border-gray-400 rounded-lg mt-1 bg-white"></div>
+                    </div>
+                </div>
+
+                <!-- Q7 -->
+                <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-gray-100 pb-4">
+                    <div class="flex gap-3 md:w-1/2">
+                        <div class="font-bold text-gray-800 text-lg">7.</div>
+                        <div class="font-bold text-gray-800 text-sm md:text-base pt-1">
+                            Hasil dari <span style="color:var(--thou-color)">7.948</span> dikurangi <span style="color:var(--thou-color)">4.625</span> adalah...
+                        </div>
+                    </div>
+                    <div class="vertical-math">
+                        <div>7 9 4 8</div>
+                        <div class="line">- 4 6 2 5</div>
+                        <div class="w-full h-10 border-2 border-dashed border-gray-400 rounded-lg mt-1 bg-white"></div>
+                    </div>
+                </div>
+
+                <!-- Q8 -->
+                <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-gray-100 pb-4">
+                    <div class="flex gap-3 md:w-1/2">
+                        <div class="font-bold text-gray-800 text-lg">8.</div>
+                        <div class="font-bold text-gray-800 text-sm md:text-base pt-1">
+                            Hasil dari <span style="color:var(--thou-color)">9.537</span> dikurangi <span style="color:var(--thou-color)">6.412</span> adalah...
+                        </div>
+                    </div>
+                    <div class="vertical-math">
+                        <div>9 5 3 7</div>
+                        <div class="line">- 6 4 1 2</div>
+                        <div class="w-full h-10 border-2 border-dashed border-gray-400 rounded-lg mt-1 bg-white"></div>
+                    </div>
+                </div>
+
+                <!-- Q9 (New) -->
+                <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-gray-100 pb-4">
+                    <div class="flex gap-3 md:w-1/2">
+                        <div class="font-bold text-gray-800 text-lg">9.</div>
+                        <div class="font-bold text-gray-800 text-sm md:text-base pt-1">
+                            Hasil dari <span style="color:var(--thou-color)">7.536</span> dikurangi <span style="color:var(--thou-color)">2.124</span> adalah...
+                        </div>
+                    </div>
+                    <div class="vertical-math">
+                        <div>7 5 3 6</div>
+                        <div class="line">- 2 1 2 4</div>
+                        <div class="w-full h-10 border-2 border-dashed border-gray-400 rounded-lg mt-1 bg-white"></div>
+                    </div>
+                </div>
+
+                <!-- Q10 (New) -->
+                <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-gray-100 pb-4">
+                    <div class="flex gap-3 md:w-1/2">
+                        <div class="font-bold text-gray-800 text-lg">10.</div>
+                        <div class="font-bold text-gray-800 text-sm md:text-base pt-1">
+                            Hasil dari <span style="color:var(--thou-color)">8.975</span> dikurangi <span style="color:var(--thou-color)">4.632</span> adalah...
+                        </div>
+                    </div>
+                    <div class="vertical-math">
+                        <div>8 9 7 5</div>
+                        <div class="line">- 4 6 3 2</div>
+                        <div class="w-full h-10 border-2 border-dashed border-gray-400 rounded-lg mt-1 bg-white"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Encouraging Words (Closing) -->
+             <div class="mt-8 mb-10 text-center text-gray-500 italic">
+                Hebat! Kamu Makin Jago Matematika!
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
