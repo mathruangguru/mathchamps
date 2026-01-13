@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Membandingkan Bilangan (D1-S062)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .disc-fill,
+        .digit-card {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border-bottom: 2px solid #333;
+        min-width: 80px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: bottom;
+        background: transparent;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 0.5rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+        position: relative;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.5cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      .identity-table {
+        width: 100%;
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+      }
+      .identity-table td {
+        padding: 4px 0;
+      }
+      
+      /* Visual Math Specifics */
+      .svg-block {
+          display: inline-block;
+          vertical-align: middle;
+      }
+      .ten-frame-rect {
+          fill: none;
+          stroke: #000;
+          stroke-width: 1.5;
+      }
+      .ten-frame-dot {
+          fill: #000;
+      }
+      .comparison-option {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+      }
+      .number-line text {
+          font-family: "Noto Sans", sans-serif;
+          font-size: 10px;
+          text-anchor: middle;
+      }
+
+      .comparison-box {
+        font-size: 1.5rem;
+        font-weight: 800;
+        display: flex;
+        flex-direction: row; /* Memastikan tata letak horizontal (kiri-kanan) */
+        align-items: center;
+        gap: 2rem;
+        justify-content: center;
+        width: 100%;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Bagian A: Pictorial) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Bilangan Lingkup 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Membandingkan Bilangan
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S062</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+ 
+
+            <div class="h-separator" style="margin-top: 0;"></div>
+
+            <!-- Bagian A -->
+            <h2 class="font-bold text-lg mb-2">Bagian A: Menggunakan Gambar (Pictorial)</h2>
+            <div class="instruction-text">
+                Instruksi: Perhatikan kotak sepuluh (Ten Frames) di bawah ini. Jawablah pertanyaannya.
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        1. Hitunglah titik di dalam kotak. Manakah yang jumlahnya <span class="text-blue-700">lebih banyak</span>?
+                    </div>
+                    <div class="text-sm italic mb-2 ml-4">Beri tanda centang (&#10003;) pada kotak di bawah jawaban yang benar.</div>
+                    
+                    <div class="grid grid-cols-2 gap-8 justify-items-center my-2">
+                        <!-- Pilihan A: 8 -->
+                        <div class="comparison-option">
+                            <span class="font-bold">Pilihan A (8)</span>
+                            <svg width="120" height="50" viewBox="0 0 120 50">
+                                <!-- Grid -->
+                                <g class="ten-frame-rect">
+                                    <rect x="10" y="5" width="20" height="20" /> <rect x="30" y="5" width="20" height="20" />
+                                    <rect x="50" y="5" width="20" height="20" /> <rect x="70" y="5" width="20" height="20" />
+                                    <rect x="90" y="5" width="20" height="20" />
+                                    <rect x="10" y="25" width="20" height="20" /> <rect x="30" y="25" width="20" height="20" />
+                                    <rect x="50" y="25" width="20" height="20" /> <rect x="70" y="25" width="20" height="20" />
+                                    <rect x="90" y="25" width="20" height="20" />
+                                </g>
+                                <!-- Dots: 8 (5 top, 3 bottom) -->
+                                <g class="ten-frame-dot">
+                                    <circle cx="20" cy="15" r="6" /> <circle cx="40" cy="15" r="6" />
+                                    <circle cx="60" cy="15" r="6" /> <circle cx="80" cy="15" r="6" />
+                                    <circle cx="100" cy="15" r="6" />
+                                    <circle cx="20" cy="35" r="6" /> <circle cx="40" cy="35" r="6" />
+                                    <circle cx="60" cy="35" r="6" />
+                                </g>
+                            </svg>
+                            <div class="w-8 h-8 border-2 border-black rounded flex items-center justify-center mt-1"></div>
+                        </div>
+
+                        <!-- Pilihan B: 6 -->
+                        <div class="comparison-option">
+                            <span class="font-bold">Pilihan B (6)</span>
+                            <svg width="120" height="50" viewBox="0 0 120 50">
+                                <!-- Grid -->
+                                <g class="ten-frame-rect">
+                                    <rect x="10" y="5" width="20" height="20" /> <rect x="30" y="5" width="20" height="20" />
+                                    <rect x="50" y="5" width="20" height="20" /> <rect x="70" y="5" width="20" height="20" />
+                                    <rect x="90" y="5" width="20" height="20" />
+                                    <rect x="10" y="25" width="20" height="20" /> <rect x="30" y="25" width="20" height="20" />
+                                    <rect x="50" y="25" width="20" height="20" /> <rect x="70" y="25" width="20" height="20" />
+                                    <rect x="90" y="25" width="20" height="20" />
+                                </g>
+                                <!-- Dots: 6 (5 top, 1 bottom) -->
+                                <g class="ten-frame-dot">
+                                    <circle cx="20" cy="15" r="6" /> <circle cx="40" cy="15" r="6" />
+                                    <circle cx="60" cy="15" r="6" /> <circle cx="80" cy="15" r="6" />
+                                    <circle cx="100" cy="15" r="6" />
+                                    <circle cx="20" cy="35" r="6" />
+                                </g>
+                            </svg>
+                            <div class="w-8 h-8 border-2 border-black rounded flex items-center justify-center mt-1"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        2. Manakah yang jumlahnya <span class="text-red-700">lebih sedikit</span>?
+                    </div>
+                    <div class="text-sm italic mb-2 ml-4">Beri tanda silang (X) pada kotak di bawah jawaban yang benar.</div>
+                    
+                    <div class="grid grid-cols-2 gap-8 justify-items-center my-2">
+                        <!-- Pilihan A: 12 -->
+                        <div class="comparison-option">
+                            <span class="font-bold">Pilihan A (12)</span>
+                            <svg width="240" height="50" viewBox="0 0 240 50">
+                                <!-- Frame 1 (Full 10) -->
+                                <g transform="translate(0,0)">
+                                    <g class="ten-frame-rect">
+                                        <rect x="10" y="5" width="20" height="20" /> <rect x="30" y="5" width="20" height="20" />
+                                        <rect x="50" y="5" width="20" height="20" /> <rect x="70" y="5" width="20" height="20" />
+                                        <rect x="90" y="5" width="20" height="20" />
+                                        <rect x="10" y="25" width="20" height="20" /> <rect x="30" y="25" width="20" height="20" />
+                                        <rect x="50" y="25" width="20" height="20" /> <rect x="70" y="25" width="20" height="20" />
+                                        <rect x="90" y="25" width="20" height="20" />
+                                    </g>
+                                    <g class="ten-frame-dot">
+                                        <circle cx="20" cy="15" r="6" /> <circle cx="40" cy="15" r="6" />
+                                        <circle cx="60" cy="15" r="6" /> <circle cx="80" cy="15" r="6" />
+                                        <circle cx="100" cy="15" r="6" />
+                                        <circle cx="20" cy="35" r="6" /> <circle cx="40" cy="35" r="6" />
+                                        <circle cx="60" cy="35" r="6" /> <circle cx="80" cy="35" r="6" />
+                                        <circle cx="100" cy="35" r="6" />
+                                    </g>
+                                </g>
+                                <!-- Frame 2 (2 dots) -->
+                                <g transform="translate(110,0)">
+                                    <g class="ten-frame-rect">
+                                        <rect x="10" y="5" width="20" height="20" /> <rect x="30" y="5" width="20" height="20" />
+                                        <rect x="50" y="5" width="20" height="20" /> <rect x="70" y="5" width="20" height="20" />
+                                        <rect x="90" y="5" width="20" height="20" />
+                                        <rect x="10" y="25" width="20" height="20" /> <rect x="30" y="25" width="20" height="20" />
+                                        <rect x="50" y="25" width="20" height="20" /> <rect x="70" y="25" width="20" height="20" />
+                                        <rect x="90" y="25" width="20" height="20" />
+                                    </g>
+                                    <g class="ten-frame-dot">
+                                        <circle cx="20" cy="15" r="6" /> <circle cx="40" cy="15" r="6" />
+                                    </g>
+                                </g>
+                            </svg>
+                            <div class="w-8 h-8 border-2 border-black rounded flex items-center justify-center mt-1"></div>
+                        </div>
+
+                        <!-- Pilihan B: 15 -->
+                        <div class="comparison-option">
+                            <span class="font-bold">Pilihan B (15)</span>
+                            <svg width="240" height="50" viewBox="0 0 240 50">
+                                <!-- Frame 1 (Full 10) -->
+                                <g transform="translate(0,0)">
+                                    <g class="ten-frame-rect">
+                                        <rect x="10" y="5" width="20" height="20" /> <rect x="30" y="5" width="20" height="20" />
+                                        <rect x="50" y="5" width="20" height="20" /> <rect x="70" y="5" width="20" height="20" />
+                                        <rect x="90" y="5" width="20" height="20" />
+                                        <rect x="10" y="25" width="20" height="20" /> <rect x="30" y="25" width="20" height="20" />
+                                        <rect x="50" y="25" width="20" height="20" /> <rect x="70" y="25" width="20" height="20" />
+                                        <rect x="90" y="25" width="20" height="20" />
+                                    </g>
+                                    <g class="ten-frame-dot">
+                                        <circle cx="20" cy="15" r="6" /> <circle cx="40" cy="15" r="6" />
+                                        <circle cx="60" cy="15" r="6" /> <circle cx="80" cy="15" r="6" />
+                                        <circle cx="100" cy="15" r="6" />
+                                        <circle cx="20" cy="35" r="6" /> <circle cx="40" cy="35" r="6" />
+                                        <circle cx="60" cy="35" r="6" /> <circle cx="80" cy="35" r="6" />
+                                        <circle cx="100" cy="35" r="6" />
+                                    </g>
+                                </g>
+                                <!-- Frame 2 (5 dots) -->
+                                <g transform="translate(110,0)">
+                                    <g class="ten-frame-rect">
+                                        <rect x="10" y="5" width="20" height="20" /> <rect x="30" y="5" width="20" height="20" />
+                                        <rect x="50" y="5" width="20" height="20" /> <rect x="70" y="5" width="20" height="20" />
+                                        <rect x="90" y="5" width="20" height="20" />
+                                        <rect x="10" y="25" width="20" height="20" /> <rect x="30" y="25" width="20" height="20" />
+                                        <rect x="50" y="25" width="20" height="20" /> <rect x="70" y="25" width="20" height="20" />
+                                        <rect x="90" y="25" width="20" height="20" />
+                                    </g>
+                                    <g class="ten-frame-dot">
+                                        <circle cx="20" cy="15" r="6" /> <circle cx="40" cy="15" r="6" />
+                                        <circle cx="60" cy="15" r="6" /> <circle cx="80" cy="15" r="6" />
+                                        <circle cx="100" cy="15" r="6" />
+                                    </g>
+                                </g>
+                            </svg>
+                            <div class="w-8 h-8 border-2 border-black rounded flex items-center justify-center mt-1"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        3. Lihatlah gambar di bawah ini. Bandingkan jumlah benda di Kelompok X dan Y.
+                    </div>
+                    
+                    <div class="flex justify-center gap-12 my-4">
+                        <!-- Group X: 8 Blue Circles -->
+                        <div class="text-center">
+                            <div class="font-bold mb-2">Kelompok X</div>
+                            <svg width="120" height="80" viewBox="0 0 120 80" class="border border-gray-200 bg-gray-50 rounded">
+                                <circle cx="20" cy="25" r="10" fill="blue" /> <circle cx="45" cy="25" r="10" fill="blue" />
+                                <circle cx="70" cy="25" r="10" fill="blue" /> <circle cx="95" cy="25" r="10" fill="blue" />
+                                <circle cx="20" cy="55" r="10" fill="blue" /> <circle cx="45" cy="55" r="10" fill="blue" />
+                                <circle cx="70" cy="55" r="10" fill="blue" /> <circle cx="95" cy="55" r="10" fill="blue" />
+                            </svg>
+                        </div>
+                        
+                        <!-- Group Y: 5 Red Rectangles -->
+                        <div class="text-center">
+                            <div class="font-bold mb-2">Kelompok Y</div>
+                            <svg width="120" height="80" viewBox="0 0 120 80" class="border border-gray-200 bg-gray-50 rounded">
+                                <rect x="10" y="15" width="20" height="20" fill="red" /> <rect x="40" y="15" width="20" height="20" fill="red" />
+                                <rect x="70" y="15" width="20" height="20" fill="red" />
+                                <rect x="10" y="45" width="20" height="20" fill="red" /> <rect x="40" y="45" width="20" height="20" fill="red" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="ml-4 mb-2 font-medium">Lengkapi kalimat berikut:</div>
+                    <div class="ml-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                        Kelompok X (Lingkaran) jumlahnya _________________________ daripada Kelompok Y (Kotak).
+                    </div>
+                    <div class="text-xs italic text-gray-500 ml-4 mt-1">(Petunjuk: Pilih <b>lebih banyak</b> atau <b>lebih sedikit</b>)</div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Bagian B: Garis Bilangan) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Bilangan Lingkup 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Membandingkan Bilangan
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S062</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <h2 class="font-bold text-lg mb-2">Bagian B: Menggunakan Garis Bilangan</h2>
+            <div class="instruction-text">
+                Instruksi: Gunakan garis bilangan di bawah untuk membantu menjawab.
+            </div>
+
+            <!-- Number Line Visualization -->
+            <div class="w-full flex justify-center my-6">
+                <svg width="700" height="60" viewBox="0 0 700 60" class="number-line">
+                    <line x1="20" y1="30" x2="680" y2="30" stroke="black" stroke-width="2" marker-end="url(#arrow)" />
+                    <defs>
+                        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                            <path d="M0,0 L0,6 L9,3 z" fill="black" />
+                        </marker>
+                    </defs>
+                    <!-- Ticks and Numbers 0-20 -->
+                    <!-- Loop generation is tedious in static HTML, manually placing key ones -->
+                    <!-- Script to generate ticks could be used, but writing out explicitly for portability -->
+                    <!-- Spacing: (680-20)/20 = 33px per unit -->
+                    <g stroke="black" stroke-width="2">
+                        <!-- Ticks -->
+                        <line x1="30" y1="25" x2="30" y2="35" /> <text x="30" y="50">0</text>
+                        <line x1="61.5" y1="25" x2="61.5" y2="35" /> <text x="61.5" y="50">1</text>
+                        <line x1="93" y1="25" x2="93" y2="35" /> <text x="93" y="50">2</text>
+                        <line x1="124.5" y1="25" x2="124.5" y2="35" /> <text x="124.5" y="50">3</text>
+                        <line x1="156" y1="25" x2="156" y2="35" /> <text x="156" y="50">4</text>
+                        <line x1="187.5" y1="25" x2="187.5" y2="35" /> <text x="187.5" y="50">5</text>
+                        <line x1="219" y1="25" x2="219" y2="35" /> <text x="219" y="50">6</text>
+                        <line x1="250.5" y1="25" x2="250.5" y2="35" /> <text x="250.5" y="50">7</text>
+                        <line x1="282" y1="25" x2="282" y2="35" /> <text x="282" y="50">8</text>
+                        <line x1="313.5" y1="25" x2="313.5" y2="35" /> <text x="313.5" y="50">9</text>
+                        <line x1="345" y1="25" x2="345" y2="35" /> <text x="345" y="50">10</text>
+                        <line x1="376.5" y1="25" x2="376.5" y2="35" /> <text x="376.5" y="50">11</text>
+                        <line x1="408" y1="25" x2="408" y2="35" /> <text x="408" y="50">12</text>
+                        <line x1="439.5" y1="25" x2="439.5" y2="35" /> <text x="439.5" y="50">13</text>
+                        <line x1="471" y1="25" x2="471" y2="35" /> <text x="471" y="50">14</text>
+                        <line x1="502.5" y1="25" x2="502.5" y2="35" /> <text x="502.5" y="50">15</text>
+                        <line x1="534" y1="25" x2="534" y2="35" /> <text x="534" y="50">16</text>
+                        <line x1="565.5" y1="25" x2="565.5" y2="35" /> <text x="565.5" y="50">17</text>
+                        <line x1="597" y1="25" x2="597" y2="35" /> <text x="597" y="50">18</text>
+                        <line x1="628.5" y1="25" x2="628.5" y2="35" /> <text x="628.5" y="50">19</text>
+                        <line x1="660" y1="25" x2="660" y2="35" /> <text x="660" y="50">20</text>
+                    </g>
+                </svg>
+            </div>
+            
+            <div class="soal-grid">
+                 
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        4. Lingkari bilangan yang <span class="text-blue-700">lebih besar</span> dari <b>13</b>.
+                    </div>
+                    <div class="flex justify-center gap-6 my-4 text-2xl font-black">
+                        <div class="w-16 h-16 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center cursor-pointer hover:bg-yellow-100">11</div>
+                        <div class="w-16 h-16 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center cursor-pointer hover:bg-yellow-100">12</div>
+                        <div class="w-16 h-16 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center cursor-pointer hover:bg-yellow-100">15</div>
+                        <div class="w-16 h-16 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center cursor-pointer hover:bg-yellow-100">10</div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. Lingkari bilangan yang <span class="text-red-700">lebih kecil</span> dari <b>18</b>.
+                    </div>
+                    <div class="flex justify-center gap-6 my-4 text-2xl font-black">
+                        <div class="w-16 h-16 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center cursor-pointer hover:bg-yellow-100">19</div>
+                        <div class="w-16 h-16 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center cursor-pointer hover:bg-yellow-100">20</div>
+                        <div class="w-16 h-16 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center cursor-pointer hover:bg-yellow-100">17</div>
+                        <div class="w-16 h-16 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center cursor-pointer hover:bg-yellow-100">21</div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+                
+                 <!-- SOAL 6 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-2">
+                      6. Isilah titik-titik di bawah ini dengan angka yang tepat.
+                    </div>
+                    
+                    <div class="bg-gray-50 border border-gray-200 p-4 mx-4 my-2 rounded-lg text-base text-center font-bold">
+                        "Angka 14 lebih besar daripada angka ........"
+                    </div>
+                    
+                    <div class="choice-container flex-col gap-1 ml-8">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 16</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 15</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 12</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Bagian C: Isian) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Bilangan Lingkup 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Membandingkan Bilangan
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S062</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <h2 class="font-bold text-lg mb-2">Bagian C: Pilihan Ganda & Isian</h2>
+            
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. Perhatikan kedua bilangan ini. Manakah pernyataan yang benar?
+                    </div>
+
+                    <div class="flex justify-center gap-12 my-4 text-3xl font-black">
+                        <div>19</div>
+                        <div>16</div>
+                    </div>
+
+                    <div class="choice-container flex-col gap-1 ml-8">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 19 lebih kecil dari 16</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 19 lebih besar dari 16</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 19 sama dengan 16</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Soal Cerita.
+                    </div>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded p-4 mb-4 mx-4 text-sm leading-relaxed">
+                        Adi memiliki <b>11</b> kelereng. <br>
+                        Budi memiliki <b>14</b> kelereng.
+                    </div>
+
+                    <div class="ml-4 mb-2 font-medium">
+                        Siapakah yang memiliki kelereng <b>lebih sedikit</b>?
+                    </div>
+
+                    <div class="flex items-center gap-2 ml-4">
+                        <span class="font-bold">Jawab: </span>
+                        <span class="input-box" style="width: 200px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. Urutkan bilangan berikut dari yang <b>paling kecil</b>.
+                    </div>
+                    
+                    <div class="flex justify-center gap-6 my-4 font-black text-xl">
+                        <span class="bg-gray-200 px-4 py-2 rounded">15</span>
+                        <span class="bg-gray-200 px-4 py-2 rounded">9</span>
+                        <span class="bg-gray-200 px-4 py-2 rounded">20</span>
+                    </div>
+
+                    <div class="flex items-center justify-center gap-2 mt-4">
+                        <span class="input-box"></span> , 
+                        <span class="input-box"></span> , 
+                        <span class="input-box"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. Berilah tanda <b>&gt;</b> (lebih besar) atau <b>&lt;</b> (lebih kecil) pada kotak di bawah ini.
+                    </div>
+
+                    <div class="comparison-box my-6">
+                        <span class="text-3xl font-black">12</span> 
+                        <div class="w-16 h-16 border-2 border-black rounded flex items-center justify-center bg-white text-3xl font-black mx-4"></div>
+                        <span class="text-3xl font-black">17</span>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="text-center italic text-xs text-gray-500 mt-8">
+                "Matematika adalah cara berpikir, bukan hanya menghitung."
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
