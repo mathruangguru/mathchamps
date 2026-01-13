@@ -1,0 +1,583 @@
+
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Penaksiran Selisih (M1-S016)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .visual-box,
+        .working-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 80px;
+        height: 35px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 32px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .working-box {
+        border: 1px solid #ccc;
+        width: 100%;
+        min-height: 80px;
+        border-radius: 4px;
+        background-color: #fff;
+      }
+
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 4px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 1.5rem; /* Indent choices */
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.25rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      .visual-box {
+        border: 2px solid #333;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        background-color: #fff;
+      }
+      
+      .arrow-right {
+         display: inline-block;
+         width: 0; 
+         height: 0; 
+         border-top: 5px solid transparent;
+         border-bottom: 5px solid transparent;
+         border-left: 8px solid #333;
+         vertical-align: middle;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO (Placeholder) -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Pembulatan dan Penaksiran
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S016
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-4 mt-0">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: PENAKSIRAN SELISIH
+                </h1>
+                <p class="text-xs text-gray-600 italic">Keahlian: Menaksir selisih dengan pembulatan (Rounding)</p>
+            </div>
+
+            <!-- VISUAL STRATEGY SECTION -->
+            <div class="visual-box">
+                <div class="text-center font-bold mb-2">CONTOH STRATEGI (VISUAL MATH)</div>
+                <div class="text-sm text-center mb-4"><i>Soal: Taksir selisih antara 68 dan 23 ke puluhan terdekat.</i></div>
+
+                <div class="flex justify-center items-center gap-4 md:gap-8 mb-4">
+                    <!-- Step 1 -->
+                    <div class="text-center">
+                        <div class="font-bold text-xs mb-1 text-blue-700">LANGKAH 1</div>
+                        <div class="text-[10px] text-gray-500 mb-1">(Bulatkan dahulu)</div>
+                        <div class="flex flex-col gap-2">
+                            <div class="bg-blue-50 px-3 py-1 rounded border border-blue-200">
+                                68 <span class="text-gray-400 text-xs">→</span> <b>70</b>
+                            </div>
+                            <div class="bg-blue-50 px-3 py-1 rounded border border-blue-200">
+                                23 <span class="text-gray-400 text-xs">→</span> <b>20</b>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Arrow -->
+                    <div class="text-2xl text-gray-400">➜</div>
+
+                    <!-- Step 2 -->
+                    <div class="text-center">
+                        <div class="font-bold text-xs mb-1 text-green-700">LANGKAH 2</div>
+                        <div class="text-[10px] text-gray-500 mb-1">(Baru kurangkan)</div>
+                        <div class="bg-green-50 px-4 py-3 rounded border border-green-200 font-bold text-lg">
+                            70 - 20 = 50
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="h-px bg-gray-200 w-full mb-2"></div>
+                
+                <div class="text-center text-[10px] font-mono text-gray-600 leading-tight">
+                    <div>Garis Bilangan:</div>
+                    <div>60 ------ 65 --- 68 - <b>70</b> (68 dekat ke 70)</div>
+                    <div><b>20</b> -- 23 --- 25 ------ 30 (23 dekat ke 20)</div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-3 py-1.5 text-sm">
+                Bagian A: Pilihan Ganda. Pilihlah jawaban yang paling tepat.
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. <span class="text-blue-700">Taksiran Puluhan.</span> Taksirlah hasil dari 84 - 39 dengan membulatkan ke <b>puluhan</b> terdekat.
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 30</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 40</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 50</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 60</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. <span class="text-blue-700">Taksiran Ratusan.</span> Berapakah taksiran selisih antara 615 dan 294 jika dibulatkan ke <b>ratusan</b> terdekat?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 200</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 300</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 400</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 500</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1">
+                        3. <span class="text-blue-700">Masalah Produksi.</span> Pabrik memproduksi 4.820 mainan di Januari dan 2.150 di Februari. Taksirlah selisihnya ke <b>ribuan</b> terdekat.
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 1.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 2.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 3.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 4.000</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1">
+                        4. <span class="text-blue-700">Sisa Tepung.</span> Ibu punya 532 gram tepung, dipakai 185 gram. Jika dibulatkan ke <b>puluhan</b> terdekat, berapa taksiran sisanya?
+                    </div>
+                    <div class="choice-container">
+                         <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 340 gram</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 350 gram</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 300 gram</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 400 gram</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Pembulatan dan Penaksiran
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S016
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mb-3 py-1.5 text-sm">
+                Bagian B: Isian Singkat Terstruktur. Isilah kotak untuk menunjukkan proses berpikirmu.
+            </div>
+
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. <span class="text-blue-700">Taksiran Puluhan.</span> Taksirlah 92 - 47 ke <b>puluhan</b> terdekat.
+                    </div>
+                    <div class="ml-4 flex flex-col gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-40 text-sm">92 dibulatkan menjadi:</span>
+                            <span class="input-box"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-40 text-sm">47 dibulatkan menjadi:</span>
+                            <span class="input-box"></span>
+                        </div>
+                        <div class="w-64 h-px bg-gray-300 my-1"></div>
+                        <div class="flex items-center gap-2 font-bold">
+                            <span class="w-40 text-sm">Hasil Pengurangan:</span>
+                            <span class="input-box bg-gray-50 border-2 border-black"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. <span class="text-blue-700">Taksiran Ratusan.</span> Taksirlah 845 - 362 ke <b>ratusan</b> terdekat.
+                    </div>
+                    <div class="ml-4 flex flex-col gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-40 text-sm">845 dibulatkan menjadi:</span>
+                            <span class="input-box"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-40 text-sm">362 dibulatkan menjadi:</span>
+                            <span class="input-box"></span>
+                        </div>
+                        <div class="w-64 h-px bg-gray-300 my-1"></div>
+                        <div class="flex items-center gap-2 font-bold">
+                            <span class="w-40 text-sm">Hasil Pengurangan:</span>
+                            <span class="input-box bg-gray-50 border-2 border-black"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. <span class="text-blue-700">Perbedaan Siswa.</span> Sekolah A (3.245 siswa) dan Sekolah B (1.890 siswa). Taksirlah bedanya ke <b>ribuan</b> terdekat.
+                    </div>
+                    <div class="ml-4 mt-1">
+                        <div class="text-xs text-gray-500 mb-1">Langkah Kerja:</div>
+                        <div class="working-box"></div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. <span class="text-blue-700">Hasil Panen.</span> Pak Budi memanen 758 kg jeruk dan 214 kg apel. Taksirlah selisihnya ke <b>ratusan</b> terdekat.
+                    </div>
+                    <div class="ml-4 flex flex-col gap-2">
+                         <div class="flex items-center gap-2">
+                            <span class="w-40 text-sm">Jeruk (≈ ratusan):</span>
+                            <span class="input-box"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-40 text-sm">Apel (≈ ratusan):</span>
+                            <span class="input-box"></span>
+                        </div>
+                         <div class="w-64 h-px bg-gray-300 my-1"></div>
+                        <div class="flex items-center gap-2 font-bold">
+                            <span class="w-40 text-sm">Selisih:</span>
+                            <span class="input-box bg-gray-50 border-2 border-black"></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1 & 2) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Pembulatan dan Penaksiran
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S016
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mb-3 py-1.5 text-sm">
+                Bagian B (Lanjutan): Isian Singkat Terstruktur.
+            </div>
+
+            <div class="soal-grid mb-4">
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. <span class="text-blue-700">Tantangan.</span> Taksirlah hasil dari 2.675 - 1.420 ke <b>ratusan</b> terdekat. (Perhatikan angka ratusan dan puluhannya).
+                    </div>
+                    <div class="ml-4 mt-1">
+                        <div class="text-xs text-gray-500 mb-1">Langkah Kerja:</div>
+                        <div class="working-box"></div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. <span class="text-blue-700">Cerita Buku.</span> Di perpustakaan ada 1.250 buku fiksi dan 840 non-fiksi.
+                    </div>
+                    <div class="bg-yellow-50 border border-orange-200 rounded p-2 mb-2 mx-4 text-xs">
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>Bulatkan buku fiksi ke <b>ribuan</b> terdekat.</li>
+                            <li>Bulatkan buku non-fiksi ke <b>ratusan</b> terdekat.</li>
+                        </ul>
+                    </div>
+                     <div class="flex items-center gap-2 ml-4 mt-2">
+                         <span class="font-bold text-sm">Selisih hasil pembulatan: </span>
+                         <span class="input-box bg-gray-50" style="width: 150px;"></span>
+                    </div>
+                </div>
+
+            </div>
+            
+             <div class="text-center mt-6 mb-2">
+                <i class="text-sm font-medium text-gray-500">"Matematika melatih kita untuk berpikir logis dan sistematis."</i>
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
