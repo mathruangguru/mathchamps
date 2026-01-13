@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Menghitung Banyaknya Objek (D1-S053)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .disc-fill,
+        .pv-table th,
+        .pv-table td,
+        .digit-card,
+        svg {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .border-orange-200 { border-color: #fed7aa !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem; /* Margin antar soal lebih padat */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 80px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 4px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 1.5rem; /* Indent choices */
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.15cm 0; /* Margin separator lebih padat */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        background-color: #f3f4f6;
+        padding: 0.25rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- VISUAL ELEMENTS (SVG STYLES) --- */
+      .visual-container {
+        display: flex;
+        justify-content: center;
+        margin: 4px 0;
+      }
+      
+      /* New Rule: Ensure SVGs scale down if container is small, but maintain aspect ratio */
+      svg {
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-4) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Bilangan Lingkup 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Menghitung Banyaknya Objek
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S053</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-4 mt-0">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: MENGHITUNG 1-20
+                </h1>
+                
+  
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-6 py-1.5 text-sm">
+                Petunjuk: Perhatikan gambar dengan teliti. Ingat konsep Puluhan (kelompok 10) dan Satuan.
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. <span class="text-blue-700">Menghitung Sederhana.</span> Hitunglah jumlah lingkaran di bawah ini.
+                    </div>
+                    
+                    <div class="visual-container">
+                        <svg width="250" height="50" viewBox="0 0 250 50">
+                            <!-- 6 Blue circles -->
+                            <circle cx="25" cy="25" r="15" fill="#BFDBFE" stroke="#2563EB" stroke-width="2"/>
+                            <circle cx="65" cy="25" r="15" fill="#BFDBFE" stroke="#2563EB" stroke-width="2"/>
+                            <circle cx="105" cy="25" r="15" fill="#BFDBFE" stroke="#2563EB" stroke-width="2"/>
+                            <circle cx="145" cy="25" r="15" fill="#BFDBFE" stroke="#2563EB" stroke-width="2"/>
+                            <circle cx="185" cy="25" r="15" fill="#BFDBFE" stroke="#2563EB" stroke-width="2"/>
+                            <circle cx="225" cy="25" r="15" fill="#BFDBFE" stroke="#2563EB" stroke-width="2"/>
+                        </svg>
+                    </div>
+
+                    <div class="font-medium mb-1 ml-4 text-sm">Ada berapa lingkaran?</div>
+
+                    <div class="choice-container flex-col gap-1 ml-8">
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-0.5 flex-shrink-0"></span> <span class="leading-tight">a. 5</span></label>
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-0.5 flex-shrink-0"></span> <span class="leading-tight">b. 6</span></label>
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-0.5 flex-shrink-0"></span> <span class="leading-tight">c. 7</span></label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. <span class="text-blue-700">Kelompok Puluhan.</span> Perhatikan gambar kotak di bawah ini. Ada satu kelompok berisi 10 kotak merah dan beberapa kotak hijau satuan.
+                    </div>
+                    
+                    <div class="visual-container">
+                        <svg width="300" height="90" viewBox="0 0 300 90">
+                            <!-- Group of 10 Red Box -->
+                            <rect x="10" y="10" width="140" height="70" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                            <text x="80" y="75" font-size="10" text-anchor="middle" font-weight="bold">1 Puluhan (10)</text>
+                            
+                            <!-- 5 Red Squares top row -->
+                            <rect x="20" y="20" width="20" height="20" fill="#FCA5A5" stroke="#DC2626"/>
+                            <rect x="45" y="20" width="20" height="20" fill="#FCA5A5" stroke="#DC2626"/>
+                            <rect x="70" y="20" width="20" height="20" fill="#FCA5A5" stroke="#DC2626"/>
+                            <rect x="95" y="20" width="20" height="20" fill="#FCA5A5" stroke="#DC2626"/>
+                            <rect x="120" y="20" width="20" height="20" fill="#FCA5A5" stroke="#DC2626"/>
+
+                            <!-- 5 Red Squares bottom row (making 10) -->
+                            <rect x="20" y="45" width="20" height="20" fill="#FCA5A5" stroke="#DC2626"/>
+                            <rect x="45" y="45" width="20" height="20" fill="#FCA5A5" stroke="#DC2626"/>
+                            <rect x="70" y="45" width="20" height="20" fill="#FCA5A5" stroke="#DC2626"/>
+                            <rect x="95" y="45" width="20" height="20" fill="#FCA5A5" stroke="#DC2626"/>
+                            <rect x="120" y="45" width="20" height="20" fill="#FCA5A5" stroke="#DC2626"/>
+
+                            <!-- 3 Green Squares loose -->
+                            <rect x="180" y="32" width="20" height="20" fill="#86EFAC" stroke="#16A34A"/>
+                            <rect x="205" y="32" width="20" height="20" fill="#86EFAC" stroke="#16A34A"/>
+                            <rect x="230" y="32" width="20" height="20" fill="#86EFAC" stroke="#16A34A"/>
+                        </svg>
+                    </div>
+
+                    <div class="font-medium mb-1 ml-4 text-sm">
+                        Berapa jumlah total kotak?
+                    </div>
+                    
+                    <div class="flex items-center gap-2 ml-4">
+                        <span class="font-bold">Jawaban: </span>
+                        <span class="input-box" style="width: 100px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1">
+                        3. <span class="text-blue-700">Menghitung Bintang.</span> Hitunglah jumlah bintang berikut ini.
+                    </div>
+                    
+                    <div class="visual-container">
+                        <svg width="250" height="90" viewBox="0 0 250 90">
+                            <!-- Star shape definition -->
+                            <defs>
+                                <polygon id="star" points="10,1 12,7 19,7 13,11 15,17 10,13 5,17 7,11 1,7 8,7" fill="#FDE047" stroke="#EA580C" stroke-width="1"/>
+                            </defs>
+                            <!-- Row 1 (5 stars) -->
+                            <use href="#star" x="10" y="10" transform="scale(1.5)"/>
+                            <use href="#star" x="50" y="10" transform="scale(1.5)"/>
+                            <use href="#star" x="90" y="10" transform="scale(1.5)"/>
+                            <use href="#star" x="130" y="10" transform="scale(1.5)"/>
+                            <use href="#star" x="170" y="10" transform="scale(1.5)"/>
+                            
+                            <!-- Row 2 (5 stars) -->
+                            <use href="#star" x="10" y="40" transform="scale(1.5)"/>
+                            <use href="#star" x="50" y="40" transform="scale(1.5)"/>
+                            <use href="#star" x="90" y="40" transform="scale(1.5)"/>
+                            <use href="#star" x="130" y="40" transform="scale(1.5)"/>
+                            <use href="#star" x="170" y="40" transform="scale(1.5)"/>
+                            
+                            <!-- Row 3 (3 stars) -->
+                            <use href="#star" x="10" y="70" transform="scale(1.5)"/>
+                            <use href="#star" x="50" y="70" transform="scale(1.5)"/>
+                            <use href="#star" x="90" y="70" transform="scale(1.5)"/>
+                        </svg>
+                    </div>
+
+                    <div class="font-medium mb-1 ml-4 text-sm">Jumlah bintang adalah:</div>
+
+                    <div class="choice-container flex-col gap-1 ml-8">
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-0.5 flex-shrink-0"></span> <span class="leading-tight">a. 12</span></label>
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-0.5 flex-shrink-0"></span> <span class="leading-tight">b. 13</span></label>
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-0.5 flex-shrink-0"></span> <span class="leading-tight">c. 14</span></label>
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-0.5 flex-shrink-0"></span> <span class="leading-tight">d. 15</span></label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-1">
+                       4. <span class="text-blue-700">Kerangka Sepuluh (Ten Frame).</span> Lihatlah gambar di bawah.
+                   </div>
+                   
+                   <div class="visual-container">
+                       <svg width="300" height="60" viewBox="0 0 300 60">
+                            <!-- Frame 1 (Full 10) -->
+                            <g>
+                                <rect x="0" y="0" width="100" height="40" fill="white" stroke="black" stroke-width="2"/>
+                                <line x1="0" y1="20" x2="100" y2="20" stroke="black" stroke-width="2"/>
+                                <line x1="20" y1="0" x2="20" y2="40" stroke="black" stroke-width="2"/>
+                                <line x1="40" y1="0" x2="40" y2="40" stroke="black" stroke-width="2"/>
+                                <line x1="60" y1="0" x2="60" y2="40" stroke="black" stroke-width="2"/>
+                                <line x1="80" y1="0" x2="80" y2="40" stroke="black" stroke-width="2"/>
+                                
+                                <!-- Dots -->
+                                <circle cx="10" cy="10" r="6" fill="black"/> <circle cx="30" cy="10" r="6" fill="black"/>
+                                <circle cx="50" cy="10" r="6" fill="black"/> <circle cx="70" cy="10" r="6" fill="black"/>
+                                <circle cx="90" cy="10" r="6" fill="black"/>
+                                <circle cx="10" cy="30" r="6" fill="black"/> <circle cx="30" cy="30" r="6" fill="black"/>
+                                <circle cx="50" cy="30" r="6" fill="black"/> <circle cx="70" cy="30" r="6" fill="black"/>
+                                <circle cx="90" cy="30" r="6" fill="black"/>
+                            </g>
+
+                             <!-- Plus sign -->
+                             <text x="115" y="28" font-size="20" font-weight="bold">+</text>
+
+                            <!-- Frame 2 (5 dots) -->
+                            <g transform="translate(130, 0)">
+                                <rect x="0" y="0" width="100" height="40" fill="white" stroke="black" stroke-width="2"/>
+                                <line x1="0" y1="20" x2="100" y2="20" stroke="black" stroke-width="2"/>
+                                <line x1="20" y1="0" x2="20" y2="40" stroke="black" stroke-width="2"/>
+                                <line x1="40" y1="0" x2="40" y2="40" stroke="black" stroke-width="2"/>
+                                <line x1="60" y1="0" x2="60" y2="40" stroke="black" stroke-width="2"/>
+                                <line x1="80" y1="0" x2="80" y2="40" stroke="black" stroke-width="2"/>
+                                
+                                <!-- Dots (5 dots on top row) -->
+                                <circle cx="10" cy="10" r="6" fill="black"/> <circle cx="30" cy="10" r="6" fill="black"/>
+                                <circle cx="50" cy="10" r="6" fill="black"/> <circle cx="70" cy="10" r="6" fill="black"/>
+                                <circle cx="90" cy="10" r="6" fill="black"/>
+                            </g>
+                       </svg>
+                   </div>
+                   
+                   <div class="font-medium ml-4 text-sm text-center">10 + 5 = ...</div>
+
+                   <div class="flex items-center justify-center gap-2 ml-4 mt-2">
+                       <span class="font-bold">Jawaban: </span>
+                       <span class="input-box" style="width: 100px;"></span>
+                   </div>
+               </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 5-8) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Bilangan Lingkup 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Menghitung Banyaknya Objek
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S053</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mb-4 py-1.5 text-sm">
+                Lanjutan Lembar Kerja
+            </div>
+
+            <div class="soal-grid mb-4">
+                 
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1">
+                       5. <span class="text-blue-700">Berhitung Segitiga.</span> Hitunglah jumlah segitiga di bawah ini.
+                   </div>
+                   
+                   <!-- PERBAIKAN: Segitiga dikelompokkan 10 dan 7 -->
+                   <div class="visual-container">
+                        <svg width="300" height="90" viewBox="0 0 300 90">
+                            <!-- Group of 10 Box -->
+                            <rect x="5" y="5" width="140" height="75" fill="none" stroke="#333" stroke-width="1.5" stroke-dasharray="4"/>
+                            <text x="75" y="75" font-size="9" text-anchor="middle" font-weight="bold">10 Segitiga</text>
+
+                            <!-- 10 Triangles inside box -->
+                            <g fill="#A5F3FC" stroke="#0891B2">
+                                <!-- Row 1 of 5 -->
+                                <polygon points="15,25 25,5 35,25" /> <polygon points="40,25 50,5 60,25" />
+                                <polygon points="65,25 75,5 85,25" /> <polygon points="90,25 100,5 110,25" />
+                                <polygon points="115,25 125,5 135,25" />
+                                <!-- Row 2 of 5 -->
+                                <polygon points="15,55 25,35 35,55" /> <polygon points="40,55 50,35 60,55" />
+                                <polygon points="65,55 75,35 85,55" /> <polygon points="90,55 100,35 110,55" />
+                                <polygon points="115,55 125,35 135,55" />
+                            </g>
+
+                            <!-- 7 Triangles outside -->
+                            <g fill="#A5F3FC" stroke="#0891B2" transform="translate(150, 0)">
+                                <!-- Row 1 of 4 -->
+                                <polygon points="15,25 25,5 35,25" /> <polygon points="40,25 50,5 60,25" />
+                                <polygon points="65,25 75,5 85,25" /> <polygon points="90,25 100,5 110,25" />
+                                <!-- Row 2 of 3 -->
+                                <polygon points="15,55 25,35 35,55" /> <polygon points="40,55 50,35 60,55" />
+                                <polygon points="65,55 75,35 85,55" />
+                            </g>
+                        </svg>
+                   </div>
+
+                   <div class="font-medium ml-4 text-sm">Ada berapa segitiga?</div>
+                   
+                   <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 16</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 17</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 18</label>
+                   </div>
+               </div>
+
+               <div class="h-separator"></div>
+
+               <!-- SOAL 6 -->
+               <div class="soal-item">
+                    <div class="font-bold mb-1">
+                      6. <span class="text-blue-700">Konsep Pengelompokan.</span> Perhatikan gambar di bawah: <b>1 Puluhan</b> dan <b>9 Satuan</b>.
+                    </div>
+                    
+                    <div class="visual-container">
+                        <svg width="200" height="80" viewBox="0 0 200 80">
+                            <!-- Bundle of 10 -->
+                            <g stroke="#333" stroke-width="2">
+                                <line x1="20" y1="10" x2="20" y2="60"/> <line x1="23" y1="10" x2="23" y2="60"/>
+                                <line x1="26" y1="10" x2="26" y2="60"/> <line x1="29" y1="10" x2="29" y2="60"/>
+                                <line x1="32" y1="10" x2="32" y2="60"/> <line x1="35" y1="10" x2="35" y2="60"/>
+                                <line x1="38" y1="10" x2="38" y2="60"/> <line x1="41" y1="10" x2="41" y2="60"/>
+                                <line x1="44" y1="10" x2="44" y2="60"/> <line x1="47" y1="10" x2="47" y2="60"/>
+                                <!-- Tie -->
+                                <path d="M15,30 Q33,40 52,30" fill="none" stroke-width="3"/>
+                            </g>
+                            <text x="33" y="75" font-size="10" text-anchor="middle">1 Puluhan</text>
+
+                            <!-- 9 Loose sticks -->
+                            <g stroke="#333" stroke-width="2" transform="translate(80, 0)">
+                                <line x1="10" y1="20" x2="10" y2="60"/> <line x1="20" y1="20" x2="20" y2="60"/>
+                                <line x1="30" y1="20" x2="30" y2="60"/> <line x1="40" y1="20" x2="40" y2="60"/>
+                                <line x1="50" y1="20" x2="50" y2="60"/> <line x1="60" y1="20" x2="60" y2="60"/>
+                                <line x1="70" y1="20" x2="70" y2="60"/> <line x1="80" y1="20" x2="80" y2="60"/>
+                                <line x1="90" y1="20" x2="90" y2="60"/>
+                            </g>
+                            <text x="130" y="75" font-size="10" text-anchor="middle">9 Satuan</text>
+                        </svg>
+                    </div>
+
+                    <div class="font-medium ml-4 text-sm">Bilangan berapakah ini?</div>
+                    
+                    <div class="flex items-center gap-2 ml-4 mt-1">
+                        <span class="font-bold">Jawaban: </span>
+                        <span class="input-box" style="width: 100px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                       7. <span class="text-blue-700">Grid Kotak.</span> Hitunglah jumlah kotak kecil berikut.
+                    </div>
+                    
+                    <div class="visual-container">
+                        <!-- PERBAIKAN: Menggunakan garis manual dan area canvas 300x80 agar dipastikan tidak terpotong -->
+                        <svg width="300" height="80" viewBox="0 0 300 80">
+                            <!-- 2 rows x 10 cols grid. Each cell 25x25. Total width 250px. Centered in 300px canvas. -->
+                            <g stroke="#333" stroke-width="2">
+                                <!-- Background Fill -->
+                                <rect x="25" y="15" width="250" height="50" fill="#FDBA74" />
+                                
+                                <!-- Border -->
+                                <rect x="25" y="15" width="250" height="50" fill="none" />
+                                
+                                <!-- Vertical lines to make 10 columns -->
+                                <line x1="50" y1="15" x2="50" y2="65"/> <line x1="75" y1="15" x2="75" y2="65"/>
+                                <line x1="100" y1="15" x2="100" y2="65"/> <line x1="125" y1="15" x2="125" y2="65"/>
+                                <line x1="150" y1="15" x2="150" y2="65"/> <line x1="175" y1="15" x2="175" y2="65"/>
+                                <line x1="200" y1="15" x2="200" y2="65"/> <line x1="225" y1="15" x2="225" y2="65"/>
+                                <line x1="250" y1="15" x2="250" y2="65"/>
+                                
+                                <!-- Horizontal line to make 2 rows -->
+                                <line x1="25" y1="40" x2="275" y2="40"/>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="ml-4 text-sm font-medium mb-2">
+                        Ada 2 baris. Setiap baris ada 10 kotak. Berapa jumlah semuanya?
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 18</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 19</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 20</label>
+                   </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1">
+                        8. <span class="text-blue-700">Kalimat Matematika.</span> Lengkapi kalimat matematika berdasarkan gambar.
+                    </div>
+                    
+                    <div class="visual-container">
+                        <svg width="250" height="50" viewBox="0 0 250 50">
+                            <!-- 10 purple circles -->
+                            <g fill="#E9D5FF" stroke="#7E22CE">
+                                <circle cx="15" cy="15" r="10"/> <circle cx="40" cy="15" r="10"/>
+                                <circle cx="65" cy="15" r="10"/> <circle cx="90" cy="15" r="10"/>
+                                <circle cx="115" cy="15" r="10"/> <circle cx="140" cy="15" r="10"/>
+                                <circle cx="165" cy="15" r="10"/> <circle cx="190" cy="15" r="10"/>
+                                <circle cx="215" cy="15" r="10"/> <circle cx="240" cy="15" r="10"/>
+                            </g>
+                            <!-- 1 purple circle below/separate -->
+                            <circle cx="15" cy="40" r="10" fill="#E9D5FF" stroke="#7E22CE"/>
+                        </svg>
+                    </div>
+
+                    <div class="text-center my-1 font-semibold text-gray-800 text-lg">
+                        10 + 1 = ...
+                    </div>
+                    
+                    <div class="flex items-center justify-center gap-2 mt-2">
+                        <span class="font-bold">Jawaban: </span>
+                        <span class="input-box" style="width: 100px;"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 9-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Bilangan Lingkup 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Menghitung Banyaknya Objek
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S053</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             <div class="instruction-text mb-4 py-1.5 text-sm">
+                Lanjutan Lembar Kerja
+            </div>
+
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. <span class="text-blue-700">Awan Mendung.</span> Hitunglah jumlah awan.
+                    </div>
+
+                    <div class="visual-container">
+                        <!-- PERBAIKAN: ViewBox Width diperbesar agar muat seluruh awan dan tinggi diperbesar agar tidak terpotong -->
+                         <svg width="420" height="220" viewBox="0 0 420 220">
+                            <!-- Cloud definition -->
+                            <defs>
+                                <path id="cloud" d="M25,10 Q35,-5 50,10 T75,10 T85,25 T75,40 T50,40 T25,40 T15,25 T25,10" fill="#E5E7EB" stroke="#6B7280" stroke-width="1.5"/>
+                            </defs>
+                            
+                            <!-- Scale 0.8 means width approx 80, height 40 -->
+                            <g transform="translate(10, 20) scale(0.8)">
+                                <!-- Row 1 y=0 -->
+                                <use href="#cloud" x="0" y="0"/>   
+                                <use href="#cloud" x="100" y="0"/> 
+                                <use href="#cloud" x="200" y="0"/> 
+                                <use href="#cloud" x="300" y="0"/>
+                                
+                                <!-- Row 2 y=65 -->
+                                <use href="#cloud" x="0" y="65"/>  
+                                <use href="#cloud" x="100" y="65"/> 
+                                <use href="#cloud" x="200" y="65"/> 
+                                <use href="#cloud" x="300" y="65"/>
+
+                                <!-- Row 3 y=130 -->
+                                <use href="#cloud" x="0" y="130"/> 
+                                <use href="#cloud" x="100" y="130"/> 
+                                <use href="#cloud" x="200" y="130"/> 
+                                <use href="#cloud" x="300" y="130"/>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="font-medium ml-4 text-sm">Ada berapa awan? (Petunjuk: 3 baris x 4 awan?)</div>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 11</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 12</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 13</label>
+                   </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1">
+                        10. <span class="text-blue-700">Cerita Matematika.</span> Budi mempunyai 10 kelereng. Ibu memberinya 4 kelereng lagi.
+                    </div>
+
+                    <div class="visual-container">
+                        <!-- PERBAIKAN: ViewBox width diperbesar 250 -> 350 agar tidak terpotong -->
+                        <svg width="350" height="50" viewBox="0 0 350 50">
+                             <!-- 10 Blue Marbles -->
+                             <g fill="#3B82F6" stroke="#1D4ED8">
+                                <circle cx="10" cy="25" r="8"/> <circle cx="30" cy="25" r="8"/>
+                                <circle cx="50" cy="25" r="8"/> <circle cx="70" cy="25" r="8"/>
+                                <circle cx="90" cy="25" r="8"/> <circle cx="110" cy="25" r="8"/>
+                                <circle cx="130" cy="25" r="8"/> <circle cx="150" cy="25" r="8"/>
+                                <circle cx="170" cy="25" r="8"/> <circle cx="190" cy="25" r="8"/>
+                             </g>
+                             
+                             <text x="210" y="31" font-size="20" font-weight="bold">+</text>
+
+                             <!-- 4 Green Marbles -->
+                             <g fill="#22C55E" stroke="#15803D" transform="translate(225, 5)">
+                                <circle cx="10" cy="20" r="8"/> <circle cx="30" cy="20" r="8"/>
+                                <circle cx="50" cy="20" r="8"/> <circle cx="70" cy="20" r="8"/>
+                             </g>
+                        </svg>
+                    </div>
+
+                    <div class="ml-4 text-sm mb-2">
+                        Berapa jumlah kelereng Budi sekarang?
+                    </div>
+
+                    <div class="flex items-center gap-2 ml-4">
+                        <span class="font-bold">Jawaban: </span>
+                        <span class="input-box" style="width: 150px;"></span>
+                    </div>
+                </div>
+
+            </div>
+
+             <div class="text-center italic text-xs text-gray-500 mt-6">
+                "Matematika menjadi menyenangkan ketika kita bisa melihatnya!"
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
