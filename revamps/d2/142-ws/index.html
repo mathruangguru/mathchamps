@@ -1,0 +1,642 @@
+<!DOCTYPE html> 
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Pembagian (D2-S142)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .svg-group,
+        .svg-dot,
+        .bar-model-rect {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border-bottom: 2px solid #333;
+        min-width: 60px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: bottom;
+        background: transparent;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 4px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 0.5rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+        position: relative;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- VISUAL MATH STYLES --- */
+      .group-container {
+        fill: none;
+        stroke: #333;
+        stroke-width: 2;
+      }
+      .item-shape {
+        fill: #4b5563; /* Gray-600 */
+      }
+      .item-shape-star {
+        fill: #f59e0b; /* Amber-500 */
+        stroke: #d97706;
+        stroke-width: 1;
+      }
+      .item-shape-cookie {
+        fill: #fdba74; /* Orange-300 */
+        stroke: #ea580c;
+        stroke-width: 1;
+      }
+      .bar-model-rect {
+        fill: white;
+        stroke: #333;
+        stroke-width: 2;
+      }
+      .bar-model-text {
+        font-size: 14px;
+        font-weight: bold;
+        font-family: 'Noto Sans', sans-serif;
+      }
+      .arrow-line {
+        stroke: #9ca3af;
+        stroke-width: 1.5;
+        stroke-dasharray: 4;
+        marker-end: url(#arrowhead);
+      }
+    </style>
+  </head>
+  <body>
+    
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pembagian</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Pembagian (Berbagi Sama Rata)
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D2-S142</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Name & Class removed as requested -->
+
+            <h2 class="font-bold text-lg mb-2">Latihan 1: Membagi Benda (Visual)</h2>
+            <div class="instruction-text">
+                Instruksi: Bagilah benda-benda di bawah ini ke dalam kotak atau kelompok yang tersedia secara sama rata.
+            </div>
+            
+            <div class="soal-grid mt-4">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        1. Ada <b>6 bola</b>. Bagikan sama rata ke dalam <b>2 kotak</b>. Berapa bola di setiap kotak?
+                    </div>
+                    <div class="flex justify-start items-center gap-8 my-2">
+                        <svg width="300" height="120" viewBox="0 0 300 120">
+                            <!-- Balls -->
+                            <g transform="translate(10, 10)">
+                                <circle cx="20" cy="20" r="10" class="item-shape"/>
+                                <circle cx="50" cy="20" r="10" class="item-shape"/>
+                                <circle cx="80" cy="20" r="10" class="item-shape"/>
+                                <circle cx="110" cy="20" r="10" class="item-shape"/>
+                                <circle cx="140" cy="20" r="10" class="item-shape"/>
+                                <circle cx="170" cy="20" r="10" class="item-shape"/>
+                            </g>
+                            
+                            <!-- Boxes -->
+                            <rect x="10" y="50" width="80" height="60" class="group-container" />
+                            <rect x="110" y="50" width="80" height="60" class="group-container" />
+
+                            <!-- Guides -->
+                            <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                                  <polygon points="0 0, 10 3.5, 0 7" fill="#9ca3af" />
+                                </marker>
+                            </defs>
+                            <line x1="55" y1="35" x2="55" y2="50" class="arrow-line" />
+                            <line x1="135" y1="35" x2="135" y2="50" class="arrow-line" />
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 2 bola</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 3 bola</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 4 bola</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        2. Ibu punya <b>8 kue</b>. Ibu membaginya ke dalam <b>4 piring</b> sama banyak. Ada berapa kue di setiap piring?
+                    </div>
+                    <div class="flex justify-start items-center gap-8 my-2">
+                        <svg width="400" height="100" viewBox="0 0 400 100">
+                             <!-- Cookies Row -->
+                             <g transform="translate(10, 10)">
+                                <circle cx="15" cy="15" r="12" class="item-shape-cookie"/>
+                                <circle cx="45" cy="15" r="12" class="item-shape-cookie"/>
+                                <circle cx="75" cy="15" r="12" class="item-shape-cookie"/>
+                                <circle cx="105" cy="15" r="12" class="item-shape-cookie"/>
+                                <circle cx="135" cy="15" r="12" class="item-shape-cookie"/>
+                                <circle cx="165" cy="15" r="12" class="item-shape-cookie"/>
+                                <circle cx="195" cy="15" r="12" class="item-shape-cookie"/>
+                                <circle cx="225" cy="15" r="12" class="item-shape-cookie"/>
+                             </g>
+                             
+                             <!-- Plates -->
+                             <ellipse cx="40" cy="70" rx="35" ry="10" class="group-container"/>
+                             <ellipse cx="120" cy="70" rx="35" ry="10" class="group-container"/>
+                             <ellipse cx="200" cy="70" rx="35" ry="10" class="group-container"/>
+                             <ellipse cx="280" cy="70" rx="35" ry="10" class="group-container"/>
+                        </svg>
+                    </div>
+                    <div class="mt-2">
+                        <b>Jawaban:</b> <span class="input-box" style="min-width: 100px;"></span> kue.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        3. Bagilah <b>10 bintang</b> ini kepada <b>2 anak</b> sama banyak.
+                    </div>
+                    <div class="flex justify-start items-center gap-8 my-2">
+                        <svg width="300" height="150" viewBox="0 0 300 150">
+                            <!-- Stars -->
+                            <g transform="translate(10, 10)">
+                                <polygon points="15,2 19,12 29,12 21,19 24,29 15,24 6,29 9,19 1,12 11,12" transform="translate(0,0)" class="item-shape-star"/>
+                                <polygon points="15,2 19,12 29,12 21,19 24,29 15,24 6,29 9,19 1,12 11,12" transform="translate(35,0)" class="item-shape-star"/>
+                                <polygon points="15,2 19,12 29,12 21,19 24,29 15,24 6,29 9,19 1,12 11,12" transform="translate(70,0)" class="item-shape-star"/>
+                                <polygon points="15,2 19,12 29,12 21,19 24,29 15,24 6,29 9,19 1,12 11,12" transform="translate(105,0)" class="item-shape-star"/>
+                                <polygon points="15,2 19,12 29,12 21,19 24,29 15,24 6,29 9,19 1,12 11,12" transform="translate(140,0)" class="item-shape-star"/>
+                                
+                                <polygon points="15,2 19,12 29,12 21,19 24,29 15,24 6,29 9,19 1,12 11,12" transform="translate(0,35)" class="item-shape-star"/>
+                                <polygon points="15,2 19,12 29,12 21,19 24,29 15,24 6,29 9,19 1,12 11,12" transform="translate(35,35)" class="item-shape-star"/>
+                                <polygon points="15,2 19,12 29,12 21,19 24,29 15,24 6,29 9,19 1,12 11,12" transform="translate(70,35)" class="item-shape-star"/>
+                                <polygon points="15,2 19,12 29,12 21,19 24,29 15,24 6,29 9,19 1,12 11,12" transform="translate(105,35)" class="item-shape-star"/>
+                                <polygon points="15,2 19,12 29,12 21,19 24,29 15,24 6,29 9,19 1,12 11,12" transform="translate(140,35)" class="item-shape-star"/>
+                            </g>
+
+                            <!-- Kids/Groups -->
+                            <circle cx="50" cy="110" r="30" class="group-container"/>
+                            <text x="50" y="115" text-anchor="middle" font-size="10" font-family="Montserrat">Anak A</text>
+                            
+                            <circle cx="150" cy="110" r="30" class="group-container"/>
+                            <text x="150" y="115" text-anchor="middle" font-size="10" font-family="Montserrat">Anak B</text>
+                        </svg>
+                    </div>
+                    <div class="mt-2">
+                        Setiap anak mendapatkan <span class="input-box"></span> bintang.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pembagian</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Pembagian (Berbagi Sama Rata)
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D2-S142</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <h2 class="font-bold text-lg mb-2">Latihan 2: Bar Model (Model Batang)</h2>
+            <div class="instruction-text">
+                Instruksi: Lihat gambar model di bawah ini. Isilah kotak yang kosong dengan angka yang benar.
+            </div>
+
+            <div class="soal-grid mt-4">
+                
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        4. Ada 9 apel. Dibagi menjadi 3 kelompok sama banyak.
+                    </div>
+                    <div class="flex justify-start items-center gap-8 my-2">
+                         <svg width="300" height="100" viewBox="0 0 300 100">
+                             <!-- Whole Bar -->
+                             <rect x="0" y="10" width="240" height="30" class="bar-model-rect" />
+                             <text x="120" y="30" text-anchor="middle" class="bar-model-text">Total: 9 Apel</text>
+                             
+                             <!-- Part Bars -->
+                             <rect x="0" y="50" width="80" height="30" class="bar-model-rect" />
+                             <text x="40" y="70" text-anchor="middle" class="bar-model-text">?</text>
+                             
+                             <rect x="80" y="50" width="80" height="30" class="bar-model-rect" />
+                             <text x="120" y="70" text-anchor="middle" class="bar-model-text">?</text>
+                             
+                             <rect x="160" y="50" width="80" height="30" class="bar-model-rect" />
+                             <text x="200" y="70" text-anchor="middle" class="bar-model-text">?</text>
+                         </svg>
+                    </div>
+                    <div class="mt-2">
+                        Setiap kelompok berisi <span class="input-box"></span> apel.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. Ada 12 pensil. Dibagi menjadi 2 kotak sama rata.
+                    </div>
+                    <div class="flex justify-start items-center gap-8 my-2">
+                        <svg width="300" height="100" viewBox="0 0 300 100">
+                            <!-- Whole Bar -->
+                            <rect x="0" y="10" width="240" height="30" class="bar-model-rect" />
+                            <text x="120" y="30" text-anchor="middle" class="bar-model-text">Total: 12 Pensil</text>
+                            
+                            <!-- Part Bars -->
+                            <rect x="0" y="50" width="120" height="30" class="bar-model-rect" />
+                            <text x="60" y="70" text-anchor="middle" class="bar-model-text">?</text>
+                            
+                            <rect x="120" y="50" width="120" height="30" class="bar-model-rect" />
+                            <text x="180" y="70" text-anchor="middle" class="bar-model-text">?</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 5 pensil</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 6 pensil</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 7 pensil</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. Total ada 15 kelereng. Kita bagi menjadi 5 kelompok.
+                    </div>
+                    <div class="flex justify-start items-center gap-8 my-2">
+                        <svg width="300" height="100" viewBox="0 0 300 100">
+                             <!-- Bracket for Total -->
+                             <line x1="0" y1="20" x2="0" y2="10" stroke="black" stroke-width="2"/>
+                             <line x1="0" y1="10" x2="250" y2="10" stroke="black" stroke-width="2"/>
+                             <line x1="250" y1="10" x2="250" y2="20" stroke="black" stroke-width="2"/>
+                             <text x="125" y="25" text-anchor="middle" font-weight="bold">15</text>
+
+                             <!-- Part Bars -->
+                             <g transform="translate(0, 30)">
+                                <rect x="0" y="0" width="50" height="30" class="bar-model-rect" />
+                                <text x="25" y="20" text-anchor="middle" class="bar-model-text">?</text>
+
+                                <rect x="50" y="0" width="50" height="30" class="bar-model-rect" />
+                                <rect x="100" y="0" width="50" height="30" class="bar-model-rect" />
+                                <rect x="150" y="0" width="50" height="30" class="bar-model-rect" />
+                                <rect x="200" y="0" width="50" height="30" class="bar-model-rect" />
+                             </g>
+                        </svg>
+                    </div>
+                    <div class="mt-2">
+                        Setiap kelompok ada <span class="input-box"></span> kelereng.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <h2 class="font-bold text-lg mb-2">Latihan 3: Soal Cerita</h2>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. Siti punya 4 permen. Ia membaginya untuk <b>dirinya dan adiknya</b> sama banyak.
+                    </div>
+                    <div class="flex justify-start items-center gap-4 my-2">
+                        <svg width="150" height="40" viewBox="0 0 150 40">
+                             <circle cx="20" cy="20" r="10" fill="pink" stroke="red"/>
+                             <circle cx="50" cy="20" r="10" fill="pink" stroke="red"/>
+                             <circle cx="80" cy="20" r="10" fill="pink" stroke="red"/>
+                             <circle cx="110" cy="20" r="10" fill="pink" stroke="red"/>
+                        </svg>
+                    </div>
+                    <div class="mt-2">
+                        Siti dapat <span class="input-box"></span> permen, Adik dapat <span class="input-box"></span> permen.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pembagian</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Pembagian (Berbagi Sama Rata)
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D2-S142</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Pak Guru punya 10 buku. Diberikan kepada 5 murid. Setiap murid dapat jumlah yang sama. Berapa buku untuk 1 murid?
+                    </div>
+                    <div class="flex justify-start items-center gap-2 my-2">
+                        <svg width="400" height="60" viewBox="0 0 400 60">
+                            <!-- 10 Books Horizontal -->
+                            <g transform="translate(10, 10)">
+                                <rect x="0" y="0" width="30" height="40" fill="#bfdbfe" stroke="#3b82f6" stroke-width="2"/>
+                                <rect x="40" y="0" width="30" height="40" fill="#bfdbfe" stroke="#3b82f6" stroke-width="2"/>
+                                <rect x="80" y="0" width="30" height="40" fill="#bfdbfe" stroke="#3b82f6" stroke-width="2"/>
+                                <rect x="120" y="0" width="30" height="40" fill="#bfdbfe" stroke="#3b82f6" stroke-width="2"/>
+                                <rect x="160" y="0" width="30" height="40" fill="#bfdbfe" stroke="#3b82f6" stroke-width="2"/>
+                                <rect x="200" y="0" width="30" height="40" fill="#bfdbfe" stroke="#3b82f6" stroke-width="2"/>
+                                <rect x="240" y="0" width="30" height="40" fill="#bfdbfe" stroke="#3b82f6" stroke-width="2"/>
+                                <rect x="280" y="0" width="30" height="40" fill="#bfdbfe" stroke="#3b82f6" stroke-width="2"/>
+                                <rect x="320" y="0" width="30" height="40" fill="#bfdbfe" stroke="#3b82f6" stroke-width="2"/>
+                                <rect x="360" y="0" width="30" height="40" fill="#bfdbfe" stroke="#3b82f6" stroke-width="2"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="mt-2">
+                        <b>Jawaban:</b> <span class="input-box" style="min-width: 100px;"></span> buku.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. Ada 8 potong pizza. Ada 4 piring di meja. Bagilah pizza ke piring sama rata.
+                    </div>
+                    <div class="flex justify-start items-center gap-8 my-2">
+                        <svg width="350" height="120" viewBox="0 0 350 120">
+                            <!-- Pizza Slices -->
+                            <g transform="translate(10, 10)">
+                                <path d="M10,0 L25,30 L0,30 Z" fill="#facc15" stroke="orange" transform="translate(0,0)"/>
+                                <path d="M10,0 L25,30 L0,30 Z" fill="#facc15" stroke="orange" transform="translate(30,0)"/>
+                                <path d="M10,0 L25,30 L0,30 Z" fill="#facc15" stroke="orange" transform="translate(60,0)"/>
+                                <path d="M10,0 L25,30 L0,30 Z" fill="#facc15" stroke="orange" transform="translate(90,0)"/>
+                                <path d="M10,0 L25,30 L0,30 Z" fill="#facc15" stroke="orange" transform="translate(120,0)"/>
+                                <path d="M10,0 L25,30 L0,30 Z" fill="#facc15" stroke="orange" transform="translate(150,0)"/>
+                                <path d="M10,0 L25,30 L0,30 Z" fill="#facc15" stroke="orange" transform="translate(180,0)"/>
+                                <path d="M10,0 L25,30 L0,30 Z" fill="#facc15" stroke="orange" transform="translate(210,0)"/>
+                            </g>
+
+                            <!-- Plates -->
+                            <circle cx="40" cy="80" r="20" class="group-container"/>
+                            <circle cx="100" cy="80" r="20" class="group-container"/>
+                            <circle cx="160" cy="80" r="20" class="group-container"/>
+                            <circle cx="220" cy="80" r="20" class="group-container"/>
+                        </svg>
+                    </div>
+                    <div class="mt-2">
+                        Satu piring berisi <span class="input-box"></span> potong pizza.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 (Challenge) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-blue-800">
+                        10. Tantangan: Budi punya 14 ikan. Dia punya 2 akuarium besar. Dia memasukkan ikan sama banyak ke setiap akuarium. Berapa isi 1 akuarium?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 6 ikan</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 7 ikan</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 8 ikan</label>
+                    </div>
+                </div>
+
+            </div>
+
+             <!-- Motivation -->
+             <div class="text-center italic text-xs text-gray-500 mt-12 p-4 bg-gray-100 rounded-lg">
+                "Pembagian itu adil! Semakin sering berlatih, semakin kamu pandai berbagi."
+             </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      
+    </div>
+  </body>
+</html>
