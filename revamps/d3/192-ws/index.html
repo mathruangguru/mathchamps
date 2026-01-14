@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Masalah Selisih (D3-S192)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .bar-model-box,
+        .tcolorbox,
+        .vertical-math-table td,
+        .bar-comparison-container {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-blue-100 { background-color: #dbeafe !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+        .bg-gray-200 { background-color: #e5e7eb !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 60px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.2rem;
+        margin-top: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+        margin-left: 1.5rem;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.4cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.6rem;
+        background-color: #f3f4f6;
+        padding: 0.2rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* --- VISUAL MATH SPECIFICS --- */
+      
+      /* Comparison Bar Model Style */
+      .bar-comparison-container {
+          margin: 10px 0 10px 20px;
+          width: 80%;
+          font-size: 0.8rem;
+          font-family: 'Noto Sans', sans-serif;
+      }
+      
+      .bar-row {
+          display: flex;
+          align-items: center;
+          margin-bottom: 4px;
+      }
+      
+      .bar-label {
+          width: 70px;
+          text-align: right;
+          padding-right: 8px;
+          font-weight: bold;
+      }
+      
+      .bar-graphic {
+          flex-grow: 1;
+          display: flex;
+          align-items: center;
+      }
+      
+      .bar-block {
+          height: 24px;
+          border: 1.5px solid #333;
+          background-color: #e5e7eb; /* gray-200 */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+      }
+      
+      .bar-dashed {
+          height: 24px;
+          border: 1.5px dashed #666;
+          background-color: transparent;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #666;
+          font-size: 0.75rem;
+          border-left: none; /* Connect to main bar */
+      }
+      
+      .brace-label {
+        font-size: 0.7rem;
+        color: #555;
+        margin-left: 5px;
+      }
+
+      /* Concept Box */
+      .tcolorbox {
+          border: 1px solid #60a5fa;
+          background-color: #eff6ff;
+          border-radius: 8px;
+          overflow: hidden;
+          margin-bottom: 1rem;
+      }
+      .tcolorbox-header {
+          background-color: #93c5fd;
+          color: #1e3a8a;
+          font-weight: bold;
+          padding: 4px 12px;
+          font-size: 0.85rem;
+      }
+      .tcolorbox-content {
+          padding: 10px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pengurangan Dalam 1000</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Masalah Selisih, Dicari Jumlahnya
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S192</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-6 mt-2">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    SOAL CERITA DUA LANGKAH
+                </h1>
+                <p class="text-xs text-gray-600">Perhatikan hubungan "lebih sedikit" untuk mencari jumlah total.</p>
+            </div>
+
+            <!-- CONTOH KONSEP -->
+            <div class="tcolorbox">
+                <div class="tcolorbox-header">Contoh Konsep: Lebih Sedikit (Less Than)</div>
+                <div class="tcolorbox-content">
+                    <div class="flex flex-col md:flex-row items-center justify-around gap-4">
+                        <div class="text-xs max-w-[300px]">
+                            <b>Langkah 1:</b> Cari jumlah benda orang kedua (yang lebih sedikit).<br>
+                            <b>Langkah 2:</b> Jumlahkan keduanya untuk mencari Total.
+                        </div>
+                        <div class="bar-comparison-container !m-0 !w-auto">
+                            <div class="bar-row">
+                                <div class="bar-label">A:</div>
+                                <div class="bar-block w-24">5</div>
+                            </div>
+                            <div class="bar-row">
+                                <div class="bar-label">B:</div>
+                                <div class="bar-block w-14 bg-white">?</div>
+                                <div class="bar-dashed w-10 text-[9px]">2 krg</div>
+                            </div>
+                            <div class="text-right text-[10px] font-bold mt-1 border-t border-black w-24 ml-[78px]">Total?</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION A -->
+            <div class="instruction-text">
+                Bagian A: Pilihan Ganda (Pilihlah jawaban yang benar)
+            </div>
+
+            <div class="soal-grid">
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        1. Adi memiliki 5 kelereng. Budi memiliki 2 kelereng lebih sedikit dari Adi. Berapa jumlah kelereng mereka berdua?
+                    </div>
+                    <div class="bar-comparison-container">
+                        <div class="bar-row">
+                            <div class="bar-label">Adi</div>
+                            <div class="bar-block w-40">5</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">Budi</div>
+                            <div class="bar-block w-24 bg-white">?</div>
+                            <div class="bar-dashed w-16">2 beda</div>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> A. 3</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> B. 7</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> C. 8</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> D. 10</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        2. Siti mempunyai 6 apel. Lina mempunyai 4 apel lebih sedikit dari Siti. Berapa jumlah apel Siti dan Lina?
+                    </div>
+                    <div class="bar-comparison-container">
+                        <div class="bar-row">
+                            <div class="bar-label">Siti</div>
+                            <div class="bar-block w-48">6</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">Lina</div>
+                            <div class="bar-block w-16 bg-white">?</div>
+                            <div class="bar-dashed w-32">4 beda</div>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> A. 2</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> B. 8</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> C. 10</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> D. 12</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        3. Doni memiliki 4 mobil mainan. Eko memiliki 1 mobil mainan lebih sedikit dari Doni. Berapa total mobil mainan mereka?
+                    </div>
+                    <div class="bar-comparison-container">
+                        <div class="bar-row">
+                            <div class="bar-label">Doni</div>
+                            <div class="bar-block w-32">4</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">Eko</div>
+                            <div class="bar-block w-24 bg-white">?</div>
+                            <div class="bar-dashed w-8">1</div>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> A. 3</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> B. 5</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> C. 7</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> D. 9</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pengurangan Dalam 1000</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Masalah Selisih, Dicari Jumlahnya
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S192</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        4. Kakak membuat 5 kue. Adik membuat 3 kue lebih sedikit dari Kakak. Berapa jumlah kue mereka berdua?
+                    </div>
+                    <div class="bar-comparison-container">
+                        <div class="bar-row">
+                            <div class="bar-label">Kakak</div>
+                            <div class="bar-block w-40">5</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">Adik</div>
+                            <div class="bar-block w-16 bg-white">?</div>
+                            <div class="bar-dashed w-24">3 beda</div>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> A. 2</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> B. 7</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> C. 8</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> D. 3</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        5. Di kolam A ada 6 ikan. Di kolam B ada 3 ikan lebih sedikit dari kolam A. Berapa jumlah ikan di kedua kolam?
+                    </div>
+                    <div class="bar-comparison-container">
+                        <div class="bar-row">
+                            <div class="bar-label">Kolam A</div>
+                            <div class="bar-block w-48">6</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">Kolam B</div>
+                            <div class="bar-block w-24 bg-white">?</div>
+                            <div class="bar-dashed w-24">3 beda</div>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> A. 3</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> B. 6</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> C. 9</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> D. 12</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION B -->
+            <div class="instruction-text mt-8">
+                Bagian B: Isian Singkat (Isilah titik-titik dengan jawaban yang benar)
+            </div>
+
+            <div class="soal-grid mt-4">
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. Toni punya 3 pensil. Rina punya 1 pensil lebih sedikit dari Toni.
+                    </div>
+                    <div class="bar-comparison-container">
+                        <div class="bar-row">
+                            <div class="bar-label">Toni</div>
+                            <div class="bar-block w-24">3</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">Rina</div>
+                            <div class="bar-block w-16 bg-white">?</div>
+                            <div class="bar-dashed w-8">1</div>
+                        </div>
+                    </div>
+                    <div class="ml-4 space-y-2">
+                        <div>a) Berapa pensil Rina? <span class="input-box w-20"></span></div>
+                        <div>b) Berapa jumlah pensil mereka berdua? <span class="input-box w-20"></span></div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. Ada 5 burung di pohon mangga. Di pohon jambu, ada 2 burung lebih sedikit dari pohon mangga.
+                    </div>
+                    <div class="ml-4 mt-2 font-bold">
+                        Berapa total burung di kedua pohon? <span class="input-box w-20"></span> ekor.
+                    </div>
+                </div>
+                
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Rani memiliki 4 boneka. Susi memiliki 2 boneka lebih sedikit dari Rani.
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded p-4 mx-4 text-sm">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span>Langkah 1 (Boneka Susi):</span>
+                            <span class="input-box w-12">4</span> - <span class="input-box w-12">2</span> = <span class="input-box w-16"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span>Langkah 2 (Total):</span>
+                            <span class="input-box w-12">4</span> + <span class="input-box w-12">...</span> = <span class="input-box w-16"></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pengurangan Dalam 1000</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Masalah Selisih, Dicari Jumlahnya
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S192</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             <div class="instruction-text">
+                Lanjutan Bagian B
+            </div>
+            
+            <div class="soal-grid mt-4">
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. Kelas 2A memiliki 6 bola sepak. Kelas 2B memiliki 2 bola lebih sedikit dari Kelas 2A. Berapa jumlah bola kedua kelas tersebut?
+                    </div>
+                    <div class="bar-comparison-container">
+                        <div class="bar-row">
+                            <div class="bar-label">Kelas 2A</div>
+                            <div class="bar-block w-48">6</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">Kelas 2B</div>
+                            <div class="bar-block w-32 bg-white">?</div>
+                            <div class="bar-dashed w-16">2 krg</div>
+                        </div>
+                    </div>
+                    <div class="ml-4 font-bold">
+                        Jawaban: <span class="input-box w-20"></span> bola.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. Ayah membeli 5 roti cokelat. Ibu membeli 4 roti keju lebih sedikit dari roti cokelat yang dibeli Ayah.
+                    </div>
+                    <div class="ml-4 mb-2">
+                         Berapa total roti yang mereka beli?
+                    </div>
+                    <div class="flex items-center gap-4 ml-4">
+                        <div class="font-bold">Total: <span class="input-box w-20"></span> roti.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center italic text-xs text-gray-400 mt-12">
+                "Hebat! Kamu telah menyelesaikan petualangan angka hari ini!"
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
