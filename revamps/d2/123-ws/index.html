@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - D2.S123 Membandingkan Panjang</title>
+    
+    <!-- Tailwind untuk layout responsif dan utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA & VARIABEL --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --bg-page: #525659;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: var(--bg-page);
+        margin: 0;
+        padding: 20px 0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header Style */
+      .page-header { width: 100%; margin-bottom: 15px; }
+      .math-champs-header {
+        background-color: white; padding: 0.5rem 0; display: flex;
+        justify-content: space-between; align-items: center; color: black;
+        border-bottom: 3px solid #000; padding-bottom: 10px;
+      }
+
+      .content-wrapper { position: relative; z-index: 1; width: 100%; flex-grow: 1; display: flex; flex-direction: column; gap: 0.8rem; }
+
+      /* Footer Style */
+      .page-footer {
+        text-align: left; font-size: 7pt; color: var(--grey-text);
+        padding-top: 8px; margin-top: auto; border-top: 1px solid #ccc; width: 100%;
+      }
+
+      /* Section Label */
+      .section-label {
+        font-size: 1rem; font-weight: 800; text-transform: uppercase;
+        color: #1e3a8a; border-bottom: 2px solid #1e3a8a;
+        padding-bottom: 4px; margin-top: 10px; margin-bottom: 10px;
+      }
+
+      /* Soal Box */
+      .soal-item {
+        height: 100%; break-inside: avoid; background-color: #fff;
+        border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px;
+        position: relative; display: flex; flex-direction: column;
+      }
+
+      /* Choice Checkbox */
+      .choice-item {
+        display: flex; align-items: center; gap: 8px; cursor: pointer;
+        font-size: 0.9rem; margin-bottom: 4px;
+      }
+      .choice-box {
+        width: 18px; height: 18px; border: 2px solid #333; border-radius: 4px;
+        display: flex; align-items: center; justify-content: center; background: white;
+      }
+
+      /* Input Line */
+      .input-line {
+        border: none; border-bottom: 1.5px solid #333; text-align: center;
+        font-weight: bold; color: #2563eb; background: transparent; outline: none;
+        font-family: 'Montserrat', sans-serif; padding: 0 5px;
+      }
+
+      /* --- CUSTOM VISUALS (SVG Based) --- */
+      .visual-box {
+        display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+        gap: 15px; padding: 15px; background-color: #fff;
+        border-radius: 8px; border: 1px dashed #9ca3af;
+        position: relative; min-height: 110px; /* Fixed min height for consistency */
+      }
+      
+      .start-line {
+        position: absolute; top: 10px; bottom: 10px; left: 20px;
+        width: 2px; background-color: #ef4444; /* Red Start Line */
+        z-index: 5;
+      }
+      
+      .start-label {
+        position: absolute; top: -5px; left: 10px; font-size: 8px;
+        color: #ef4444; background: #fff; padding: 0 4px; font-weight: bold;
+      }
+
+      /* Helper for Concepts */
+      .concept-box {
+        background-color: #eff6ff; border-left: 4px solid #3b82f6;
+        padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 0.9rem;
+      }
+
+      /* Print Specifics */
+      @media print {
+        @page { size: A4; margin: 0; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        body { background-color: white; margin: 0; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; height: auto; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; border: none; padding: 1cm; }
+        .page:last-child { page-break-after: avoid; }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .visual-box { border: 1px dashed #9ca3af !important; }
+        .print\:grid-cols-2 { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 1rem !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Pengukuran (Measurement)</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Membandingkan panjang benda: Panjang (Long) dan Pendek (Short)
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">Kode : D2-S123</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Title -->
+            <div class="text-center mb-4">
+                <h1 class="text-xl font-bold uppercase tracking-wide text-gray-800">
+                    Membandingkan Panjang
+                </h1>
+            </div>
+
+            <!-- CONCEPT: Long vs Short -->
+            <div class="concept-box flex items-center justify-between gap-4">
+                <div class="w-1/2 text-sm">
+                    <p class="font-bold mb-1 text-blue-700">Kunci Konsep:</p>
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li><b>Panjang (Long)</b>: Ukuran dari ujung ke ujung besar.</li>
+                        <li><b>Pendek (Short)</b>: Ukuran dari ujung ke ujung kecil.</li>
+                        <li>Mulai mengukur dari <b>Garis Mulai</b> yang sama!</li>
+                    </ul>
+                </div>
+                <div class="w-1/2 flex flex-col justify-center items-start gap-4 border-l border-blue-200 pl-4 relative h-[100px]">
+                    <div class="start-line" style="left: 0;"></div>
+                    <!-- Long Pencil -->
+                    <div class="flex items-center gap-2 w-full">
+                        <svg width="140" height="20" viewBox="0 0 140 20" style="margin-left: 5px;">
+                            <polygon points="0,5 120,5 140,10 120,15 0,15" fill="#facc15" stroke="#ca8a04" stroke-width="1"/>
+                            <path d="M120,5 L120,15" stroke="#ca8a04"/>
+                            <polygon points="120,5 140,10 120,15" fill="#fde047"/>
+                            <polygon points="135,8.5 140,10 135,11.5" fill="black"/>
+                        </svg>
+                        <span class="text-[10px] font-bold text-green-700">PANJANG</span>
+                    </div>
+                    <!-- Short Pencil -->
+                    <div class="flex items-center gap-2 w-full">
+                        <svg width="80" height="20" viewBox="0 0 80 20" style="margin-left: 5px;">
+                            <polygon points="0,5 60,5 80,10 60,15 0,15" fill="#facc15" stroke="#ca8a04" stroke-width="1"/>
+                            <path d="M60,5 L60,15" stroke="#ca8a04"/>
+                            <polygon points="60,5 80,10 60,15" fill="#fde047"/>
+                            <polygon points="75,8.5 80,10 75,11.5" fill="black"/>
+                        </svg>
+                        <span class="text-[10px] font-bold text-green-700">PENDEK</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 1: Direct Comparison -->
+            <div class="section-label">Bagian 1: Bandingkan Dua Benda</div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4">
+                
+                <!-- Q1 -->
+                <div class="soal-item bg-gray-50">
+                    <div class="font-bold mb-2 text-sm">1. Manakah yang Lebih Panjang?</div>
+                    <div class="visual-box">
+                        <div class="start-line"></div>
+                        <!-- Ribbon A (Short) -->
+                        <div class="flex items-center gap-2 ml-4 w-full">
+                            <span class="font-bold text-xs w-4">A</span>
+                            <svg width="100" height="20">
+                                <rect x="0" y="5" width="100" height="10" fill="#f9a8d4" rx="2" stroke="#db2777"/>
+                                <path d="M10,5 L10,15 M90,5 L90,15" stroke="#db2777" stroke-dasharray="2,2"/>
+                            </svg>
+                        </div>
+                        <!-- Ribbon B (Long) -->
+                        <div class="flex items-center gap-2 ml-4 w-full">
+                            <span class="font-bold text-xs w-4">B</span>
+                            <svg width="150" height="20">
+                                <rect x="0" y="5" width="150" height="10" fill="#f9a8d4" rx="2" stroke="#db2777"/>
+                                <path d="M10,5 L10,15 M140,5 L140,15" stroke="#db2777" stroke-dasharray="2,2"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="choice-item"><div class="choice-box"></div> Pita A</label>
+                        <label class="choice-item"><div class="choice-box"></div> Pita B</label>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="soal-item bg-gray-50">
+                    <div class="font-bold mb-2 text-sm">2. Manakah yang Lebih Pendek?</div>
+                    <div class="visual-box">
+                        <div class="start-line"></div>
+                        <!-- Train A (Long) -->
+                        <div class="flex items-end gap-2 ml-4 w-full">
+                            <span class="font-bold text-xs w-4 pb-2">A</span>
+                            <svg width="160" height="40" viewBox="0 0 160 40">
+                                <!-- Engine -->
+                                <rect x="120" y="15" width="30" height="20" fill="#60a5fa" stroke="#1e40af" stroke-width="2"/>
+                                <rect x="135" y="5" width="10" height="10" fill="#60a5fa" stroke="#1e40af" stroke-width="2"/>
+                                <rect x="125" y="20" width="10" height="10" fill="#bfdbfe"/>
+                                <circle cx="125" cy="35" r="4" fill="#333"/> <circle cx="145" cy="35" r="4" fill="#333"/>
+                                <!-- Cars -->
+                                <rect x="85" y="15" width="30" height="20" fill="#93c5fd" stroke="#1e40af" stroke-width="2"/>
+                                <circle cx="90" cy="35" r="4" fill="#333"/> <circle cx="110" cy="35" r="4" fill="#333"/>
+                                <rect x="115" y="25" width="5" height="2" fill="#333"/>
+                                <rect x="50" y="15" width="30" height="20" fill="#93c5fd" stroke="#1e40af" stroke-width="2"/>
+                                <circle cx="55" cy="35" r="4" fill="#333"/> <circle cx="75" cy="35" r="4" fill="#333"/>
+                                <rect x="80" y="25" width="5" height="2" fill="#333"/>
+                            </svg>
+                        </div>
+                        <!-- Train B (Short) -->
+                        <div class="flex items-end gap-2 ml-4 w-full">
+                            <span class="font-bold text-xs w-4 pb-2">B</span>
+                            <svg width="100" height="40" viewBox="0 0 100 40">
+                                <rect x="50" y="15" width="30" height="20" fill="#f87171" stroke="#b91c1c" stroke-width="2"/>
+                                <rect x="65" y="5" width="10" height="10" fill="#f87171" stroke="#b91c1c" stroke-width="2"/>
+                                <rect x="55" y="20" width="10" height="10" fill="#fecaca"/>
+                                <circle cx="55" cy="35" r="4" fill="#333"/> <circle cx="75" cy="35" r="4" fill="#333"/>
+                                <rect x="15" y="15" width="30" height="20" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/>
+                                <circle cx="20" cy="35" r="4" fill="#333"/> <circle cx="40" cy="35" r="4" fill="#333"/>
+                                <rect x="45" y="25" width="5" height="2" fill="#333"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="choice-item"><div class="choice-box"></div> Kereta A</label>
+                        <label class="choice-item"><div class="choice-box"></div> Kereta B</label>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SECTION 2: Ordering & Misconceptions -->
+            <div class="section-label">Bagian 2: Mengurutkan & Teliti</div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4">
+                <!-- Q3: Ordering -->
+                <div class="soal-item bg-blue-50 border-blue-200">
+                    <div class="font-bold mb-2 text-sm">3. Urutkan Sendok dari yang Terpendek.</div>
+                    <div class="visual-box bg-white border-blue-200">
+                        <div class="start-line"></div>
+                        <!-- Spoon A (Medium) -->
+                        <div class="flex items-center gap-2 ml-4 w-full">
+                            <span class="font-bold text-xs w-4">A</span>
+                            <svg width="100" height="20">
+                                <ellipse cx="15" cy="10" rx="15" ry="8" fill="#cbd5e1" stroke="#475569"/>
+                                <rect x="28" y="8" width="70" height="4" fill="#cbd5e1" stroke="#475569"/>
+                            </svg>
+                        </div>
+                        <!-- Spoon B (Shortest) -->
+                        <div class="flex items-center gap-2 ml-4 w-full">
+                            <span class="font-bold text-xs w-4">B</span>
+                            <svg width="60" height="20">
+                                <ellipse cx="12" cy="10" rx="12" ry="7" fill="#cbd5e1" stroke="#475569"/>
+                                <rect x="22" y="8" width="35" height="4" fill="#cbd5e1" stroke="#475569"/>
+                            </svg>
+                        </div>
+                        <!-- Spoon C (Longest) -->
+                        <div class="flex items-center gap-2 ml-4 w-full">
+                            <span class="font-bold text-xs w-4">C</span>
+                            <svg width="140" height="20">
+                                <ellipse cx="18" cy="10" rx="18" ry="9" fill="#cbd5e1" stroke="#475569"/>
+                                <rect x="34" y="8" width="100" height="4" fill="#cbd5e1" stroke="#475569"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 mt-3 ml-2 text-sm">
+                        <label class="choice-item"><div class="choice-box"></div> B - A - C</label>
+                        <label class="choice-item"><div class="choice-box"></div> C - A - B</label>
+                        <label class="choice-item"><div class="choice-box"></div> A - B - C</label>
+                    </div>
+                </div>
+
+                <!-- Q4: Misconception Check (Improved Layout) -->
+                <div class="soal-item bg-yellow-50 border-yellow-200">
+                    <div class="font-bold mb-2 text-sm">4. Manakah ular yang paling panjang?</div>
+                    <div class="visual-box bg-white border-yellow-300 relative h-[140px] flex-col justify-center">
+                        
+                        <!-- Start Line Guide (Faded) -->
+                        <div class="absolute top-2 bottom-2 left-10 w-0.5 bg-gray-300 border-l border-dashed border-gray-400"></div>
+                        <span class="absolute top-0 left-8 text-[8px] text-gray-400">Garis Mulai</span>
+
+                        <!-- Snake A (Starts WAY forward, looks longer on right side) -->
+                        <div class="flex items-center gap-2 w-full relative" style="height: 35px; padding-left: 80px;"> 
+                            <span class="font-bold text-xs absolute left-2">A</span>
+                            <!-- Snake SVG -->
+                            <svg width="140" height="30" viewBox="0 0 140 30" style="overflow: visible;">
+                                <path d="M0,15 Q10,5 20,15 T40,15 T60,15 T80,15" fill="none" stroke="#16a34a" stroke-width="8" stroke-linecap="round"/>
+                                <circle cx="85" cy="15" r="5" fill="#166534"/>
+                                <circle cx="87" cy="13" r="1.5" fill="white"/>
+                                <path d="M0,15 L-5,15" stroke="#16a34a" stroke-width="4"/>
+                            </svg>
+                        </div>
+
+                        <!-- Snake B (Starts BEHIND line, is physically longer) -->
+                        <div class="flex items-center gap-2 w-full relative" style="height: 35px; padding-left: 20px;">
+                            <span class="font-bold text-xs absolute left-2">B</span>
+                            <!-- Snake SVG -->
+                            <svg width="180" height="30" viewBox="0 0 180 30" style="overflow: visible;">
+                                <path d="M0,15 Q15,25 30,15 T60,15 T90,15 T120,15" fill="none" stroke="#ea580c" stroke-width="8" stroke-linecap="round"/>
+                                <circle cx="125" cy="15" r="5" fill="#9a3412"/>
+                                <circle cx="127" cy="13" r="1.5" fill="white"/>
+                                <path d="M0,15 L-5,15" stroke="#ea580c" stroke-width="4"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1 italic text-center px-2 leading-tight">
+                        Ular A lebih maju, tapi lihat panjang badannya.
+                    </div>
+                    <div class="flex flex-col gap-2 mt-2 ml-2 text-sm">
+                        <label class="choice-item"><div class="choice-box"></div> Ular A</label>
+                        <label class="choice-item"><div class="choice-box"></div> Ular B</label>
+                        <label class="choice-item"><div class="choice-box"></div> Tidak bisa dibandingkan (Tidak adil).</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Pengukuran</div>
+                    <div class="text-[11px] text-black font-medium mt-1">Kode : D2-S123</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- SECTION 3: Measuring with Units -->
+            <div class="section-label">Bagian 3: Mengukur dengan Satuan</div>
+
+            <!-- Q5 & Q6 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4 mb-2">
+                <!-- Q5 -->
+                <div class="soal-item bg-gray-50">
+                    <div class="font-bold mb-2 text-sm">5. Berapa jepit kertas panjang wortel ini?</div>
+                    <div class="visual-box py-6 justify-center">
+                        <!-- Carrot SVG -->
+                        <svg width="150" height="40" viewBox="0 0 150 40" class="mb-2">
+                            <path d="M10,20 Q120,5 140,20 Q120,35 10,20" fill="#f97316" stroke="#c2410c"/>
+                            <path d="M140,20 L150,10 M140,20 L150,30" stroke="#166534" stroke-width="2"/>
+                        </svg>
+                        <!-- Paperclips (Units) -->
+                        <div class="flex gap-1">
+                            <div class="w-8 h-4 border-2 border-gray-500 rounded-full bg-gray-100 flex items-center justify-center text-[8px]">1</div>
+                            <div class="w-8 h-4 border-2 border-gray-500 rounded-full bg-gray-100 flex items-center justify-center text-[8px]">2</div>
+                            <div class="w-8 h-4 border-2 border-gray-500 rounded-full bg-gray-100 flex items-center justify-center text-[8px]">3</div>
+                            <div class="w-8 h-4 border-2 border-gray-500 rounded-full bg-gray-100 flex items-center justify-center text-[8px]">4</div>
+                            <div class="w-8 h-4 border-2 border-gray-500 rounded-full bg-gray-100 flex items-center justify-center text-[8px]">5</div>
+                        </div>
+                    </div>
+                    <div class="text-center text-sm font-bold mt-auto pt-2">
+                        Panjang = <input type="text" class="input-line w-12 text-center"> jepit kertas
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="soal-item bg-gray-50">
+                    <div class="font-bold mb-2 text-sm">6. Lilin mana yang tingginya 3 unit?</div>
+                    <div class="flex items-end justify-center py-4 border border-gray-200 rounded bg-white h-[160px]">
+                        
+                        <svg width="220" height="120" viewBox="0 0 220 120" class="border-b border-gray-400">
+                            <!-- Grid Lines -->
+                            <line x1="0" y1="95" x2="220" y2="95" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="4"/>
+                            <line x1="0" y1="70" x2="220" y2="70" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="4"/>
+                            <line x1="0" y1="45" x2="220" y2="45" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="4"/>
+                            <line x1="0" y1="20" x2="220" y2="20" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="4"/>
+
+                            <!-- Candle A -->
+                            <rect x="30" y="95" width="20" height="25" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/>
+                            <line x1="40" y1="95" x2="40" y2="90" stroke="#333"/>
+                            <text x="40" y="115" font-size="10" text-anchor="middle" font-weight="bold">A</text>
+
+                            <!-- Candle B -->
+                            <rect x="90" y="45" width="20" height="75" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/>
+                            <line x1="100" y1="45" x2="100" y2="40" stroke="#333"/>
+                            <text x="100" y="115" font-size="10" text-anchor="middle" font-weight="bold">B</text>
+
+                            <!-- Candle C -->
+                            <rect x="150" y="70" width="20" height="50" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/>
+                            <line x1="160" y1="70" x2="160" y2="65" stroke="#333"/>
+                            <text x="160" y="115" font-size="10" text-anchor="middle" font-weight="bold">C</text>
+
+                            <!-- Unit -->
+                            <rect x="190" y="95" width="10" height="25" fill="#e5e5e5" stroke="#666"/>
+                            <text x="200" y="90" font-size="8" text-anchor="middle" fill="#666">1 Unit</text>
+                        </svg>
+
+                    </div>
+                    <div class="flex justify-center gap-6 mt-3 text-sm font-semibold">
+                        <label class="choice-item"><div class="choice-box"></div> A</label>
+                        <label class="choice-item"><div class="choice-box"></div> B</label>
+                        <label class="choice-item"><div class="choice-box"></div> C</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: Logic & Math -->
+            <div class="section-label">Bagian 4: Tantangan Logika</div>
+
+            <!-- Q7 & Q8 Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4 mb-2">
+                <!-- Q7 Word Problem -->
+                <div class="soal-item bg-purple-50 p-4 border border-purple-200">
+                    <div class="font-bold mb-2 text-sm text-purple-900">
+                        7. Teka-teki Tali
+                    </div>
+                    <div class="text-xs leading-relaxed mb-4 text-purple-800">
+                        Urutkan dari yang <b>paling pendek</b>:
+                        <ul class="list-disc pl-5 mt-1">
+                            <li>Tali <b>Merah</b> lebih panjang dari Tali <b>Biru</b>.</li>
+                            <li>Tali <b>Biru</b> lebih panjang dari Tali <b>Hijau</b>.</li>
+                        </ul>
+                        <div class="mt-2 text-[10px] italic text-gray-500 text-center border-t border-purple-200 pt-2">
+                            (Hijau < Biru < Merah)
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 text-xs ml-2">
+                        <label class="choice-item"><div class="choice-box"></div> Hijau - Biru - Merah</label>
+                        <label class="choice-item"><div class="choice-box"></div> Merah - Biru - Hijau</label>
+                        <label class="choice-item"><div class="choice-box"></div> Biru - Hijau - Merah</label>
+                    </div>
+                </div>
+
+                <!-- Q8: Visual Trick -->
+                <div class="soal-item bg-gray-50">
+                    <div class="font-bold mb-2 text-sm">8. Jika kedua ular diluruskan, manakah yang lebih panjang?</div>
+                    <div class="visual-box flex-col gap-4">
+                        <!-- Snake A (Mostly Straight) -->
+                        <div class="flex items-center gap-2 w-full">
+                            <span class="font-bold text-xs">A</span>
+                            <svg width="100" height="20">
+                                <path d="M5,10 Q25,5 45,10 T85,10" fill="none" stroke="#16a34a" stroke-width="6" stroke-linecap="round"/>
+                                <circle cx="90" cy="10" r="4" fill="#166534"/>
+                            </svg>
+                        </div>
+                        <!-- Snake B (Very Coiled) -->
+                        <div class="flex items-center gap-2 w-full">
+                            <span class="font-bold text-xs">B</span>
+                            <svg width="70" height="30">
+                                <path d="M5,15 Q10,0 20,15 T35,15 T50,15 T65,15" fill="none" stroke="#ea580c" stroke-width="6" stroke-linecap="round"/>
+                                <circle cx="70" cy="15" r="4" fill="#9a3412"/>
+                            </svg>
+                            <span class="text-[9px] text-gray-500 italic ml-1">(Sangat melingkar)</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-center gap-4 mt-2 text-sm">
+                        <label class="choice-item"><div class="choice-box"></div> Ular A</label>
+                        <label class="choice-item"><div class="choice-box"></div> Ular B</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: Final Challenge -->
+            <div class="section-label">Bagian 5: Latihan Tambahan</div>
+
+            <!-- Q9 & Q10 Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4 mb-4">
+                <!-- Q9 Logic -->
+                <div class="soal-item bg-gray-50">
+                    <div class="font-bold mb-2 text-sm">9. Urutkan kendaraan dari yang terpanjang.</div>
+                    <div class="text-xs text-gray-700 mb-2">
+                        <ul class="list-disc pl-4 space-y-1">
+                            <li><b>Bus</b> lebih panjang dari <b>Mobil</b>.</li>
+                            <li><b>Kereta</b> lebih panjang dari <b>Bus</b>.</li>
+                        </ul>
+                    </div>
+                    <div class="flex flex-col gap-2 text-xs mt-2 ml-1">
+                        <label class="choice-item"><div class="choice-box"></div> Kereta - Bus - Mobil</label>
+                        <label class="choice-item"><div class="choice-box"></div> Mobil - Bus - Kereta</label>
+                        <label class="choice-item"><div class="choice-box"></div> Bus - Kereta - Mobil</label>
+                    </div>
+                </div>
+
+                <!-- Q10 Measurement Math -->
+                <div class="soal-item bg-blue-50 border-blue-200">
+                    <div class="font-bold mb-2 text-sm">10. Selisih Panjang</div>
+                    <div class="flex flex-col items-center gap-2 py-2">
+                        <div class="flex items-center gap-2 w-full px-4">
+                            <span class="text-[10px] w-12 font-bold">Pita A</span>
+                            <div class="h-2 bg-red-400 w-[80%] rounded relative">
+                                <span class="absolute -top-4 right-0 text-[10px] font-bold text-red-600">8 cm</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 w-full px-4">
+                            <span class="text-[10px] w-12 font-bold">Pita B</span>
+                            <div class="h-2 bg-blue-400 w-[50%] rounded relative">
+                                <span class="absolute -top-4 right-0 text-[10px] font-bold text-blue-600">5 cm</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center text-sm mt-2">
+                        Berapa cm beda panjangnya? <br>
+                        <b>8 - 5 = </b> <input type="text" class="input-line w-10 text-center"> cm
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-auto mb-4 text-center">
+                <div class="text-lg font-bold text-gray-500 italic px-8 py-4 border-t border-b border-gray-100">
+                    Cek ulang, menang besar.
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
