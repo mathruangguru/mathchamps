@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Model Matematika (D3-S245)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; 
+        min-height: 29.7cm; 
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 0.8cm 2cm; }
+        .page:last-child { page-break-after: avoid; }
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.4rem;
+        background-color: #f3f4f6;
+        padding: 0.3rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      /* Number Bond Visuals using SVG */
+      .nb-container {
+        position: relative;
+        width: 200px;
+        height: 130px;
+        margin: 0 auto;
+      }
+      .nb-circle {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        border: 2px solid #333;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        z-index: 10;
+      }
+      .nb-circle.whole {
+        top: 0;
+        left: 75px;
+        width: 60px;
+        height: 60px;
+      }
+      .nb-circle.part-l { bottom: 0; left: 20px; }
+      .nb-circle.part-r { bottom: 0; right: 20px; }
+      .nb-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 5;
+      }
+
+      /* Bar Model Visuals */
+      .bar-container {
+        width: 250px;
+        margin: 10px auto;
+      }
+      .bar-row {
+        display: flex;
+        height: 40px;
+        border: 2px solid #333;
+        width: 100%;
+      }
+      .bar-part {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        border-right: 2px solid #333;
+      }
+      .bar-part:last-child { border-right: none; }
+      .brace {
+        width: 100%;
+        height: 15px;
+        border-left: 2px solid #333;
+        border-right: 2px solid #333;
+        border-bottom: 2px solid #333;
+        margin-top: 2px;
+        position: relative;
+      }
+      .brace::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 5px;
+        background: #333;
+      }
+
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 50px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 4px;
+        vertical-align: middle;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <header class="w-full mb-2">
+            <div class="flex justify-between items-center">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Model Matematika</div>
+                    <div class="text-[10px] text-black font-medium leading-tight">Mencari Bagian yang Hilang dengan Penjumlahan</div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S245</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-6">
+                <h1 class="text-lg font-black uppercase tracking-widest">LEMBAR KERJA: PART-WHOLE MODELS</h1>
+            </div>
+
+            <div class="instruction-text">Bagian A: Number Bonds (Ikatan Bilangan)</div>
+            
+            <div class="flex flex-col gap-6 mt-4">
+                <!-- Soal 1 -->
+                <div class="soal">
+                    <div class="font-bold mb-3">1. Temukan angka yang hilang (?) untuk melengkapi ikatan bilangan di bawah ini:</div>
+                    <div class="nb-container">
+                        <svg class="nb-svg">
+                            <line x1="105" y1="30" x2="45" y2="105" stroke="#333" stroke-width="2" />
+                            <line x1="105" y1="30" x2="165" y2="105" stroke="#333" stroke-width="2" />
+                        </svg>
+                        <div class="nb-circle whole">25</div>
+                        <div class="nb-circle part-l">10</div>
+                        <div class="nb-circle part-r" style="border-style: dashed;">?</div>
+                    </div>
+                    <div class="mt-4 font-bold">Jawaban: <span class="input-box"></span></div>
+                </div>
+
+                <hr class="border-gray-200">
+
+                <!-- Soal 2 -->
+                <div class="soal">
+                    <div class="font-bold mb-2">2. Jika keseluruhannya adalah 40 dan salah satu bagiannya adalah 15, berapakah bagian lainnya?</div>
+                    <div class="grid grid-cols-2 gap-2 mt-2 ml-4">
+                        <div class="flex items-center"><span class="choice-box"></span> a) 25</div>
+                        <div class="flex items-center"><span class="choice-box"></span> b) 35</div>
+                        <div class="flex items-center"><span class="choice-box"></span> c) 55</div>
+                        <div class="flex items-center"><span class="choice-box"></span> d) 65</div>
+                    </div>
+                </div>
+
+                <hr class="border-gray-200">
+
+                <!-- Soal 3 -->
+                <div class="soal">
+                    <div class="font-bold mb-3">3. Angka berapakah yang tepat untuk mengisi bagian yang kosong?</div>
+                    <div class="nb-container">
+                        <svg class="nb-svg">
+                            <line x1="105" y1="30" x2="45" y2="105" stroke="#333" stroke-width="2" />
+                            <line x1="105" y1="30" x2="165" y2="105" stroke="#333" stroke-width="2" />
+                        </svg>
+                        <div class="nb-circle whole">60</div>
+                        <div class="nb-circle part-l" style="border-style: dashed;">?</div>
+                        <div class="nb-circle part-r">20</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-4 ml-4">
+                        <div class="flex items-center"><span class="choice-box"></span> a) 30</div>
+                        <div class="flex items-center"><span class="choice-box"></span> b) 40</div>
+                        <div class="flex items-center"><span class="choice-box"></span> c) 80</div>
+                        <div class="flex items-center"><span class="choice-box"></span> d) 90</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <header class="w-full mb-2">
+            <div class="flex justify-between items-center">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Model Matematika</div>
+                    <div class="text-[10px] text-black font-medium leading-tight">Mencari Bagian yang Hilang dengan Penjumlahan</div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S245</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mt-2">Bagian B: Bar Models (Model Batang)</div>
+
+            <div class="flex flex-col gap-8 mt-4">
+                <!-- Soal 5 -->
+                <div class="soal">
+                    <div class="font-bold mb-3">5. Cari nilai yang hilang (?) pada model batang di bawah ini:</div>
+                    <div class="bar-container">
+                        <div class="bar-row">
+                            <div class="bar-part" style="width: 40%; background: #eee;">35</div>
+                            <div class="bar-part" style="width: 60%; border-style: dashed;">?</div>
+                        </div>
+                        <div class="brace"></div>
+                        <div class="text-center font-bold text-sm mt-2">Total: 85</div>
+                    </div>
+                    <div class="mt-6 font-bold text-center">Jawaban: <span class="input-box w-24"></span></div>
+                </div>
+
+                <hr class="border-gray-200">
+
+                <!-- Soal 6 -->
+                <div class="soal">
+                    <div class="font-bold mb-3">6. Ada 100 permen di dalam toples. Sebanyak 45 permen adalah rasa jeruk, sisanya rasa mangga. Berapa banyak permen mangga?</div>
+                    <div class="bar-container">
+                        <div class="bar-row">
+                            <div class="bar-part" style="width: 45%; background: #eee;">45</div>
+                            <div class="bar-part" style="width: 55%; border-style: dashed;">?</div>
+                        </div>
+                        <div class="brace"></div>
+                        <div class="text-center font-bold text-sm mt-2">Total: 100</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-4 ml-4">
+                        <div class="flex items-center"><span class="choice-box"></span> a) 45</div>
+                        <div class="flex items-center"><span class="choice-box"></span> b) 55</div>
+                        <div class="flex items-center"><span class="choice-box"></span> c) 65</div>
+                        <div class="flex items-center"><span class="choice-box"></span> d) 145</div>
+                    </div>
+                </div>
+
+                <hr class="border-gray-200">
+
+                <!-- Soal 7 -->
+                <div class="soal">
+                    <div class="font-bold mb-4">7. Lengkapilah bagian yang kosong untuk kalimat matematika berikut:</div>
+                    <div class="text-center text-xl font-bold mb-4">82 = 30 + ......</div>
+                    <div class="nb-container">
+                        <svg class="nb-svg">
+                            <line x1="105" y1="30" x2="45" y2="105" stroke="#333" stroke-width="2" />
+                            <line x1="105" y1="30" x2="165" y2="105" stroke="#333" stroke-width="2" />
+                        </svg>
+                        <div class="nb-circle whole">82</div>
+                        <div class="nb-circle part-l">30</div>
+                        <div class="nb-circle part-r" style="border-style: dashed;">?</div>
+                    </div>
+                    <div class="mt-4 font-bold text-center">Jawaban: <span class="input-box w-24"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 -->
+      <section class="page">
+        <header class="w-full mb-2">
+            <div class="flex justify-between items-center">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Model Matematika</div>
+                    <div class="text-[10px] text-black font-medium leading-tight">Mencari Bagian yang Hilang dengan Penjumlahan</div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S245</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mt-2">Bagian C: Tantangan & Soal Cerita</div>
+
+            <div class="flex flex-col gap-8 mt-4">
+                <!-- Soal 8 -->
+                <div class="soal">
+                    <div class="font-bold mb-2">8. Budi memiliki 74 kelereng. Sebanyak 24 kelereng miliknya pecah. Berapakah jumlah kelereng Budi yang masih utuh?</div>
+                    <div class="ml-4 flex flex-col gap-2 font-semibold">
+                        <div class="flex items-center"><span class="choice-box"></span> a) 50 kelereng</div>
+                        <div class="flex items-center"><span class="choice-box"></span> b) 60 kelereng</div>
+                        <div class="flex items-center"><span class="choice-box"></span> c) 98 kelereng</div>
+                        <div class="flex items-center"><span class="choice-box"></span> d) 40 kelereng</div>
+                    </div>
+                </div>
+
+                <hr class="border-gray-200">
+
+                <!-- Soal 9 -->
+                <div class="soal">
+                    <div class="font-bold mb-4">9. Bandingkan kedua model di bawah. Manakah nilai "?" yang lebih BESAR?</div>
+                    <div class="flex justify-around items-end">
+                        <div class="text-center">
+                            <div class="text-xs font-bold mb-1">Model A</div>
+                            <div class="bar-container" style="width: 150px;">
+                                <div class="bar-row" style="height: 30px;">
+                                    <div class="bar-part" style="width: 45%;">40</div>
+                                    <div class="bar-part" style="width: 55%; border-style: dashed;">?</div>
+                                </div>
+                                <div class="brace"></div>
+                                <div class="text-xs font-bold mt-1">Total: 90</div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs font-bold mb-1">Model B</div>
+                            <div class="bar-container" style="width: 150px;">
+                                <div class="bar-row" style="height: 30px;">
+                                    <div class="bar-part" style="width: 40%;">30</div>
+                                    <div class="bar-part" style="width: 60%; border-style: dashed;">?</div>
+                                </div>
+                                <div class="brace"></div>
+                                <div class="text-xs font-bold mt-1">Total: 75</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 font-bold text-center">Jawaban (A atau B): <span class="input-box w-20"></span></div>
+                </div>
+
+                <hr class="border-gray-200">
+
+                <!-- Soal 10 -->
+                <div class="soal">
+                    <div class="font-bold mb-2">10. Sebuah perpustakaan memiliki 95 buku. Jika 40 buku adalah buku cerita dan sisanya adalah buku pelajaran, hitunglah jumlah buku pelajaran!</div>
+                    <div class="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-300 max-w-md mx-auto">
+                        <div class="bar-container">
+                            <div class="bar-row">
+                                <div class="bar-part" style="width: 40%; background: #eee;">40</div>
+                                <div class="bar-part" style="width: 60%; border-style: dashed;">?</div>
+                            </div>
+                            <div class="brace"></div>
+                            <div class="text-center font-bold text-sm mt-2">Total: 95</div>
+                        </div>
+                        <div class="mt-6 text-center font-bold">
+                            40 + <span class="input-box w-16"></span> = 95
+                            <br><br>
+                            Jadi, buku pelajaran ada <span class="input-box w-20"></span> buku.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center italic text-sm text-gray-400 mt-12">
+                "Matematika itu Menyenangkan! Teruslah Berlatih."
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
