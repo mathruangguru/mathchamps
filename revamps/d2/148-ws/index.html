@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Menghitung Jumlah Uang (D2-S148)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .svg-group {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border-bottom: 2px solid #333;
+        min-width: 80px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: bottom;
+        background: transparent;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 2rem;
+        margin-top: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 0.5rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+        position: relative;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.5cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CUSTOM MONEY SVG STYLES --- */
+      .coin-silver { fill: #e5e7eb; stroke: #9ca3af; stroke-width: 1.5; }
+      .coin-gold { fill: #facc15; stroke: #ca8a04; stroke-width: 1.5; }
+      .coin-text-val { font-family: 'Noto Sans', sans-serif; font-weight: 800; text-anchor: middle; fill: #374151; }
+      .coin-text-sm { font-family: 'Noto Sans', sans-serif; font-weight: 600; text-anchor: middle; fill: #4b5563; font-size: 9px; }
+
+      /* BILL COLORS */
+      .bill-1000 { fill: #fef08a; stroke: #eab308; stroke-width: 1.5; } /* Yellowish */
+      .bill-2000 { fill: #cbd5e1; stroke: #64748b; stroke-width: 1.5; } /* Greyish */
+      .bill-5000 { fill: #fdba74; stroke: #ea580c; stroke-width: 1.5; } /* Orange/Brownish */
+      .bill-10000 { fill: #d8b4fe; stroke: #9333ea; stroke-width: 1.5; } /* Purple */
+      
+      .bill-text-val { font-family: 'Noto Sans', sans-serif; font-weight: 800; text-anchor: end; fill: #374151; font-size: 14px; }
+      .bill-text-rp { font-family: 'Noto Sans', sans-serif; font-weight: 700; text-anchor: start; fill: #374151; font-size: 10px; }
+      .bill-text-indo { font-family: 'Noto Sans', sans-serif; font-weight: 600; text-anchor: end; fill: #6b7280; font-size: 6px; letter-spacing: 1px;}
+
+      .money-group {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 8px 0;
+      }
+
+    </style>
+  </head>
+  <body>
+    
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Uang</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Menghitung Jumlah Uang
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D2-S148</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <h2 class="font-bold text-lg mb-2">Ayo Mengenal Uang Rupiah!</h2>
+            <div class="instruction-text">
+                Bagian A: Hitung jumlah uang pada gambar dan pilihlah jawaban yang benar.
+            </div>
+            
+            <div class="soal-grid mt-4">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">1. Berapa jumlah uang kertas di bawah ini?</div>
+                    <div class="money-group">
+                        <!-- 3 x 1000 Bills -->
+                        <svg width="80" height="40" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-1000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">1.000</text><text x="92" y="44" class="bill-text-indo">INDONESIA</text></svg>
+                        <svg width="80" height="40" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-1000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">1.000</text><text x="92" y="44" class="bill-text-indo">INDONESIA</text></svg>
+                        <svg width="80" height="40" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-1000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">1.000</text><text x="92" y="44" class="bill-text-indo">INDONESIA</text></svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. Rp2.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. Rp3.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. Rp4.000</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">2. Berapa jumlah uang jajan ini?</div>
+                    <div class="money-group">
+                        <!-- 2000 + 1000 Bills -->
+                        <svg width="80" height="40" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-2000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">2.000</text><text x="92" y="44" class="bill-text-indo">INDONESIA</text></svg>
+                        <svg width="80" height="40" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-1000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">1.000</text><text x="92" y="44" class="bill-text-indo">INDONESIA</text></svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. Rp2.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. Rp3.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. Rp1.200</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">3. Hitung total uang logam ini:</div>
+                    <div class="money-group">
+                        <!-- 500 Gold, 200 Silver, 100 Silver -->
+                        <svg width="60" height="60" viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="coin-gold" /><text x="40" y="46" class="coin-text-val" font-size="20">500</text><text x="40" y="24" class="coin-text-sm">Rp</text></svg>
+                        <svg width="55" height="55" viewBox="0 0 70 70"><circle cx="35" cy="35" r="30" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">200</text><text x="35" y="20" class="coin-text-sm">Rp</text></svg>
+                        <svg width="50" height="50" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text><text x="35" y="22" class="coin-text-sm">Rp</text></svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. Rp700</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. Rp800</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. Rp900</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">4. Manakah yang nilainya <span class="text-blue-700">Rp5.000</span>?</div>
+                    <div class="choice-container flex-col gap-4">
+                        <!-- Option A -->
+                        <label class="flex items-center cursor-pointer gap-4">
+                            <span class="choice-box mt-4"></span>
+                            <div class="flex flex-col">
+                                <div class="money-group" style="margin: 0;">
+                                    <svg width="60" height="30" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-2000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">2.000</text></svg>
+                                    <svg width="60" height="30" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-2000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">2.000</text></svg>
+                                </div>
+                                <span class="text-xs text-gray-600">a.</span>
+                            </div>
+                        </label>
+                        <!-- Option B -->
+                        <label class="flex items-center cursor-pointer gap-4">
+                            <span class="choice-box mt-4"></span>
+                            <div class="flex flex-col">
+                                <div class="money-group" style="margin: 0;">
+                                    <svg width="60" height="30" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-5000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">5.000</text></svg>
+                                </div>
+                                <span class="text-xs text-gray-600">b.</span>
+                            </div>
+                        </label>
+                        <!-- Option C -->
+                        <label class="flex items-center cursor-pointer gap-4">
+                            <span class="choice-box mt-4"></span>
+                            <div class="flex flex-col">
+                                <div class="money-group" style="margin: 0;">
+                                    <svg width="60" height="30" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-1000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">1.000</text></svg>
+                                    <svg width="60" height="30" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-1000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">1.000</text></svg>
+                                    <svg width="60" height="30" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-1000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">1.000</text></svg>
+                                </div>
+                                <span class="text-xs text-gray-600">c.</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Uang</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Menghitung Jumlah Uang
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D2-S148</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mt-4">
+                
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">5. Andi punya uang berikut. Berapa jumlahnya?</div>
+                    <div class="money-group">
+                         <!-- 5000 + 2000 + 500 -->
+                         <svg width="80" height="40" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-5000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">5.000</text><text x="92" y="44" class="bill-text-indo">INDONESIA</text></svg>
+                         <svg width="80" height="40" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-2000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">2.000</text><text x="92" y="44" class="bill-text-indo">INDONESIA</text></svg>
+                         <svg width="50" height="50" viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="coin-gold" /><text x="40" y="46" class="coin-text-val" font-size="20">500</text><text x="40" y="24" class="coin-text-sm">Rp</text></svg>
+                    </div>
+                    <div class="choice-container flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. Rp7.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. Rp7.500</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. Rp8.500</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <div class="instruction-text mt-4">
+                    Bagian B: Jawablah pertanyaan berikut dengan tepat.
+                </div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">6. Hitunglah jumlah uang di bawah ini!</div>
+                    <div class="money-group">
+                         <!-- 2000 + 2000 + 1000 + 500 coin -->
+                         <svg width="80" height="40" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-2000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">2.000</text></svg>
+                         <svg width="80" height="40" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-2000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">2.000</text></svg>
+                         <svg width="80" height="40" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-1000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">1.000</text></svg>
+                         <svg width="50" height="50" viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="coin-gold" /><text x="40" y="46" class="coin-text-val" font-size="20">500</text></svg>
+                    </div>
+                    <div class="mt-4">
+                         Jawaban: Rp <span class="input-box" style="width: 150px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">7. Tukar Uang</div>
+                    <div class="mb-2 flex items-center gap-4">
+                         <svg width="80" height="40" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-2000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">2.000</text></svg>
+                         <span>=</span>
+                         <span>.... lembar</span>
+                         <svg width="80" height="40" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-1000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">1.000</text></svg>
+                    </div>
+                    <div class="mt-4">
+                        Satu lembar Rp2.000 sama nilainya dengan <span class="input-box"></span> lembar Rp1.000.
+                    </div>
+                </div>
+
+                 <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">8. Penjumlahan Uang</div>
+                    <div class="mb-2">
+                        Ibu memberi uang saku <b class="text-red-700">Rp5.000</b>. <br>
+                        Ayah memberi tambahan <b class="text-blue-700">Rp2.000</b>.
+                    </div>
+                    <div class="money-group">
+                         <svg width="60" height="30" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-5000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">5.000</text></svg>
+                         <span class="text-xl font-bold">+</span>
+                         <svg width="60" height="30" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-2000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">2.000</text></svg>
+                    </div>
+                    <div class="mt-4">
+                        Berapa total uang saku sekarang? <br><br>
+                        Jawab: Rp <span class="input-box" style="width: 150px;"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Uang</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Menghitung Jumlah Uang
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D2-S148</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             <div class="instruction-text">
+                Bagian C: Soal Cerita dan Tantangan
+            </div>
+
+            <div class="soal-grid mt-4">
+                
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">9. Melengkapi Uang</div>
+                    <div class="mb-2">Harga susu kotak adalah <b class="text-green-700">Rp2.500</b>.</div>
+                    <div class="mb-2">Adik membayarnya dengan:</div>
+                    <div class="money-group">
+                         <svg width="80" height="40" viewBox="0 0 100 50"><rect x="2" y="2" width="96" height="46" rx="4" class="bill-2000" /><text x="8" y="15" class="bill-text-rp">Rp</text><text x="92" y="30" class="bill-text-val">2.000</text></svg>
+                         <span class="font-bold text-lg">+</span>
+                         <span class="border-2 border-dashed border-gray-400 rounded-full w-12 h-12 flex items-center justify-center text-gray-400 text-xs font-bold">?</span>
+                    </div>
+                    <div class="mt-2">
+                        Berapa nilai koin yang dibutuhkan agar pas?
+                        <br><br>
+                        Jawab: Rp <span class="input-box" style="min-width: 100px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-blue-800">10. Belanja di Warung</div>
+                    <div class="mb-2">
+                        Harga satu permen adalah <b>Rp500</b>. <br>
+                        Budi ingin membeli <b>2</b> permen.
+                    </div>
+                    <div class="money-group">
+                         <svg width="50" height="50" viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="coin-gold" /><text x="40" y="46" class="coin-text-val" font-size="20">500</text></svg>
+                         <span class="font-bold text-lg">+</span>
+                         <svg width="50" height="50" viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="coin-gold" /><text x="40" y="46" class="coin-text-val" font-size="20">500</text></svg>
+                    </div>
+                    <div class="mt-2">
+                        Berapa uang yang harus dibayar Budi?
+                        <br><br>
+                        Jawab: Rp <span class="input-box" style="min-width: 100px;"></span>
+                    </div>
+                </div>
+
+            </div>
+
+             <!-- Motivation -->
+             <div class="text-center italic text-xs text-gray-500 mt-12 p-4 bg-gray-100 rounded-lg">
+                "Rajin menabung pangkal kaya. Yuk, belajar mengenal uang kita!"
+             </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      
+    </div>
+  </body>
+</html>
