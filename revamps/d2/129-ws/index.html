@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - D2.S129 Menghitung Panjang Gabungan</title>
+    
+    <!-- Tailwind untuk layout responsif dan utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA & VARIABEL --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --bg-page: #525659;
+        
+        /* Warna Visual Objek */
+        --obj-blue: #3b82f6;
+        --obj-green: #22c55e;
+        --obj-yellow: #eab308;
+        --obj-purple: #a855f7;
+        --obj-red: #ef4444;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: var(--bg-page);
+        margin: 0;
+        padding: 20px 0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .page-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+
+      .page {
+        background: white; width: 21cm; min-height: 29.7cm; padding: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); position: relative;
+        display: flex; flex-direction: column;
+      }
+
+      /* Header Style */
+      .page-header { width: 100%; margin-bottom: 15px; }
+      .math-champs-header {
+        background-color: white; padding: 0.5rem 0; display: flex;
+        justify-content: space-between; align-items: center; color: black;
+        border-bottom: 3px solid #000; padding-bottom: 10px;
+      }
+
+      .content-wrapper { position: relative; z-index: 1; width: 100%; flex-grow: 1; display: flex; flex-direction: column; gap: 0.8rem; }
+
+      /* Footer Style */
+      .page-footer {
+        text-align: left; font-size: 7pt; color: var(--grey-text);
+        padding-top: 8px; margin-top: auto; border-top: 1px solid #ccc; width: 100%;
+      }
+
+      /* Section Label */
+      .section-label {
+        font-size: 1rem; font-weight: 800; text-transform: uppercase;
+        color: #1e3a8a; border-bottom: 2px solid #1e3a8a;
+        padding-bottom: 4px; margin-top: 10px; margin-bottom: 10px;
+      }
+
+      /* Soal Box */
+      .soal-item {
+        height: 100%; break-inside: avoid; background-color: #f9fafb;
+        border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px;
+        position: relative; display: flex; flex-direction: column;
+      }
+
+      /* Choice Checkbox */
+      .choice-item { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; margin-bottom: 4px; }
+      .choice-box { width: 18px; height: 18px; border: 2px solid #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; background: white; }
+
+      /* --- CUSTOM REALISTIC VISUALS (CSS BASED) --- */
+      .visual-box {
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        gap: 15px; padding: 10px; background-color: #fff;
+        border-radius: 8px; border: 1px dashed #9ca3af;
+        position: relative; min-height: 120px; overflow: hidden;
+      }
+      
+      .start-line {
+        position: absolute; top: 10px; bottom: 10px; left: 20px;
+        width: 2px; background-color: #ef4444; z-index: 5;
+      }
+
+      /* Grids */
+      .grid-vertical {
+        position: absolute; top: 10px; bottom: 10px; left: 22px; right: 10px;
+        background-size: 20px 100%;
+        background-image: linear-gradient(to right, #e5e7eb 1px, transparent 1px);
+        z-index: 0;
+      }
+      .grid-horizontal {
+        position: absolute; top: 10px; bottom: 17px; left: 10px; right: 10px;
+        background-size: 100% 20px;
+        background-image: linear-gradient(to top, #e5e7eb 1px, transparent 1px);
+        z-index: 0;
+      }
+
+      /* 1. Realistic Pencil */
+      .real-pencil {
+        display: flex; align-items: center; height: 14px;
+        filter: drop-shadow(1px 2px 1px rgba(0,0,0,0.1));
+        position: relative; z-index: 10;
+      }
+      .real-pencil .eraser {
+        width: 12px; height: 100%; background-color: #fca5a5; border-radius: 2px 0 0 2px; border-right: 1px solid #e5e7eb; flex-shrink: 0;
+      }
+      .real-pencil .ferrule {
+        width: 6px; height: 100%; background: linear-gradient(to bottom, #9ca3af, #d1d5db, #9ca3af); border-left: 1px solid #6b7280; border-right: 1px solid #6b7280; flex-shrink: 0;
+      }
+      .real-pencil .body {
+        flex-grow: 1; height: 100%; background-color: #facc15;
+        background-image: linear-gradient(to bottom, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.05) 100%);
+        border-top: 1px solid #ca8a04; border-bottom: 1px solid #ca8a04;
+      }
+      .real-pencil .collar {
+        width: 0; height: 0; border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-left: 10px solid #fde68a;
+      }
+      .real-pencil .lead {
+        width: 0; height: 0; border-top: 2px solid transparent; border-bottom: 2px solid transparent; border-left: 4px solid #000; position: relative; left: -10px;
+      }
+
+      /* 2. Realistic Paper Clip */
+      .real-clip {
+        width: 20px; height: 10px;
+        border: 2px solid #64748b; border-radius: 10px;
+        position: relative; background-color: transparent;
+        flex-shrink: 0; z-index: 10;
+      }
+      .real-clip::after {
+        content: ""; position: absolute; top: 2px; left: 2px;
+        width: 12px; height: 4px; border: 1px solid #94a3b8; border-radius: 4px; border-right: none;
+      }
+
+      /* 3. Realistic Eraser Unit */
+      .real-eraser-unit {
+        width: 30px; height: 16px;
+        background-color: #fca5a5; border: 1px solid #b91c1c;
+        border-left: 8px solid #ef4444; box-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+        flex-shrink: 0; z-index: 10;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 8px; color: #7f1d1d; font-weight: bold;
+      }
+
+      /* 4. Realistic Block Unit */
+      .real-block-unit {
+        width: 20px; height: 20px;
+        background-color: #3b82f6; border: 1px solid #1e40af;
+        box-shadow: inset 2px 2px 4px rgba(255,255,255,0.3), 1px 1px 1px rgba(0,0,0,0.2);
+        flex-shrink: 0; z-index: 10;
+        position: relative;
+      }
+      .real-block-unit::after {
+        content: ""; position: absolute; top: 4px; left: 4px; width: 10px; height: 10px;
+        border-radius: 50%; background-color: rgba(255,255,255,0.2);
+      }
+
+      /* 5. Realistic Crayon */
+      .real-crayon {
+        display: flex; align-items: center; height: 18px;
+        filter: drop-shadow(1px 2px 1px rgba(0,0,0,0.1));
+        position: relative; z-index: 10;
+      }
+      .real-crayon .tail { width: 6px; height: 100%; border-radius: 2px 0 0 2px; }
+      .real-crayon .wrapper {
+        flex-grow: 1; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;
+        position: relative; margin: 0 1px; border-top: 1px solid rgba(0,0,0,0.1); border-bottom: 1px solid rgba(0,0,0,0.1);
+      }
+      .real-crayon .wrapper::before, .real-crayon .wrapper::after {
+        content: ""; position: absolute; left: 0; right: 0; height: 1px; background-color: black; opacity: 0.6;
+      }
+      .real-crayon .wrapper::before { top: 3px; }
+      .real-crayon .wrapper::after { bottom: 3px; }
+      .real-crayon .tip { width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; }
+      
+      .crayon-red .tail, .crayon-red .tip { border-left: 10px solid #ef4444; background: #ef4444; }
+      .crayon-red .tail { background-color: #ef4444; width:6px; border:none; }
+      .crayon-red .tip { background:none; border-left: 10px solid #ef4444; }
+      .crayon-red .wrapper { background-color: #fca5a5; }
+
+      .crayon-blue .tail { background-color: #3b82f6; width:6px; border:none; }
+      .crayon-blue .tip { background:none; border-left: 10px solid #3b82f6; }
+      .crayon-blue .wrapper { background-color: #93c5fd; }
+
+      /* 6. Realistic Train Car */
+      .real-train-car {
+        height: 24px; position: relative;
+        background: linear-gradient(to bottom, #ef4444, #b91c1c);
+        border-radius: 4px; border: 1px solid #7f1d1d;
+        box-shadow: 2px 2px 2px rgba(0,0,0,0.2);
+        z-index: 10; margin-right: 2px;
+      }
+      .real-train-car::before { /* Window */
+        content: ""; position: absolute; top: 4px; left: 4px; right: 4px; height: 8px;
+        background: #bfdbfe; border: 1px solid #1e3a8a; border-radius: 2px;
+      }
+      .real-train-car::after { /* Wheels */
+        content: ""; position: absolute; bottom: -4px; left: 4px; width: 6px; height: 6px;
+        background: #333; border-radius: 50%; box-shadow: 10px 0 0 #333; /* Second wheel */
+      }
+      .train-connector { width: 4px; height: 4px; background: #333; align-self: center; border-radius: 1px; }
+
+      /* 7. Realistic Bead */
+      .real-bead {
+        width: 20px; height: 20px; border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, white 5%, #ff00ff 20%, #800080 100%);
+        box-shadow: 2px 2px 3px rgba(0,0,0,0.3); z-index: 10; position: relative;
+      }
+      .bead-blue { background: radial-gradient(circle at 30% 30%, #bfdbfe 5%, #3b82f6 20%, #1e40af 100%); }
+      .bead-yellow { background: radial-gradient(circle at 30% 30%, #fef08a 5%, #eab308 20%, #a16207 100%); }
+      
+      /* 8. Realistic Plank/Bridge */
+      .real-plank {
+        height: 12px; background: #d97706; border: 1px solid #92400e; border-radius: 2px;
+        background-image: repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(0,0,0,0.1) 20px, rgba(0,0,0,0.1) 21px);
+        box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+      }
+
+      /* 9. Realistic Straw */
+      .real-straw {
+        height: 14px; border-radius: 7px;
+        background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.3), rgba(255,255,255,0.3) 5px, transparent 5px, transparent 10px);
+        box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      }
+      .straw-green { background-color: #22c55e; border: 1px solid #16a34a; }
+      .straw-pink { background-color: #f472b6; border: 1px solid #db2777; }
+
+      /* Helper for Concepts */
+      .concept-box {
+        background-color: #eff6ff; border-left: 4px solid #3b82f6;
+        padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 0.9rem;
+      }
+
+      /* Print Specifics */
+      @media print {
+        @page { size: A4; margin: 0; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        body { background-color: white; margin: 0; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; height: auto; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; border: none; padding: 1cm; }
+        .page:last-child { page-break-after: avoid; }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .visual-box { border: 1px dashed #9ca3af !important; }
+        .print\:grid-cols-2 { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 1rem !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Pengukuran (Measurement)</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Menghitung panjang gabungan dua benda (Find the total length of two items)
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">Kode : D2-S129</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Title -->
+            <div class="text-center mb-4">
+                <h1 class="text-xl font-bold uppercase tracking-wide text-gray-800">
+                    Menghitung Panjang Gabungan
+                </h1>
+            </div>
+
+            <!-- CONCEPT -->
+            <div class="concept-box flex flex-col items-center gap-4">
+                <div class="text-sm text-center">
+                    <p class="font-bold mb-2 text-blue-700">Konsep Penjumlahan Panjang</p>
+                    <p>Jika kita menyusun dua benda <b>memanjang</b> (dari ujung ke ujung),<br>panjang totalnya adalah <b>jumlah</b> dari panjang kedua benda tersebut.</p>
+                </div>
+                
+                <div class="w-full bg-white p-4 rounded border border-blue-100 flex flex-col items-center gap-2">
+                    <div class="flex items-end gap-2 justify-center pt-2 pb-2 border-b border-gray-200 w-full">
+                        <div class="flex flex-col items-center">
+                            <div class="flex flex-col items-center w-full mb-1">
+                                <span class="text-[10px] font-bold text-red-600 mb-[2px]">A (3)</span>
+                                <div class="w-full h-2 border-t border-l border-r border-red-300 rounded-t"></div>
+                            </div>
+                            <div class="flex">
+                                <div class="real-block-unit bg-red-400 border-red-600"></div>
+                                <div class="real-block-unit bg-red-400 border-red-600"></div>
+                                <div class="real-block-unit bg-red-400 border-red-600"></div>
+                            </div>
+                        </div>
+                        <div class="font-bold text-gray-400 mb-1">+</div>
+                        <div class="flex flex-col items-center">
+                            <div class="flex flex-col items-center w-full mb-1">
+                                <span class="text-[10px] font-bold text-blue-600 mb-[2px]">B (2)</span>
+                                <div class="w-full h-2 border-t border-l border-r border-blue-300 rounded-t"></div>
+                            </div>
+                            <div class="flex">
+                                <div class="real-block-unit"></div>
+                                <div class="real-block-unit"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-sm font-bold text-gray-800">
+                        Total = 3 + 2 = <span class="text-green-600">5 Balok</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 1: Adding Lengths -->
+            <div class="section-label">Bagian 1: Berapa Panjang Totalnya?</div>
+
+            <!-- Q1: Train -->
+            <div class="soal-item mb-2">
+                <div class="font-bold mb-2 text-sm">1. Gerbong Kereta</div>
+                <div class="visual-box items-start pl-8 mb-2 h-[100px]">
+                    <div class="start-line" style="left:50px;"></div>
+                    <div class="grid-vertical" style="left:50px;"></div>
+                    
+                    <!-- Items start at 52px. Widths: 80px (4u), 60px (3u) -->
+                    <div class="flex items-center absolute top-[35px] left-[52px] z-10">
+                        <div class="real-train-car" style="width: 80px; background: linear-gradient(to bottom, #ef4444, #b91c1c);"></div>
+                        <div class="train-connector"></div>
+                        <div class="real-train-car" style="width: 60px; background: linear-gradient(to bottom, #3b82f6, #1d4ed8); border-color: #1e3a8a;"></div>
+                    </div>
+                    
+                    <div class="absolute bottom-2 left-[52px] flex gap-4 text-[10px] text-gray-500">
+                        <span class="font-bold text-red-600">Merah: 4</span>
+                        <span class="font-bold text-blue-600">Biru: 3</span>
+                    </div>
+                </div>
+                <div class="choice-container justify-center gap-6">
+                    <label class="choice-item"><div class="choice-box"></div> 6 Kotak</label>
+                    <label class="choice-item"><div class="choice-box"></div> 7 Kotak</label>
+                    <label class="choice-item"><div class="choice-box"></div> 8 Kotak</label>
+                </div>
+            </div>
+
+            <!-- Q2: Crayon -->
+            <div class="soal-item mb-2">
+                <div class="font-bold mb-2 text-sm">2. Menyambung Krayon</div>
+                <div class="visual-box items-start pl-8 mb-2 h-[100px]">
+                    <div class="start-line" style="left:50px;"></div>
+                    <div class="grid-vertical" style="left:50px;"></div>
+                    
+                    <!-- Items start at 52px. Widths: 60px (3u), 80px (4u) -->
+                    <div class="flex items-center absolute top-[35px] left-[52px] z-10">
+                        <div class="real-crayon crayon-red" style="width: 60px;"><div class="tail"></div><div class="wrapper"></div><div class="tip"></div></div>
+                        <div class="real-crayon crayon-blue" style="width: 80px;"><div class="tail"></div><div class="wrapper"></div><div class="tip"></div></div>
+                    </div>
+                    <div class="absolute bottom-2 left-[52px] flex gap-4 text-[10px] text-gray-500">
+                        <span class="font-bold text-red-500">Merah: 3</span>
+                        <span class="font-bold text-blue-500">Biru: 4</span>
+                    </div>
+                </div>
+                <div class="choice-container justify-center gap-6">
+                    <label class="choice-item"><div class="choice-box"></div> 6 Klip</label>
+                    <label class="choice-item"><div class="choice-box"></div> 7 Klip</label>
+                    <label class="choice-item"><div class="choice-box"></div> 8 Klip</label>
+                </div>
+            </div>
+
+            <!-- Q3: Necklace -->
+            <div class="soal-item mb-2">
+                <div class="font-bold mb-2 text-sm">3. Kalung Manik-manik</div>
+                <div class="visual-box items-start pl-8 mb-2 h-[80px]">
+                    <div class="start-line" style="left:50px;"></div>
+                    <div class="grid-vertical" style="left:50px;"></div>
+                    
+                    <!-- String -->
+                    <div class="absolute top-[39px] left-[52px] w-[180px] h-[2px] bg-black z-0"></div>
+
+                    <!-- Beads start at 52px -->
+                    <div class="flex items-center absolute top-[30px] left-[52px] gap-0 z-10">
+                        <div class="flex">
+                            <!-- 5 blue beads * 20px = 100px -->
+                            <div class="real-bead bead-blue"></div><div class="real-bead bead-blue"></div><div class="real-bead bead-blue"></div><div class="real-bead bead-blue"></div><div class="real-bead bead-blue"></div>
+                        </div>
+                        <div class="flex">
+                            <!-- 4 yellow beads * 20px = 80px -->
+                            <div class="real-bead bead-yellow"></div><div class="real-bead bead-yellow"></div><div class="real-bead bead-yellow"></div><div class="real-bead bead-yellow"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="absolute bottom-1 left-[52px] flex gap-4 text-[10px] text-gray-500">
+                        <span class="font-bold text-blue-600">Biru: 5</span>
+                        <span class="font-bold text-yellow-600">Kuning: 4</span>
+                    </div>
+                </div>
+                <div class="choice-container justify-center gap-6">
+                    <label class="choice-item"><div class="choice-box"></div> 8 Manik</label>
+                    <label class="choice-item"><div class="choice-box"></div> 9 Manik</label>
+                    <label class="choice-item"><div class="choice-box"></div> 10 Manik</label>
+                </div>
+            </div>
+
+            <!-- Q4: Straws -->
+            <div class="soal-item">
+                <div class="font-bold mb-2 text-sm">4. Dua Sedotan Bertemu</div>
+                <div class="visual-box items-start pl-8 mb-2 h-[100px]">
+                    <div class="start-line" style="left:50px;"></div>
+                    <div class="grid-vertical" style="left:50px;"></div>
+                    
+                    <div class="flex items-center absolute top-[35px] left-[52px] z-10">
+                        <!-- Straw A (4 units) -->
+                        <div class="real-straw straw-green" style="width: 80px;"></div>
+                        <!-- Straw B (2 units) -->
+                        <div class="real-straw straw-pink" style="width: 40px;"></div>
+                    </div>
+                    
+                    <div class="absolute bottom-2 left-[52px] flex gap-4 text-[10px] text-gray-500">
+                        <span class="font-bold text-green-600">Hijau: 4</span>
+                        <span class="font-bold text-pink-600">Pink: 2</span>
+                    </div>
+                </div>
+                <div class="choice-container justify-center gap-6">
+                    <label class="choice-item"><div class="choice-box"></div> 5 Satuan</label>
+                    <label class="choice-item"><div class="choice-box"></div> 6 Satuan</label>
+                    <label class="choice-item"><div class="choice-box"></div> 7 Satuan</label>
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Pengukuran</div>
+                    <div class="text-[11px] text-black font-medium mt-1">Kode : D2-S129</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- SECTION 2: Measuring Separately -->
+            <div class="section-label">Bagian 2: Ukur Dulu, Baru Jumlahkan</div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <!-- Visual Context for Q5 & Q6 (UPDATED) -->
+                <div class="col-span-1 md:col-span-2 visual-box items-start pl-0 h-[200px] relative overflow-visible">
+                    
+                    <!-- Inner Container for Ruler & Objects -->
+                    <div style="position: absolute; top: 20px; bottom: 40px; left: 40px; right: 20px;">
+                        
+                        <!-- Start Line (Red) at x=0 of container -->
+                        <div style="position: absolute; top: 0; bottom: 0; left: 0; width: 2px; background-color: #ef4444; z-index: 20;"></div>
+                        
+                        <!-- Grid Lines (30px spacing) -->
+                        <div style="position: absolute; top: 0; bottom: 0; left: 2px; right: 0; 
+                                    background-size: 30px 100%; 
+                                    background-image: linear-gradient(to right, #9ca3af 1px, transparent 1px);
+                                    border-bottom: 1px solid #9ca3af;">
+                        </div>
+
+                        <!-- Item A: Pencil (5 units @ 30px = 150px) -->
+                        <div style="position: absolute; top: 30px; left: 2px;">
+                            <div style="margin-bottom: 4px; font-size: 11px; font-weight: bold; color: #1d4ed8;">Benda A</div>
+                            <div class="real-pencil" style="width: 150px;">
+                                <div class="eraser"></div><div class="ferrule"></div><div class="body"></div><div class="collar"></div><div class="lead"></div>
+                            </div>
+                        </div>
+
+                        <!-- Item B: Eraser (2 units @ 30px = 60px) -->
+                        <div style="position: absolute; top: 90px; left: 2px;">
+                            <div style="margin-bottom: 4px; font-size: 11px; font-weight: bold; color: #b91c1c;">Benda B</div>
+                            <div class="real-eraser-unit" style="width: 60px; height: 24px; font-size: 0;"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">5. Berapa panjang Benda A?</div>
+                    <div class="choice-container mt-auto flex-col gap-2">
+                        <label class="choice-item"><div class="choice-box"></div> 4 Satuan</label>
+                        <label class="choice-item"><div class="choice-box"></div> 5 Satuan</label>
+                        <label class="choice-item"><div class="choice-box"></div> 6 Satuan</label>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">6. Berapa panjang Benda B?</div>
+                    <div class="choice-container mt-auto flex-col gap-2">
+                        <label class="choice-item"><div class="choice-box"></div> 1 Satuan</label>
+                        <label class="choice-item"><div class="choice-box"></div> 2 Satuan</label>
+                        <label class="choice-item"><div class="choice-box"></div> 3 Satuan</label>
+                    </div>
+                </div>
+
+                <!-- Q7 (Sum) -->
+                <div class="soal-item col-span-1 md:col-span-2 bg-blue-50 border-blue-200">
+                    <div class="font-bold mb-2 text-sm text-blue-900">7. Jika Benda A dan Benda B disambung, berapa panjang totalnya?</div>
+                    <div class="flex items-center justify-center gap-4 mt-2 mb-2 text-lg font-bold text-gray-600">
+                        <div class="w-12 h-10 border-b-2 border-gray-400 flex items-center justify-center">?</div>
+                        <span>+</span>
+                        <div class="w-12 h-10 border-b-2 border-gray-400 flex items-center justify-center">?</div>
+                        <span>=</span>
+                        <div class="w-12 h-10 border-b-2 border-blue-600 text-blue-600 flex items-center justify-center">?</div>
+                    </div>
+                    <div class="choice-container justify-center gap-8">
+                        <label class="choice-item"><div class="choice-box"></div> 6 Satuan</label>
+                        <label class="choice-item"><div class="choice-box"></div> 7 Satuan</label>
+                        <label class="choice-item"><div class="choice-box"></div> 8 Satuan</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Pengukuran</div>
+                    <div class="text-[11px] text-black font-medium mt-1">Kode : D2-S129</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- SECTION 3: Logic Challenge -->
+            <div class="section-label">Bagian 3: Tantangan Cerita</div>
+
+            <!-- Q8: Tower -->
+            <div class="soal-item bg-purple-50 border-purple-200 mb-4">
+                <div class="font-bold mb-2 text-sm text-purple-900">8. Menara Gabungan</div>
+                <div class="flex gap-4 items-center">
+                    <div class="w-1/2 text-xs text-gray-700 leading-relaxed">
+                        Menara Andi (Biru) = <b>4 balok</b>.<br>
+                        Menara Budi (Hijau) = <b>5 balok</b>.<br>
+                        Jika ditumpuk, berapa tingginya?
+                    </div>
+                    <div class="w-1/2 flex flex-col items-center justify-end h-[220px] border-b-2 border-gray-400 pb-1">
+                        <div class="flex flex-col-reverse">
+                            <div class="real-block-unit bg-green-400 border-green-600"></div><div class="real-block-unit bg-green-400 border-green-600"></div><div class="real-block-unit bg-green-400 border-green-600"></div><div class="real-block-unit bg-green-400 border-green-600"></div><div class="real-block-unit bg-green-400 border-green-600"></div>
+                        </div>
+                        <div class="flex flex-col-reverse">
+                            <div class="real-block-unit bg-blue-400 border-blue-600"></div><div class="real-block-unit bg-blue-400 border-blue-600"></div><div class="real-block-unit bg-blue-400 border-blue-600"></div><div class="real-block-unit bg-blue-400 border-blue-600"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="choice-container mt-4 justify-around">
+                    <label class="choice-item"><div class="choice-box"></div> 8 Balok</label>
+                    <label class="choice-item"><div class="choice-box"></div> 9 Balok</label>
+                    <label class="choice-item"><div class="choice-box"></div> 10 Balok</label>
+                </div>
+            </div>
+
+            <!-- Q9: Path -->
+            <div class="soal-item bg-gray-50 mb-4">
+                <div class="font-bold mb-2 text-sm">9. Jalan Setapak</div>
+                <div class="text-xs text-gray-700 mb-2">
+                    Jarak Rumah ke Pohon = <b>3 langkah</b>.<br>
+                    Jarak Pohon ke Taman = <b>5 langkah</b>.<br>
+                    Berapa langkah total dari Rumah ke Taman?
+                </div>
+                <div class="flex items-center justify-center gap-2 mb-2 py-4">
+                    <span class="text-2xl">🏠</span>
+                    <div class="flex gap-2">
+                        <div class="w-5 h-5 bg-gray-400 rounded-full border border-gray-600 shadow-sm"></div>
+                        <div class="w-5 h-5 bg-gray-400 rounded-full border border-gray-600 shadow-sm"></div>
+                        <div class="w-5 h-5 bg-gray-400 rounded-full border border-gray-600 shadow-sm"></div>
+                    </div>
+                    <span class="text-2xl">🌳</span>
+                    <div class="flex gap-2">
+                        <div class="w-5 h-5 bg-gray-400 rounded-full border border-gray-600 shadow-sm"></div>
+                        <div class="w-5 h-5 bg-gray-400 rounded-full border border-gray-600 shadow-sm"></div>
+                        <div class="w-5 h-5 bg-gray-400 rounded-full border border-gray-600 shadow-sm"></div>
+                        <div class="w-5 h-5 bg-gray-400 rounded-full border border-gray-600 shadow-sm"></div>
+                        <div class="w-5 h-5 bg-gray-400 rounded-full border border-gray-600 shadow-sm"></div>
+                    </div>
+                    <span class="text-2xl">⛲</span>
+                </div>
+                <div class="choice-container mt-auto justify-center gap-6">
+                    <label class="choice-item"><div class="choice-box"></div> 7 Langkah</label>
+                    <label class="choice-item"><div class="choice-box"></div> 8 Langkah</label>
+                    <label class="choice-item"><div class="choice-box"></div> 9 Langkah</label>
+                </div>
+            </div>
+
+            <!-- Q10: Bridge (UPDATED LARGE) -->
+            <div class="soal-item bg-yellow-50 border-yellow-200">
+                <div class="font-bold mb-2 text-sm text-yellow-900">10. Membangun Jembatan</div>
+                <div class="text-xs text-yellow-800 mb-4 text-center">
+                    Ada celah sungai selebar <b>10 meter</b>.<br>
+                    Kita punya Papan A (6 meter) dan Papan B (4 meter).<br>
+                    Apakah cukup jika disambung?
+                </div>
+                
+                <!-- Visual Box Centered -->
+                <div class="flex flex-col items-center justify-center py-4 bg-white/50 rounded-lg border border-yellow-300 border-dashed">
+                    <div class="flex gap-1 items-end mb-1">
+                        <div class="real-plank" style="width: 120px; height: 16px;"></div> <!-- scaled up -->
+                        <div class="real-plank" style="width: 80px; height: 16px;"></div>  <!-- scaled up -->
+                    </div>
+                    <!-- River gap -->
+                    <div class="w-[200px] border-b-4 border-dashed border-blue-400 mt-1 flex justify-between text-[10px] text-blue-600 font-bold px-2">
+                        <span>|</span>
+                        <span>Sungai (10m)</span>
+                        <span>|</span>
+                    </div>
+                    <div class="w-[200px] h-4 bg-blue-100 mt-1 rounded-b-lg"></div> <!-- Water effect -->
+                </div>
+
+                <div class="choice-container mt-4 justify-center gap-8">
+                    <label class="choice-item"><div class="choice-box"></div> Ya, pas sekali (10 meter)</label>
+                    <label class="choice-item"><div class="choice-box"></div> Tidak, kurang panjang</label>
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
