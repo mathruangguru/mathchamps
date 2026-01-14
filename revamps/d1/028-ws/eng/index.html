@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Finding the Other Part (D1-S028)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .nb-circle,
+        .nb-line,
+        .circle-icon-filled,
+        .bar-model-rect,
+        .input-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 {
+          background-color: #f9fafb !important;
+        }
+        .bg-gray-100 {
+          background-color: #f3f4f6 !important;
+        }
+        .bg-green-100 {
+          background-color: #dcfce7 !important;
+        }
+        .bg-orange-100 {
+          background-color: #ffedd5 !important;
+        }
+        .bg-cyan-100 {
+          background-color: #cffafe !important;
+        }
+        .bg-yellow-100 {
+          background-color: #fef9c3 !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        /* Gap diperkecil dari 1rem menjadi 0.5rem */
+        gap: 0.5rem;
+      }
+
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 50px;
+        height: 35px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 32px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+
+      .choice-container {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        /* Margin separator diperkecil dari 0.15cm menjadi 0.15cm */
+        margin: 0.15cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      /* SVG Icons Styles */
+      .icon-filled {
+        fill: #333;
+      }
+      .cross-line {
+        stroke: #ef4444; /* red-500 */
+        stroke-width: 2.5;
+        stroke-linecap: round;
+      }
+
+      /* --- SVG NUMBER BOND STYLES (New) --- */
+      .svg-nb-container {
+        display: block;
+        margin: 0 auto;
+        overflow: visible;
+      }
+      .svg-nb-circle {
+        fill: white;
+        stroke: black;
+        stroke-width: 2px;
+      }
+      .svg-nb-line {
+        stroke: black;
+        stroke-width: 2px;
+      }
+      .svg-nb-text {
+        font-family: "Montserrat", sans-serif;
+        font-size: 16px;
+        font-weight: bold;
+        text-anchor: middle;
+        dominant-baseline: central;
+      }
+      .svg-nb-circle-dashed {
+        stroke-dasharray: 5, 5;
+        fill: #f3f4f6;
+      }
+
+      /* Bar Model Styles - PERBAIKAN DI SINI */
+      .bar-container {
+        width: 100%;
+        max-width: 300px;
+        margin: 15px auto;
+        position: relative;
+        padding-top: 5px;
+        /* Padding bottom dikembalikan ke 0 atau kecil agar Brace menempel pada Box */
+        padding-bottom: 5px;
+      }
+      .bar-whole-label {
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+      }
+      .bar-box {
+        display: flex;
+        border: 2px solid black;
+        height: 40px;
+      }
+      .bar-part {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        position: relative;
+      }
+      .bar-part:not(:last-child) {
+        border-right: 2px solid black;
+      }
+
+      /* Custom Braces using Borders */
+      .brace {
+        position: absolute;
+        /* Posisikan brace sedikit di bawah container (yang tingginya pas dengan bar-box) */
+        bottom: -10px;
+        border-left: 1px solid black;
+        border-right: 1px solid black;
+        border-bottom: 1px solid black;
+        height: 8px;
+      }
+      .brace::after {
+        content: "";
+        position: absolute;
+        bottom: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 1px;
+        height: 5px;
+        background: black;
+      }
+      .brace-label {
+        position: absolute;
+        /* Label menggantung lebih jauh ke bawah */
+        bottom: -28px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.75rem;
+        white-space: nowrap;
+      }
+      .whole-brace {
+        position: absolute;
+        top: 0px;
+        left: 0;
+        width: 100%;
+        border-left: 1px solid black;
+        border-right: 1px solid black;
+        border-top: 1px solid black;
+        height: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page" style="padding-top: 0.5cm; padding-bottom: 0.5cm;">
+        
+        <!-- HEADER -->
+        <header class="page-header">
+          <div class="math-champs-header">
+            <!-- LOGO -->
+            <img
+              src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png"
+              alt="Math Champs"
+              class="h-10 md:h-12 w-auto object-contain"
+            />
+
+            <div class="text-right">
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                Discovery 1
+              </div>
+              <div class="text-[10px] text-black font-semibold mt-0.5">
+                Subtraction Within 10
+              </div>
+              <div class="text-[10px] text-black font-medium">
+                Finding the Other Part
+              </div>
+              <div class="text-[10px] text-black font-medium">
+                Code : D1-S028
+              </div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <div class="text-center mb-2 mt-1">
+            <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+              SUBTRACTION WORD PROBLEMS
+            </h1>
+          </div>
+
+          <!-- INSTRUCTION A -->
+          <div class="instruction-text mb-2 py-1.5 text-sm">
+            Part A: Look at the pictures. The objects crossed out mean they are
+            taken away to find the remainder.
+          </div>
+
+          <div class="soal-grid">
+            <!-- SOAL 1 -->
+            <div class="soal-item">
+              <div class="font-bold mb-1">
+                1. <span class="text-blue-700">Remaining Apples.</span> Mother
+                bought 5 apples. 2 apples were eaten by sibling. How many apples
+                are left?
+              </div>
+
+              <div class="flex justify-center items-center gap-6 mb-2">
+                <div class="flex gap-2 border border-gray-300 p-3 rounded bg-gray-50">
+                  <!-- REORDERED: 3 clean apples first, then 2 crossed apples on the right -->
+                  <svg width="30" height="30">
+                    <circle cx="15" cy="15" r="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2" />
+                  </svg>
+                  <svg width="30" height="30">
+                    <circle cx="15" cy="15" r="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2" />
+                  </svg>
+                  <svg width="30" height="30">
+                    <circle cx="15" cy="15" r="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2" />
+                  </svg>
+                  <!-- Crossed items now on the RIGHT -->
+                  <svg width="30" height="30">
+                    <circle cx="15" cy="15" r="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2" />
+                    <line x1="5" y1="5" x2="25" y2="25" class="cross-line" />
+                    <line x1="25" y1="5" x2="5" y2="25" class="cross-line" />
+                  </svg>
+                  <svg width="30" height="30">
+                    <circle cx="15" cy="15" r="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2" />
+                    <line x1="5" y1="5" x2="25" y2="25" class="cross-line" />
+                    <line x1="25" y1="5" x2="5" y2="25" class="cross-line" />
+                  </svg>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-center gap-2 mt-0.5 mb-1">
+                <span class="font-bold text-base">5 - 2 = </span>
+                <span class="input-box"></span>
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SOAL 2 -->
+            <div class="soal-item">
+              <div class="font-bold mb-1">
+                2. <span class="text-blue-700">Gift Boxes.</span> There are 7 gift
+                boxes. 3 boxes are opened. How many boxes are unopened?
+              </div>
+
+              <div class="flex justify-center items-center gap-6 mb-2">
+                <div class="flex gap-2 flex-wrap justify-center w-64 border border-gray-300 p-3 rounded bg-gray-50">
+                  <!-- REORDERED: 4 clean boxes first, then 3 crossed boxes on the right -->
+                  <svg width="30" height="30">
+                    <rect x="2" y="2" width="26" height="26" fill="#ffedd5" stroke="#ea580c" stroke-width="2" />
+                  </svg>
+                  <svg width="30" height="30">
+                    <rect x="2" y="2" width="26" height="26" fill="#ffedd5" stroke="#ea580c" stroke-width="2" />
+                  </svg>
+                  <svg width="30" height="30">
+                    <rect x="2" y="2" width="26" height="26" fill="#ffedd5" stroke="#ea580c" stroke-width="2" />
+                  </svg>
+                  <svg width="30" height="30">
+                    <rect x="2" y="2" width="26" height="26" fill="#ffedd5" stroke="#ea580c" stroke-width="2" />
+                  </svg>
+                  <!-- Crossed items on RIGHT -->
+                  <svg width="30" height="30">
+                    <rect x="2" y="2" width="26" height="26" fill="#ffedd5" stroke="#ea580c" stroke-width="2" />
+                    <line x1="2" y1="2" x2="28" y2="28" class="cross-line" />
+                    <line x1="28" y1="2" x2="2" y2="28" class="cross-line" />
+                  </svg>
+                  <svg width="30" height="30">
+                    <rect x="2" y="2" width="26" height="26" fill="#ffedd5" stroke="#ea580c" stroke-width="2" />
+                    <line x1="2" y1="2" x2="28" y2="28" class="cross-line" />
+                    <line x1="28" y1="2" x2="2" y2="28" class="cross-line" />
+                  </svg>
+                  <svg width="30" height="30">
+                    <rect x="2" y="2" width="26" height="26" fill="#ffedd5" stroke="#ea580c" stroke-width="2" />
+                    <line x1="2" y1="2" x2="28" y2="28" class="cross-line" />
+                    <line x1="28" y1="2" x2="2" y2="28" class="cross-line" />
+                  </svg>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-center gap-2 mt-0.5 mb-1">
+                <span class="font-bold text-base">7 - 3 = </span>
+                <span class="input-box"></span>
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- INSTRUCTION B -->
+            <div class="instruction-text mb-2 py-1.5 text-sm">
+              Part B: Fill in the missing parts in the Number Bonds.
+            </div>
+
+            <!-- SOAL 3 -->
+            <div class="soal-item">
+              <div class="font-bold mb-1">
+                3. <span class="text-blue-700">Colored Balls.</span> There are 6
+                balls. 4 balls are red, the rest are blue. How many balls are
+                blue?
+              </div>
+
+              <!-- NEW SVG NUMBER BOND STRUCTURE -->
+              <svg class="svg-nb-container" width="150" height="130" viewBox="0 0 150 130">
+                <!-- Lines connecting centers -->
+                <line x1="75" y1="30" x2="40" y2="100" class="svg-nb-line" />
+                <line x1="75" y1="30" x2="110" y2="100" class="svg-nb-line" />
+
+                <!-- Top Circle -->
+                <circle cx="75" cy="30" r="22" class="svg-nb-circle" />
+                <text x="75" y="30" class="svg-nb-text">6</text>
+
+                <!-- Left Part -->
+                <circle cx="40" cy="100" r="22" class="svg-nb-circle" />
+                <text x="40" y="100" class="svg-nb-text">4</text>
+
+                <!-- Right Part (Dashed for missing) -->
+                <circle cx="110" cy="100" r="22" class="svg-nb-circle svg-nb-circle-dashed" />
+                <text x="110" y="100" class="svg-nb-text">?</text>
+              </svg>
+
+              <div class="choice-container" style="margin-top: 15px;">
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> a. 1
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> b. 2
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> c. 3
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+          <div class="math-champs-header">
+            <img
+              src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png"
+              alt="Math Champs"
+              class="h-12 md:h-14 w-auto object-contain"
+            />
+            <div class="text-right">
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                Discovery 1
+              </div>
+              <div class="text-[11px] text-black font-semibold mt-1">
+                Subtraction Within 10
+              </div>
+              <div class="text-[11px] text-black font-medium">
+                Finding the Other Part
+              </div>
+              <div class="text-[11px] text-black font-medium">
+                Code : D1-S028
+              </div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <div class="soal-grid mb-4">
+            <!-- SOAL 4 -->
+            <div class="soal-item">
+              <div class="font-bold mb-3">
+                4. <span class="text-blue-700">Father's Nails.</span> Father has 8
+                nails. He used 5 nails. How many nails are left?
+              </div>
+
+              <!-- NEW SVG NUMBER BOND STRUCTURE -->
+              <svg class="svg-nb-container" width="150" height="130" viewBox="0 0 150 130">
+                <line x1="75" y1="30" x2="40" y2="100" class="svg-nb-line" />
+                <line x1="75" y1="30" x2="110" y2="100" class="svg-nb-line" />
+
+                <circle cx="75" cy="30" r="22" class="svg-nb-circle" />
+                <text x="75" y="30" class="svg-nb-text">8</text>
+
+                <circle cx="40" cy="100" r="22" class="svg-nb-circle" />
+                <text x="40" y="100" class="svg-nb-text">5</text>
+
+                <circle cx="110" cy="100" r="22" class="svg-nb-circle svg-nb-circle-dashed" />
+                <text x="110" y="100" class="svg-nb-text">?</text>
+              </svg>
+
+              <div class="flex justify-center items-center gap-2 mt-4">
+                <span class="font-bold">Answer:</span>
+                <span class="input-box"></span>
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SOAL 5 -->
+            <div class="soal-item">
+              <div class="font-bold mb-3">
+                5. <span class="text-blue-700">Children Playing.</span> 10
+                children are playing. 3 children went home.
+              </div>
+
+              <div class="flex justify-center gap-8 items-center">
+                <!-- NEW SVG NUMBER BOND STRUCTURE -->
+                <svg class="svg-nb-container" width="150" height="130" viewBox="0 0 150 130">
+                  <line x1="75" y1="30" x2="40" y2="100" class="svg-nb-line" />
+                  <line x1="75" y1="30" x2="110" y2="100" class="svg-nb-line" />
+
+                  <circle cx="75" cy="30" r="22" class="svg-nb-circle" />
+                  <text x="75" y="30" class="svg-nb-text">10</text>
+
+                  <circle cx="40" cy="100" r="22" class="svg-nb-circle" />
+                  <text x="40" y="100" class="svg-nb-text">3</text>
+
+                  <circle cx="110" cy="100" r="22" class="svg-nb-circle svg-nb-circle-dashed" />
+                  <text x="110" y="100" class="svg-nb-text">?</text>
+                </svg>
+              </div>
+
+              <div class="choice-container" style="margin-top: 20px;">
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> a. 6
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> b. 7
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> c. 8
+                </label>
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- INSTRUCTION C -->
+            <div class="instruction-text mb-3">
+              Part C: Bar Model to see 'Whole' and 'Part'.
+            </div>
+
+            <!-- SOAL 6 -->
+            <div class="soal-item">
+              <div class="font-bold mb-3">
+                6. <span class="text-blue-700">Missing Part.</span> Look at the
+                Bar Model below.
+              </div>
+
+              <!-- FIXED: Added style 'margin-bottom: 60px' to push the text below down -->
+              <div class="bar-container" style="margin-bottom: 60px;">
+                <div class="bar-whole-label">Whole: 9</div>
+                <div class="bar-box">
+                  <div class="bar-part bg-cyan-100" style="width: 66%;">6</div>
+                  <div class="bar-part bg-white" style="width: 34%;">?</div>
+                </div>
+                <div class="brace" style="width: 66%; left: 0;">
+                  <span class="brace-label">Part A</span>
+                </div>
+                <div class="brace" style="width: 34%; left: 66%;">
+                  <span class="brace-label">Part B</span>
+                </div>
+              </div>
+
+              <div class="text-center font-bold mb-2">
+                What is the value of Part B?
+              </div>
+
+              <div class="choice-container">
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> a. 2
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> b. 3
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> c. 4
+                </label>
+              </div>
+            </div>
+            <!-- SOAL 7 moved to Page 3 -->
+          </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+          <div class="math-champs-header">
+            <img
+              src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png"
+              alt="Math Champs"
+              class="h-12 md:h-14 w-auto object-contain"
+            />
+            <div class="text-right">
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                Discovery 1
+              </div>
+              <div class="text-[11px] text-black font-semibold mt-1">
+                Subtraction Within 10
+              </div>
+              <div class="text-[11px] text-black font-medium">
+                Finding the Other Part
+              </div>
+              <div class="text-[11px] text-black font-medium">
+                Code : D1-S028
+              </div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <!-- SOAL 7 (Moved here) -->
+          <div class="soal-grid mb-6">
+            <div class="soal-item">
+              <div class="font-bold mb-3">
+                7. <span class="text-blue-700">One Part.</span> The Whole is 5.
+                One Part is 1. What is the other part?
+              </div>
+
+              <div class="bar-container">
+                <div class="bar-box" style="margin-top: 10px;">
+                  <div class="bar-part bg-yellow-100" style="width: 20%;">1</div>
+                  <div class="bar-part bg-white" style="width: 80%;">?</div>
+                </div>
+                <div class="whole-brace"></div>
+                <div style="position: absolute; top: -20px; width: 100%; text-align: center; font-weight: bold; font-size: 0.9rem;">
+                  Whole: 5
+                </div>
+              </div>
+
+              <div class="text-center font-bold mb-2">
+                The subtraction sentence is:
+              </div>
+
+              <div class="choice-container">
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> a. 5 - 1 = 4
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> b. 5 + 1 = 6
+                </label>
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- INSTRUCTION D -->
+            <div class="instruction-text mb-3">
+              Part D: Read the story and solve the problem.
+            </div>
+
+            <!-- SOAL 8 -->
+            <div class="soal-item">
+              <div class="font-bold mb-3">
+                8. <span class="text-blue-700">Budi's Cake.</span> There are 8
+                slices of cake on the plate. Budi ate 2 slices. How many slices
+                of cake are left?
+              </div>
+
+              <div class="flex justify-center items-center gap-4 my-4">
+                <div class="text-3xl font-bold border-2 border-black p-2 rounded">
+                  8
+                </div>
+                <div class="text-3xl font-bold">-</div>
+                <div class="text-3xl font-bold border-2 border-black p-2 rounded">
+                  2
+                </div>
+                <div class="text-3xl font-bold">=</div>
+                <span
+                  class="input-box"
+                  style="height: 50px; width: 50px; font-size: 1.5rem; line-height: 45px;"
+                ></span>
+              </div>
+
+              <div class="text-center font-bold">
+                Answer:
+                <span class="border-b-2 border-black px-4 inline-block w-20"
+                  >&nbsp;</span
+                >
+                cakes.
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SOAL 9 -->
+            <div class="soal-item">
+              <div class="font-bold mb-3">
+                9. <span class="text-blue-700">Lost Pencils.</span> Ani has 10
+                color pencils. 5 pencils are lost. How many pencils does Ani
+                have left?
+              </div>
+
+              <div class="choice-container" style="margin-top: 10px;">
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> a. 4
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> b. 5
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> c. 6
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 4 (New) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+          <div class="math-champs-header">
+            <img
+              src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png"
+              alt="Math Champs"
+              class="h-12 md:h-14 w-auto object-contain"
+            />
+            <div class="text-right">
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                Discovery 1
+              </div>
+              <div class="text-[11px] text-black font-semibold mt-1">
+                Subtraction Within 10
+              </div>
+              <div class="text-[11px] text-black font-medium">
+                Finding the Other Part
+              </div>
+              <div class="text-[11px] text-black font-medium">
+                Code : D1-S028
+              </div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <div class="soal-grid mb-6">
+            <!-- SOAL 10 (Moved here) -->
+            <div class="soal-item">
+              <div class="font-bold mb-4">
+                10. <span class="text-blue-700">Thinking Challenge!</span>
+                <div class="font-normal mt-1 bg-yellow-50 p-2 rounded border border-yellow-200">
+                  "I am thinking of a number. If my number is added by 3, the
+                  result is 7. What number is it?"
+                </div>
+              </div>
+
+              <div class="flex justify-center items-center gap-6 mb-4">
+                <!-- NEW SVG NUMBER BOND STRUCTURE -->
+                <svg class="svg-nb-container" width="150" height="130" viewBox="0 0 150 130">
+                  <line x1="75" y1="30" x2="40" y2="100" class="svg-nb-line" />
+                  <line x1="75" y1="30" x2="110" y2="100" class="svg-nb-line" />
+
+                  <circle cx="75" cy="30" r="22" class="svg-nb-circle" />
+                  <text x="75" y="30" class="svg-nb-text">7</text>
+
+                  <circle cx="40" cy="100" r="22" class="svg-nb-circle" />
+                  <text x="40" y="100" class="svg-nb-text">3</text>
+
+                  <circle cx="110" cy="100" r="22" class="svg-nb-circle svg-nb-circle-dashed" />
+                  <text x="110" y="100" class="svg-nb-text">?</text>
+                </svg>
+              </div>
+
+              <div class="text-center text-sm mb-2 font-semibold text-gray-500">
+                (Hint: Use subtraction 7 - 3)
+              </div>
+
+              <div class="flex justify-center items-center gap-2 mt-2">
+                <span class="font-bold">Answer:</span>
+                <span class="input-box"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- MOTIVATION -->
+          <div class="mt-8 mb-4 p-4 bg-gray-100 rounded-lg border-l-4 border-black text-center">
+            <p class="font-bold text-lg text-gray-800">
+              "Every practice levels you up!"
+            </p>
+          </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
