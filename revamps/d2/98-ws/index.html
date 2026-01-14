@@ -1,0 +1,785 @@
+
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Terbesar & Terkecil (D2-S098)</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA (Mengikuti Style Discovery 3) --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659; /* Background luar abu-abu gelap */
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        height: 29.7cm; /* Fixed A4 Height */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+        flex-shrink: 0;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8cm 2cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+      }
+
+      .input-line {
+        border: 1px solid #333;
+        width: 60px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        vertical-align: middle;
+        font-family: inherit;
+        font-size: 1rem;
+        background: transparent;
+      }
+      .input-line.border-none {
+          border: none;
+      }
+
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+      
+      .choice-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          cursor: pointer;
+      }
+      
+      /* Updated Choice Box untuk huruf A, B, C */
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1.5px solid #333;
+        border-radius: 4px;
+        display: inline-flex; /* Agar huruf bisa di-center */
+        align-items: center;
+        justify-content: center;
+        background: white;
+        font-size: 9px; /* Ukuran font huruf di dalam kotak */
+        font-weight: bold;
+        flex-shrink: 0;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.6cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+      }
+
+      .section-title {
+          font-weight: 800;
+          text-transform: uppercase;
+          font-size: 1.1rem;
+          color: #4b5563;
+          border-bottom: 2px solid #e5e7eb;
+          padding-bottom: 4px;
+          margin-bottom: 12px;
+          margin-top: 10px;
+      }
+
+      /* --- CSS BLOCKS (Hijau/Merah Style Discovery 3) --- */
+      .blocks-wrapper {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 8px;
+        padding: 5px 0;
+        flex-wrap: wrap;
+      }
+
+      /* Ten Block (Rod - Hijau) */
+      .rod {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #14532d; /* green-900 */
+        background-color: #dcfce7; /* green-100 */
+        width: 12px; 
+        flex-shrink: 0;
+      }
+      .rod .unit-seg {
+        width: 100%;
+        height: 6px; 
+        border-bottom: 1px solid #86efac;
+      }
+      .rod .unit-seg:last-child { border-bottom: none; }
+
+      /* One Block (Unit - Merah) */
+      .unit {
+        width: 12px; 
+        height: 12px;
+        border: 1px solid #7f1d1d; /* red-900 */
+        background-color: #fee2e2; /* red-100 */
+        flex-shrink: 0;
+      }
+      
+      .tens-group { display: flex; gap: 4px; }
+      .ones-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; align-self: flex-end; }
+
+      /* --- Tabel Comparison --- */
+      .comparison-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+      }
+      .comparison-table th, .comparison-table td {
+        border: 2px solid #333;
+        padding: 8px;
+        text-align: center;
+        vertical-align: bottom;
+      }
+      .comparison-table th {
+        background-color: #f3f4f6;
+        font-size: 0.9rem;
+      }
+
+      /* --- Number Box --- */
+      .number-box {
+        display: inline-block;
+        padding: 6px 14px;
+        border: 2px solid #333;
+        margin: 0 5px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        background: white;
+        border-radius: 6px;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; margin: 0; }
+        .page-container { display: block; }
+        .page {
+          width: 21cm; height: 29.6cm;
+          margin: 0; box-shadow: none;
+          page-break-after: always;
+          padding: 0.5cm 1.5cm; border: none;
+        }
+        .page:last-child { page-break-after: avoid; }
+        .page-header { margin-bottom: 5px !important; }
+        
+        /* Memaksa warna tercetak */
+        .math-champs-header, .rod, .unit, .comparison-table th, .number-box, .choice-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan sampai 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Menentukan bilangan terbesar atau terkecil dari sekumpulan bilangan
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Kode : D2-S098
+                    </div>
+                </div>
+            </div>
+            <!-- Garis pemisah header -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- INSTRUCTION -->
+            <div class="instruction-text p-2 bg-blue-50 border-l-4 border-blue-500 rounded text-sm text-gray-700 mb-6 mt-4">
+                <span class="font-bold">Instruksi:</span> Bandingkan bilangan-bilangan di bawah ini dan ikuti petunjuk soal.
+            </div>
+
+            <div class="section-title">Bagian A: Perbandingan Gambar</div>
+
+            <!-- QUESTION 1 -->
+            <div class="soal-item mb-6">
+                <div class="font-bold mb-3 text-sm">
+                    1. Bandingkan kedua kelompok. Centang (<span class="text-green-600">✓</span>) bilangan yang <b class="uppercase text-blue-700">lebih besar</b>.
+                </div>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th width="50%">
+                                <div class="flex items-center justify-center gap-2">
+                                    Kelompok A
+                                    <div class="choice-box cursor-pointer"></div>
+                                </div>
+                            </th>
+                            <th width="50%">
+                                <div class="flex items-center justify-center gap-2">
+                                    Kelompok B
+                                    <div class="choice-box cursor-pointer"></div>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <!-- SET A: 34 -->
+                            <td>
+                                <div class="blocks-wrapper">
+                                    <div class="tens-group">
+                                        <!-- 3 Rods -->
+                                        <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                        <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                        <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                    </div>
+                                    <div class="ones-group">
+                                        <!-- 4 Ones -->
+                                        <div class="unit"></div><div class="unit"></div>
+                                        <div class="unit"></div><div class="unit"></div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-sm font-semibold">
+                                    Bilangan: <input type="text" class="input-line w-12 text-center">
+                                </div>
+                            </td>
+                            <!-- SET B: 28 -->
+                            <td>
+                                <div class="blocks-wrapper">
+                                    <div class="tens-group">
+                                        <!-- 2 Rods -->
+                                        <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                        <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                    </div>
+                                    <div class="ones-group" style="grid-template-columns: repeat(3, 1fr);">
+                                        <!-- 8 Ones -->
+                                        <div class="unit"></div><div class="unit"></div><div class="unit"></div>
+                                        <div class="unit"></div><div class="unit"></div><div class="unit"></div>
+                                        <div class="unit"></div><div class="unit"></div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-sm font-semibold">
+                                    Bilangan: <input type="text" class="input-line w-12 text-center">
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- QUESTION 2 -->
+            <div class="soal-item mb-6">
+                <div class="font-bold mb-3 text-sm">
+                    2. Bandingkan kedua kelompok. Centang (<span class="text-green-600">✓</span>) bilangan yang <b class="uppercase text-red-600">paling kecil</b>.
+                </div>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th width="50%">
+                                <div class="flex items-center justify-center gap-2">
+                                    Kelompok A
+                                    <div class="choice-box cursor-pointer"></div>
+                                </div>
+                            </th>
+                            <th width="50%">
+                                <div class="flex items-center justify-center gap-2">
+                                    Kelompok B
+                                    <div class="choice-box cursor-pointer"></div>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <!-- SET A: 42 -->
+                            <td>
+                                <div class="blocks-wrapper">
+                                    <div class="tens-group">
+                                        <!-- 4 Rods -->
+                                        <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                        <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                        <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                        <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                    </div>
+                                    <div class="ones-group">
+                                        <!-- 2 Ones -->
+                                        <div class="unit"></div><div class="unit"></div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-sm font-semibold">
+                                    Bilangan: <input type="text" class="input-line w-12 text-center">
+                                </div>
+                            </td>
+                            <!-- SET B: 46 -->
+                            <td>
+                                <div class="blocks-wrapper">
+                                    <div class="tens-group">
+                                        <!-- 4 Rods -->
+                                        <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                        <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                        <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                        <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                    </div>
+                                    <div class="ones-group" style="grid-template-columns: repeat(3, 1fr);">
+                                        <!-- 6 Ones -->
+                                        <div class="unit"></div><div class="unit"></div><div class="unit"></div>
+                                        <div class="unit"></div><div class="unit"></div><div class="unit"></div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-sm font-semibold">
+                                    Bilangan: <input type="text" class="input-line w-12 text-center">
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan sampai 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Menentukan bilangan terbesar atau terkecil dari sekumpulan bilangan
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Kode : D2-S098
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="section-title">Bagian B: Perbandingan Abstrak</div>
+            <div class="text-sm italic text-gray-600 mb-4">
+                Lihat angka pada tempat Puluhan dan Satuan untuk menemukan jawabannya.
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- QUESTION 3 -->
+                <div class="soal-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div class="font-bold mb-3 text-sm">
+                        3. Lingkari bilangan yang <b class="text-blue-700 uppercase">terbesar</b> di setiap kotak.
+                    </div>
+                    <div class="flex justify-around items-center h-full pb-2">
+                        <div class="text-center">
+                            <span class="text-sm font-bold text-gray-500 mb-2 block">(a)</span>
+                            <div class="bg-white p-4 rounded border-2 border-gray-300 shadow-sm flex gap-6 text-2xl font-black">
+                                <span>65</span>
+                                <span class="text-gray-300">|</span>
+                                <span>56</span>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <span class="text-sm font-bold text-gray-500 mb-2 block">(b)</span>
+                            <div class="bg-white p-4 rounded border-2 border-gray-300 shadow-sm flex gap-6 text-2xl font-black">
+                                <span>89</span>
+                                <span class="text-gray-300">|</span>
+                                <span>98</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUESTION 4 -->
+                <div class="soal-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div class="font-bold mb-3 text-sm">
+                        4. Lingkari bilangan yang <b class="text-red-600 uppercase">terkecil</b> di setiap kotak.
+                    </div>
+                    <div class="flex justify-around items-center h-full pb-2">
+                        <div class="text-center">
+                            <span class="text-sm font-bold text-gray-500 mb-2 block">(a)</span>
+                            <div class="bg-white p-4 rounded border-2 border-gray-300 shadow-sm flex gap-6 text-2xl font-black">
+                                <span>42</span>
+                                <span class="text-gray-300">|</span>
+                                <span>24</span>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <span class="text-sm font-bold text-gray-500 mb-2 block">(b)</span>
+                            <div class="bg-white p-4 rounded border-2 border-gray-300 shadow-sm flex gap-6 text-2xl font-black">
+                                <span>70</span>
+                                <span class="text-gray-300">|</span>
+                                <span>17</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">Bagian C: Pilihan Ganda</div>
+
+            <div class="grid grid-cols-1 gap-4">
+                <!-- Q5 -->
+                <div class="soal-item">
+                    <div class="font-bold text-sm">
+                        5. Bilangan manakah yang lebih besar dari 45 tapi lebih kecil dari 50?
+                    </div>
+                    <!-- Pilihan diperkecil dan dirapatkan (text-xs, gap-4) -->
+                    <div class="flex gap-4 mt-3 ml-2 text-xs font-semibold">
+                        <label class="choice-item"><div class="choice-box">A</div> 42</label>
+                        <label class="choice-item"><div class="choice-box">B</div> 48</label>
+                        <label class="choice-item"><div class="choice-box">C</div> 52</label>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="soal-item">
+                    <div class="font-bold text-sm mb-2">
+                        6. Lihat bilangan-bilangan di bawah ini:
+                    </div>
+                    <div class="flex justify-center gap-4 my-3">
+                        <div class="number-box">32</div>
+                        <div class="number-box">81</div>
+                        <div class="number-box">18</div>
+                        <div class="number-box">23</div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-4 mt-3">
+                        <div class="font-bold text-sm">
+                            Manakah bilangan yang <b class="text-blue-700">terbesar</b>?
+                        </div>
+                        <!-- Pilihan diperkecil dan dirapatkan (text-xs, gap-3) -->
+                        <div class="flex gap-3 ml-2 text-xs font-semibold">
+                            <label class="choice-item"><div class="choice-box">A</div> 81</label>
+                            <label class="choice-item"><div class="choice-box">B</div> 32</label>
+                            <label class="choice-item"><div class="choice-box">C</div> 18</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q7 -->
+                <div class="soal-item">
+                    <div class="font-bold text-sm mb-2">
+                        7. Lihat bilangan-bilangan di bawah ini:
+                    </div>
+                    <div class="flex justify-center gap-4 my-3">
+                        <div class="number-box">67</div>
+                        <div class="number-box">76</div>
+                        <div class="number-box">60</div>
+                        <div class="number-box">70</div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-4 mt-3">
+                        <div class="font-bold text-sm">
+                            Manakah bilangan yang <b class="text-red-600">terkecil</b>?
+                        </div>
+                        <!-- Pilihan diperkecil dan dirapatkan (text-xs, gap-3) -->
+                        <div class="flex gap-3 ml-2 text-xs font-semibold">
+                            <label class="choice-item"><div class="choice-box">A</div> 67</label>
+                            <label class="choice-item"><div class="choice-box">B</div> 60</label>
+                            <label class="choice-item"><div class="choice-box">C</div> 70</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan sampai 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Menentukan bilangan terbesar atau terkecil dari sekumpulan bilangan
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Kode : D2-S098
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <div class="section-title">Bagian D: Penemuan & Logika</div>
+
+            <!-- Q8 -->
+            <div class="soal-item mb-6">
+                <div class="font-bold text-sm mb-4">
+                    8. Urutkan bilangan-bilangan ini, mulai dari yang <b>terkecil</b>.
+                </div>
+                <div class="flex justify-center gap-6 mb-6">
+                    <span class="text-2xl font-black text-gray-700">29</span>
+                    <span class="text-2xl font-black text-gray-700">92</span>
+                    <span class="text-2xl font-black text-gray-700">35</span>
+                    <span class="text-2xl font-black text-gray-700">53</span>
+                </div>
+                <div class="flex justify-center gap-4 items-center flex-wrap">
+                    <span class="font-bold text-sm">Jawaban:</span>
+                    <input type="text" class="input-line w-16"> ,
+                    <input type="text" class="input-line w-16"> ,
+                    <input type="text" class="input-line w-16"> ,
+                    <input type="text" class="input-line w-16">
+                </div>
+            </div>
+
+            <!-- Q9 Riddle -->
+            <div class="soal-item bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <div class="font-bold mb-2 text-yellow-800">
+                    9. Teka-teki Bilangan
+                </div>
+                <div class="bg-white p-4 rounded border border-yellow-100 text-sm mb-3">
+                    "Aku adalah sebuah bilangan.<br>
+                    Angka puluhanku adalah <b>7</b>.<br>
+                    Angka satuanku <b>lebih kecil dari 2</b>.<br>
+                    Aku adalah <b>bilangan ganjil</b>."
+                </div>
+                <div class="font-bold text-sm text-center">
+                    Bilangan berapakah aku?
+                    <br>
+                    <input type="text" class="input-line w-24 mt-2">
+                </div>
+            </div>
+
+            <!-- Q10 Place Value Charts -->
+            <div class="soal-item mb-6">
+                <div class="font-bold text-sm mb-4">
+                    10. Bandingkan bilangan pada tabel nilai tempat berikut.
+                </div>
+
+                <div class="flex justify-center gap-8 mb-4 flex-wrap">
+                    <!-- Number A -->
+                    <div class="flex flex-col items-center">
+                        <span class="font-bold mb-1 text-xs">Bilangan A</span>
+                        <div class="border-2 border-black bg-white">
+                            <div class="flex border-b-2 border-black bg-gray-200 font-bold text-center text-xs">
+                                <div class="w-16 p-2 border-r-2 border-black">Puluhan</div>
+                                <div class="w-16 p-2">Satuan</div>
+                            </div>
+                            <div class="flex text-2xl font-bold text-center">
+                                <div class="w-16 p-4 border-r-2 border-black">8</div>
+                                <div class="w-16 p-4">2</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Number B -->
+                    <div class="flex flex-col items-center">
+                        <span class="font-bold mb-1 text-xs">Bilangan B</span>
+                        <div class="border-2 border-black bg-white">
+                            <div class="flex border-b-2 border-black bg-gray-200 font-bold text-center text-xs">
+                                <div class="w-16 p-2 border-r-2 border-black">Puluhan</div>
+                                <div class="w-16 p-2">Satuan</div>
+                            </div>
+                            <div class="flex text-2xl font-bold text-center">
+                                <div class="w-16 p-4 border-r-2 border-black">6</div>
+                                <div class="w-16 p-4">9</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div class="font-bold text-sm mb-2">Pernyataan mana yang benar? (Centang satu)</div>
+                    <div class="flex flex-col gap-2 text-sm">
+                        <label class="choice-item p-2 border border-gray-200 rounded hover:bg-gray-50 transition items-start cursor-pointer">
+                            <div class="choice-box mt-0.5"></div>
+                            <div class="ml-2">
+                                Bilangan A lebih kecil karena memiliki Satuan yang lebih sedikit.
+                            </div>
+                        </label>
+                        <label class="choice-item p-2 border border-gray-200 rounded hover:bg-gray-50 transition items-start cursor-pointer">
+                            <div class="choice-box mt-0.5"></div>
+                            <div class="ml-2">
+                                Bilangan A lebih besar karena memiliki Puluhan yang lebih banyak.
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Random Encouragement Text -->
+            <div id="encouragement-text" class="mt-12 text-center text-gray-500 italic font-medium"></div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+
+    <!-- Script untuk Random Kalimat Penyemangat -->
+    <script>
+        const quotes = [
+            "Mantap! Kamu benar-benar Math Champs!",
+            "Keren banget! Dua jempol buat kamu!",
+            "Hebat! Kamu sudah latihan dengan serius dan fokus.",
+            "Good job! Kamu sudah berani menghadapi soal-soal menantang.",
+            "Luar biasa! Hari ini kamu makin kuat di matematika.",
+            "Sudah yakin semua benar? Coba cek ulang sekali lagi ya. 😊",
+            "Biasakan periksa ulang ya—juara itu teliti!",
+            "Kalau ada yang ragu, ulang hitung pelan-pelan biar yakin.",
+            "Kalau ada yang salah, itu bukan masalah. Perbaiki dan maju terus!",
+            "Jatuh itu wajar—yang penting bangkit lagi.",
+            "Setiap latihan bikin kamu naik level!",
+            "Konsisten latihan = makin jago.",
+            "Beri nilai untuk dirimu: hari ini fokusmu 1–5 berapa?",
+            "Refleksi: bagian mana yang ingin kamu kuasai lebih baik?",
+            "Hasil tidak pernah mengkhianati kerja keras.",
+            "Bangga sama kamu—kamu tidak menyerah dan menyelesaikannya.",
+            "Mantap! Tutup dengan senyum—kamu sudah bekerja luar biasa. 😊",
+            "Teliti bikin juara.",
+            "Cek ulang, menang besar.",
+            "Latihan hari ini, hebat esok.",
+            "Rapi langkah, rapi hasil.",
+            "Sabar hitung, yakin benar.",
+            "Berani mencoba, makin bisa.",
+            "Konsisten kecil, hasil besar.",
+            "Rajin latihan, naik level.",
+            "Hitung cermat, hati tenang.",
+            "Hasil harus tepat, jangan asal cepat.",
+            "Ragu? Periksa dulu.",
+            "Kerja rapi, nilai menghampiri.",
+            "Tekun itu kunci.",
+            "Belajar dari salah, tiap langkah makin tangguh."
+        ];
+
+        // Pilih satu secara acak
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        
+        // Masukkan ke elemen
+        document.getElementById('encouragement-text').innerText = randomQuote;
+    </script>
+  </body>
+</html>
