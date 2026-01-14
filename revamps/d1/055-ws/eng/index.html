@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Numbers within 20 (D1-S055)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .disc-fill,
+        .pv-table th,
+        .pv-table td,
+        .digit-card {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .border-orange-200 { border-color: #fed7aa !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* JARAK ANTAR SOAL LEBIH RAPAT (sebelumnya 1.5rem) */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 80px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 4px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 1.5rem; /* Indent choices */
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.25cm 0; /* MARGIN SEPARATOR LEBIH RAPAT (sebelumnya 0.5cm) */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem;
+        background-color: #f3f4f6;
+        padding: 0.25rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* Visual Math Singapore Specifics */
+      .svg-block {
+          display: inline-block;
+          vertical-align: middle;
+      }
+      .ten-frame-grid circle {
+          fill: #000;
+      }
+      /* CSS untuk Base 10 blocks */
+      .base-10-unit {
+          fill: #e5e7eb; /* Warna abu-abu muda */
+          stroke: #333;   /* Garis tepi gelap */
+          stroke-width: 1;
+      }
+      
+      .comparison-box {
+        font-size: 1.5rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        justify-content: center;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-2) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Numbers within 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Comparing Numbers using Place Value
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S055</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-2 mt-0">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    COMPARING NUMBERS (WITHIN 20)
+                </h1>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text py-1.5 text-sm">
+                Instruction: Answer the following questions carefully. Use the pictures to help you count.
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. <span class="text-blue-700"></span> Look at the blocks below.
+                    </div>
+                    
+                    <div class="flex justify-center my-2">
+                        <!-- SVG: 14 (1 Puluhan + 4 Satuan) -->
+                        <svg width="120" height="130" viewBox="0 0 120 130" class="svg-block">
+                            <!-- Ten Block (Stack of 10) -->
+                            <g transform="translate(20, 5)">
+                                <rect x="0" y="0" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="12" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="24" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="36" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="48" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="60" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="72" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="84" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="96" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="108" width="12" height="12" class="base-10-unit" />
+                            </g>
+                            
+                            <!-- Ones Blocks (4 units) -->
+                            <g transform="translate(45, 5)">
+                                <rect x="0" y="0" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="15" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="30" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="45" width="12" height="12" class="base-10-unit" />
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="font-medium mb-1 ml-4 text-sm">
+                        What is the total number of blocks?
+                    </div>
+
+                    <div class="choice-container flex-col gap-1 ml-8">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 13</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 14</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 15</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 41</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. <span class="text-blue-700"></span> The number <b>16</b> consists of ___ tens and ___ ones.
+                    </div>
+                    
+                    <div class="flex justify-center my-2">
+                         <!-- SVG: 16 (1 Puluhan + 6 Satuan) -->
+                         <svg width="150" height="130" viewBox="0 0 150 130" class="svg-block">
+                            <!-- Ten Block (Stack of 10) -->
+                            <g transform="translate(30, 5)">
+                                <rect x="0" y="0" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="12" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="24" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="36" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="48" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="60" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="72" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="84" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="96" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="108" width="12" height="12" class="base-10-unit" />
+                            </g>
+                            
+                            <!-- Ones Blocks (6 units) -->
+                            <g transform="translate(55, 5)">
+                                <rect x="0" y="0" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="15" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="30" width="12" height="12" class="base-10-unit" />
+                                <rect x="0" y="45" width="12" height="12" class="base-10-unit" />
+                                <!-- Next column -->
+                                <rect x="15" y="0" width="12" height="12" class="base-10-unit" />
+                                <rect x="15" y="15" width="12" height="12" class="base-10-unit" />
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="choice-container flex-col gap-1 ml-8">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 1 ten and 6 ones</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 6 tens and 1 one</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 10 tens and 6 ones</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 1 ten and 5 ones</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 3-6) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Numbers within 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Comparing Numbers using Place Value
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S055</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mb-2">
+                 
+                <!-- SOAL 3 (Pindah dari Halaman 1) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        3. <span class="text-blue-700"></span> Compare the two groups below.
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 justify-items-center my-2">
+                        <div class="text-center">
+                            <div class="font-bold mb-1">Group A (12)</div>
+                             <!-- SVG: 12 -->
+                             <svg width="120" height="90" viewBox="0 0 120 90" class="svg-block">
+                                <!-- Frame 1 -->
+                                <rect x="0" y="0" width="100" height="40" fill="none" stroke="#333" stroke-width="2"/>
+                                <line x1="0" y1="20" x2="100" y2="20" stroke="#333" stroke-width="1"/>
+                                <line x1="20" y1="0" x2="20" y2="40" stroke="#333" stroke-width="1"/>
+                                <line x1="40" y1="0" x2="40" y2="40" stroke="#333" stroke-width="1"/>
+                                <line x1="60" y1="0" x2="60" y2="40" stroke="#333" stroke-width="1"/>
+                                <line x1="80" y1="0" x2="80" y2="40" stroke="#333" stroke-width="1"/>
+                                <!-- Dots 10 -->
+                                <circle cx="10" cy="10" r="6" fill="black"/> <circle cx="30" cy="10" r="6" fill="black"/>
+                                <circle cx="50" cy="10" r="6" fill="black"/> <circle cx="70" cy="10" r="6" fill="black"/>
+                                <circle cx="90" cy="10" r="6" fill="black"/> <circle cx="10" cy="30" r="6" fill="black"/>
+                                <circle cx="30" cy="30" r="6" fill="black"/> <circle cx="50" cy="30" r="6" fill="black"/>
+                                <circle cx="70" cy="30" r="6" fill="black"/> <circle cx="90" cy="30" r="6" fill="black"/>
+                                
+                                <!-- Frame 2 (Partial) -->
+                                <g transform="translate(0, 45)">
+                                    <rect x="0" y="0" width="100" height="40" fill="none" stroke="#333" stroke-width="2"/>
+                                    <line x1="0" y1="20" x2="100" y2="20" stroke="#333" stroke-width="1"/>
+                                    <line x1="20" y1="0" x2="20" y2="40" stroke="#333" stroke-width="1"/>
+                                    <line x1="40" y1="0" x2="40" y2="40" stroke="#333" stroke-width="1"/>
+                                    <line x1="60" y1="0" x2="60" y2="40" stroke="#333" stroke-width="1"/>
+                                    <line x1="80" y1="0" x2="80" y2="40" stroke="#333" stroke-width="1"/>
+                                    <circle cx="10" cy="10" r="6" fill="black"/> <circle cx="30" cy="10" r="6" fill="black"/>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <div class="font-bold mb-1">Group B (9)</div>
+                             <!-- SVG: 9 -->
+                             <svg width="120" height="90" viewBox="0 0 120 90" class="svg-block">
+                                <rect x="0" y="0" width="100" height="40" fill="none" stroke="#333" stroke-width="2"/>
+                                <line x1="0" y1="20" x2="100" y2="20" stroke="#333" stroke-width="1"/>
+                                <line x1="20" y1="0" x2="20" y2="40" stroke="#333" stroke-width="1"/>
+                                <line x1="40" y1="0" x2="40" y2="40" stroke="#333" stroke-width="1"/>
+                                <line x1="60" y1="0" x2="60" y2="40" stroke="#333" stroke-width="1"/>
+                                <line x1="80" y1="0" x2="80" y2="40" stroke="#333" stroke-width="1"/>
+                                <!-- Dots 9 -->
+                                <circle cx="10" cy="10" r="6" fill="black"/> <circle cx="30" cy="10" r="6" fill="black"/>
+                                <circle cx="50" cy="10" r="6" fill="black"/> <circle cx="70" cy="10" r="6" fill="black"/>
+                                <circle cx="90" cy="10" r="6" fill="black"/> <circle cx="10" cy="30" r="6" fill="black"/>
+                                <circle cx="30" cy="30" r="6" fill="black"/> <circle cx="50" cy="30" r="6" fill="black"/>
+                                <circle cx="70" cy="30" r="6" fill="black"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="font-medium mb-1 ml-4 text-sm">
+                        Which statement is correct?
+                    </div>
+
+                    <div class="choice-container flex-col gap-1 ml-8">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. Group A is smaller than Group B</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. Group A is equal to Group B</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. Group A is greater than Group B</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. Group B is greater than Group A</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                      <div class="font-bold mb-1">
+                        4. <span class="text-blue-700"></span> Fill in the box with the correct symbol.
+                    </div>
+                    
+                    <div class="comparison-box my-4">
+                        <span>15</span> 
+                        <span class="w-12 h-12 border-2 border-black rounded flex items-center justify-center bg-gray-50">?</span> 
+                        <span>13</span>
+                    </div>
+
+                    <div class="choice-container justify-center">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. < (less than)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. > (greater than)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. = (equal to)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. + (plus)</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                      <div class="font-bold mb-1">
+                        5. <span class="text-blue-700"></span> I am a number.
+                    </div>
+                    
+                    <div class="bg-gray-50 border border-gray-200 p-2 mx-4 my-2 rounded-lg text-sm text-center">
+                        "I have <b>1 ten</b> and <b>8 ones</b>."
+                    </div>
+                    
+                    <div class="ml-4 mb-2 text-sm font-medium">What number am I?</div>
+
+                    <div class="flex items-center gap-2 ml-4">
+                        <span class="font-bold">Answer: </span>
+                        <span class="input-box" style="width: 100px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+                
+                 <!-- SOAL 6 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-1">
+                      6. <span class="text-blue-700"></span> Arrange the following numbers from <b>smallest</b> to <b>greatest</b>.
+                    </div>
+                    
+                    <div class="flex justify-center gap-4 my-3 font-black text-lg">
+                         <div class="digit-card">19</div>
+                         <div class="digit-card">11</div>
+                         <div class="digit-card">15</div>
+                         <div class="digit-card">12</div>
+                    </div>
+                    
+                    <div class="flex items-center justify-center gap-2">
+                        <span class="input-box"></span> , 
+                        <span class="input-box"></span> , 
+                        <span class="input-box"></span> , 
+                        <span class="input-box"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 7-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Numbers within 20</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Using Place Value to Compare Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D1-S055</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 7 (Pindah dari Halaman 2) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. <span class="text-blue-700"></span> Which group is greater?
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 text-center my-2">
+                        <div class="border rounded p-2">
+                            <div class="font-bold mb-2">1 ten 2 ones</div>
+                            <!-- 12 -->
+                            <svg width="60" height="130" viewBox="0 0 60 130" class="svg-block">
+                                <!-- Ten (10 units) -->
+                                <g transform="translate(10, 5)">
+                                    <rect x="0" y="0" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="12" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="24" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="36" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="48" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="60" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="72" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="84" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="96" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="108" width="12" height="12" class="base-10-unit" />
+                                </g>
+                                <!-- Ones (2 units) -->
+                                <g transform="translate(30, 5)">
+                                    <rect x="0" y="0" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="15" width="12" height="12" class="base-10-unit" />
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="border rounded p-2">
+                            <div class="font-bold mb-2">1 ten 5 ones</div>
+                            <!-- 15 -->
+                            <svg width="60" height="130" viewBox="0 0 60 130" class="svg-block">
+                                <!-- Ten (10 units) -->
+                                <g transform="translate(10, 5)">
+                                    <rect x="0" y="0" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="12" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="24" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="36" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="48" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="60" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="72" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="84" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="96" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="108" width="12" height="12" class="base-10-unit" />
+                                </g>
+                                <!-- Ones (5 units) -->
+                                <g transform="translate(30, 5)">
+                                    <rect x="0" y="0" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="15" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="30" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="45" width="12" height="12" class="base-10-unit" />
+                                    <rect x="0" y="60" width="12" height="12" class="base-10-unit" />
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 ml-4">
+                        <span class="font-bold">Answer: </span>
+                        <span class="input-box" style="width: 200px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. <span class="text-blue-700"></span> Complete the number sentence based on the picture below.
+                    </div>
+                    
+                    <div class="flex justify-center my-2">
+                         <!-- SVG: 14 (Full 10 + 4) -->
+                         <svg width="250" height="60" viewBox="0 0 250 60" class="svg-block">
+                             <!-- Frame 1 -->
+                            <rect x="0" y="0" width="100" height="40" fill="none" stroke="#333" stroke-width="2"/>
+                            <line x1="0" y1="20" x2="100" y2="20" stroke="#333" stroke-width="1"/>
+                            <line x1="20" y1="0" x2="20" y2="40" stroke="#333" stroke-width="1"/>
+                            <line x1="40" y1="0" x2="40" y2="40" stroke="#333" stroke-width="1"/>
+                            <line x1="60" y1="0" x2="60" y2="40" stroke="#333" stroke-width="1"/>
+                            <line x1="80" y1="0" x2="80" y2="40" stroke="#333" stroke-width="1"/>
+                            <!-- Dots 10 -->
+                            <circle cx="10" cy="10" r="6" fill="black"/> <circle cx="30" cy="10" r="6" fill="black"/>
+                            <circle cx="50" cy="10" r="6" fill="black"/> <circle cx="70" cy="10" r="6" fill="black"/>
+                            <circle cx="90" cy="10" r="6" fill="black"/> <circle cx="10" cy="30" r="6" fill="black"/>
+                            <circle cx="30" cy="30" r="6" fill="black"/> <circle cx="50" cy="30" r="6" fill="black"/>
+                            <circle cx="70" cy="30" r="6" fill="black"/> <circle cx="90" cy="30" r="6" fill="black"/>
+                            
+                            <!-- Frame 2 -->
+                            <g transform="translate(120, 0)">
+                                <rect x="0" y="0" width="100" height="40" fill="none" stroke="#333" stroke-width="2"/>
+                                <line x1="0" y1="20" x2="100" y2="20" stroke="#333" stroke-width="1"/>
+                                <line x1="20" y1="0" x2="20" y2="40" stroke="#333" stroke-width="1"/>
+                                <line x1="40" y1="0" x2="40" y2="40" stroke="#333" stroke-width="1"/>
+                                <line x1="60" y1="0" x2="60" y2="40" stroke="#333" stroke-width="1"/>
+                                <line x1="80" y1="0" x2="80" y2="40" stroke="#333" stroke-width="1"/>
+                                <circle cx="10" cy="10" r="6" fill="black"/> <circle cx="30" cy="10" r="6" fill="black"/>
+                                <circle cx="50" cy="10" r="6" fill="black"/> <circle cx="70" cy="10" r="6" fill="black"/>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="flex items-center justify-center gap-2 text-xl font-bold">
+                        10 + <span class="input-box"></span> = 14
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. <span class="text-blue-700"></span>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 rounded p-4 mb-4 mx-4 text-sm leading-relaxed">
+                        Budi has <b>11</b> marbles. <br>
+                        Siti has <b>13</b> marbles.
+                    </div>
+
+                    <div class="ml-4 mb-2 text-sm font-medium">
+                        Who has fewer marbles?
+                    </div>
+
+                    <div class="flex items-center gap-2 ml-4">
+                        <span class="font-bold">Answer: </span>
+                        <span class="input-box" style="width: 200px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. <span class="text-blue-700"></span>
+                    </div>
+
+                    <div class="ml-4 text-sm mb-4">
+                        Circle the number that does <b>not</b> have the digit 1 in the tens place.
+                    </div>
+
+                     <div class="flex flex-wrap justify-center gap-6 mt-2">
+                          <div class="w-16 h-16 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center text-xl font-bold cursor-pointer hover:bg-yellow-100 hover:border-yellow-400">12</div>
+                          <div class="w-16 h-16 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center text-xl font-bold cursor-pointer hover:bg-yellow-100 hover:border-yellow-400">18</div>
+                          <div class="w-16 h-16 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center text-xl font-bold cursor-pointer hover:bg-yellow-100 hover:border-yellow-400">9</div>
+                          <div class="w-16 h-16 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center text-xl font-bold cursor-pointer hover:bg-yellow-100 hover:border-yellow-400">15</div>
+                     </div>
+                </div>
+
+            </div>
+            
+            <div class="text-center italic text-xs text-gray-500 mt-6">
+                "Mathematics is a way of thinking, not just counting."
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
