@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Pengurangan Dalam 1000 (D3-S189)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3; /* Sedikit dirapatkan */
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.5cm 2cm; /* Padding atas/bawah dikurangi */
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 4px; /* Margin header dikurangi */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.5cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .disk-circle,
+        .tcolorbox,
+        .vertical-math-table td {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-blue-100 { background-color: #dbeafe !important; }
+        .bg-green-100 { background-color: #dcfce7 !important; }
+        .bg-yellow-100 { background-color: #fef9c3 !important; }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Gap antar soal dikurangi dari 1.5rem */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 40px;
+        height: 28px; /* Tinggi input sedikit dikurangi */
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 4px; /* Margin dikurangi */
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 1.5rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.3cm 0; /* Margin separator dikurangi */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem; /* Margin bawah dikurangi */
+        background-color: #f3f4f6;
+        padding: 0.2rem 1rem; /* Padding atas bawah dikurangi */
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* --- VISUAL MATH SPECIFICS --- */
+      .svg-block {
+          display: inline-block;
+          vertical-align: middle;
+      }
+      
+      /* Place Value Disks */
+      .disk-circle {
+          stroke: #666;
+          stroke-width: 1;
+      }
+      .disk-text {
+          font-family: 'Noto Sans', sans-serif;
+          font-size: 10px;
+          font-weight: bold;
+          text-anchor: middle;
+          dominant-baseline: central;
+          fill: #333;
+      }
+      .cross-mark {
+          stroke: red;
+          stroke-width: 2;
+      }
+      
+      /* Concept Box */
+      .tcolorbox {
+          border: 1px solid #60a5fa; /* blue-400 */
+          background-color: #eff6ff; /* blue-50 */
+          border-radius: 8px;
+          overflow: hidden;
+          margin-bottom: 0.8rem; /* Margin dikurangi */
+      }
+      .tcolorbox-header {
+          background-color: #93c5fd; /* blue-300 */
+          color: #1e3a8a; /* blue-900 */
+          font-weight: bold;
+          padding: 6px 12px;
+          font-size: 0.9rem;
+      }
+      .tcolorbox-content {
+          padding: 8px 12px; /* Padding dikurangi */
+      }
+
+      /* Vertical Math Table */
+      .vertical-math-table {
+          width: auto;
+          margin: 0 auto;
+          font-family: 'Noto Sans', monospace;
+          font-size: 1.4rem;
+          font-weight: bold;
+          border-collapse: collapse;
+      }
+      .vertical-math-table td {
+          padding: 2px 10px; /* Padding dikurangi */
+          text-align: right;
+          width: 45px;
+      }
+      .vertical-line {
+          border-bottom: 2px solid black;
+      }
+      .operator {
+          text-align: left !important;
+          width: 20px !important;
+      }
+      
+      /* Bar Models */
+      .bar-rect {
+          fill: none;
+          stroke: #333;
+          stroke-width: 2;
+      }
+      .brace-path {
+          fill: none;
+          stroke: #333;
+          stroke-width: 1.5;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pengurangan Dalam 1000</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Pengurangan Dengan Meminjam Pada Ratusan, Puluhan, dan Satuan
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S189</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-4 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: KONSEP MEMINJAM (REGROUPING)
+                </h1>
+                <!-- Student Info Removed -->
+            </div>
+
+            <!-- SECTION A -->
+            <div class="instruction-text py-1 text-sm">
+                A. Konsep Visual (Nilai Tempat)
+            </div>
+
+            <div class="soal-grid">
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. Perhatikan pengurangan <b>425 - 158</b>. <br>
+                        <span class="font-normal text-sm text-gray-600">Kita tidak bisa mengurangi 8 Satuan dari 5 Satuan. Gambar di bawah menunjukkan cara menukar 1 Puluhan menjadi 10 Satuan.</span>
+                    </div>
+                    
+                    <div class="flex justify-center my-2 border border-gray-300 rounded p-2 max-w-xl mx-auto bg-white">
+                        <div class="flex gap-8 items-center">
+                            <!-- Hundreds -->
+                            <div class="text-center">
+                                <div class="text-xs text-gray-500 mb-1 font-bold">Ratusan (4)</div>
+                                <svg width="50" height="50">
+                                    <circle cx="13" cy="13" r="10" class="disk-circle" fill="#dbeafe" /><text x="13" y="13" class="disk-text">100</text>
+                                    <circle cx="37" cy="13" r="10" class="disk-circle" fill="#dbeafe" /><text x="37" y="13" class="disk-text">100</text>
+                                    <circle cx="13" cy="37" r="10" class="disk-circle" fill="#dbeafe" /><text x="13" y="37" class="disk-text">100</text>
+                                    <circle cx="37" cy="37" r="10" class="disk-circle" fill="#dbeafe" /><text x="37" y="37" class="disk-text">100</text>
+                                </svg>
+                            </div>
+                            
+                            <!-- Tens (2 -> 1) -->
+                            <div class="text-center relative">
+                                <div class="text-xs text-gray-500 mb-1 font-bold">Puluhan (2)</div>
+                                <svg width="50" height="26">
+                                    <circle cx="13" cy="13" r="10" class="disk-circle" fill="#dcfce7" /><text x="13" y="13" class="disk-text">10</text>
+                                    <circle cx="37" cy="13" r="10" class="disk-circle" fill="#dcfce7" /><text x="37" y="13" class="disk-text">10</text>
+                                    <!-- Arrow -->
+                                    <path d="M 40 25 Q 70 50 100 25" stroke="#333" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)" />
+                                </svg>
+                            </div>
+
+                            <!-- Ones (5 -> 15) -->
+                            <div class="text-center">
+                                <div class="text-xs text-gray-500 mb-1 font-bold">Satuan (5 + 10)</div>
+                                <svg width="100" height="50">
+                                    <circle cx="13" cy="13" r="10" class="disk-circle" fill="#fef9c3" /><text x="13" y="13" class="disk-text">1</text>
+                                    <circle cx="37" cy="13" r="10" class="disk-circle" fill="#fef9c3" /><text x="37" y="13" class="disk-text">1</text>
+                                    <circle cx="61" cy="13" r="10" class="disk-circle" fill="#fef9c3" /><text x="61" y="13" class="disk-text">1</text>
+                                    <circle cx="85" cy="13" r="10" class="disk-circle" fill="#fef9c3" /><text x="85" y="13" class="disk-text">1</text>
+                                    <circle cx="13" cy="37" r="10" class="disk-circle" fill="#fef9c3" /><text x="13" y="37" class="disk-text">1</text>
+                                    
+                                    <!-- Regrouped ones (faded) -->
+                                    <g opacity="0.6">
+                                        <circle cx="37" cy="37" r="8" class="disk-circle" fill="#fef9c3" stroke-dasharray="2,2"/>
+                                        <circle cx="61" cy="37" r="8" class="disk-circle" fill="#fef9c3" stroke-dasharray="2,2"/>
+                                        <text x="75" y="37" font-size="8" font-weight="bold">+10</text>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="font-bold mb-1">Berapakah hasil akhirnya?</div>
+                    <div class="choice-container flex-row gap-4 ml-4">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> A. 267</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> B. 367</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> C. 277</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> D. 333</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. Untuk menghitung <b>600 - 245</b>, kita harus meminjam secara berurutan.
+                    </div>
+                    <div class="ml-4 text-sm text-gray-700 italic mb-2">
+                        - Pinjam 1 Ratusan, ubah jadi 10 Puluhan.<br>
+                        - Pinjam 1 Puluhan, ubah jadi 10 Satuan.
+                    </div>
+
+                    <div class="flex flex-col items-center my-2">
+                        <table class="vertical-math-table">
+                            <tr>
+                                <td></td>
+                                <td><span class="input-box w-10 bg-yellow-100">?</span></td>
+                                <td><span class="input-box w-10">9</span></td>
+                                <td><span class="input-box w-10">10</span></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td class="line-through text-gray-400 decoration-red-500">6</td>
+                                <td class="line-through text-gray-400 decoration-red-500">0</td>
+                                <td class="line-through text-gray-400 decoration-red-500">0</td>
+                            </tr>
+                            <tr class="vertical-line">
+                                <td class="operator">-</td>
+                                <td>2</td>
+                                <td>4</td>
+                                <td>5</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="font-bold mb-1">Angka yang tepat untuk mengisi kotak tanda tanya <span class="input-box w-6 h-6 bg-yellow-100 align-middle">?</span> adalah...</div>
+                    <div class="choice-container flex-row gap-4 ml-4">
+                        <label class="flex items-center cursor-pointer w-20"><span class="choice-box"></span> A. 6</label>
+                        <label class="flex items-center cursor-pointer w-20"><span class="choice-box"></span> B. 5</label>
+                        <label class="flex items-center cursor-pointer w-20"><span class="choice-box"></span> C. 4</label>
+                        <label class="flex items-center cursor-pointer w-20"><span class="choice-box"></span> D. 10</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pengurangan Dalam 1000</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Pengurangan Dengan Meminjam Pada Ratusan, Puluhan, dan Satuan
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S189</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text py-1 text-sm mt-0">
+                B. Berhitung (Susun ke Bawah)
+            </div>
+            <div class="text-sm italic text-gray-600 mb-2 ml-2">Hitunglah selisihnya. Tunjukkan langkah peminjaman (coret angka) dengan rapi.</div>
+
+            <div class="soal-grid mb-4">
+                <!-- Row 1 -->
+                <div class="grid grid-cols-2 gap-12 px-8">
+                    <!-- SOAL 3 -->
+                    <div class="soal-item text-center">
+                        <div class="font-bold mb-1 text-left">3.</div>
+                        <table class="vertical-math-table">
+                            <tr class="h-6">
+                                <td></td>
+                                <td><span class="text-gray-300 bg-gray-100 rounded px-1">.</span></td>
+                                <td><span class="text-gray-300 bg-gray-100 rounded px-1">.</span></td>
+                                <td><span class="text-gray-300 bg-gray-100 rounded px-1">.</span></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>5</td>
+                                <td>3</td>
+                                <td>2</td>
+                            </tr>
+                            <tr class="vertical-line">
+                                <td class="operator">-</td>
+                                <td>2</td>
+                                <td>7</td>
+                                <td>6</td>
+                            </tr>
+                            <tr class="h-10">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                        <div class="mt-1 text-sm font-bold text-left ml-4">Jawab: ..........</div>
+                    </div>
+
+                    <!-- SOAL 4 -->
+                    <div class="soal-item text-center">
+                        <div class="font-bold mb-1 text-left">4.</div>
+                        <table class="vertical-math-table">
+                             <tr class="h-6">
+                                <td></td>
+                                <td><span class="text-gray-300 bg-gray-100 rounded px-1">.</span></td>
+                                <td><span class="text-gray-300 bg-gray-100 rounded px-1">.</span></td>
+                                <td><span class="text-gray-300 bg-gray-100 rounded px-1">.</span></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>8</td>
+                                <td>1</td>
+                                <td>4</td>
+                            </tr>
+                            <tr class="vertical-line">
+                                <td class="operator">-</td>
+                                <td>3</td>
+                                <td>5</td>
+                                <td>7</td>
+                            </tr>
+                            <tr class="h-10">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                        <div class="mt-1 text-sm font-bold text-left ml-4">Jawab: ..........</div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Row 2 -->
+                <div class="grid grid-cols-2 gap-12 px-8">
+                    <!-- SOAL 5 -->
+                    <div class="soal-item text-center">
+                        <div class="font-bold mb-1 text-left">5.</div>
+                        <table class="vertical-math-table">
+                             <tr class="h-6">
+                                <td></td>
+                                <td><span class="text-gray-300 bg-gray-100 rounded px-1">.</span></td>
+                                <td><span class="text-gray-300 bg-gray-100 rounded px-1">.</span></td>
+                                <td><span class="text-gray-300 bg-gray-100 rounded px-1">.</span></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>9</td>
+                                <td>0</td>
+                                <td>5</td>
+                            </tr>
+                            <tr class="vertical-line">
+                                <td class="operator">-</td>
+                                <td>4</td>
+                                <td>2</td>
+                                <td>8</td>
+                            </tr>
+                            <tr class="h-10">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                        <div class="mt-1 text-sm font-bold text-left ml-4">Jawab: ..........</div>
+                    </div>
+
+                    <!-- SOAL 6 -->
+                    <div class="soal-item text-center">
+                        <div class="font-bold mb-1 text-left">6.</div>
+                        <table class="vertical-math-table">
+                             <tr class="h-6">
+                                <td></td>
+                                <td><span class="text-gray-300 bg-gray-100 rounded px-1">.</span></td>
+                                <td><span class="text-gray-300 bg-gray-100 rounded px-1">.</span></td>
+                                <td><span class="text-gray-300 bg-gray-100 rounded px-1">.</span></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>7</td>
+                                <td>2</td>
+                                <td>1</td>
+                            </tr>
+                            <tr class="vertical-line">
+                                <td class="operator">-</td>
+                                <td>3</td>
+                                <td>9</td>
+                                <td>4</td>
+                            </tr>
+                            <tr class="h-10">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                        <div class="mt-1 text-sm font-bold text-left ml-4">Jawab: ..........</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="instruction-text py-1 text-sm mt-4">
+                C. Pemecahan Masalah (Model Batang)
+            </div>
+
+            <!-- SOAL 7 -->
+            <div class="soal-item mb-4">
+                <div class="font-bold mb-1">7.</div>
+                <div class="bg-blue-50 border border-blue-200 rounded p-2 mb-2 mx-4 text-sm leading-relaxed">
+                    Sebuah toko buku memiliki stok <b>850</b> buku tulis. Hari ini terjual sebanyak <b>365</b> buku. <br>
+                    Berapa sisa buku tulis di toko tersebut?
+                </div>
+                
+                <div class="flex justify-center my-2">
+                    <svg width="320" height="100">
+                        <!-- Main Bar -->
+                        <rect x="10" y="30" width="300" height="40" class="bar-rect" fill="white" />
+                        <!-- Divider -->
+                        <line x1="120" y1="30" x2="120" y2="70" stroke="black" stroke-width="2" />
+                        
+                        <!-- Brace Top -->
+                        <path d="M 10 25 Q 160 5 310 25" fill="none" stroke="black" stroke-width="1" />
+                        <text x="160" y="15" text-anchor="middle" font-size="12" font-weight="bold">Total: 850</text>
+                        
+                        <!-- Labels -->
+                        <text x="65" y="55" text-anchor="middle" font-size="11">Terjual: 365</text>
+                        <text x="215" y="55" text-anchor="middle" font-size="11" font-weight="bold">Sisa: ?</text>
+                    </svg>
+                </div>
+                
+                <div class="flex items-center gap-2 ml-4 text-sm font-bold">
+                    Jawab: <span class="input-box w-24"></span> buku.
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pengurangan Dalam 1000</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Pengurangan Dengan Meminjam Pada Ratusan, Puluhan, dan Satuan
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S189</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             <div class="instruction-text py-1 text-sm mt-0">
+                C. Pemecahan Masalah (Lanjutan)
+            </div>
+            
+            <div class="soal-grid mt-4">
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">8.</div>
+                    <div class="bg-blue-50 border border-blue-200 rounded p-2 mb-2 mx-4 text-sm leading-relaxed">
+                        Paman Budi memanen <b>512</b> kg apel. Paman Joko memanen <b>189</b> kg lebih sedikit dari Paman Budi. <br>
+                        Berapa kg apel yang dipanen Paman Joko?
+                    </div>
+
+                    <div class="flex justify-center my-2">
+                         <svg width="350" height="120">
+                            <!-- Budi's Bar -->
+                            <rect x="80" y="10" width="200" height="30" class="bar-rect" fill="#dbeafe" />
+                            <text x="70" y="30" text-anchor="end" font-size="12" font-weight="bold">Budi</text>
+                            <text x="180" y="30" text-anchor="middle" font-size="11">512 kg</text>
+                            
+                            <!-- Joko's Bar -->
+                            <rect x="80" y="60" width="130" height="30" class="bar-rect" fill="#fef9c3" />
+                            <text x="70" y="80" text-anchor="end" font-size="12" font-weight="bold">Joko</text>
+                            <text x="145" y="80" text-anchor="middle" font-size="11" font-weight="bold">?</text>
+                            
+                            <!-- Difference lines -->
+                            <line x1="210" y1="60" x2="210" y2="100" stroke="#888" stroke-dasharray="4" />
+                            <line x1="280" y1="40" x2="280" y2="100" stroke="#888" stroke-dasharray="4" />
+                            
+                            <!-- Difference Arrow -->
+                            <line x1="210" y1="90" x2="280" y2="90" stroke="black" stroke-width="1" marker-start="url(#arrowhead)" marker-end="url(#arrowhead)" />
+                            <text x="245" y="110" text-anchor="middle" font-size="10">Selisih: 189 kg</text>
+                            
+                            <defs>
+                                <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                                    <path d="M 0 0 L 6 3 L 0 6 z" />
+                                </marker>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="flex items-center gap-2 ml-4 text-sm font-bold">
+                        Jawab: <span class="input-box w-24"></span> kg.
+                    </div>
+                </div>
+            </div>
+
+            <div class="instruction-text py-1 text-sm mt-4">
+                D. Tantangan (Berpikir Kritis)
+            </div>
+
+            <div class="soal-grid mt-4">
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">9. Temukan angka yang hilang pada kotak di bawah ini!</div>
+                    <div class="flex justify-center my-2">
+                        <table class="vertical-math-table">
+                            <tr>
+                                <td></td>
+                                <td>6</td>
+                                <td><span class="input-box w-10 bg-yellow-100">?</span></td>
+                                <td>3</td>
+                            </tr>
+                            <tr class="vertical-line">
+                                <td class="operator">-</td>
+                                <td>2</td>
+                                <td>5</td>
+                                <td>7</td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>3</td>
+                                <td>8</td>
+                                <td>6</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="flex items-center gap-2 ml-4 text-sm font-bold justify-center">
+                        Angka yang hilang adalah: <span class="input-box w-16"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">10. Teka-teki Bilangan</div>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded p-2 mb-2 mx-4 text-sm leading-relaxed italic text-center">
+                        "Aku adalah sebuah bilangan. Jika kamu menambahkan <b>125</b> kepadaku, hasilnya adalah <b>400</b>.<br>
+                        Bilangan berapakah aku?"
+                    </div>
+                    <div class="text-center text-xs text-gray-500 mb-2">(Petunjuk: Gunakan pengurangan untuk mencari jawabannya!)</div>
+                    <div class="flex items-center gap-2 ml-4 text-sm font-bold justify-center">
+                        Jawab: <span class="input-box w-24"></span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="text-center italic text-xs text-gray-500 mt-8">
+                "Semangat Belajar! Matematika itu Menyenangkan."
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
