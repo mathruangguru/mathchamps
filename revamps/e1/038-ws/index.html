@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Hasil Bagi dan Sisa</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <style>
+      /* --- CSS UTAMA DARI TEMPLATE --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        /* Singapore Math Colors */
+        --thou-color: #0072B2; /* Blue */
+        --hund-color: #009E73; /* Green */
+        --tens-color: #D55E00; /* Red/Orange */
+        --ones-color: #F0E442; /* Yellow */
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1.5cm 2cm;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .math-champs-header, .visual-item {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        text-align: left;
+        border-left: 4px solid var(--thou-color);
+      }
+
+      /* --- Custom Visuals untuk Soal Ini --- */
+      .input-line {
+        border-bottom: 1.5px solid black;
+        display: inline-block;
+        text-align: center;
+        padding: 0 4px;
+        min-height: 1.2em;
+      }
+      
+      .ball {
+        width: 32px;
+        height: 32px;
+        background-color: #60a5fa; /* Blue-400 */
+        border-radius: 50%;
+        border: 2px solid #2563eb; /* Blue-600 */
+        display: inline-block;
+        margin: 6px;
+        box-shadow: inset -3px -3px 6px rgba(0,0,0,0.2), 2px 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .star {
+        font-size: 36px;
+        color: #facc15; /* Yellow-400 */
+        line-height: 1;
+        display: inline-block;
+        margin: 4px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        -webkit-text-stroke: 1px #ca8a04;
+      }
+
+      .mc-option {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 0;
+        /* cursor: pointer; removed to act as static text */
+      }
+      
+      /* HILANGKAN RADIO BUTTON */
+      .mc-option input[type="radio"] {
+        display: none;
+      }
+
+      .mc-label {
+        font-weight: 600;
+        min-width: 18px;
+      }
+
+      /* CSS Tambahan untuk Kerapian Soal */
+      .question-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+          margin-bottom: 2rem;
+      }
+
+      .q-number {
+          font-weight: 700;
+          font-size: 1.125rem; /* text-lg */
+          line-height: 1.5; /* matches text-base line-height */
+          min-width: 1.5rem;
+          text-align: left;
+          flex-shrink: 0;
+      }
+
+      .q-content {
+          width: 100%;
+          font-size: 0.95rem; /* text-sm/base hybrid */
+          line-height: 1.6;
+          color: #1f2937;
+      }
+
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        
+        <!-- HALAMAN 1 -->
+        <section class="page">
+            <!-- HEADER -->
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <!-- LOGO -->
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 1</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">
+                            Perkalian & Pembagian
+                        </div>
+                        <div class="text-[11px] text-black font-medium">
+                            Hasil Bagi dan Sisa
+                        </div>
+                        <div class="text-[11px] text-black font-medium">
+                            Kode : E1-S038
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                
+                <div class="text-center mb-10 mt-2">
+                    <h1 class="text-xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                        HASIL BAGI DAN SISA
+                    </h1>
+                </div>
+
+                <!-- Bagian A -->
+                <div class="instruction-text">
+                    Bagian A: Mengelompokkan Benda (Visual)
+                </div>
+                <div class="text-xs text-gray-500 italic mb-8 ml-1">
+                    Instruksi: Perhatikan gambar, kelompokkan dengan pensilmu, dan isi titik-titik yang kosong.
+                </div>
+
+                <!-- SOAL 1 -->
+                <div class="question-row">
+                    <div class="q-number">1.</div>
+                    <div class="q-content">
+                        <div class="mb-3 font-medium">Ada 7 bola. Lingkari bola-bola tersebut menjadi kelompok yang berisi 2 bola.</div>
+                        
+                        <!-- Visual -->
+                        <div class="flex justify-start flex-wrap gap-2 mb-4 pl-4">
+                            <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+                            <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+                            <div class="ball"></div>
+                        </div>
+
+                        <div class="grid gap-3 font-medium pl-2">
+                            <div>Ada <span class="input-line w-12"></span> kelompok berisi 2 bola.</div>
+                            <div>Ada <span class="input-line w-12"></span> bola yang tersisa.</div>
+                            
+                            <div class="mt-2 font-bold text-gray-700">
+                                <div class="mb-1">Kalimat Matematika:</div>
+                                <div class="text-lg">
+                                    7 &div; 2 = <span class="input-line w-12"></span> sisa <span class="input-line w-12"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="h-px bg-gray-200 w-full mb-8"></div>
+
+                <!-- SOAL 2 -->
+                <div class="question-row">
+                    <div class="q-number">2.</div>
+                    <div class="q-content">
+                        <div class="mb-3 font-medium">Ada 11 bintang. Kelompokkan menjadi kelompok yang berisi 3 bintang.</div>
+                        
+                        <!-- Visual -->
+                        <div class="flex justify-start flex-wrap gap-2 mb-4 pl-4">
+                            <div class="star">★</div><div class="star">★</div><div class="star">★</div>
+                            <div class="star">★</div><div class="star">★</div><div class="star">★</div>
+                            <div class="star">★</div><div class="star">★</div><div class="star">★</div>
+                            <div class="star">★</div><div class="star">★</div>
+                        </div>
+
+                        <div class="grid gap-3 font-medium pl-2">
+                            <div>Ada <span class="input-line w-12"></span> kelompok berisi 3 bintang.</div>
+                            <div>Ada <span class="input-line w-12"></span> bintang yang tersisa.</div>
+                            
+                            <div class="mt-2 font-bold text-gray-700">
+                                <div class="mb-1">Kalimat Matematika:</div>
+                                <div class="text-lg">
+                                    11 &div; 3 = <span class="input-line w-12"></span> sisa <span class="input-line w-12"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bagian B Intro -->
+                <div class="instruction-text mt-10">
+                    Bagian B: Pilihan Ganda
+                </div>
+                <div class="text-xs text-gray-500 italic mb-6 ml-1">
+                    Instruksi: Pilihlah jawaban yang paling tepat.
+                </div>
+
+                <!-- Soal 3 -->
+                <div class="question-row">
+                    <div class="q-number">3.</div>
+                    <div class="q-content">
+                        <div class="mb-3 font-medium">
+                            Bu Alya membagikan 14 permen kepada 4 orang anak secara adil. Setiap anak mendapat jumlah yang sama. Berapa sisa permen yang tidak terbagikan?
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                            <div class="mc-option">
+                                <span class="mc-label">a.</span>
+                                <span>1 permen</span>
+                            </div>
+                            <div class="mc-option">
+                                <span class="mc-label">b.</span>
+                                <span>2 permen</span>
+                            </div>
+                            <div class="mc-option">
+                                <span class="mc-label">c.</span>
+                                <span>3 permen</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 2 -->
+        <section class="page">
+            <!-- HEADER -->
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 1</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Perkalian & Pembagian</div>
+                        <div class="text-[11px] text-black font-medium">Hasil Bagi dan Sisa</div>
+                        <div class="text-[11px] text-black font-medium">Kode : E1-S038</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                
+                <!-- Lanjutan Bagian B -->
+                <div class="flex flex-col mb-8">
+                    <!-- Soal 4 -->
+                    <div class="question-row">
+                        <div class="q-number">4.</div>
+                        <div class="q-content">
+                            <div class="mb-3 font-medium">
+                                Perhatikan pembagian berikut: 17 &div; 5. Berapakah hasil bagi dan sisanya?
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                <div class="mc-option">
+                                    <span class="mc-label">a.</span>
+                                    <span>3 sisa 1</span>
+                                </div>
+                                <div class="mc-option">
+                                    <span class="mc-label">b.</span>
+                                    <span>3 sisa 2</span>
+                                </div>
+                                <div class="mc-option">
+                                    <span class="mc-label">c.</span>
+                                    <span>4 sisa 0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 5 -->
+                    <div class="question-row">
+                        <div class="q-number">5.</div>
+                        <div class="q-content">
+                            <div class="mb-3 font-medium">
+                                Jika kita memasukkan 20 buku ke dalam tas, dan setiap tas hanya muat 6 buku, berapa banyak buku yang tidak masuk ke dalam tas (sisa)?
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                <div class="mc-option">
+                                    <span class="mc-label">a.</span>
+                                    <span>2 buku</span>
+                                </div>
+                                <div class="mc-option">
+                                    <span class="mc-label">b.</span>
+                                    <span>3 buku</span>
+                                </div>
+                                <div class="mc-option">
+                                    <span class="mc-label">c.</span>
+                                    <span>4 buku</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bagian C -->
+                <div class="instruction-text">
+                    Bagian C: Isian Singkat
+                </div>
+                <div class="text-xs text-gray-500 italic mb-8 ml-1">
+                    Instruksi: Hitunglah dan tuliskan hasil bagi serta sisanya.
+                </div>
+
+                <div class="flex flex-col">
+                    <!-- Soal 6 -->
+                    <div class="question-row border-b border-gray-100 pb-6 mb-6">
+                        <div class="q-number">6.</div>
+                        <div class="q-content">
+                            <div class="mb-3 font-medium">Bayangkan ada 25 kotak kecil. Kita susun menjadi baris yang masing-masing berisi 4 kotak.</div>
+                            <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 inline-block font-bold text-lg">
+                                25 &div; 4 = <span class="input-line w-12 bg-white"></span> sisa <span class="input-line w-12 bg-white"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 7 -->
+                    <div class="question-row border-b border-gray-100 pb-6 mb-6">
+                        <div class="q-number">7.</div>
+                        <div class="q-content">
+                            <div class="mb-3 font-medium">Berapakah sisa dari 32 &div; 5?</div>
+                            <div class="font-bold">
+                                Jawab: <span class="input-line w-24"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 8 -->
+                    <div class="question-row border-b border-gray-100 pb-6 mb-6">
+                        <div class="q-number">8.</div>
+                        <div class="q-content">
+                            <div class="mb-3 font-medium">Isilah kotak kosong di bawah ini.</div>
+                            <div class="text-lg font-bold p-2 inline-block">
+                                19 &div; 6 = 3 &nbsp; sisa &nbsp; <span class="border-2 border-black bg-white px-2 py-0.5 mx-1 inline-block min-w-[40px] text-center">&nbsp;...&nbsp;</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 9 -->
+                    <div class="question-row border-b border-gray-100 pb-6 mb-6">
+                        <div class="q-number">9.</div>
+                        <div class="q-content">
+                            <div class="mb-3 font-medium">Elvan memiliki 9 kelereng. Ia ingin memasukkannya ke dalam 2 kantong dengan jumlah sama rata.</div>
+                            <div class="grid gap-3 text-sm mt-2">
+                                <div class="flex items-center gap-2">
+                                    Apakah ada kelereng yang bersisa? (Ya / Tidak): <span class="input-line w-24"></span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    Jika Ya, berapa sisanya? <span class="input-line w-16"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 10 -->
+                    <div class="question-row">
+                        <div class="q-number">10.</div>
+                        <div class="q-content">
+                            <div class="mb-3 font-medium">Sebuah bilangan dibagi dengan 4, hasilnya adalah 2 dan sisanya adalah 1. Bilangan berapakah itu?</div>
+                            <div class="font-bold mt-2">
+                                Jawab: <span class="input-line w-32"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 mb-4 text-center text-gray-500 italic font-medium">
+                    "Belajar dari salah, tiap langkah makin tangguh."
+                </div>
+
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+    </div>
+</body>
+</html>
