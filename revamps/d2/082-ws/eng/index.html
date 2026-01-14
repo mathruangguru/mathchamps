@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Numbers to 100</title>
+      
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+     
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans --> 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659; /* Background luar abu-abu gelap */
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        height: 29.7cm; /* Fixed A4 Height */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; 
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px;
+        flex-shrink: 0; 
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; 
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-shrink: 0; 
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0; 
+        }
+        body {
+          background-color: white;
+          padding: 0;
+          margin: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 21cm;
+          height: 29.6cm; 
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          page-break-inside: avoid;
+          padding: 0.5cm 1.5cm; 
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+         
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+         
+        /* Memastikan warna background & border tercetak */
+        .b10-rod, .b10-unit, .choice-box, .section-title {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+         
+        .soal-grid { gap: 0.5cm 1cm !important; }
+      }
+
+      /* --- LOGIC SOAL / VISUAL ELEMENTS --- */
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8cm 1.5cm;
+        align-items: start;
+      }
+
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        margin-bottom: 5px;
+      }
+
+      .section-title {
+        font-weight: 800;
+        font-size: 1.1rem;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 4px;
+        margin-bottom: 12px;
+        margin-top: 10px;
+        color: #1f2937;
+      }
+
+      .instruction-text {
+        font-size: 0.9rem;
+        color: #4b5563;
+        margin-bottom: 12px;
+        font-style: italic;
+      }
+
+      /* --- BASE-10 BLOCKS CSS (Adapted) --- */
+      .b10-container {
+        display: inline-flex; 
+        align-items: flex-end; 
+        gap: 6px; 
+        padding: 5px;
+        background: white; 
+        transform-origin: bottom left;
+      }
+      .b10-tens-group { display: flex; gap: 3px; }
+      .b10-rod {
+        width: 14px; 
+        height: 100px; 
+        background-color: #dcfce7; /* green-100 */
+        border: 1px solid #14532d; /* green-900 */
+        display: flex; 
+        flex-direction: column;
+      }
+      .b10-rod div { flex: 1; border-bottom: 1px solid #86efac; }
+      .b10-rod div:last-child { border-bottom: none; }
+       
+      .b10-ones-group {
+        display: grid; 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 2px; 
+        align-content: end;
+      }
+      .b10-unit { 
+        width: 14px; 
+        height: 14px; 
+        background-color: #fee2e2; /* red-100 */
+        border: 1px solid #7f1d1d; /* red-900 */
+      }
+
+      /* --- INPUTS & CHOICE BOXES --- */
+      .ans-box {
+        border: 2px solid #333; 
+        width: 60px; 
+        height: 35px;
+        text-align: center; 
+        font-weight: bold; 
+        color: #2563eb;
+        font-size: 1.1em; 
+        border-radius: 4px;
+        background: white;
+      }
+
+      .input-line {
+        border: none;
+        border-bottom: 2px solid #333;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        outline: none;
+        background: transparent;
+        font-family: inherit;
+      }
+
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 0.9rem;
+      }
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        padding: 4px 8px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+      }
+      .choice-item:hover {
+        background-color: #f3f4f6;
+      }
+      .choice-box {
+        width: 20px;
+        height: 20px;
+        border: 1.5px solid #333;
+        border-radius: 3px;
+        background: white;
+      }
+
+      .bilingual-sub {
+        display: block;
+        font-size: 0.85em;
+        font-style: italic;
+        font-weight: normal;
+        color: #666;
+        margin-top: 2px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+       
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                 
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Counting objects in pictures
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Code : D2-S082
+                    </div>
+                </div>
+            </div>
+            <!-- Garis pemisah header -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+ 
+        <div class="content-wrapper">
+
+            <!-- BAGIAN A -->
+            <div class="section-title">Part A: Count and write the answers.</div>
+            <div class="instruction-text">
+                Look at the pictures of stacked boxes below. Count the number of tens and ones, then write the correct <b>number</b>.
+            </div>
+
+            <div class="soal-grid mb-4">
+                <!-- Q1 -->
+                <div class="soal-item bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div class="font-bold mb-2">1.</div>
+                    <div class="flex justify-center mb-2">
+                        <div class="b10-container">
+                            <div class="b10-tens-group">
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                            </div>
+                            <div class="b10-ones-group">
+                                <div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-left w-full mt-2">
+                        <p class="mb-2 text-sm leading-tight">
+                            There are <b>2</b> tens and <b>3</b> ones.
+                        </p>
+                        <div class="text-base font-bold flex items-center gap-2">
+                            The number is: <input type="text" class="ans-box">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="soal-item bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div class="font-bold mb-2">2.</div>
+                    <div class="flex justify-center mb-2">
+                        <div class="b10-container">
+                            <div class="b10-tens-group">
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                            </div>
+                            <div class="b10-ones-group">
+                                <div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-left w-full mt-2">
+                        <p class="mb-2 text-sm leading-tight">
+                            <input type="text" class="input-line w-8"> tens, <input type="text" class="input-line w-8"> ones.
+                        </p>
+                        <div class="text-base font-bold flex items-center gap-2">
+                            The number is: <input type="text" class="ans-box">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="soal-item bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div class="font-bold mb-2">3.</div>
+                    <div class="flex justify-center mb-2">
+                        <div class="b10-container scale-90">
+                            <div class="b10-tens-group">
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                            </div>
+                            <!-- No ones -->
+                        </div>
+                    </div>
+                    <div class="text-left w-full mt-auto">
+                        <p class="mb-2 text-sm">Count the number of boxes.</p>
+                        <div class="text-base font-bold flex items-center gap-2">
+                            The number is: <input type="text" class="ans-box">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="soal-item bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div class="font-bold mb-2">4.</div>
+                    <div class="flex justify-center mb-2">
+                        <div class="b10-container">
+                            <div class="b10-tens-group">
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                            </div>
+                            <div class="b10-ones-group" style="grid-template-columns: repeat(3, 1fr);">
+                                <div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div>
+                                <div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div>
+                                <div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-left w-full mt-auto">
+                        <p class="mb-2 text-sm">Count the number of boxes.</p>
+                        <div class="text-base font-bold flex items-center gap-2">
+                            The number is: <input type="text" class="ans-box">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Numbers to 100</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Counting objects in pictures
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">Code : D2-S082</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- BAGIAN B -->
+            <div class="section-title">Part B: Choose the correct answer.</div>
+
+            <div class="soal-grid">
+                <!-- Q5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">5. What is the total number below?</div>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-2 flex justify-center">
+                        <div class="b10-container scale-90">
+                            <div class="b10-tens-group">
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                            </div>
+                            <div class="b10-ones-group">
+                                <div class="b10-unit"></div><div class="b10-unit"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="choice-container flex-row gap-6 mt-2 justify-center">
+                        <label class="choice-item"><div class="choice-box"></div> <span class="font-bold">25</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span class="font-bold">52</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span class="font-bold">7</span></label>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">6. Which picture shows <b>34</b>?</div>
+                     
+                    <div class="flex flex-col gap-3">
+                        <!-- Option A -->
+                        <div class="flex items-center gap-3 bg-gray-50 p-2 rounded border border-gray-200">
+                            <div class="font-bold text-xs">(a)</div>
+                            <div class="flex-grow flex items-end">
+                                <div class="b10-container scale-75 origin-bottom-left p-0">
+                                    <div class="b10-tens-group">
+                                        <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                        <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                        <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                        <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                    </div>
+                                    <div class="b10-ones-group"><div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div></div>
+                                </div>
+                            </div>
+                            <div class="choice-box"></div>
+                        </div>
+
+                        <!-- Option B -->
+                        <div class="flex items-center gap-3 bg-gray-50 p-2 rounded border border-gray-200">
+                            <div class="font-bold text-xs">(b)</div>
+                            <div class="flex-grow flex items-end">
+                                <div class="b10-container scale-75 origin-bottom-left p-0">
+                                    <div class="b10-tens-group">
+                                        <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                        <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                        <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                    </div>
+                                    <div class="b10-ones-group"><div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div></div>
+                                </div>
+                            </div>
+                            <div class="choice-box"></div>
+                        </div>
+
+                        <!-- Option C -->
+                        <div class="flex items-center gap-3 bg-gray-50 p-2 rounded border border-gray-200">
+                            <div class="font-bold text-xs">(c)</div>
+                            <div class="flex-grow flex items-end">
+                                <div class="b10-container scale-75 origin-bottom-left p-0">
+                                    <div class="b10-tens-group">
+                                        <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                        <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                        <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="choice-box"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full h-px bg-gray-300 my-4"></div>
+
+            <div class="soal-grid">
+                <!-- Q7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">
+                        7. <b>7</b> tens and <b>0</b> ones is equal to:
+                    </div>
+                    <div class="choice-container bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <label class="choice-item"><div class="choice-box"></div> <span class="font-bold text-lg">7</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span class="font-bold text-lg">17</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span class="font-bold text-lg">70</span></label>
+                    </div>
+                </div>
+
+                <!-- Q8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">8. What number matches the picture below?</div>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-2 flex justify-center">
+                        <div class="b10-container scale-90">
+                            <div class="b10-tens-group">
+                                <div class="b10-rod"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                            </div>
+                            <div class="b10-ones-group" style="grid-template-columns: repeat(4, 1fr);">
+                                <div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div>
+                                <div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div><div class="b10-unit"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="choice-container flex-row gap-6 mt-2 justify-center">
+                        <label class="choice-item"><div class="choice-box"></div> <span class="font-bold text-lg">18</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span class="font-bold text-lg">81</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span class="font-bold text-lg">9</span></label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Numbers to 100</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Counting objects in pictures
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">Code : D2-S082</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- BAGIAN C -->
+            <div class="section-title">Part C: Place Value</div>
+
+            <div class="soal-grid mb-4">
+                <!-- Q9 -->
+                <div class="soal-item bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div class="font-bold mb-4">9. Look at the number <span class="text-2xl align-middle text-blue-700">65</span>.</div>
+                    <div class="space-y-4 text-sm">
+                        <p>
+                            The value of the digit <b>6</b> is <input type="text" class="input-line w-16">
+                        </p>
+                        <p>
+                            The value of the digit <b>5</b> is <input type="text" class="input-line w-16">
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Q10 -->
+                <div class="soal-item bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div class="font-bold mb-4">10. I have <span class="text-blue-700">9</span> tens and <span class="text-red-700">4</span> ones.</div>
+                    <div class="space-y-3">
+                        <p class="text-sm">
+                            Number of tens: <input type="text" class="input-line w-12 text-blue-700">
+                        </p>
+                        <p class="text-sm">
+                            Number of ones : <input type="text" class="input-line w-12 text-red-700">
+                        </p>
+                        <div class="mt-4 font-bold text-base flex items-center gap-2 border-t pt-3 border-gray-300">
+                            The number is: <input type="text" class="ans-box">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kalimat Penyemangat -->
+            <div id="encouragement-message" class="mt-12 text-center text-gray-500 italic font-medium">
+                <!-- Pesan random akan muncul di sini -->
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+
+    <!-- Script untuk Kalimat Penyemangat Random -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const messages = [
+                "Awesome! You are truly a Math Champ!",
+                "Way to go! Two thumbs up for you!",
+                "Great! You have practiced with seriousness and focus.",
+                "Good job! You dared to face challenging questions.",
+                "Extraordinary! Today you are getting stronger in math.",
+                "Are you sure everything is correct? Try checking it one more time. 😊",
+                "Make it a habit to double-check—champions are thorough!",
+                "If in doubt, count again slowly to be sure.",
+                "If there is a mistake, it's not a problem. Fix it and move on!",
+                "Falling is normal—what matters is getting back up.",
+                "Every practice takes you to the next level!",
+                "Consistent practice = getting better.",
+                "Rate yourself: what was your focus today from 1–5?",
+                "Reflection: which part do you want to master better?",
+                "Results never betray hard work.",
+                "Proud of you—you didn't give up and finished it.",
+                "Awesome! Close with a smile—you've done extraordinary work. 😊",
+                "Being thorough makes a champion.",
+                "Double check, win big.",
+                "Practice today, great tomorrow.",
+                "Neat steps, neat results.",
+                "Count patiently, be sure it's correct.",
+                "Dare to try, able to do more.",
+                "Small consistency, big results.",
+                "Diligent practice, level up.",
+                "Count carefully, heart at peace.",
+                "Results must be right, not just fast.",
+                "Doubtful? Check first.",
+                "Work neatly, grades will come.",
+                "Diligence is key.",
+                "Learn from mistakes, every step gets tougher."
+            ];
+
+            const randomIndex = Math.floor(Math.random() * messages.length);
+            const messageElement = document.getElementById("encouragement-message");
+            if (messageElement) {
+                messageElement.textContent = messages[randomIndex];
+            }
+        });
+    </script>
+  </body>
+</html>
