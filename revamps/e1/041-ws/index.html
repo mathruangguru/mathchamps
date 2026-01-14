@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Pembagian Bilangan 2 Digit</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <style>
+      /* --- CSS UTAMA DARI TEMPLATE --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --thou-color: #0072B2;
+        --hund-color: #009E73;
+        --tens-color: #D55E00;
+        --ones-color: #F0E442;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width - Tetap 21cm agar sesuai standar print */
+        max-width: 100%; /* Agar responsif di layar kecil */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1.5cm 2cm;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .math-champs-header, .visual-item {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0; /* Mengurangi padding vertikal */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        text-align: left;
+        border-left: 4px solid var(--thou-color);
+      }
+
+      /* --- Custom Visuals untuk Soal Ini --- */
+      .input-line {
+        border-bottom: 1.5px solid black;
+        display: inline-block;
+        text-align: center;
+        padding: 0 4px;
+        min-height: 1.2em;
+      }
+      
+      /* Base-10 Blocks CSS - ENLARGED */
+      .ten-block {
+        width: 20px;
+        height: 80px;
+        border: 1px solid rgba(0,0,0,0.2);
+        margin: 3px;
+        position: relative;
+        background-image: repeating-linear-gradient(to bottom, transparent, transparent 7px, rgba(0,0,0,0.1) 7px, rgba(0,0,0,0.1) 8px);
+      }
+      
+      .one-block {
+        width: 20px;
+        height: 20px;
+        border: 1px solid rgba(0,0,0,0.2);
+        margin: 3px;
+      }
+
+      /* Colors for Blocks */
+      .bg-tens-blue { background-color: #bfdbfe; border-color: #3b82f6; } 
+      .bg-ones-yellow { background-color: #fef08a; border-color: #eab308; } 
+      
+      .bg-tens-red { background-color: #fecaca; border-color: #ef4444; } 
+      .bg-ones-orange { background-color: #fed7aa; border-color: #f97316; } 
+
+      .group-box {
+        border: 2px dashed #9ca3af;
+        border-radius: 12px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 110px;
+        min-height: 120px;
+        justify-content: flex-end;
+      }
+
+      .mc-option {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 0;
+      }
+      
+      .mc-option input[type="radio"] {
+        display: none;
+      }
+
+      .mc-label {
+        font-weight: 600;
+        min-width: 18px;
+      }
+
+      /* Layout Soal */
+      .question-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+          margin-bottom: 2rem;
+      }
+
+      .q-number {
+          font-weight: 700;
+          font-size: 1.125rem;
+          line-height: 1.5;
+          min-width: 1.5rem;
+          text-align: left;
+          flex-shrink: 0;
+      }
+
+      .q-content {
+          width: 100%;
+          font-size: 0.95rem;
+          line-height: 1.6;
+          color: #1f2937;
+      }
+
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        
+        <!-- HALAMAN 1 -->
+        <section class="page">
+            <!-- HEADER -->
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <!-- LOGO: Ukuran disesuaikan (h-10 md:h-12) agar lebih proporsional -->
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                    
+                    <div class="text-right">
+                        <!-- Font size header dikurangi sedikit -->
+                        <div class="text-sm font-extrabold text-black uppercase tracking-wide">Exploration 1</div>
+                        <div class="text-[10px] text-black font-semibold mt-0.5">
+                            Perkalian & Pembagian
+                        </div>
+                        <div class="text-[10px] text-black font-medium mt-0.5">
+                            Membagi bilangan 2 angka dengan bilangan 1 angka tanpa meminjam dan tanpa sisa
+                        </div>
+                        <div class="text-[10px] text-black font-medium mt-0.5">
+                            Kode : E1-S041
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-1"></div>
+            </header>
+
+            <div class="content-wrapper">
+                
+                <div class="text-center mb-8 mt-2">
+                    <h1 class="text-xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                        PEMBAGIAN BILANGAN 2 DIGIT
+                    </h1>
+                </div>
+
+                <!-- Bagian A -->
+                <div class="instruction-text">
+                    Bagian A: Konsep Visual (Balok Puluhan dan Satuan)
+                </div>
+                <div class="text-xs text-gray-500 italic mb-8 ml-1">
+                    Instruksi: Perhatikan balok Dienes (Base-10 Blocks) berikut dan isilah titik-titik yang kosong.
+                </div>
+
+                <!-- SOAL 1 -->
+                <div class="question-row">
+                    <div class="q-number">1.</div>
+                    <div class="q-content">
+                        <div class="mb-3 font-medium">Kita memiliki bilangan 24. Kita akan membaginya menjadi 2 kelompok sama besar.</div>
+                        
+                        <!-- Visual Area -->
+                        <div class="flex items-center justify-center gap-6 mb-6 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                            <!-- Initial Number: 24 -->
+                            <div class="flex flex-col items-center">
+                                <div class="text-sm font-bold text-gray-400 mb-3">Bilangan Awal</div>
+                                <div class="flex items-end gap-3">
+                                    <div class="flex">
+                                        <div class="ten-block bg-tens-blue"></div>
+                                        <div class="ten-block bg-tens-blue"></div>
+                                    </div>
+                                    <div class="flex flex-col gap-1 pb-0.5">
+                                        <div class="flex">
+                                            <div class="one-block bg-ones-yellow"></div>
+                                            <div class="one-block bg-ones-yellow"></div>
+                                        </div>
+                                        <div class="flex">
+                                            <div class="one-block bg-ones-yellow"></div>
+                                            <div class="one-block bg-ones-yellow"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Operator Arrow -->
+                            <div class="flex flex-col items-center justify-end h-full pb-8">
+                                <div class="text-sm font-bold text-gray-600 mb-1">&div; 2</div>
+                                <div class="text-4xl text-gray-400 leading-none" style="transform: scaleX(2);">&rarr;</div>
+                            </div>
+
+                            <!-- Result Groups -->
+                            <div class="flex gap-6">
+                                <!-- Group 1 -->
+                                <div class="group-box bg-white">
+                                    <div class="text-xs text-gray-400 font-bold mb-auto">Kelompok 1</div>
+                                    <div class="flex items-end gap-1">
+                                        <div class="ten-block bg-tens-blue"></div>
+                                        <div class="flex flex-col gap-1 pb-0.5">
+                                            <div class="one-block bg-ones-yellow"></div>
+                                            <div class="one-block bg-ones-yellow"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Group 2 -->
+                                <div class="group-box bg-white">
+                                    <div class="text-xs text-gray-400 font-bold mb-auto">Kelompok 2</div>
+                                    <div class="text-4xl font-bold text-gray-300">?</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Update: Format Hitungan -->
+                        <div class="grid gap-4 font-medium pl-2 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                            <div>
+                                <div class="text-gray-600 text-sm">Puluhan dibagi 2:</div>
+                                <div class="pl-4 font-bold text-lg">20 &div; 2 = 10</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-600 text-sm">Satuan dibagi 2:</div>
+                                <div class="pl-4 font-bold text-lg">4 &div; 2 = 2</div>
+                            </div>
+                            <div class="mt-2 pt-2 border-t border-blue-200 font-bold text-gray-800 text-lg">
+                                Jadi, 24 &div; 2 = <span class="input-line w-16 bg-white"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="h-px bg-gray-200 w-full mb-8"></div>
+
+                <!-- SOAL 2 -->
+                <div class="question-row">
+                    <div class="q-number">2.</div>
+                    <div class="q-content">
+                        <div class="mb-3 font-medium">Bilangan 36 terdiri dari 3 Puluhan dan 6 Satuan. Bagilah menjadi 3 kelompok.</div>
+                        
+                         <!-- Visual Area -->
+                         <div class="flex items-center justify-center gap-6 mb-6 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                            <!-- Initial Number: 36 -->
+                            <div class="flex flex-col items-center">
+                                <div class="text-sm font-bold text-gray-400 mb-3">Bilangan Awal</div>
+                                <div class="flex items-end gap-3">
+                                    <div class="flex">
+                                        <div class="ten-block bg-tens-red"></div>
+                                        <div class="ten-block bg-tens-red"></div>
+                                        <div class="ten-block bg-tens-red"></div>
+                                    </div>
+                                    <div class="flex flex-col gap-1 pb-0.5">
+                                        <div class="flex">
+                                            <div class="one-block bg-ones-orange"></div>
+                                            <div class="one-block bg-ones-orange"></div>
+                                        </div>
+                                        <div class="flex">
+                                            <div class="one-block bg-ones-orange"></div>
+                                            <div class="one-block bg-ones-orange"></div>
+                                        </div>
+                                        <div class="flex">
+                                            <div class="one-block bg-ones-orange"></div>
+                                            <div class="one-block bg-ones-orange"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Operator Arrow -->
+                            <div class="flex flex-col items-center justify-end h-full pb-8">
+                                <div class="text-sm font-bold text-gray-600 mb-1">&div; 3</div>
+                                <div class="text-4xl text-gray-400 leading-none" style="transform: scaleX(2);">&rarr;</div>
+                            </div>
+                            
+                            <!-- Result Placeholder -->
+                            <div class="group-box bg-white w-28">
+                                <div class="text-5xl font-bold text-gray-300">?</div>
+                            </div>
+                        </div>
+
+                        <div class="grid gap-3 font-medium pl-2">
+                            <div>
+                                Setiap kelompok akan mendapatkan <span class="input-line w-12"></span> puluhan dan <span class="input-line w-12"></span> satuan.
+                            </div>
+                            
+                            <div class="mt-1 font-bold text-gray-700">
+                                Jadi, 36 &div; 3 = <span class="input-line w-16"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bagian B Intro -->
+                <div class="instruction-text mt-8">
+                    Bagian B: Pilihan Ganda
+                </div>
+                <div class="text-xs text-gray-500 italic mb-6 ml-1">
+                    Instruksi: Pilihlah jawaban yang benar.
+                </div>
+
+                <div class="flex flex-col mb-4">
+                    <!-- Soal 3 -->
+                    <div class="question-row">
+                        <div class="q-number">3.</div>
+                        <div class="q-content">
+                            <div class="mb-3 font-medium">
+                                Hasil dari 48 &div; 4 adalah...
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                <div class="mc-option"><span class="mc-label">a.</span> <span>11</span></div>
+                                <div class="mc-option"><span class="mc-label">b.</span> <span>12</span></div>
+                                <div class="mc-option"><span class="mc-label">c.</span> <span>21</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 4 -->
+                    <div class="question-row">
+                        <div class="q-number">4.</div>
+                        <div class="q-content">
+                            <div class="mb-3 font-medium">
+                                <strong>Alesha</strong> memiliki 84 manik-manik. Ia ingin membuat gelang untuk 2 sahabatnya dengan jumlah manik-manik yang sama. Berapa manik-manik untuk satu gelang?
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                <div class="mc-option"><span class="mc-label">a.</span> <span>42</span></div>
+                                <div class="mc-option"><span class="mc-label">b.</span> <span>41</span></div>
+                                <div class="mc-option"><span class="mc-label">c.</span> <span>24</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 5 -->
+                    <div class="question-row">
+                        <div class="q-number">5.</div>
+                        <div class="q-content">
+                            <div class="mb-3 font-medium">
+                                <strong>Kenzie</strong> sedang merapikan koleksi kartu Pokémon-nya. Ia punya 66 kartu dan ingin memasukkannya ke dalam 6 album kecil. Berapa isi setiap album?
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                <div class="mc-option"><span class="mc-label">a.</span> <span>10</span></div>
+                                <div class="mc-option"><span class="mc-label">b.</span> <span>11</span></div>
+                                <div class="mc-option"><span class="mc-label">c.</span> <span>16</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 2 -->
+        <section class="page">
+            <!-- HEADER -->
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-sm font-extrabold text-black uppercase tracking-wide">Exploration 1</div>
+                        <div class="text-[10px] text-black font-semibold mt-0.5">Perkalian & Pembagian</div>
+                        <div class="text-[10px] text-black font-medium mt-0.5">
+                            Membagi bilangan 2 angka dengan bilangan 1 angka tanpa meminjam dan tanpa sisa
+                        </div>
+                        <div class="text-[10px] text-black font-medium mt-0.5">Kode : E1-S041</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-1"></div>
+            </header>
+
+            <div class="content-wrapper">
+                
+                <!-- Bagian C -->
+                <div class="instruction-text">
+                    Bagian C: Isian Singkat
+                </div>
+                <div class="text-xs text-gray-500 italic mb-8 ml-1">
+                    Instruksi: Hitunglah dengan cara memisahkan puluhan dan satuan.
+                </div>
+
+                <div class="flex flex-col">
+                    <!-- Soal 6 -->
+                    <div class="question-row border-b border-gray-100 pb-6 mb-6">
+                        <div class="q-number">6.</div>
+                        <div class="q-content">
+                            <div class="text-lg font-bold">
+                                22 &div; 2 = <span class="input-line w-20"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 7 -->
+                    <div class="question-row border-b border-gray-100 pb-6 mb-6">
+                        <div class="q-number">7.</div>
+                        <div class="q-content">
+                            <div class="text-lg font-bold">
+                                55 &div; 5 = <span class="input-line w-20"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 8 -->
+                    <div class="question-row border-b border-gray-100 pb-6 mb-6">
+                        <div class="q-number">8.</div>
+                        <div class="q-content">
+                            <div class="text-lg font-bold mb-2">
+                                93 &div; 3 = <span class="input-line w-20"></span>
+                            </div>
+                            <div class="text-sm text-gray-500 font-medium">
+                                (Pikirkan: 90 &div; 3 ditambah 3 &div; 3)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 9 -->
+                    <div class="question-row border-b border-gray-100 pb-6 mb-6">
+                        <div class="q-number">9.</div>
+                        <div class="q-content">
+                            <div class="mb-2 font-medium"><strong>Xavier</strong> membawa 48 potong kue lapis untuk acara kelas. Jika di kelas ada 4 meja kelompok dan kue dibagi rata ke setiap meja, berapa kue yang ada di satu meja?</div>
+                            <div class="font-bold mt-2">
+                                Jawab: <span class="input-line w-20"></span> kue.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 10 -->
+                    <div class="question-row">
+                        <div class="q-number">10.</div>
+                        <div class="q-content">
+                            <div class="mb-2 font-medium"><strong>Zara</strong> dan kakaknya memetik 26 buah stroberi di kebun. Mereka membaginya berdua sama rata.</div>
+                            <div class="font-bold mt-2">
+                                Setiap orang mendapat: <span class="input-line w-20"></span> stroberi.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 mb-4 text-center text-gray-500 italic font-medium">
+                    "Matematika itu seru! Kamu semakin pintar setiap hari."
+                </div>
+
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+    </div>
+</body>
+</html>
