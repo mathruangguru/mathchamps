@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Pembagian dengan Pengelompokan (D3-S206)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .visual-box,
+        .tcolorbox,
+        table td,
+        .svg-icon {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-blue-100 { background-color: #dbeafe !important; }
+        .bg-green-100 { background-color: #dcfce7 !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+       }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 60px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+        margin-left: 1rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 4px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.6rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* --- VISUAL MATH SPECIFICS --- */
+      .visual-box {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1rem;
+        background-color: #fff;
+        border: 1px dashed #ccc;
+        border-radius: 8px;
+        margin: 0.5rem 0;
+      }
+
+      .star-icon { font-size: 1.8rem; color: #fbbf24; line-height: 1; text-shadow: 1px 1px 0 #d97706;}
+      .dot-icon { width: 20px; height: 20px; background-color: #3b82f6; border-radius: 50%; display: inline-block; margin: 4px;}
+      
+      .group-box {
+        border: 2px solid #333;
+        padding: 4px 8px;
+        border-radius: 6px;
+        display: flex;
+        gap: 4px;
+        background-color: #eff6ff;
+      }
+
+      table.math-table {
+        width: 100%;
+        max-width: 400px;
+        margin: 10px auto;
+        border-collapse: collapse;
+        font-family: 'Noto Sans', sans-serif;
+      }
+      table.math-table th, table.math-table td {
+        border: 1px solid #333;
+        padding: 8px;
+        text-align: center;
+      }
+      table.math-table th {
+        background-color: #f3f4f6;
+        font-weight: bold;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <!-- Menyesuaikan margin halaman pertama agar lebih rapat sesuai permintaan -->
+      <section class="page" style="padding: 0.5cm 1.5cm;">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Perkalian 2, 5, dan 10</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Pembagian 2 Dengan Cara Mengelompokkan
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S206</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-6 mt-2">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    PEMBAGIAN DENGAN PENGELOMPOKAN
+                </h1>
+                <div class="flex justify-between items-end mt-4 px-4 text-sm font-semibold border-b border-gray-300 pb-2">
+                    
+                </div>
+            </div>
+
+            <!-- SECTION A -->
+            <div class="instruction-text">
+                Bagian A: Konsep Visual (CPA - Concrete Pictorial Abstract)
+            </div>
+            
+            <div class="soal-grid">
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        1. Lihatlah gambar bintang di bawah ini. Ada 8 bintang.
+                    </div>
+                    <div class="visual-box flex-wrap">
+                        <span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                    </div>
+                    <div class="font-medium ml-2 mb-2">
+                        Jika kita melingkari setiap <b>2 bintang</b> menjadi satu kelompok, berapa banyak kelompok yang terbentuk?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 3 kelompok</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 4 kelompok</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 5 kelompok</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 2 kelompok</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        2. Perhatikan susunan titik di bawah ini. Ada 12 titik total.
+                    </div>
+                    <div class="visual-box">
+                        <div class="grid grid-cols-6 gap-x-6 gap-y-2">
+                            <!-- Row 1 -->
+                            <div class="dot-icon"></div><div class="dot-icon"></div><div class="dot-icon"></div><div class="dot-icon"></div><div class="dot-icon"></div><div class="dot-icon"></div>
+                            <!-- Row 2 -->
+                            <div class="dot-icon"></div><div class="dot-icon"></div><div class="dot-icon"></div><div class="dot-icon"></div><div class="dot-icon"></div><div class="dot-icon"></div>
+                        </div>
+                    </div>
+                    <div class="font-medium ml-2">
+                        Jika kita mengelompokkan setiap <b>2 titik</b> (atas dan bawah) menjadi satu pasangan, berapa banyak pasangan yang terbentuk?
+                    </div>
+                    <div class="mt-3 ml-4 font-bold text-lg">
+                        12 ÷ 2 = <span class="input-box w-20"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        3. Lengkapi kalimat matematika berikut ini berdasarkan fakta perkaliannya.
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded p-4 mt-2 mx-2 text-center text-lg font-bold text-gray-700">
+                        Jika &nbsp; 5 × 2 = 10, &nbsp; maka &nbsp; 10 ÷ 2 = . . .
+                    </div>
+                    <div class="choice-container justify-center">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 2</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 5</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 10</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 20</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+                
+                 <!-- SOAL 4 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        4. Ada 14 kaos kaki di keranjang. Setiap anak membutuhkan 2 kaos kaki (sepasang). Berapa banyak anak yang bisa memakai kaos kaki tersebut?
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-4 font-bold">
+                        <span>14 ÷ 2 = </span>
+                        <span class="input-box w-16"></span>
+                        <span> anak.</span>
+                    </div>
+                </div>
+
+                <!-- Soal 5 dipindahkan ke halaman 2 -->
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti hal 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Perkalian 2, 5, dan 10</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Pembagian 2 Dengan Cara Mengelompokkan
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S206</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mt-4">
+                <!-- SOAL 5 (Pindahan dari Hal 1) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. Angka berapakah yang tepat untuk mengisi kotak kosong di bawah ini?
+                    </div>
+                    <div class="flex flex-col items-center justify-center gap-2 my-3 font-mono text-lg font-bold">
+                        <div>7 × 2 = 14</div>
+                        <div>14 ÷ 2 = <span class="input-box w-12 border-2 border-black">?</span></div>
+                    </div>
+                    <div class="choice-container justify-center">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 7</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 2</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 14</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 1</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <div class="instruction-text mt-2">
+                    Bagian B: Aplikasi & Pemecahan Masalah
+                </div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. Budi memiliki 18 permen. Ia ingin memasukkan permen tersebut ke dalam kantong plastik. Setiap kantong plastik hanya muat 2 permen. Berapa banyak kantong plastik yang dibutuhkan Budi?
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-4 font-bold">
+                        <span>Jawaban: </span>
+                        <span class="input-box w-20"></span>
+                        <span> kantong.</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. Pikirkan perkalian 2. <br>
+                        <span class="font-mono text-lg ml-4">. . . × 2 = 16</span> <br>
+                        Jadi, 16 ÷ 2 adalah?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> A. 6</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> B. 7</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> C. 8</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> D. 9</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Manakah pernyataan yang benar untuk gambar di bawah ini?
+                    </div>
+                    <div class="flex justify-center gap-4 my-2">
+                        <div class="group-box">
+                            <div class="w-4 h-4 rounded-full bg-red-400 border border-black"></div>
+                            <div class="w-4 h-4 rounded-full bg-red-400 border border-black"></div>
+                        </div>
+                        <div class="group-box">
+                            <div class="w-4 h-4 rounded-full bg-red-400 border border-black"></div>
+                            <div class="w-4 h-4 rounded-full bg-red-400 border border-black"></div>
+                        </div>
+                        <div class="group-box">
+                            <div class="w-4 h-4 rounded-full bg-red-400 border border-black"></div>
+                            <div class="w-4 h-4 rounded-full bg-red-400 border border-black"></div>
+                        </div>
+                    </div>
+                    <div class="choice-container flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. Ada 3 kelompok berisi 2 (Total 6)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. Ada 2 kelompok berisi 3 (Total 6)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. Ada 6 kelompok berisi 2 (Total 12)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. Ada 3 kelompok berisi 3 (Total 9)</label>
+                    </div>
+                </div>
+
+                <!-- Soal 9 dipindahkan ke halaman 3 -->
+
+            </div>
+            
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (BARU) ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti hal 1 & 2) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Perkalian 2, 5, dan 10</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Pembagian 2 Dengan Cara Mengelompokkan
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S206</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mt-4">
+                Bagian C: Analisis & Tantangan
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- SOAL 9 (Pindahan dari Hal 2) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. Lihatlah pola pada tabel perkalian 2 berikut:
+                    </div>
+                    <table class="math-table">
+                        <thead>
+                            <tr>
+                                <th>Perkalian</th>
+                                <th>Pembagian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1 × 2 = 2</td>
+                                <td>2 ÷ 2 = 1</td>
+                            </tr>
+                            <tr>
+                                <td>2 × 2 = 4</td>
+                                <td>4 ÷ 2 = 2</td>
+                            </tr>
+                            <tr>
+                                <td>3 × 2 = 6</td>
+                                <td>6 ÷ 2 = 3</td>
+                            </tr>
+                            <tr>
+                                <td>4 × 2 = 8</td>
+                                <td class="bg-yellow-100 font-bold text-red-600">?</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="font-medium mt-2">
+                        Apa isi dari kotak yang bertanda tanya (<b>?</b>)?
+                    </div>
+                    <div class="mt-2 ml-4">
+                        Jawaban: <span class="input-box w-32"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 (Challenge) -->
+                <div class="soal-item">
+                    <div class="font-bold text-red-700 mb-1">
+                        10. (Tantangan Berpikir)
+                    </div>
+                    <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-lg text-sm italic text-gray-700 mb-3">
+                        "Aku adalah sebuah angka. Jika kamu mengalikan aku dengan 2, hasilnya adalah 20. Jika kamu membagi 20 dengan 2, kamu akan menemukanku."
+                    </div>
+                    <div class="font-bold">Siapakah aku?</div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> A. 5</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> B. 10</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> C. 2</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> D. 12</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center italic text-xs text-gray-400 mt-8">
+                "Hebat! Kamu sudah belajar pembagian dengan pengelompokan!"
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
