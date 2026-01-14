@@ -1,0 +1,867 @@
+
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Pola Bilangan (D2-S096)</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA (Mengikuti Style Discovery 3) --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --orange-block: #fdba74; /* orange-300 */
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659; /* Background luar abu-abu gelap */
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        height: 29.7cm; /* Fixed A4 Height */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+        flex-shrink: 0;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8cm 2cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+      }
+
+      .input-line {
+        border: 1px solid #333;
+        width: 60px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        vertical-align: middle;
+        font-family: inherit;
+        font-size: 1rem;
+        background: transparent;
+      }
+      .input-line.border-none {
+          border: none;
+      }
+
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+      
+      .choice-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+      }
+      
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #333;
+        border-radius: 4px;
+        display: inline-block;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.6cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+      }
+
+      .section-title {
+          font-weight: 800;
+          text-transform: uppercase;
+          font-size: 1.1rem;
+          color: #4b5563;
+          border-bottom: 2px solid #e5e7eb;
+          padding-bottom: 4px;
+          margin-bottom: 12px;
+          margin-top: 10px;
+      }
+
+      /* --- VISUALS SPECIFIC TO PATTERNS --- */
+      
+      /* Orange Blocks */
+      .block-pattern-container {
+        display: flex;
+        gap: 0.8rem;
+        align-items: flex-end;
+        justify-content: center;
+        margin: 1rem 0;
+        flex-wrap: wrap;
+      }
+      .block-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .block-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1px;
+      }
+      .block-unit {
+        width: 16px;
+        height: 16px;
+        background-color: var(--orange-block);
+        border: 1px solid #f97316; /* orange-500 */
+      }
+
+      /* Number Line SVG */
+      .number-line-svg {
+        width: 100%;
+        height: 80px;
+        overflow: visible;
+      }
+      .tick-label {
+        font-size: 10px;
+        text-anchor: middle;
+        font-family: 'Noto Sans', sans-serif;
+      }
+
+      /* Dots (Subtraction) */
+      .dot-group {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 3px;
+        width: fit-content;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        background-color: black;
+        border-radius: 50%;
+      }
+      .dot.crossed {
+        position: relative;
+        background-color: transparent;
+        border: 1px dashed #ccc;
+      }
+      .dot.crossed::after {
+        content: "X";
+        color: red;
+        font-size: 14px;
+        position: absolute;
+        top: -4px;
+        left: 0px;
+        font-weight: bold;
+      }
+
+      /* Number Discs */
+      .disc {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        background-color: #f3f4f6;
+        font-size: 0.8rem;
+        box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+      }
+
+      /* 100 Chart Fragment */
+      .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border: 2px solid #9ca3af;
+        width: 120px;
+        margin: 0 auto;
+      }
+      .chart-cell {
+        border: 1px solid #d1d5db;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        background: white;
+        font-size: 0.9rem;
+      }
+      .star-icon { color: #eab308; font-size: 1.2rem; }
+
+      /* Caterpillar */
+      .cat-circle {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        border: 2px solid #333;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+        z-index: 2;
+        flex-shrink: 0;
+      }
+      
+      /* Machine Box */
+      .machine-box {
+        background-color: #e5e7eb;
+        border: 2px solid #374151;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-weight: bold;
+        text-align: center;
+        font-size: 0.9rem;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; margin: 0; }
+        .page-container { display: block; }
+        .page {
+          width: 21cm; height: 29.6cm;
+          margin: 0; box-shadow: none;
+          page-break-after: always;
+          padding: 0.5cm 1.5cm; border: none;
+        }
+        .page:last-child { page-break-after: avoid; }
+        .page-header { margin-bottom: 5px !important; }
+        
+        /* Memaksa warna tercetak */
+        .math-champs-header, .block-unit, .dot, .disc, .cat-circle, .machine-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .block-unit { background-color: #fdba74 !important; border-color: #f97316 !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan sampai 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Menemukan bilangan yang hilang pada pola dengan penjumlahan atau pengurangan
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Kode : D2-S096
+                    </div>
+                </div>
+            </div>
+            <!-- Garis pemisah header -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- INSTRUCTION -->
+            <div class="instruction-text p-2 bg-blue-50 border-l-4 border-blue-500 rounded text-sm text-gray-700 mb-6 mt-4">
+                <span class="font-bold">Instruksi:</span> Lihat gambar dan bilangannya. Temukan aturannya untuk mencari bilangan yang hilang.
+            </div>
+
+            <div class="section-title">Bagian A: Pola Visual (Pilihan Ganda)</div>
+
+            <div class="soal-grid mb-5">
+                <!-- Question 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">1. Balok yang Bertumbuh</div>
+                    <div class="text-xs mb-2">Berapa banyak balok pada <b>Langkah 4</b>?</div>
+                    
+                    <div class="block-pattern-container">
+                        <!-- Step 1 -->
+                        <div class="block-step">
+                            <div class="block-grid" style="grid-template-columns: repeat(2, 1fr);">
+                                <div class="block-unit"></div><div class="block-unit"></div>
+                            </div>
+                            <span class="text-xs font-bold mt-1">2</span>
+                            <span class="text-[9px] text-gray-500">Langkah 1</span>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="block-step">
+                            <div class="block-grid" style="grid-template-columns: repeat(4, 1fr);">
+                                <div class="block-unit"></div><div class="block-unit"></div>
+                                <div class="block-unit"></div><div class="block-unit"></div>
+                            </div>
+                            <span class="text-xs font-bold mt-1">4</span>
+                            <span class="text-[9px] text-gray-500">Langkah 2</span>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="block-step">
+                            <div class="block-grid" style="grid-template-columns: repeat(6, 1fr);">
+                                <div class="block-unit"></div><div class="block-unit"></div>
+                                <div class="block-unit"></div><div class="block-unit"></div>
+                                <div class="block-unit"></div><div class="block-unit"></div>
+                            </div>
+                            <span class="text-xs font-bold mt-1">6</span>
+                            <span class="text-[9px] text-gray-500">Langkah 3</span>
+                        </div>
+                        <!-- Step 4 -->
+                        <div class="block-step">
+                            <div class="w-[50px] h-[30px] border-2 border-dashed border-gray-400 flex items-center justify-center text-xl font-bold text-gray-400">?</div>
+                            <span class="text-[9px] text-gray-500 mt-1">Langkah 4</span>
+                        </div>
+                    </div>
+
+                    <div class="choice-container mt-auto">
+                        <label class="choice-item"><div class="choice-box"></div> <span>7</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>8</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>9</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>10</span></label>
+                    </div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">2. Lompatan Garis Bilangan</div>
+                    <div class="text-xs mb-2">Katak melompat dengan jumlah yang sama. Bilangan berapa berikutnya?</div>
+                    
+                    <div class="w-full px-1 py-2">
+                        <svg class="number-line-svg" viewBox="0 0 400 80">
+                            <defs>
+                                <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                                    <path d="M0,0 L0,6 L9,3 z" fill="#000" />
+                                </marker>
+                                <marker id="jump-arrow" markerWidth="8" markerHeight="8" refX="7" refY="2" orient="auto" fill="blue">
+                                    <path d="M0,0 L0,4 L7,2 z" />
+                                </marker>
+                            </defs>
+                            <!-- Main Line -->
+                            <line x1="10" y1="50" x2="390" y2="50" stroke="black" stroke-width="2" marker-end="url(#arrow)" />
+                            
+                            <!-- Ticks & Text -->
+                            <line x1="50" y1="45" x2="50" y2="55" stroke="black" stroke-width="2" />
+                            <text x="50" y="70" class="tick-label font-bold">35</text>
+                            <circle cx="50" cy="50" r="3" fill="black" />
+
+                            <line x1="130" y1="45" x2="130" y2="55" stroke="black" stroke-width="2" />
+                            <text x="130" y="70" class="tick-label font-bold">40</text>
+                            <circle cx="130" cy="50" r="3" fill="black" />
+
+                            <line x1="210" y1="45" x2="210" y2="55" stroke="black" stroke-width="2" />
+                            <text x="210" y="70" class="tick-label font-bold">45</text>
+                            <circle cx="210" cy="50" r="3" fill="black" />
+
+                            <line x1="290" y1="45" x2="290" y2="55" stroke="black" stroke-width="2" />
+                            <text x="290" y="70" class="tick-label font-bold text-red-600">?</text>
+                            <circle cx="290" cy="50" r="3" fill="white" stroke="black" />
+
+                            <!-- Jumps -->
+                            <path d="M 50 40 Q 90 10 130 40" stroke="blue" stroke-width="2" fill="none" marker-end="url(#jump-arrow)"/>
+                            <text x="90" y="20" font-size="10" fill="blue" text-anchor="middle">+5</text>
+
+                            <path d="M 130 40 Q 170 10 210 40" stroke="blue" stroke-width="2" fill="none" marker-end="url(#jump-arrow)"/>
+                            
+                            <path d="M 210 40 Q 250 10 290 40" stroke="blue" stroke-width="2" fill="none" stroke-dasharray="4" marker-end="url(#jump-arrow)"/>
+                        </svg>
+                    </div>
+
+                    <div class="choice-container mt-auto">
+                        <label class="choice-item"><div class="choice-box"></div> <span>46</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>48</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>50</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>55</span></label>
+                    </div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">3. Hitung Titiknya</div>
+                    <div class="text-[10px] mb-2">Kita mengurangi dengan jumlah yang sama.</div>
+                    
+                    <div class="flex items-start justify-center gap-1 mt-2 transform scale-90 origin-top">
+                         <!-- Step 1: 20 -->
+                         <div class="flex flex-col items-center">
+                             <div class="text-sm font-bold mb-1">20</div>
+                             <div class="dot-group">
+                                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                             </div>
+                         </div>
+                         <!-- Arrow -->
+                         <div class="flex flex-col items-center justify-center h-full pt-6 px-1">
+                             <div class="text-[9px] text-blue-600 font-bold mb-0">-2</div>
+                             <span class="text-gray-400 font-bold text-lg">&rarr;</span>
+                         </div>
+                         <!-- Step 2: 18 -->
+                         <div class="flex flex-col items-center">
+                             <div class="text-sm font-bold mb-1">18</div>
+                             <div class="dot-group">
+                                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                                 <div class="dot"></div><div class="dot"></div><div class="dot crossed"></div><div class="dot crossed"></div>
+                             </div>
+                         </div>
+                         <!-- Arrow -->
+                         <div class="flex flex-col items-center justify-center h-full pt-6 px-1">
+                             <div class="text-[9px] text-blue-600 font-bold mb-0">-2</div>
+                             <span class="text-gray-400 font-bold text-lg">&rarr;</span>
+                         </div>
+                         <!-- Step 3: 16 -->
+                         <div class="flex flex-col items-center">
+                             <div class="text-sm font-bold mb-1">16</div>
+                             <div class="text-xl font-bold tracking-widest mt-4">...</div>
+                         </div>
+                         <!-- Arrow -->
+                         <div class="flex flex-col items-center justify-center h-full pt-6 px-1">
+                             <div class="text-[9px] text-blue-600 font-bold mb-0">-2</div>
+                             <span class="text-gray-400 font-bold text-lg">&rarr;</span>
+                         </div>
+                         <!-- Step 4: ? -->
+                         <div class="flex flex-col items-center justify-center pt-6">
+                              <span class="text-2xl text-red-600 font-bold">?</span>
+                         </div>
+                    </div>
+
+                    <div class="choice-container mt-auto">
+                        <label class="choice-item"><div class="choice-box"></div> <span>15</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>14</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>12</span></label>
+                    </div>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">4. Kepingan Bilangan</div>
+                    <div class="text-[10px] mb-2">Bilangan berapa selanjutnya?</div>
+                    
+                    <div class="flex gap-2 justify-center items-end mt-4">
+                        <!-- 10 -->
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="p-1 border border-dashed rounded bg-white">
+                                <div class="disc">10</div>
+                            </div>
+                            <span class="text-xs font-bold text-gray-500">10</span>
+                        </div>
+                        <span class="text-gray-400 mb-6">&rarr;</span>
+                        <!-- 20 -->
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="p-1 border border-dashed rounded bg-white flex flex-col gap-1">
+                                <div class="disc">10</div>
+                                <div class="disc">10</div>
+                            </div>
+                            <span class="text-xs font-bold text-gray-500">20</span>
+                        </div>
+                        <span class="text-gray-400 mb-6">&rarr;</span>
+                        <!-- 30 -->
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="p-1 border border-dashed rounded bg-white flex flex-col gap-1">
+                                <div class="disc">10</div>
+                                <div class="disc">10</div>
+                                <div class="disc">10</div>
+                            </div>
+                            <span class="text-xs font-bold text-gray-500">30</span>
+                        </div>
+                        <span class="text-gray-400 mb-6">&rarr;</span>
+                        <!-- ? -->
+                        <div class="flex flex-col items-center justify-center mb-6">
+                            <span class="text-2xl text-red-600 font-bold">?</span>
+                        </div>
+                    </div>
+
+                    <div class="choice-container mt-auto">
+                        <label class="choice-item"><div class="choice-box"></div> <span>31</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>35</span></label>
+                        <label class="choice-item"><div class="choice-box"></div> <span>40</span></label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan sampai 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Menemukan bilangan yang hilang pada pola dengan penjumlahan atau pengurangan
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Kode : D2-S096
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- Question 5 (100 Chart) -->
+            <div class="soal-item mb-6">
+                 <div class="font-bold mb-2">5. Bilangan yang Tersembunyi</div>
+                 <div class="flex items-start gap-6">
+                     <div class="chart-grid">
+                         <div class="chart-cell">52</div><div class="chart-cell">53</div><div class="chart-cell">54</div>
+                         <div class="chart-cell">62</div><div class="chart-cell">63</div><div class="chart-cell">64</div>
+                         <div class="chart-cell">72</div><div class="chart-cell"><span class="star-icon">★</span></div><div class="chart-cell">74</div>
+                     </div>
+                     <div class="flex-1 pt-2">
+                         <div class="text-sm mb-2">
+                             Ini adalah potongan dari tabel 100. Bilangan berapa yang tersembunyi di balik bintang?
+                         </div>
+                         <div class="choice-container !justify-start">
+                            <label class="choice-item"><div class="choice-box"></div> <span>65</span></label>
+                            <label class="choice-item"><div class="choice-box"></div> <span>71</span></label>
+                            <label class="choice-item"><div class="choice-box"></div> <span>73</span></label>
+                            <label class="choice-item"><div class="choice-box"></div> <span>83</span></label>
+                        </div>
+                     </div>
+                 </div>
+            </div>
+
+            <div class="section-title">Bagian B: Menemukan Aturan (Isian Singkat)</div>
+
+            <!-- Question 6 (Caterpillar) -->
+            <div class="soal-item mb-4">
+                <div class="font-bold mb-2">6. Lengkapi rantai bilangan ini</div>
+                
+                <div class="flex items-center justify-center gap-1 my-4 overflow-x-auto p-2">
+                    <!-- 12 -->
+                    <div class="cat-circle">12</div>
+                    <!-- Arrow +3 -->
+                    <div class="flex flex-col items-center w-8">
+                        <span class="text-[9px] text-blue-600 font-bold mb-1 transform -translate-y-1">+3</span>
+                        <svg width="20" height="10" viewBox="0 0 20 10" overflow="visible">
+                            <path d="M0,5 Q10,-5 20,5" stroke="black" fill="none" marker-end="url(#arrow)" />
+                        </svg>
+                    </div>
+                    <!-- 15 -->
+                    <div class="cat-circle">15</div>
+                    <!-- Arrow +3 -->
+                    <div class="flex flex-col items-center w-8">
+                        <span class="text-[9px] text-blue-600 font-bold mb-1 transform -translate-y-1">+3</span>
+                        <svg width="20" height="10" viewBox="0 0 20 10" overflow="visible">
+                            <path d="M0,5 Q10,-5 20,5" stroke="black" fill="none" marker-end="url(#arrow)" />
+                        </svg>
+                    </div>
+                    <!-- 18 -->
+                    <div class="cat-circle">18</div>
+                    <!-- Arrow +3 -->
+                    <div class="flex flex-col items-center w-8">
+                         <span class="text-[9px] text-blue-600 font-bold mb-1 transform -translate-y-1">+3</span>
+                        <svg width="20" height="10" viewBox="0 0 20 10" overflow="visible">
+                            <path d="M0,5 Q10,-5 20,5" stroke="black" fill="none" marker-end="url(#arrow)" />
+                        </svg>
+                    </div>
+                    <!-- ? 1 -->
+                    <div class="cat-circle border-dashed bg-blue-50 text-blue-600">?</div>
+                    <!-- Arrow +3 -->
+                    <div class="flex flex-col items-center w-8">
+                         <span class="text-[9px] text-blue-600 font-bold mb-1 transform -translate-y-1">+3</span>
+                        <svg width="20" height="10" viewBox="0 0 20 10" overflow="visible">
+                            <path d="M0,5 Q10,-5 20,5" stroke="black" fill="none" marker-end="url(#arrow)" />
+                        </svg>
+                    </div>
+                    <!-- ? 2 -->
+                    <div class="cat-circle border-dashed bg-blue-50 text-blue-600">?</div>
+                </div>
+
+                <div class="text-center mt-2 text-sm">
+                    <b>Jawaban:</b> Bilangan yang hilang adalah <input type="text" class="input-line w-16"> dan <input type="text" class="input-line w-16">.
+                </div>
+            </div>
+
+            <!-- Question 7 (Subtraction Pattern) -->
+            <div class="soal-item mb-4">
+                <div class="font-bold mb-2">7. Temukan bilangan yang hilang</div>
+                
+                <div class="text-center text-lg my-3 font-mono tracking-widest">
+                    95, 85, 75, <input type="text" class="input-line w-16">, 55, <input type="text" class="input-line w-16">
+                </div>
+
+                <div class="text-center text-sm">
+                    <i>Petunjuk: Lihat tempat puluhan.</i>
+                    <br><br>
+                    <b>Aturan:</b> Kurangi <input type="text" class="input-line w-10">.
+                </div>
+            </div>
+
+            <!-- Question 8 (Number Machine) -->
+            <div class="soal-item">
+                <div class="font-bold mb-2">8. Mesin Bilangan</div>
+                
+                <div class="flex items-center justify-center gap-6 my-2">
+                    <!-- Inputs -->
+                    <div class="flex flex-col gap-4 text-right text-sm">
+                        <div>Input: <b>20</b> &rarr;</div>
+                        <div>Input: <b>32</b> &rarr;</div>
+                        <div>Input: <b>60</b> &rarr;</div>
+                    </div>
+
+                    <!-- Machine -->
+                    <div class="machine-box shadow-lg">
+                        MESIN<br>
+                        <span class="text-2xl text-blue-600">+ 4</span>
+                    </div>
+
+                    <!-- Outputs -->
+                    <div class="flex flex-col gap-4 text-sm">
+                        <div>&rarr; Output: <b>24</b></div>
+                        <div>&rarr; Output: <b>36</b></div>
+                        <div>&rarr; Output: <input type="text" class="input-line w-16"></div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-2 text-sm">
+                    Berapa hasil output terakhir?
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Bilangan sampai 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Menemukan bilangan yang hilang pada pola dengan penjumlahan atau pengurangan
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Kode : D2-S096
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+             <!-- Question 9 (Word Problem) -->
+             <div class="soal-item mb-4">
+                <div class="font-bold mb-2">9. Kelereng Ahmad</div>
+                <div class="p-3 bg-white rounded border border-gray-200 text-sm">
+                    Ahmad memasukkan kelereng ke dalam toples.
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>Toples 1 berisi <b>10</b> kelereng.</li>
+                        <li>Toples 2 berisi <b>12</b> kelereng.</li>
+                        <li>Toples 3 berisi <b>14</b> kelereng.</li>
+                    </ul>
+                </div>
+
+                <div class="mt-4 text-center text-sm">
+                    Jika polanya berlanjut, berapa kelereng di <b>Toples 5</b>?
+                    
+                    <div class="flex justify-center items-center gap-2 mt-2">
+                        Jawaban: <input type="text" class="input-line w-20"> kelereng.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 10 (Challenge) -->
+            <div class="soal-item bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div class="font-bold mb-2 text-yellow-800 flex items-center gap-2">
+                    <span>★</span> 10. Tantangan Pola!
+                </div>
+                
+                <div class="text-sm mb-4">Isi kotak kosong untuk melengkapi pola.</div>
+
+                 <div class="flex flex-wrap items-center justify-center gap-2 max-w-[90%] mx-auto">
+                     <div class="w-9 h-9 border-2 border-black flex items-center justify-center font-bold bg-white text-sm">8</div>
+                     <span>&rarr;</span>
+                     <div class="w-9 h-9 border-2 border-black flex items-center justify-center font-bold bg-white text-sm">18</div>
+                     <span>&rarr;</span>
+                     <div class="w-9 h-9 border-2 border-black flex items-center justify-center font-bold bg-white text-sm">28</div>
+                     <span>&rarr;</span>
+                     <div class="w-9 h-9 border-2 border-black flex items-center justify-center font-bold bg-white text-sm">38</div>
+                     <span>&rarr;</span>
+                     <div class="w-9 h-9 border-2 border-dashed border-blue-500 flex items-center justify-center font-bold bg-white text-blue-600 text-sm">?</div>
+                     <span>&rarr;</span>
+                     <div class="w-9 h-9 border-2 border-dashed border-blue-500 flex items-center justify-center font-bold bg-white text-blue-600 text-sm">?</div>
+                 </div>
+
+                 <div class="text-center mt-6 text-sm">
+                    Jawaban: <input type="text" class="input-line w-16"> , <input type="text" class="input-line w-16">
+                 </div>
+            </div>
+
+            <!-- Random Encouragement Text -->
+            <div id="encouragement-text" class="mt-12 text-center text-gray-500 italic font-medium"></div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+
+    <!-- Script untuk Random Kalimat Penyemangat -->
+    <script>
+        const quotes = [
+            "Mantap! Kamu benar-benar Math Champs!",
+            "Keren banget! Dua jempol buat kamu!",
+            "Hebat! Kamu sudah latihan dengan serius dan fokus.",
+            "Good job! Kamu sudah berani menghadapi soal-soal menantang.",
+            "Luar biasa! Hari ini kamu makin kuat di matematika.",
+            "Sudah yakin semua benar? Coba cek ulang sekali lagi ya. 😊",
+            "Biasakan periksa ulang ya—juara itu teliti!",
+            "Kalau ada yang ragu, ulang hitung pelan-pelan biar yakin.",
+            "Kalau ada yang salah, itu bukan masalah. Perbaiki dan maju terus!",
+            "Jatuh itu wajar—yang penting bangkit lagi.",
+            "Setiap latihan bikin kamu naik level!",
+            "Konsisten latihan = makin jago.",
+            "Beri nilai untuk dirimu: hari ini fokusmu 1–5 berapa?",
+            "Refleksi: bagian mana yang ingin kamu kuasai lebih baik?",
+            "Hasil tidak pernah mengkhianati kerja keras.",
+            "Bangga sama kamu—kamu tidak menyerah dan menyelesaikannya.",
+            "Mantap! Tutup dengan senyum—kamu sudah bekerja luar biasa. 😊",
+            "Teliti bikin juara.",
+            "Cek ulang, menang besar.",
+            "Latihan hari ini, hebat esok.",
+            "Rapi langkah, rapi hasil.",
+            "Sabar hitung, yakin benar.",
+            "Berani mencoba, makin bisa.",
+            "Konsisten kecil, hasil besar.",
+            "Rajin latihan, naik level.",
+            "Hitung cermat, hati tenang.",
+            "Hasil harus tepat, jangan asal cepat.",
+            "Ragu? Periksa dulu.",
+            "Kerja rapi, nilai menghampiri.",
+            "Tekun itu kunci.",
+            "Belajar dari salah, tiap langkah makin tangguh."
+        ];
+
+        // Pilih satu secara acak
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        
+        // Masukkan ke elemen
+        document.getElementById('encouragement-text').innerText = randomQuote;
+    </script>
+  </body>
+</html>
