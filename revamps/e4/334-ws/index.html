@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - E4.S334 Penjumlahan Desimal (Tanpa Simpanan)</title>
+    
+    <!-- Tailwind untuk layout responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA & VARIABEL --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --bg-page: #525659;
+        
+        /* Warna Tema */
+        --theme-blue: #3b82f6;
+        --theme-green: #22c55e;
+        --theme-orange: #f97316;
+        --theme-purple: #a855f7;
+        --theme-red: #ef4444;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: var(--bg-page);
+        margin: 0;
+        padding: 20px 0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 1cm 1.5cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* HEADER */
+      .page-header { width: 100%; margin-bottom: 20px; flex-shrink: 0; }
+      .math-champs-header {
+        padding: 0.5rem 0;
+        display: flex; justify-content: space-between; align-items: center;
+        border-bottom: 3px solid #000; padding-bottom: 8px;
+      }
+      .header-logo { height: 45px; object-fit: contain; }
+      .header-right { text-align: right; font-family: "Montserrat", sans-serif; }
+      .header-level { font-size: 14px; font-weight: 800; color: #000; text-transform: uppercase; }
+      .header-topic { font-size: 10px; font-weight: 600; color: #000; margin-top: 2px; }
+      .header-skill { font-size: 10px; font-weight: 500; color: #000; }
+      .header-code { font-size: 10px; font-weight: 500; color: #000; margin-top: 2px; }
+
+      .content-wrapper { flex-grow: 1; display: flex; flex-direction: column; gap: 1.5rem; }
+
+      /* FOOTER */
+      .page-footer {
+        text-align: left; font-size: 7pt; color: #8d8e8d;
+        padding-top: 8px; margin-top: auto; border-top: 1px solid #ccc; width: 100%;
+      }
+
+      /* SECTION TITLE */
+      .section-label {
+        font-family: "Montserrat", sans-serif;
+        font-size: 1.1rem; font-weight: 800; text-transform: uppercase;
+        color: #1e3a8a; border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 4px; margin-top: 15px; margin-bottom: 10px;
+      }
+
+      /* SOAL BOX */
+      .soal-item {
+        height: 100%; break-inside: avoid; padding: 15px;
+        background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
+        position: relative; display: flex; flex-direction: column;
+      }
+
+      /* PILIHAN GANDA */
+      .choice-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: auto; padding-top: 10px; }
+      .choice-item { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; }
+      .choice-box { width: 18px; height: 18px; border: 2px solid #666; border-radius: 50%; display: inline-block; background: white; }
+
+      /* --- VISUALS: HUNDREDTHS GRIDS (10x10) --- */
+      .visual-box {
+        background-color: white; border: 1px solid #e5e7eb; border-radius: 8px;
+        padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      }
+
+      /* Grid 10x10 representing 1.00 */
+      .hundredths-grid {
+        width: 80px; height: 80px;
+        border: 2px solid #333;
+        background-color: white;
+        position: relative;
+        box-sizing: content-box; 
+      }
+
+      /* OVERLAY GRID LINES */
+      .hundredths-grid::after {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-image: 
+          linear-gradient(to right, rgba(0,0,0,0.15) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(0,0,0,0.15) 1px, transparent 1px);
+        background-size: 8px 8px;
+        z-index: 10;
+        pointer-events: none;
+      }
+      
+      /* Colored blocks positioned absolutely */
+      .grid-block {
+        position: absolute;
+        width: 8px; height: 8px; /* Default unit size */
+        z-index: 1; 
+      }
+
+      /* Colors */
+      .bg-blue { background-color: #60a5fa; }
+      .bg-green { background-color: #4ade80; }
+      .bg-orange { background-color: #fb923c; } 
+      .bg-purple { background-color: #c084fc; }
+      .bg-red { background-color: #f87171; }
+      
+      .plus-sign { font-size: 24px; font-weight: bold; color: #9ca3af; margin: 0 8px; }
+      .equal-sign { font-size: 24px; font-weight: bold; color: #333; margin: 0 8px; }
+
+      /* Vertical Method Layout */
+      .vertical-calc {
+        font-family: monospace; font-size: 1.5rem; font-weight: bold;
+        display: inline-block; text-align: right; line-height: 1.2;
+        color: #333;
+        position: relative;
+      }
+      .vertical-line { border-top: 2px solid #333; width: 100%; margin-top: 4px; margin-bottom: 4px;}
+      
+      /* Decimal Point Spacing */
+      .vertical-dot { 
+        display: inline-block; width: 1.5ch; text-align: center; color: #ef4444; 
+      } 
+
+      /* Plus Sign Position */
+      .vertical-plus {
+        position: absolute;
+        right: -25px;
+        bottom: 35px;
+        font-size: 1.2rem;
+        color: #6b7280;
+        font-family: sans-serif;
+      }
+
+      /* --- NEW: Realistic Ribbon Style for Q8 --- */
+      .real-ribbon {
+        height: 24px; width: 100%; position: relative;
+        box-shadow: 0 2px 2px rgba(0,0,0,0.1);
+        clip-path: polygon(0% 0%, 100% 0%, 95% 50%, 100% 100%, 0% 100%, 5% 50%);
+        display: flex; align-items: center; justify-content: center;
+        color: rgba(255,255,255,0.9); font-size: 10px; font-weight: bold;
+        text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+      }
+      .ribbon-red { background: linear-gradient(to bottom, #f87171, #dc2626, #f87171); }
+      .ribbon-blue { background: linear-gradient(to bottom, #60a5fa, #2563eb, #60a5fa); }
+
+      /* Helper for Concepts */
+      .concept-box {
+        background-color: #eff6ff; border-left: 4px solid #3b82f6;
+        padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95rem;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; margin: 0; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; height: auto; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; border: none; padding: 1cm; }
+        .page:last-child { page-break-after: avoid; }
+        .bg-blue-50 { background-color: #eff6ff !important; border: 1px solid #dbeafe !important; }
+        .bg-green-50 { background-color: #f0fdf4 !important; border: 1px solid #bbf7d0 !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; border: 1px solid #fef9c3 !important; }
+        .bg-orange-50 { background-color: #fff7ed !important; border: 1px solid #fed7aa !important; }
+        .bg-purple-50 { background-color: #faf5ff !important; border: 1px solid #e9d5ff !important; }
+        .print\:grid-cols-2 { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 1rem !important; }
+        .math-champs-header { border-bottom: 2px solid #333 !important; }
+        .visual-box { border: 1px solid #ccc !important; }
+        .hundredths-grid { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; }
+        .hundredths-grid::after { background-image: linear-gradient(to right, #999 1px, transparent 1px), linear-gradient(to bottom, #999 1px, transparent 1px) !important; }
+        .bg-blue { background-color: #60a5fa !important; }
+        .bg-green { background-color: #4ade80 !important; }
+        .ribbon-red { background: #ef4444 !important; -webkit-print-color-adjust: exact; }
+        .ribbon-blue { background: #3b82f6 !important; -webkit-print-color-adjust: exact; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1: Konsep & Visual ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="header-logo">
+                <div class="header-right">
+                    <div class="header-level">Exploration 4</div>
+                    <div class="header-topic">Empat Operasi Desimal</div>
+                    <div class="header-skill">Penjumlahan Desimal (2 Angka)</div>
+                    <div class="header-code">Kode : E4-S334</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-2">
+                <h1 class="text-xl font-bold uppercase tracking-wide text-gray-800 font-montserrat">
+                    Penjumlahan Desimal (Tanpa Simpanan)
+                </h1>
+                <p class="text-sm text-gray-500 italic">Menjumlahkan perseratusan tanpa harus menyimpan angka.</p>
+            </div>
+
+            <!-- CONCEPT BOX -->
+            <div class="concept-box flex flex-col md:flex-row items-center gap-6 shadow-sm border border-blue-200">
+                <div class="w-full md:w-1/2">
+                    <h3 class="font-bold text-blue-700 mb-2">Nilai Tempat Desimal</h3>
+                    <ul class="text-sm text-gray-700 space-y-1 list-disc pl-4">
+                        <li><b>1 Kotak Besar</b> = 1 Satuan (1,00)</li>
+                        <li><b>1 Batang Kolom</b> = 1 Persepuluhan (0,10)</li>
+                        <li><b>1 Kotak Kecil</b> = 1 Perseratusan (0,01)</li>
+                    </ul>
+                    <p class="text-sm text-gray-700 mt-2">
+                        Jumlahkan sesuai warnanya: <b>Batang dengan Batang</b>, <b>Kotak kecil dengan Kotak kecil</b>.
+                    </p>
+                </div>
+                <div class="w-full md:w-1/2 flex items-center justify-center bg-white p-3 rounded border border-gray-200">
+                    <!-- Visual: 0.32 + 0.14 = 0.46 -->
+                    <div class="flex items-center gap-1">
+                        <!-- 0.32 -->
+                        <div class="flex flex-col items-center">
+                            <div class="hundredths-grid">
+                                <!-- 3 columns (24px) -->
+                                <div class="grid-block bg-blue" style="top:0; left:0; width:24px; height:80px;"></div>
+                                <!-- 2 squares -->
+                                <div class="grid-block bg-blue" style="top:0; left:24px; width:8px; height:16px;"></div>
+                            </div>
+                            <span class="text-xs font-bold mt-1 text-blue-600">0,32</span>
+                        </div>
+                        <div class="plus-sign">+</div>
+                        <!-- 0.14 -->
+                        <div class="flex flex-col items-center">
+                            <div class="hundredths-grid">
+                                <!-- 1 column (8px) -->
+                                <div class="grid-block bg-green" style="top:0; left:0; width:8px; height:80px;"></div>
+                                <!-- 4 squares -->
+                                <div class="grid-block bg-green" style="top:0; left:8px; width:8px; height:32px;"></div>
+                            </div>
+                            <span class="text-xs font-bold mt-1 text-green-600">0,14</span>
+                        </div>
+                        <div class="equal-sign">=</div>
+                        <!-- 0.46 -->
+                        <div class="flex flex-col items-center">
+                            <div class="hundredths-grid">
+                                <!-- 3 blue cols -->
+                                <div class="grid-block bg-blue" style="top:0; left:0; width:24px; height:80px;"></div>
+                                <!-- 1 green col -->
+                                <div class="grid-block bg-green" style="top:0; left:24px; width:8px; height:80px;"></div>
+                                <!-- 2 blue squares -->
+                                <div class="grid-block bg-blue" style="top:0; left:32px; width:8px; height:16px;"></div>
+                                <!-- 4 green squares -->
+                                <div class="grid-block bg-green" style="top:16px; left:32px; width:8px; height:32px;"></div>
+                            </div>
+                            <span class="text-xs font-bold mt-1 text-gray-800">0,46</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-label">Latihan 1: Hitung dengan Gambar</div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Q1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-3 text-base">1. Hitung jumlahnya.</div>
+                    <div class="visual-box mb-3">
+                        <div class="flex items-center gap-1">
+                            <!-- 0.23 (2 cols + 3 squares) -->
+                            <div class="hundredths-grid">
+                                <div class="grid-block bg-blue" style="top:0; left:0; width:16px; height:80px;"></div>
+                                <div class="grid-block bg-blue" style="top:0; left:16px; width:8px; height:24px;"></div>
+                            </div>
+                            <span class="text-xl text-gray-400 font-bold">+</span>
+                            <!-- 0.15 (1 col + 5 squares) -->
+                            <div class="hundredths-grid">
+                                <div class="grid-block bg-orange" style="top:0; left:0; width:8px; height:80px;"></div>
+                                <div class="grid-block bg-orange" style="top:0; left:8px; width:8px; height:40px;"></div>
+                            </div>
+                        </div>
+                        <div class="text-sm font-mono mt-1 text-gray-600">0,23 + 0,15 = ...</div>
+                    </div>
+                    <div class="choice-container flex-col">
+                        <label class="choice-item"><div class="choice-box"></div> 0,38</label>
+                        <label class="choice-item"><div class="choice-box"></div> 0,35</label>
+                        <label class="choice-item"><div class="choice-box"></div> 0,48</label>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-3 text-base">2. Berapa totalnya?</div>
+                    <div class="visual-box mb-3">
+                        <div class="flex items-center gap-1">
+                            <!-- 0.41 (4 cols + 1 square) -->
+                            <div class="hundredths-grid">
+                                <div class="grid-block bg-green" style="top:0; left:0; width:32px; height:80px;"></div>
+                                <div class="grid-block bg-green" style="top:0; left:32px; width:8px; height:8px;"></div>
+                            </div>
+                            <span class="text-xl text-gray-400 font-bold">+</span>
+                            <!-- 0.22 (2 cols + 2 squares) -->
+                            <div class="hundredths-grid">
+                                <div class="grid-block bg-purple" style="top:0; left:0; width:16px; height:80px;"></div>
+                                <div class="grid-block bg-purple" style="top:0; left:16px; width:8px; height:16px;"></div>
+                            </div>
+                        </div>
+                        <div class="text-sm font-mono mt-1 text-gray-600">0,41 + 0,22 = ...</div>
+                    </div>
+                    <div class="choice-container flex-col">
+                        <label class="choice-item"><div class="choice-box"></div> 0,63</label>
+                        <label class="choice-item"><div class="choice-box"></div> 0,62</label>
+                        <label class="choice-item"><div class="choice-box"></div> 0,53</label>
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-3 text-base">3. Tentukan hasilnya.</div>
+                    <div class="visual-box mb-3">
+                        <div class="flex items-center gap-1">
+                            <!-- 0.12 (1 col + 2 squares) -->
+                            <div class="hundredths-grid">
+                                <div class="grid-block bg-red" style="top:0; left:0; width:8px; height:80px;"></div>
+                                <div class="grid-block bg-red" style="top:0; left:8px; width:8px; height:16px;"></div>
+                            </div>
+                            <span class="text-xl text-gray-400 font-bold">+</span>
+                            <!-- 0.07 (7 squares) -->
+                            <div class="hundredths-grid">
+                                <div class="grid-block bg-blue" style="top:0; left:0; width:8px; height:56px;"></div>
+                            </div>
+                        </div>
+                        <div class="text-sm font-mono mt-1 text-gray-600">0,12 + 0,07 = ...</div>
+                    </div>
+                    <div class="choice-container flex-col">
+                        <label class="choice-item"><div class="choice-box"></div> 0,19</label>
+                        <label class="choice-item"><div class="choice-box"></div> 0,18</label>
+                        <label class="choice-item"><div class="choice-box"></div> 0,29</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2: Penjumlahan Bersusun ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="header-logo">
+                <div class="header-right">
+                    <div class="header-level">Exploration 4</div>
+                    <div class="header-topic">Empat Operasi Desimal</div>
+                    <div class="header-skill">Penjumlahan Desimal (2 Angka)</div>
+                    <div class="header-code">Kode : E4-S334</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="section-label">Latihan 2: Cara Bersusun</div>
+            
+            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mb-2 flex gap-4">
+                <div class="text-2xl">💡</div>
+                <div class="text-sm text-yellow-900 leading-relaxed">
+                    <b>Tips:</b><br>
+                    Jumlahkan perseratusan dengan perseratusan.<br>
+                    Jumlahkan persepuluhan dengan persepuluhan.<br>
+                    Pastikan tanda koma <b>lurus</b> ke bawah.
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- Q4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4 text-base">4. 2,31 + 1,25 = ...</div>
+                    <div class="visual-box py-4 bg-white/50">
+                        <div class="vertical-calc relative">
+                            <div class="vertical-plus">+</div>
+                            <div>2<span class="vertical-dot">,</span>31</div>
+                            <div>1<span class="vertical-dot">,</span>25</div>
+                            <div class="vertical-line"></div>
+                            <div class="text-gray-400">?</div>
+                        </div>
+                    </div>
+                    <div class="choice-container justify-center gap-6">
+                        <label class="choice-item"><div class="choice-box"></div> 3,56</label>
+                        <label class="choice-item"><div class="choice-box"></div> 3,66</label>
+                        <label class="choice-item"><div class="choice-box"></div> 4,56</label>
+                    </div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4 text-base">5. 0,44 + 0,53 = ...</div>
+                    <div class="visual-box py-4 bg-white/50">
+                        <div class="vertical-calc relative">
+                            <div class="vertical-plus">+</div>
+                            <div>0<span class="vertical-dot">,</span>44</div>
+                            <div>0<span class="vertical-dot">,</span>53</div>
+                            <div class="vertical-line"></div>
+                            <div class="text-gray-400">?</div>
+                        </div>
+                    </div>
+                    <div class="choice-container justify-center gap-6">
+                        <label class="choice-item"><div class="choice-box"></div> 0,97</label>
+                        <label class="choice-item"><div class="choice-box"></div> 0,87</label>
+                        <label class="choice-item"><div class="choice-box"></div> 0,98</label>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4 text-base">6. 10,20 + 5,10 = ...</div>
+                    <div class="visual-box py-4 bg-white/50">
+                        <div class="vertical-calc relative">
+                            <div class="vertical-plus">+</div>
+                            <div>10<span class="vertical-dot">,</span>20</div>
+                            <div>&nbsp;5<span class="vertical-dot">,</span>10</div>
+                            <div class="vertical-line"></div>
+                            <div class="text-gray-400">?</div>
+                        </div>
+                    </div>
+                    <div class="choice-container justify-center gap-6">
+                        <label class="choice-item"><div class="choice-box"></div> 15,30</label>
+                        <label class="choice-item"><div class="choice-box"></div> 15,20</label>
+                        <label class="choice-item"><div class="choice-box"></div> 10,30</label>
+                    </div>
+                </div>
+
+                <!-- Q7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4 text-base">7. 3,12 + 2,05 = ...</div>
+                    <!-- Scribble Box -->
+                    <div class="flex justify-center mb-4">
+                        <div class="bg-white border border-gray-300 rounded w-3/4 h-32 shadow-inner"></div>
+                    </div>
+                    <div class="choice-container justify-center gap-6">
+                        <label class="choice-item"><div class="choice-box"></div> 5,17</label>
+                        <label class="choice-item"><div class="choice-box"></div> 5,27</label>
+                        <label class="choice-item"><div class="choice-box"></div> 6,17</label>
+                    </div>
+                </div>
+
+            </div>
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3: Cerita & Logika ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="header-logo">
+                <div class="header-right">
+                    <div class="header-level">Exploration 4</div>
+                    <div class="header-topic">Empat Operasi Desimal</div>
+                    <div class="header-skill">Penjumlahan Desimal (2 Angka)</div>
+                    <div class="header-code">Kode : E4-S334</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="section-label">Latihan 3: Tantangan Cerita</div>
+
+            <!-- Q8 Word Problem (VISUAL UPDATE) -->
+            <div class="soal-item bg-green-50 border-green-200 mb-4">
+                <div class="font-bold mb-2 text-base text-green-900">8. Pita Warna-Warni</div>
+                <div class="text-sm mb-4 text-green-800 leading-relaxed">
+                    Siti memiliki pita merah sepanjang <b>0,45 meter</b>.<br>
+                    Ia membeli pita biru sepanjang <b>0,32 meter</b>.<br>
+                    Berapa panjang kedua pita Siti jika digabungkan?
+                </div>
+                <div class="visual-box w-full mb-4 bg-white/50 border-green-200 p-6 flex flex-col items-center">
+                    <div class="flex items-center w-full justify-center">
+                        <!-- Red Ribbon -->
+                        <div class="real-ribbon ribbon-red" style="width: 45%;">
+                            <span class="relative z-10">0,45m</span>
+                        </div>
+                        <!-- Connector -->
+                        <div class="h-[24px] w-1 bg-gray-300"></div>
+                        <!-- Blue Ribbon -->
+                        <div class="real-ribbon ribbon-blue" style="width: 32%;">
+                            <span class="relative z-10">0,32m</span>
+                        </div>
+                    </div>
+                    <!-- Brace below -->
+                    <div class="w-[77%] border-t-2 border-gray-400 mt-2 relative">
+                        <div class="absolute -top-1 left-0 w-px h-2 bg-gray-400"></div>
+                        <div class="absolute -top-1 right-0 w-px h-2 bg-gray-400"></div>
+                        <div class="text-center text-xs font-bold text-gray-500 mt-1">? Meter</div>
+                    </div>
+                </div>
+                <div class="choice-container justify-center gap-6">
+                    <label class="choice-item"><div class="choice-box"></div> 0,77 meter</label>
+                    <label class="choice-item"><div class="choice-box"></div> 0,87 meter</label>
+                    <label class="choice-item"><div class="choice-box"></div> 0,78 meter</label>
+                </div>
+            </div>
+
+            <!-- Q9 Logic Pattern -->
+            <div class="soal-item bg-purple-50 border-purple-200 mb-4">
+                <div class="font-bold mb-2 text-base text-purple-900">9. Pola Lompat</div>
+                <div class="text-sm mb-3 text-purple-800">
+                    Lengkapi pola bilangan berikut ini. Setiap lompatan ditambah <b>0,11</b>.
+                </div>
+                
+                <div class="flex justify-center items-center gap-2 mb-4 overflow-x-auto py-2">
+                    <div class="bg-white border border-purple-300 rounded-full w-14 h-14 flex items-center justify-center font-bold text-sm shadow-sm">0,11</div>
+                    <div class="text-purple-400">→</div>
+                    <div class="bg-white border border-purple-300 rounded-full w-14 h-14 flex items-center justify-center font-bold text-sm shadow-sm">0,22</div>
+                    <div class="text-purple-400">→</div>
+                    <div class="bg-white border border-purple-300 rounded-full w-14 h-14 flex items-center justify-center font-bold text-sm shadow-sm">0,33</div>
+                    <div class="text-purple-400">→</div>
+                    <div class="bg-white border-2 border-dashed border-purple-500 rounded-full w-14 h-14 flex items-center justify-center font-bold text-sm text-purple-700 shadow-sm">?</div>
+                </div>
+
+                <div class="choice-container justify-center gap-6">
+                    <label class="choice-item"><div class="choice-box"></div> 0,44</label>
+                    <label class="choice-item"><div class="choice-box"></div> 0,55</label>
+                    <label class="choice-item"><div class="choice-box"></div> 0,45</label>
+                </div>
+            </div>
+
+            <!-- Q10 Riddle -->
+            <div class="soal-item bg-orange-50 border-orange-200">
+                <div class="font-bold mb-2 text-base text-orange-900">10. Teka-Teki Bilangan</div>
+                <div class="text-sm mb-4 text-orange-800 leading-relaxed bg-white/60 p-3 rounded-lg border border-orange-100">
+                    "Aku adalah bilangan desimal dengan 2 angka di belakang koma.<br>
+                    Angka perseratusanku adalah <b>5</b>.<br>
+                    Jika aku ditambah <b>0,02</b>, aku menjadi <b>0,37</b>.<br>
+                    Siapakah aku?"
+                </div>
+                <div class="choice-container flex-col gap-2">
+                    <label class="choice-item"><div class="choice-box"></div> 0,35</label>
+                    <label class="choice-item"><div class="choice-box"></div> 0,39</label>
+                    <label class="choice-item"><div class="choice-box"></div> 0,25</label>
+                </div>
+            </div>
+
+            <div class="mt-auto mb-4 text-center pt-8">
+                <div class="text-base font-bold text-gray-500 italic px-10 py-3 border-t-2 border-b-2 border-gray-100 inline-block bg-white rounded-lg shadow-sm">
+                    Latihan membuatmu makin hebat!
+                </div>
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
