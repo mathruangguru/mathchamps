@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Discovery 1: Sorting Shapes</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+      
+    <!-- Font Montserrat (Judul) & Noto Sans (Isi) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 11pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #e0e0e0;
+        margin: 0;
+        padding: 0;
+      }
+
+      h1, h2, h3, .header-text, .font-montserrat {
+        font-family: "Montserrat", sans-serif;
+      }
+
+      .page-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 */
+        height: 29.7cm; /* Fixed Height */
+        padding: 1.5cm 2cm;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* --- HEADER STYLE (CLEAN) --- */
+      .page-header {
+        width: 100%;
+        margin-bottom: 25px;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+      }
+
+      .header-logo {
+        height: 50px;
+        object-fit: contain;
+      }
+
+      .header-info {
+        text-align: right;
+        color: #000;
+      }
+
+      .header-level {
+        font-size: 14pt;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .header-topic {
+        font-size: 10pt;
+        font-weight: 600;
+        margin-top: 2px;
+      }
+
+      .header-skill {
+        font-size: 9pt;
+        font-style: italic;
+        color: #444;
+      }
+
+      .header-code {
+        font-size: 8pt;
+        font-weight: 600;
+        margin-top: 4px;
+        color: #666;
+        background-color: #f3f4f6;
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Footer Style */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 2px;
+        margin-top: auto;
+        border-top: 2.5px solid var(--grey-text);
+        width: 100%;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: flex-start;
+        gap: 5px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      /* Grid Layout Soal */
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        padding: 0.8rem;
+        background-color: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+      }
+
+      /* Choice Container */
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 10px;
+        font-size: 10pt;
+        color: #4b5563;
+      }
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+      }
+      .choice-circle {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #374151;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      /* --- MEDIA QUERY PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          margin: 0;
+          -webkit-print-color-adjust: exact;
+        }
+        .page-container {
+            padding: 0;
+            gap: 0;
+            display: block;
+        }
+        .page {
+          width: 21cm;
+          height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          border: none;
+          padding: 1.5cm 2cm;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .header-code {
+              background-color: #f3f4f6 !important;
+              -webkit-print-color-adjust: exact;
+        }
+        .soal-item {
+              border: 1px solid #ccc !important;
+        }
+      }
+    </style>
+
+    <!-- HELPER SCRIPTS FOR SHAPES (Supports Color & Size) -->
+    <script>
+      function getShapeSvg(type, size=50, colorName='blue') {
+        let s = size;
+        let h = size/2;
+        let svg = `<svg width="${size+6}" height="${size+6}" class="inline-block align-middle mx-1 mb-1">`;
+        
+        // Color Map
+        const colors = {
+            'blue':   { fill: '#bfdbfe', stroke: '#1d4ed8' }, // Blue-200, Blue-700
+            'red':    { fill: '#fecaca', stroke: '#b91c1c' }, // Red-200, Red-700
+            'green':  { fill: '#bbf7d0', stroke: '#15803d' }, // Green-200, Green-700
+            'yellow': { fill: '#fef08a', stroke: '#a16207' }, // Yellow-200, Yellow-700
+            'gray':   { fill: '#e5e7eb', stroke: '#374151' }
+        };
+        
+        let c = colors[colorName] || colors['blue'];
+        let fill = c.fill;
+        let stroke = c.stroke;
+        let sw = 2.5; 
+
+        if (type === 'circle') {
+           svg += `<circle cx="${h+3}" cy="${h+3}" r="${h-2}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        } 
+        else if (type === 'square') {
+           svg += `<rect x="3" y="3" width="${s}" height="${s}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        } 
+        else if (type === 'rect') {
+           svg = `<svg width="${size*1.5}" height="${size+6}" class="inline-block align-middle mx-1 mb-1">`;
+           svg += `<rect x="3" y="${size/4}" width="${size*1.4}" height="${size/1.5}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        } 
+        else if (type === 'tri') {
+           svg += `<polygon points="${h+3},3 3,${s+3} ${s+3},${s+3}" stroke-linejoin="round" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        }
+
+        svg += `</svg>`;
+        return svg;
+      }
+    </script>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= PAGE 1: KELOMPOK WARNA & UKURAN ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <img src="https://mathruangguru.github.io/mathchamps/revamps/logoMC-2026.png" alt="Math Champs" class="header-logo">
+            <div class="header-info font-montserrat">
+                <div class="header-level">Discovery 1</div>
+                <div class="header-topic">2D Shapes</div>
+                <div class="header-skill">Sorting Shapes</div>
+                <div class="header-code">Code : D1-S035</div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- JUDUL -->
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold uppercase tracking-wide text-gray-800 font-montserrat">
+                    Let's Sort Shapes!
+                </h1>
+                <p class="text-sm text-gray-500 mt-1 italic">Look at the Color, Size, and Shape</p>
+            </div>
+
+            <!-- INSTRUCTION -->
+            <div class="mb-6 font-bold text-gray-800 border-l-4 border-black pl-3 py-1 bg-gray-50">
+                Look at the pictures. Answer the questions carefully.
+            </div>
+
+            <!-- QUESTIONS 1-4 -->
+            <div class="soal-grid">
+                
+                <!-- Soal 1: Warna Merah -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">1.</div>
+                    <div class="flex justify-center items-center mb-2 bg-white p-2 rounded border border-gray-100 h-24">
+                        <script>
+                            document.write(getShapeSvg('circle', 40, 'red'));
+                            document.write(getShapeSvg('square', 40, 'red'));
+                            document.write(getShapeSvg('tri', 40, 'red'));
+                        </script>
+                    </div>
+                    <div class="text-sm font-semibold mb-1">Look at this "Red Team". They are all sorted by...</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> (A) Same size</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (B) Same color</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (C) Same shape</div>
+                    </div>
+                </div>
+
+                <!-- Soal 2: Warna Biru -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">2.</div>
+                    <div class="flex justify-center items-center mb-2 bg-white p-2 rounded border border-gray-100 h-24">
+                        <script>
+                            document.write(getShapeSvg('rect', 40, 'blue'));
+                            document.write(getShapeSvg('tri', 40, 'blue'));
+                        </script>
+                    </div>
+                    <div class="text-sm font-semibold mb-1">A new friend wants to join the "Blue Team". Who is it?</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> (A) <script>document.write(getShapeSvg('circle', 20, 'red'));</script> Red</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (B) <script>document.write(getShapeSvg('square', 20, 'blue'));</script> Blue</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (C) <script>document.write(getShapeSvg('tri', 20, 'green'));</script> Green</div>
+                    </div>
+                </div>
+
+                <!-- Soal 3: Ukuran Kecil -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">3.</div>
+                    <div class="flex justify-center items-end mb-2 bg-white p-2 rounded border border-gray-100 h-24 gap-2">
+                        <script>
+                            document.write(getShapeSvg('circle', 25, 'green')); // Kecil
+                            document.write(getShapeSvg('square', 25, 'blue')); // Kecil
+                            document.write(getShapeSvg('tri', 25, 'red')); // Kecil
+                        </script>
+                    </div>
+                    <div class="text-sm font-semibold mb-1">Wow, these shapes are so cute! This is a group of ... shapes.</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> (A) Big</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (B) Small</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (C) Colorful</div>
+                    </div>
+                </div>
+
+                <!-- Soal 4: Ukuran Besar -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">4.</div>
+                    <div class="flex justify-center items-center mb-2 bg-white p-2 rounded border border-gray-100 h-24 gap-2">
+                        <script>
+                            document.write(getShapeSvg('circle', 60, 'yellow')); // Besar
+                            document.write(getShapeSvg('rect', 50, 'yellow')); // Besar
+                        </script>
+                    </div>
+                    <div class="text-sm font-semibold mb-1">Wow, this is a giant team because their size is BIG! Which one fits best to join the giant team?</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> (A) <script>document.write(getShapeSvg('circle', 20, 'blue'));</script></div>
+                        <div class="choice-item"><span class="choice-circle"></span> (B) <script>document.write(getShapeSvg('square', 60, 'red'));</script></div>
+                        <div class="choice-item"><span class="choice-circle"></span> (C) <script>document.write(getShapeSvg('tri', 20, 'green'));</script></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 2: KELOMPOK SISI & SUDUT ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <img src="https://mathruangguru.github.io/mathchamps/revamps/logoMC-2026.png" alt="Math Champs" class="header-logo" style="height: 40px;">
+            <div class="header-info font-montserrat">
+                <div class="header-level" style="font-size: 12pt;">Discovery 1</div>
+                <div class="header-code">Code : D1-S035</div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                
+                <!-- Soal 5: Sisi (Segitiga) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">5.</div>
+                    <div class="flex justify-center items-center mb-2 bg-white p-2 rounded border border-gray-100 h-24 gap-2">
+                         <script>
+                            document.write(getShapeSvg('tri', 50, 'green'));
+                            document.write(getShapeSvg('tri', 40, 'yellow'));
+                        </script>
+                    </div>
+                    <div class="text-sm font-semibold mb-1">The group of triangles has the same number of sides, which is...</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> (A) 3 sides</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (B) 4 sides</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (C) 5 sides</div>
+                    </div>
+                </div>
+
+                <!-- Soal 6: Sisi (Persegi/Rect) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">6.</div>
+                    <div class="flex justify-center items-center mb-2 bg-white p-2 rounded border border-gray-100 h-24 gap-2">
+                         <script>
+                            document.write(getShapeSvg('square', 45, 'blue'));
+                            document.write(getShapeSvg('rect', 40, 'red'));
+                        </script>
+                    </div>
+                    <div class="text-sm font-semibold mb-1">They have 4 corners and 4 sides. They are the... family</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> (A) Quadrilaterals</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (B) Triangles</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (C) Circles</div>
+                    </div>
+                </div>
+
+                <!-- Soal 7: Tanpa Sudut -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">7.</div>
+                    <div class="flex justify-center items-center mb-2 bg-white p-2 rounded border border-gray-100 h-24 gap-2">
+                         <script>
+                            document.write(getShapeSvg('circle', 50, 'red'));
+                            document.write(getShapeSvg('circle', 40, 'green'));
+                        </script>
+                    </div>
+                    <div class="text-sm font-semibold mb-1">The circle is special! Why?</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> (A) Because it has 3 corners</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (B) Because it has no corners</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (C) Because it has straight sides</div>
+                    </div>
+                </div>
+
+                <!-- Soal 8: Pengecualian -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">8.</div>
+                    <div class="flex justify-center items-center mb-2 bg-white p-2 rounded border border-gray-100 h-24 gap-2">
+                         <script>
+                            document.write(getShapeSvg('tri', 40, 'blue'));
+                            document.write(getShapeSvg('tri', 40, 'blue'));
+                            document.write(getShapeSvg('square', 40, 'blue')); // Intruder
+                        </script>
+                    </div>
+                    <div class="text-sm font-semibold mb-1">There is an intruder in the Triangle group! Choose the one that is <u>NOT</u> a triangle.</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> (A) Square</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (B) Left triangle</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (C) Right triangle</div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="mt-auto"></div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 3: TANTANGAN CAMPURAN ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <img src="https://mathruangguru.github.io/mathchamps/revamps/logoMC-2026.png" alt="Math Champs" class="header-logo" style="height: 40px;">
+            <div class="header-info font-montserrat">
+                <div class="header-level" style="font-size: 12pt;">Discovery 1</div>
+                <div class="header-code">Code : D1-S035</div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                
+                <!-- Soal 9: Kombinasi (Kecil & Hijau) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">9.</div>
+                    <div class="flex justify-center items-center mb-2 bg-white p-2 rounded border border-gray-100 h-24 gap-4">
+                         <script>
+                            document.write(getShapeSvg('circle', 50, 'red'));
+                            document.write(getShapeSvg('tri', 25, 'green')); // Target
+                            document.write(getShapeSvg('square', 50, 'blue'));
+                        </script>
+                    </div>
+                    <div class="text-sm font-semibold mb-1">Can you find the shape that is <u>SMALL</u> and <u>GREEN</u>?</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> (A) Green triangle</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (B) Red circle</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (C) Blue square</div>
+                    </div>
+                </div>
+
+                <!-- Soal 10: Kombinasi (4 Sisi & Kuning) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">10.</div>
+                    <div class="flex justify-center items-center mb-2 bg-white p-2 rounded border border-gray-100 h-24 gap-4">
+                         <script>
+                            document.write(getShapeSvg('rect', 50, 'yellow')); // Target
+                            document.write(getShapeSvg('circle', 50, 'yellow'));
+                            document.write(getShapeSvg('tri', 50, 'red'));
+                        </script>
+                    </div>
+                    <div class="text-sm font-semibold mb-1">I am looking for a shape that has <u>4 SIDES</u> and is <u>YELLOW</u>.</div>
+                    <div class="choice-container">
+                        <div class="choice-item"><span class="choice-circle"></span> (A) Yellow circle</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (B) Red triangle</div>
+                        <div class="choice-item"><span class="choice-circle"></span> (C) Yellow rectangle</div>
+                    </div>
+                </div>
+
+            </div>
+
+             <div class="mt-8 text-center text-gray-500 italic">
+                Awesome! Two thumbs up for you!
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
