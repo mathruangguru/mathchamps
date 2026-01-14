@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - D2.S124 Paling Panjang, Tinggi, Pendek</title>
+    
+    <!-- Tailwind untuk layout responsif dan utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA & VARIABEL --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --bg-page: #e0e0e0;
+        
+        /* Warna Visual Objek */
+        --obj-blue: #3b82f6;
+        --obj-blue-dark: #1d4ed8;
+        --obj-red: #ef4444;
+        --obj-red-dark: #b91c1c;
+        --obj-green: #22c55e;
+        --obj-green-dark: #15803d;
+        --obj-green-light: #86efac;
+        --obj-yellow: #eab308;
+        --obj-yellow-dark: #a16207;
+        --obj-purple: #a855f7;
+        --obj-purple-dark: #7e22ce;
+        --obj-orange: #f97316;
+        --obj-orange-dark: #c2410c;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Container Halaman Kertas */
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm 1.5cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header Style */
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 10px;
+      }
+
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      /* Footer Style */
+      .page-footer {
+        text-align: left;
+        font-size: 7pt;
+        color: var(--grey-text);
+        padding-top: 8px;
+        margin-top: auto;
+        border-top: 1px solid #ccc;
+        width: 100%;
+      }
+
+      /* Section Label */
+      .section-label {
+        font-family: "Montserrat", sans-serif;
+        font-size: 1.1rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #000;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 4px;
+        margin-top: 10px;
+        margin-bottom: 5px;
+      }
+
+      /* Layout Grid Soal */
+      .soal-item {
+        height: 100%;
+        break-inside: avoid;
+        padding: 12px;
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        position: relative;
+      }
+
+      /* Pilihan Ganda */
+      .choice-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 10px;
+      }
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #666;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      /* --- VISUAL ASSETS --- */
+      
+      .start-line {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: #000;
+        border-right: 1px dashed #666;
+        z-index: 10;
+      }
+      .start-line::before {
+        content: "MULAI";
+        position: absolute;
+        top: -15px;
+        left: -10px;
+        font-size: 8px;
+        font-weight: bold;
+        color: #000;
+      }
+
+      .compare-box {
+        position: relative;
+        padding-left: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin: 15px 0;
+      }
+
+      /* === DEFINISI BARU UNTUK HALAMAN 2 (HORIZONTAL BARS) === */
+      .h-bar {
+        height: 20px;
+        border-radius: 0 4px 4px 0;
+        position: relative;
+        box-shadow: 1px 1px 2px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        padding-left: 5px;
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+        transition: width 0.3s ease;
+      }
+      
+      /* Bar Colors */
+      .bar-blue { background-color: var(--obj-blue); border: 1px solid var(--obj-blue-dark); }
+      .bar-purple { background-color: var(--obj-purple); border: 1px solid var(--obj-purple-dark); }
+      .bar-orange { background-color: var(--obj-orange); border: 1px solid var(--obj-orange-dark); }
+      .bar-red { background-color: var(--obj-red); border: 1px solid var(--obj-red-dark); }
+      .bar-green { background-color: var(--obj-green); border: 1px solid var(--obj-green-dark); }
+      .bar-yellow { background-color: var(--obj-yellow); border: 1px solid var(--obj-yellow-dark); color: #555; }
+
+      /* --- ENHANCED ILLUSTRATIONS (Page 1) --- */
+      
+      .tree-container {
+        display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+        position: relative; margin: 0 10px;
+      }
+      .tree-leaves {
+        width: 0; height: 0;
+        border-left: 15px solid transparent; border-right: 15px solid transparent;
+        border-bottom: 30px solid var(--obj-green);
+        position: relative; z-index: 2;
+      }
+      .tree-leaves.tall { border-bottom-width: 50px; border-left-width: 20px; border-right-width: 20px; }
+      .tree-leaves.short { border-bottom-width: 20px; border-left-width: 12px; border-right-width: 12px; }
+      
+      .leaves-green { border-bottom-color: var(--obj-green); }
+      .leaves-green-dark { border-bottom-color: var(--obj-green-dark); }
+      .leaves-green-light { border-bottom-color: var(--obj-green-light); }
+      
+      .tree-trunk { width: 8px; height: 10px; background-color: #78350f; }
+      .tree-trunk.tall { height: 15px; width: 10px; }
+
+      .building-container {
+        display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+      }
+      .building-roof {
+        width: 0; height: 0;
+        border-left: 17px solid transparent; border-right: 17px solid transparent; border-bottom: 10px solid #475569;
+        margin-bottom: -1px; z-index: 2;
+      }
+      .building-body {
+        background-color: #cbd5e1; border: 2px solid #475569;
+        display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; padding: 3px;
+        width: 34px;
+      }
+      .window { width: 6px; height: 8px; background-color: #e0f2fe; border: 1px solid #7dd3fc; }
+      .door { width: 10px; height: 12px; background-color: #78350f; border: 1px solid #451a03; margin-top: auto; border-radius: 2px 2px 0 0; }
+
+      .flagpole-container {
+        display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 40px;
+      }
+      .pole { width: 3px; background-color: #374151; border-radius: 2px 2px 0 0; position: relative; }
+      .flag {
+        position: absolute; top: 2px; left: 3px;
+        width: 0; height: 0;
+        border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+        border-left: 16px solid;
+      }
+      .base { width: 14px; height: 4px; background-color: #1f2937; border-radius: 2px; margin-top: -1px; }
+
+      /* --- MEDIA QUERY PRINT --- */
+      @media print {
+        @page { size: A4; margin: 0; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        body { background-color: white; margin: 0; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; height: auto; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; border: none; padding: 1cm; }
+        .page:last-child { page-break-after: avoid; }
+        .bg-gray-50 { background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; border: 1px solid #dbeafe !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; border: 1px solid #fef9c3 !important; }
+        .bg-green-50 { background-color: #f0fdf4 !important; border: 1px solid #bbf7d0 !important; }
+        .print\:grid-cols-2 { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 1rem !important; }
+        
+        /* Force color print for custom classes */
+        .bar-purple { background-color: #a855f7 !important; border-color: #7e22ce !important; }
+        .bar-blue { background-color: #3b82f6 !important; border-color: #1d4ed8 !important; }
+        .bar-orange { background-color: #f97316 !important; border-color: #c2410c !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1: Konsep Tinggi & Pendek (Vertikal) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide font-montserrat">Discovery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Topik: Panjang (Length)</div>
+                    <div class="text-[9px] text-black font-medium mt-0.5">Istilah Perbandingan</div>
+                    <div class="text-[10px] text-black font-bold mt-0.5">Kode : D2-S124</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-2">
+                <h1 class="text-xl font-bold uppercase tracking-wide text-gray-800 font-montserrat">
+                    Paling Tinggi & Paling Pendek
+                </h1>
+                <p class="text-xs text-gray-500 italic">Untuk benda yang berdiri tegak (vertikal).</p>
+            </div>
+
+            <!-- PART 1: Direct Comparison (Visual Aid) -->
+            <div class="bg-green-50 p-3 rounded-lg border border-green-200 mb-2 flex items-center gap-4">
+                <div class="text-xs text-gray-700 leading-snug w-full text-center">
+                    Benda yang ujung atasnya <b>paling jauh</b> dari tanah disebut <b>PALING TINGGI</b>.<br>
+                    Benda yang ujung atasnya <b>paling dekat</b> dengan tanah disebut <b>PALING PENDEK</b>.
+                </div>
+            </div>
+
+            <div class="section-label">Latihan 1: Membandingkan Tinggi</div>
+
+            <!-- GRID 1: Soal 1 & 2 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4">
+                
+                <!-- Q1: Trees -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">1. Pohon mana yang <b>paling tinggi</b>?</div>
+                    
+                    <div class="relative h-40 flex justify-center items-end gap-6 pb-1 mb-2 border-b-4 border-gray-600">
+                        <!-- Tree A -->
+                        <div class="tree-container">
+                            <div class="tree-leaves leaves-green"></div>
+                            <div class="tree-leaves leaves-green -mt-3"></div>
+                            <div class="tree-trunk"></div>
+                            <div class="text-xs font-bold mt-1">A</div>
+                        </div>
+                        <!-- Tree B -->
+                        <div class="tree-container">
+                            <div class="tree-leaves tall leaves-green-dark"></div>
+                            <div class="tree-leaves tall leaves-green-dark -mt-5"></div>
+                            <div class="tree-leaves tall leaves-green-dark -mt-5"></div>
+                            <div class="tree-trunk tall"></div>
+                            <div class="text-xs font-bold mt-1">B</div>
+                        </div>
+                        <!-- Tree C -->
+                        <div class="tree-container">
+                            <div class="tree-leaves short leaves-green-light"></div>
+                            <div class="tree-trunk"></div>
+                            <div class="text-xs font-bold mt-1">C</div>
+                        </div>
+                    </div>
+
+                    <div class="choice-container justify-center">
+                        <label class="choice-item"><div class="choice-box"></div> Pohon A</label>
+                        <label class="choice-item"><div class="choice-box"></div> Pohon B</label>
+                        <label class="choice-item"><div class="choice-box"></div> Pohon C</label>
+                    </div>
+                </div>
+
+                <!-- Q2: Buildings -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">2. Gedung mana yang <b>paling pendek</b>?</div>
+                    
+                    <div class="relative h-40 flex justify-center items-end gap-4 pb-1 mb-2 border-b-4 border-gray-600">
+                        <!-- Gedung 1 -->
+                        <div class="building-container">
+                            <div class="building-roof"></div>
+                            <div class="building-body h-24 bg-blue-100">
+                                <div class="window"></div><div class="window"></div>
+                                <div class="window"></div><div class="window"></div>
+                                <div class="window"></div><div class="window"></div>
+                                <div class="door"></div>
+                            </div>
+                            <div class="text-xs font-bold mt-1">1</div>
+                        </div>
+                        <!-- Gedung 2 -->
+                        <div class="building-container">
+                            <div class="building-roof" style="border-bottom-color: #334155;"></div>
+                            <div class="building-body h-12 bg-orange-100">
+                                <div class="window"></div><div class="window"></div>
+                                <div class="door" style="width: 8px;"></div>
+                            </div>
+                            <div class="text-xs font-bold mt-1">2</div>
+                        </div>
+                        <!-- Gedung 3 -->
+                        <div class="building-container">
+                            <div class="building-roof" style="border-bottom-color: #1e293b;"></div>
+                            <div class="building-body h-20 bg-yellow-100">
+                                <div class="window"></div><div class="window"></div>
+                                <div class="window"></div><div class="window"></div>
+                                <div class="door"></div>
+                            </div>
+                            <div class="text-xs font-bold mt-1">3</div>
+                        </div>
+                    </div>
+
+                    <div class="choice-container justify-center">
+                        <label class="choice-item"><div class="choice-box"></div> Gedung 1</label>
+                        <label class="choice-item"><div class="choice-box"></div> Gedung 2</label>
+                        <label class="choice-item"><div class="choice-box"></div> Gedung 3</label>
+                    </div>
+                </div>
+
+                <!-- Q3: Flagpoles -->
+                <div class="soal-item col-span-1 md:col-span-2 print:col-span-2">
+                    <div class="font-bold mb-2 text-sm">3. Urutkan tiang bendera dari yang <b>paling pendek</b> ke <b>paling tinggi</b>.</div>
+                    
+                    <div class="relative h-32 flex justify-center items-end gap-16 pb-1 mb-2 border-b-4 border-gray-600 w-full">
+                        <!-- Pole X -->
+                        <div class="flagpole-container">
+                            <div class="pole h-16">
+                                <div class="flag border-l-red-500"></div>
+                            </div>
+                            <div class="base"></div>
+                            <div class="text-xs font-bold mt-1">X</div>
+                        </div>
+                        <!-- Pole Y -->
+                        <div class="flagpole-container">
+                            <div class="pole h-24">
+                                <div class="flag border-l-blue-500"></div>
+                            </div>
+                            <div class="base"></div>
+                            <div class="text-xs font-bold mt-1">Y</div>
+                        </div>
+                        <!-- Pole Z -->
+                        <div class="flagpole-container">
+                            <div class="pole h-10">
+                                <div class="flag border-l-yellow-500"></div>
+                            </div>
+                            <div class="base"></div>
+                            <div class="text-xs font-bold mt-1">Z</div>
+                        </div>
+                    </div>
+
+                    <div class="choice-container justify-center">
+                        <label class="choice-item"><div class="choice-box"></div> Z, X, Y</label>
+                        <label class="choice-item"><div class="choice-box"></div> Y, X, Z</label>
+                        <label class="choice-item"><div class="choice-box"></div> X, Z, Y</label>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="mt-auto"></div>
+        </div>
+        
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i class="block sm:inline">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2: Konsep Panjang & Pendek (Horizontal) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide font-montserrat">Discovery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Topik: Panjang (Length)</div>
+                    <div class="text-[9px] text-black font-bold mt-0.5">Kode : D2-S124</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-2">
+                <h1 class="text-xl font-bold uppercase tracking-wide text-gray-800 font-montserrat">
+                    Paling Panjang & Paling Pendek
+                </h1>
+                <p class="text-xs text-gray-500 italic">Untuk benda yang mendatar (horizontal).</p>
+            </div>
+
+            <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200 mb-2">
+                <div class="text-xs text-gray-700 leading-snug text-center">
+                    Pastikan salah satu ujung benda sejajar di <b>Garis Mulai</b>.<br>
+                    Benda yang paling jauh dari garis mulai adalah <b>PALING PANJANG</b>.
+                </div>
+            </div>
+
+            <div class="section-label">Latihan 2: Membandingkan Panjang</div>
+
+            <!-- Context Visual for Q4, Q5, Q6 - NOW VISIBLE WITH h-bar -->
+            <div class="relative pl-6 py-4 mb-4 border border-dashed border-gray-300 rounded bg-white">
+                <div class="start-line"></div>
+                <div class="flex flex-col gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="text-xs font-bold w-4">P</div>
+                        <div class="h-bar bar-purple w-[40%]"></div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="text-xs font-bold w-4">Q</div>
+                        <div class="h-bar bar-blue w-[90%]"></div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="text-xs font-bold w-4">R</div>
+                        <div class="h-bar bar-orange w-[65%]"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4">
+                <!-- Q4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">4. Pita mana yang <b>paling panjang</b>?</div>
+                    <div class="choice-container flex-col">
+                        <label class="choice-item"><div class="choice-box"></div> Pita P</label>
+                        <label class="choice-item"><div class="choice-box"></div> Pita Q</label>
+                        <label class="choice-item"><div class="choice-box"></div> Pita R</label>
+                    </div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">5. Pita mana yang <b>paling pendek</b>?</div>
+                    <div class="choice-container flex-col">
+                        <label class="choice-item"><div class="choice-box"></div> Pita P</label>
+                        <label class="choice-item"><div class="choice-box"></div> Pita Q</label>
+                        <label class="choice-item"><div class="choice-box"></div> Pita R</label>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">6. Lengkapi kalimat ini:</div>
+                    <div class="text-sm italic text-gray-600 mb-2">"Pita R lebih panjang dari Pita ... tapi lebih pendek dari Pita ..."</div>
+                    <div class="choice-container flex-col">
+                        <label class="choice-item"><div class="choice-box"></div> P, Q</label>
+                        <label class="choice-item"><div class="choice-box"></div> Q, P</label>
+                        <label class="choice-item"><div class="choice-box"></div> P, R</label>
+                    </div>
+                </div>
+
+                <!-- Q7: Ordering -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">7. Urutan pita dari yang <b>paling panjang</b>:</div>
+                    <div class="choice-container flex-col">
+                        <label class="choice-item"><div class="choice-box"></div> P, R, Q</label>
+                        <label class="choice-item"><div class="choice-box"></div> Q, R, P</label>
+                        <label class="choice-item"><div class="choice-box"></div> Q, P, R</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i class="block sm:inline">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3: Logika & Aplikasi ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide font-montserrat">Discovery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Topik: Panjang (Length)</div>
+                    <div class="text-[9px] text-black font-bold mt-0.5">Kode : D2-S124</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="section-label">Latihan 3: Tantangan Logika</div>
+
+            <!-- Q8 -->
+            <div class="soal-item mb-2">
+                <div class="font-bold mb-2 text-sm">8. Perhatikan gambar binatang berikut.</div>
+                
+                <div class="flex justify-center items-end pb-1 mb-2 border-b-2 border-gray-600">
+                    <img src="https://mathruangguru.github.io/mathchamps/revamps/d2/hal3-124ws.png" alt="Ilustrasi Hewan" class="h-40 object-contain">
+                </div>
+
+                <div class="font-semibold text-xs mb-2">Binatang manakah yang <b>paling tinggi</b>?</div>
+                <div class="choice-container">
+                    <label class="choice-item"><div class="choice-box"></div> Jerapah</label>
+                    <label class="choice-item"><div class="choice-box"></div> Gajah</label>
+                    <label class="choice-item"><div class="choice-box"></div> Katak</label>
+                </div>
+            </div>
+
+            <!-- Q9 Logic -->
+            <div class="soal-item bg-purple-50 border-purple-200 mb-2">
+                <div class="font-bold mb-2 text-sm text-purple-900">9. Teka-Teki Ular</div>
+                <div class="text-sm mb-3 text-purple-800">
+                    <ul class="list-disc ml-5 space-y-1">
+                        <li>Ular A lebih panjang dari Ular B.</li>
+                        <li>Ular C lebih panjang dari Ular A.</li>
+                    </ul>
+                    <br>
+                    Ular manakah yang <b>paling panjang</b>?
+                </div>
+                <div class="choice-container">
+                    <label class="choice-item"><div class="choice-box"></div> Ular A</label>
+                    <label class="choice-item"><div class="choice-box"></div> Ular B</label>
+                    <label class="choice-item"><div class="choice-box"></div> Ular C</label>
+                </div>
+            </div>
+
+            <!-- Q10 Challenge -->
+            <div class="soal-item bg-orange-50 border-orange-200">
+                <div class="font-bold mb-2 text-sm text-orange-900">10. Tantangan Bangunan</div>
+                <div class="text-sm mb-3 text-orange-800">
+                    Ada 3 menara: Merah, Biru, Hijau.<br>
+                    Menara Merah <b>paling pendek</b>.<br>
+                    Menara Biru <b>bukan</b> yang paling tinggi.<br>
+                    <br>
+                    Urutan dari yang <b>paling tinggi</b> adalah...
+                </div>
+                <div class="choice-container flex-col !gap-2">
+                    <label class="choice-item"><div class="choice-box"></div> Hijau, Biru, Merah</label>
+                    <label class="choice-item"><div class="choice-box"></div> Biru, Hijau, Merah</label>
+                    <label class="choice-item"><div class="choice-box"></div> Merah, Biru, Hijau</label>
+                </div>
+            </div>
+
+            <div class="mt-auto mb-4 text-center pt-6">
+                <div class="text-sm font-bold text-gray-500 italic px-8 py-2 border-t border-b border-gray-200 inline-block">
+                    Mantap! Kamu benar-benar Math Champs!
+                </div>
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i class="block sm:inline">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
