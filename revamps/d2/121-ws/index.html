@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - D2.S121 Membandingkan Tinggi</title>
+    
+    <!-- Tailwind untuk layout responsif dan utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA & VARIABEL --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --bg-page: #525659;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: var(--bg-page);
+        margin: 0;
+        padding: 20px 0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Container Halaman Kertas */
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header Style */
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+        border-bottom: 3px solid #000;
+        padding-bottom: 10px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+
+      /* Footer Style */
+      .page-footer {
+        text-align: left;
+        font-size: 7pt;
+        color: var(--grey-text);
+        padding-top: 8px;
+        margin-top: auto;
+        border-top: 1px solid #ccc;
+        width: 100%;
+      }
+
+      /* Section Label */
+      .section-label {
+        font-size: 1rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #1e3a8a; /* Dark Blue */
+        border-bottom: 2px solid #1e3a8a;
+        padding-bottom: 4px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+
+      /* Soal Box */
+      .soal-item {
+        height: 100%;
+        break-inside: avoid;
+        background-color: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 12px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Choice Checkbox */
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+      }
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #333;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+      }
+
+      /* Input Line */
+      .input-line {
+        border: none;
+        border-bottom: 1.5px solid #333;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        background: transparent;
+        outline: none;
+        font-family: 'Montserrat', sans-serif;
+        padding: 0 5px;
+      }
+
+      /* --- CUSTOM VISUALS (SVG Based) --- */
+      .visual-box {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 20px;
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 8px;
+        border: 1px dashed #9ca3af;
+        position: relative;
+        min-height: 120px;
+        margin-bottom: 10px;
+      }
+      
+      .baseline {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        height: 2px;
+        background-color: #4b5563;
+      }
+      
+      .baseline-label {
+        position: absolute;
+        bottom: -5px;
+        right: 0;
+        font-size: 8px;
+        color: #666;
+        background: #fff;
+        padding: 0 4px;
+      }
+
+      /* Helper for Concepts */
+      .concept-box {
+        background-color: #eff6ff;
+        border-left: 4px solid #3b82f6;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+      }
+
+      /* Print Specifics */
+      @media print {
+        @page { size: A4; margin: 0; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        body { background-color: white; margin: 0; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; height: auto; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; border: none; padding: 1cm; }
+        .page:last-child { page-break-after: avoid; }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .visual-box { border: 1px dashed #9ca3af !important; }
+        .print\:grid-cols-2 { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 1rem !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Pengukuran (Measurement)
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Membandingkan tinggi benda: Tinggi (Tall) dan Pendek (Short)
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Kode : D2-S121
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Title -->
+            <div class="text-center mb-4">
+                <h1 class="text-xl font-bold uppercase tracking-wide text-gray-800">
+                    Membandingkan Tinggi
+                </h1>
+            </div>
+
+            <!-- CONCEPT: Tall vs Short -->
+            <div class="concept-box flex items-center justify-between gap-4">
+                <div class="w-1/2 text-sm">
+                    <p class="font-bold mb-1 text-blue-700">Kunci Konsep:</p>
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li><b>Tinggi (Tall)</b>: Jarak dari bawah ke atas jauh.</li>
+                        <li><b>Pendek (Short)</b>: Jarak dari bawah ke atas dekat.</li>
+                        <li>Pastikan benda berdiri di <b>garis yang sama</b>!</li>
+                    </ul>
+                </div>
+                <div class="w-1/2 flex justify-center items-end gap-6 border-l border-blue-200 pl-4 relative h-[100px]">
+                    <!-- Tall Tree -->
+                    <div class="flex flex-col items-center">
+                        <span class="text-[10px] font-bold text-green-700 mb-1">TINGGI</span>
+                        <svg width="40" height="80" viewBox="0 0 40 80">
+                            <rect x="15" y="60" width="10" height="20" fill="#8B4513" />
+                            <polygon points="20,0 40,60 0,60" fill="#22c55e" />
+                        </svg>
+                    </div>
+                    <!-- Short Tree -->
+                    <div class="flex flex-col items-center">
+                        <span class="text-[10px] font-bold text-green-700 mb-1">PENDEK</span>
+                        <svg width="40" height="80" viewBox="0 0 40 80">
+                            <rect x="15" y="70" width="10" height="10" fill="#8B4513" />
+                            <polygon points="20,30 35,70 5,70" fill="#86efac" stroke="#22c55e" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <!-- Baseline -->
+                    <div class="absolute bottom-0 w-full h-0.5 bg-gray-400"></div>
+                </div>
+            </div>
+
+            <!-- SECTION 1: Direct Comparison -->
+            <div class="section-label">Bagian 1: Bandingkan Dua Benda</div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4">
+                
+                <!-- Q1 -->
+                <div class="soal-item bg-gray-50">
+                    <div class="font-bold mb-2 text-sm">1. Manakah yang Lebih Tinggi?</div>
+                    <div class="visual-box">
+                        <div class="baseline"></div>
+                        <!-- Ladder A (Short) -->
+                        <div class="flex flex-col items-center z-10">
+                            <span class="mb-1 font-bold text-xs">(A)</span>
+                            <svg width="30" height="60" viewBox="0 0 30 60">
+                                <line x1="5" y1="20" x2="5" y2="60" stroke="#555" stroke-width="3"/>
+                                <line x1="25" y1="20" x2="25" y2="60" stroke="#555" stroke-width="3"/>
+                                <line x1="5" y1="30" x2="25" y2="30" stroke="#555" stroke-width="2"/>
+                                <line x1="5" y1="40" x2="25" y2="40" stroke="#555" stroke-width="2"/>
+                                <line x1="5" y1="50" x2="25" y2="50" stroke="#555" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <!-- Ladder B (Tall) -->
+                        <div class="flex flex-col items-center z-10">
+                            <span class="mb-1 font-bold text-xs">(B)</span>
+                            <svg width="30" height="80" viewBox="0 0 30 80">
+                                <line x1="5" y1="0" x2="5" y2="80" stroke="#333" stroke-width="3"/>
+                                <line x1="25" y1="0" x2="25" y2="80" stroke="#333" stroke-width="3"/>
+                                <line x1="5" y1="10" x2="25" y2="10" stroke="#333" stroke-width="2"/>
+                                <line x1="5" y1="30" x2="25" y2="30" stroke="#333" stroke-width="2"/>
+                                <line x1="5" y1="50" x2="25" y2="50" stroke="#333" stroke-width="2"/>
+                                <line x1="5" y1="70" x2="25" y2="70" stroke="#333" stroke-width="2"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="choice-item"><div class="choice-box"></div> Tangga A</label>
+                        <label class="choice-item"><div class="choice-box"></div> Tangga B</label>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="soal-item bg-gray-50">
+                    <div class="font-bold mb-2 text-sm">2. Manakah yang Lebih Pendek?</div>
+                    <div class="visual-box">
+                        <div class="baseline"></div>
+                        <!-- Lamp A (Tall) -->
+                        <div class="flex flex-col items-center z-10">
+                            <span class="mb-1 font-bold text-xs">(A)</span>
+                            <svg width="20" height="90" viewBox="0 0 20 90">
+                                <rect x="8" y="10" width="4" height="80" fill="#444" />
+                                <circle cx="10" cy="10" r="10" fill="#facc15" />
+                            </svg>
+                        </div>
+                        <!-- Lamp B (Short) -->
+                        <div class="flex flex-col items-center z-10">
+                            <span class="mb-1 font-bold text-xs">(B)</span>
+                            <svg width="20" height="50" viewBox="0 0 20 50">
+                                <rect x="8" y="10" width="4" height="40" fill="#444" />
+                                <circle cx="10" cy="10" r="8" fill="#fbbf24" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="choice-item"><div class="choice-box"></div> Lampu A</label>
+                        <label class="choice-item"><div class="choice-box"></div> Lampu B</label>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SECTION 2: Ordering & Misconceptions -->
+            <div class="section-label">Bagian 2: Mengurutkan & Teliti</div>
+
+            <!-- Q3: Ordering -->
+            <div class="soal-item bg-blue-50 border-blue-200 mb-2">
+                <div class="font-bold mb-2 text-sm">3. Urutkan Gedung dari yang Paling Pendek ke Paling Tinggi.</div>
+                <div class="visual-box bg-white border-blue-200">
+                    <div class="baseline"></div>
+                    <!-- Building A (Medium) -->
+                    <div class="flex flex-col items-center z-10">
+                        <span class="mb-1 font-bold text-xs">A</span>
+                        <svg width="30" height="60" viewBox="0 0 30 60">
+                            <rect width="30" height="60" fill="#93c5fd" stroke="#1e40af" stroke-width="2"/>
+                            <rect x="5" y="10" width="8" height="8" fill="white"/>
+                            <rect x="17" y="10" width="8" height="8" fill="white"/>
+                            <rect x="5" y="30" width="8" height="8" fill="white"/>
+                            <rect x="17" y="30" width="8" height="8" fill="white"/>
+                        </svg>
+                    </div>
+                    <!-- Building B (Tallest) -->
+                    <div class="flex flex-col items-center z-10">
+                        <span class="mb-1 font-bold text-xs">B</span>
+                        <svg width="30" height="90" viewBox="0 0 30 90">
+                            <rect width="30" height="90" fill="#60a5fa" stroke="#1e40af" stroke-width="2"/>
+                            <rect x="5" y="10" width="8" height="8" fill="white"/>
+                            <rect x="5" y="30" width="8" height="8" fill="white"/>
+                            <rect x="5" y="50" width="8" height="8" fill="white"/>
+                            <rect x="5" y="70" width="8" height="8" fill="white"/>
+                        </svg>
+                    </div>
+                    <!-- Building C (Shortest) -->
+                    <div class="flex flex-col items-center z-10">
+                        <span class="mb-1 font-bold text-xs">C</span>
+                        <svg width="30" height="40" viewBox="0 0 30 40">
+                            <rect width="30" height="40" fill="#dbeafe" stroke="#1e40af" stroke-width="2"/>
+                            <rect x="8" y="10" width="14" height="14" fill="white"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2 mt-3 ml-2 text-sm">
+                    <label class="choice-item"><div class="choice-box"></div> C - A - B</label>
+                    <label class="choice-item"><div class="choice-box"></div> B - A - C</label>
+                    <label class="choice-item"><div class="choice-box"></div> A - B - C</label>
+                </div>
+            </div>
+
+            <!-- Q4: Misconception Check (Side by Side) -->
+            <div class="soal-item bg-yellow-50 border-yellow-200">
+                <div class="font-bold mb-2 text-sm">4. Manakah pernyataan yang BENAR tentang gambar ini?</div>
+                <div class="flex items-center justify-center gap-8 p-4 bg-white border border-yellow-300 rounded-lg relative overflow-hidden h-[120px]">
+                    <!-- Ground Level 1 -->
+                    <div class="absolute bottom-[20px] left-[10%] w-[30%] h-[20px] bg-gray-300 border-t border-gray-500"></div>
+                    <!-- Ground Level 2 (Higher) -->
+                    <div class="absolute bottom-[40px] right-[10%] w-[30%] h-[40px] bg-gray-300 border-t border-gray-500"></div>
+
+                    <!-- Flower 1 (Taller but lower) -->
+                    <div class="absolute bottom-[40px] left-[20%] flex flex-col items-center">
+                        <span class="text-xs font-bold mb-1">A</span>
+                        <svg width="20" height="60" viewBox="0 0 20 60">
+                            <line x1="10" y1="10" x2="10" y2="60" stroke="green" stroke-width="2"/>
+                            <circle cx="10" cy="10" r="8" fill="pink" stroke="red"/>
+                        </svg>
+                    </div>
+
+                    <!-- Flower 2 (Shorter but higher) -->
+                    <div class="absolute bottom-[80px] right-[20%] flex flex-col items-center">
+                        <span class="text-xs font-bold mb-1">B</span>
+                        <svg width="20" height="30" viewBox="0 0 20 30">
+                            <line x1="10" y1="10" x2="10" y2="30" stroke="green" stroke-width="2"/>
+                            <circle cx="10" cy="10" r="8" fill="yellow" stroke="orange"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500 mt-1 italic text-center">*Perhatikan garis berdirinya!</div>
+                <div class="flex flex-col gap-2 mt-3 ml-2 text-sm">
+                    <label class="choice-item"><div class="choice-box"></div> Bunga B lebih tinggi dari A.</label>
+                    <label class="choice-item"><div class="choice-box"></div> Bunga A lebih tinggi dari B.</label>
+                    <label class="choice-item"><div class="choice-box"></div> Kita tidak bisa membandingkan karena dasar berdirinya beda.</label>
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Pengukuran</div>
+                    <div class="text-[11px] text-black font-medium mt-1">Kode : D2-S121</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- SECTION 3: Measuring with Units -->
+            <div class="section-label">Bagian 3: Mengukur dengan Satuan</div>
+
+            <!-- Q5 & Q6 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4 mb-2">
+                <!-- Q5 -->
+                <div class="soal-item bg-gray-50">
+                    <div class="font-bold mb-2 text-sm">5. Berapa kotak tinggi botol ini?</div>
+                    <div class="flex items-end justify-center gap-4 py-4 border border-gray-200 rounded bg-white h-[160px]">
+                        <!-- Bottle SVG -->
+                        <svg width="30" height="80" viewBox="0 0 30 80">
+                            <rect x="5" y="20" width="20" height="60" rx="3" fill="#60a5fa" stroke="#1e40af" stroke-width="2"/>
+                            <rect x="10" y="0" width="10" height="20" fill="#93c5fd" stroke="#1e40af" stroke-width="2"/>
+                        </svg>
+                        <!-- Blocks -->
+                        <div class="flex flex-col-reverse gap-1">
+                            <div class="w-6 h-6 border border-gray-500 bg-gray-100 flex items-center justify-center text-[10px]">1</div>
+                            <div class="w-6 h-6 border border-gray-500 bg-gray-100 flex items-center justify-center text-[10px]">2</div>
+                            <div class="w-6 h-6 border border-gray-500 bg-gray-100 flex items-center justify-center text-[10px]">3</div>
+                            <div class="w-6 h-6 border border-gray-500 bg-gray-100 flex items-center justify-center text-[10px]">4</div>
+                        </div>
+                    </div>
+                    <div class="text-center text-sm font-bold mt-auto pt-2">
+                        Tinggi = <input type="text" class="input-line w-12 text-center"> kotak
+                    </div>
+                </div>
+
+                <!-- Q6 (IMPROVED ALIGNMENT) -->
+                <div class="soal-item bg-gray-50">
+                    <div class="font-bold mb-2 text-sm">6. Lilin mana yang tingginya 3 unit?</div>
+                    <div class="flex items-end justify-center py-4 border border-gray-200 rounded bg-white h-[160px]">
+                        
+                        <!-- Combined SVG for Grid and Candles to ensure perfect alignment -->
+                        <svg width="220" height="120" viewBox="0 0 220 120" class="border-b border-gray-400">
+                            <!-- Grid Lines (Unit height = 25px) -->
+                            <!-- y=95 (1 unit), y=70 (2 units), y=45 (3 units), y=20 (4 units) -->
+                            <line x1="0" y1="95" x2="220" y2="95" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="4"/>
+                            <line x1="0" y1="70" x2="220" y2="70" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="4"/>
+                            <line x1="0" y1="45" x2="220" y2="45" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="4"/>
+                            <line x1="0" y1="20" x2="220" y2="20" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="4"/>
+
+                            <!-- Candle A (1 unit) -->
+                            <rect x="30" y="95" width="20" height="25" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/>
+                            <line x1="40" y1="95" x2="40" y2="90" stroke="#333"/> <!-- wick -->
+                            <text x="40" y="115" font-size="10" text-anchor="middle" font-weight="bold">A</text>
+
+                            <!-- Candle B (3 units) -->
+                            <rect x="90" y="45" width="20" height="75" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/>
+                            <line x1="100" y1="45" x2="100" y2="40" stroke="#333"/> <!-- wick -->
+                            <text x="100" y="115" font-size="10" text-anchor="middle" font-weight="bold">B</text>
+
+                            <!-- Candle C (2 units) -->
+                            <rect x="150" y="70" width="20" height="50" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/>
+                            <line x1="160" y1="70" x2="160" y2="65" stroke="#333"/> <!-- wick -->
+                            <text x="160" y="115" font-size="10" text-anchor="middle" font-weight="bold">C</text>
+
+                            <!-- Unit Reference on Right -->
+                            <rect x="190" y="95" width="10" height="25" fill="#e5e5e5" stroke="#666"/>
+                            <text x="200" y="90" font-size="8" text-anchor="middle" fill="#666">1 Unit</text>
+                        </svg>
+
+                    </div>
+                    <div class="flex justify-center gap-6 mt-3 text-sm font-semibold">
+                        <label class="choice-item"><div class="choice-box"></div> A</label>
+                        <label class="choice-item"><div class="choice-box"></div> B</label>
+                        <label class="choice-item"><div class="choice-box"></div> C</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: Logic & Comparison -->
+            <div class="section-label">Bagian 4: Tantangan Logika</div>
+
+            <!-- Q7 & Q8 Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4 mb-2">
+                <!-- Q7 Word Problem -->
+                <div class="soal-item bg-purple-50 p-4 border border-purple-200">
+                    <div class="font-bold mb-2 text-sm text-purple-900">
+                        7. Teka-teki Tinggi Badan
+                    </div>
+                    <div class="text-xs leading-relaxed mb-4 text-purple-800">
+                        Baca petunjuk:
+                        <ul class="list-disc pl-5 mt-1">
+                            <li><b>Dino</b> lebih tinggi dari <b>Rara</b>.</li>
+                            <li><b>Rara</b> lebih tinggi dari <b>Tito</b>.</li>
+                        </ul>
+                        <div class="mt-2 text-center text-gray-500 italic font-medium">Dino > Rara > Tito</div>
+                        <br>
+                        Siapakah yang <b>paling pendek</b>?
+                    </div>
+                    <div class="flex flex-col gap-2 text-sm ml-2">
+                        <label class="choice-item"><div class="choice-box"></div> Dino</label>
+                        <label class="choice-item"><div class="choice-box"></div> Rara</label>
+                        <label class="choice-item"><div class="choice-box"></div> Tito</label>
+                    </div>
+                </div>
+
+                <!-- Q8: Comparing Fences -->
+                <div class="soal-item bg-gray-50">
+                    <div class="font-bold mb-2 text-sm">8. Pagar mana yang paling rendah?</div>
+                    <div class="visual-box h-[100px] items-end justify-around">
+                        <div class="baseline"></div>
+                        <!-- Fence A -->
+                        <div class="flex flex-col items-center z-10">
+                            <svg width="30" height="60" viewBox="0 0 30 60">
+                                <path d="M5,10 L5,60 M15,10 L15,60 M25,10 L25,60 M0,20 L30,20 M0,50 L30,50" stroke="#854d0e" stroke-width="2" fill="none"/>
+                                <path d="M5,10 L10,5 L15,10 M15,10 L20,5 L25,10" stroke="#854d0e" stroke-width="2" fill="none"/>
+                            </svg>
+                            <span class="text-xs font-bold mt-1">A</span>
+                        </div>
+                        <!-- Fence B (Lowest) -->
+                        <div class="flex flex-col items-center z-10">
+                            <svg width="30" height="30" viewBox="0 0 30 30">
+                                <path d="M5,10 L5,30 M15,10 L15,30 M25,10 L25,30 M0,15 L30,15 M0,25 L30,25" stroke="#854d0e" stroke-width="2" fill="none"/>
+                            </svg>
+                            <span class="text-xs font-bold mt-1">B</span>
+                        </div>
+                        <!-- Fence C -->
+                        <div class="flex flex-col items-center z-10">
+                            <svg width="30" height="50" viewBox="0 0 30 50">
+                                <path d="M5,10 L5,50 M15,10 L15,50 M25,10 L25,50 M0,20 L30,20 M0,40 L30,40" stroke="#854d0e" stroke-width="2" fill="none"/>
+                            </svg>
+                            <span class="text-xs font-bold mt-1">C</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-center gap-4 mt-2 text-sm">
+                        <label class="choice-item"><div class="choice-box"></div> A</label>
+                        <label class="choice-item"><div class="choice-box"></div> B</label>
+                        <label class="choice-item"><div class="choice-box"></div> C</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: Final Challenge -->
+            <div class="section-label">Bagian 5: Latihan Tambahan</div>
+
+            <!-- Q9 & Q10 Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4 mb-4">
+                <!-- Q9 Logic -->
+                <div class="soal-item bg-gray-50">
+                    <div class="font-bold mb-2 text-sm">9. Urutkan hewan dari yang paling tinggi.</div>
+                    <div class="text-xs text-gray-700 mb-2">
+                        <ul class="list-disc pl-4 space-y-1">
+                            <li><b>Gajah</b> lebih tinggi dari <b>Kuda</b>.</li>
+                            <li><b>Jerapah</b> lebih tinggi dari <b>Gajah</b>.</li>
+                        </ul>
+                    </div>
+                    <div class="flex flex-col gap-2 text-xs mt-2 ml-1">
+                        <label class="choice-item"><div class="choice-box"></div> Gajah - Kuda - Jerapah</label>
+                        <label class="choice-item"><div class="choice-box"></div> Jerapah - Gajah - Kuda</label>
+                        <label class="choice-item"><div class="choice-box"></div> Kuda - Jerapah - Gajah</label>
+                    </div>
+                </div>
+
+                <!-- Q10 Measurement Math -->
+                <div class="soal-item bg-blue-50 border-blue-200">
+                    <div class="font-bold mb-2 text-sm">10. Selisih Tinggi</div>
+                    <div class="flex items-center gap-4 justify-center py-2">
+                        <div class="text-center">
+                            <div class="w-6 h-20 bg-red-200 border border-red-400 mx-auto"></div>
+                            <span class="text-[10px] font-bold">Menara A<br>(5 m)</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-6 h-12 bg-blue-200 border border-blue-400 mx-auto"></div>
+                            <span class="text-[10px] font-bold">Menara B<br>(3 m)</span>
+                        </div>
+                    </div>
+                    <div class="text-center text-sm mt-2">
+                        Berapa meter beda tingginya? <br>
+                        <b>5 - 3 = </b> <input type="text" class="input-line w-10 text-center"> m
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-auto mb-4 text-center">
+                <div class="text-lg font-bold text-gray-500 italic px-8 py-4 border-t border-b border-gray-100">
+                    Mantap! Tutup dengan senyum—kamu sudah bekerja luar biasa. 😊
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
