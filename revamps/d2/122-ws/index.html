@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - D2.S122 Membandingkan Panjang</title>
+    
+    <!-- Tailwind untuk layout responsif dan utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA & VARIABEL --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --bg-page: #e0e0e0;
+        
+        /* Warna Visual Objek */
+        --obj-blue: #3b82f6;
+        --obj-blue-dark: #1d4ed8;
+        --obj-red: #ef4444;
+        --obj-red-dark: #b91c1c;
+        --obj-green: #22c55e;
+        --obj-green-dark: #15803d;
+        --obj-yellow: #eab308;
+        --obj-yellow-dark: #a16207;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Container Halaman Kertas */
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm 1.5cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header Style */
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 10px;
+      }
+
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      /* Footer Style */
+      .page-footer {
+        text-align: left;
+        font-size: 7pt;
+        color: var(--grey-text);
+        padding-top: 8px;
+        margin-top: auto;
+        border-top: 1px solid #ccc;
+        width: 100%;
+      }
+
+      /* Section Label */
+      .section-label {
+        font-family: "Montserrat", sans-serif;
+        font-size: 1.1rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #000;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 4px;
+        margin-top: 10px;
+        margin-bottom: 5px;
+      }
+
+      /* Layout Grid Soal */
+      .soal-item {
+        height: 100%;
+        break-inside: avoid;
+        padding: 12px;
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        position: relative;
+      }
+
+      /* Pilihan Ganda */
+      .choice-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 10px;
+      }
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #666;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      /* --- VISUAL ASSETS (CSS Pencils & Bars) --- */
+      
+      .start-line {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: #000;
+        border-right: 1px dashed #666;
+        z-index: 10;
+      }
+      .start-line::before {
+        content: "MULAI";
+        position: absolute;
+        top: -15px;
+        left: -10px;
+        font-size: 8px;
+        font-weight: bold;
+        color: #000;
+      }
+
+      .compare-box {
+        position: relative;
+        padding-left: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin: 15px 0;
+      }
+
+      .visual-bar {
+        height: 18px;
+        border-radius: 0 4px 4px 0;
+        position: relative;
+        box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        padding-left: 5px;
+        color: white;
+        font-size: 9px;
+        font-weight: bold;
+      }
+      .bar-blue { background-color: var(--obj-blue); border: 1px solid var(--obj-blue-dark); width: 100%; }
+      .bar-red { background-color: var(--obj-red); border: 1px solid var(--obj-red-dark); width: 60%; }
+      .bar-green { background-color: var(--obj-green); border: 1px solid var(--obj-green-dark); width: 40%; }
+      .bar-yellow { background-color: var(--obj-yellow); border: 1px solid var(--obj-yellow-dark); width: 80%; color: #555; }
+
+      .pencil {
+        height: 14px;
+        position: relative;
+        border-radius: 0 2px 2px 0;
+        display: flex;
+      }
+      .pencil-body {
+        height: 100%;
+        flex-grow: 1;
+        border-top: 1px solid rgba(0,0,0,0.1);
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+      }
+      .pencil-tip {
+        width: 0; 
+        height: 0; 
+        border-top: 7px solid transparent;
+        border-bottom: 7px solid transparent;
+        border-left: 10px solid;
+        position: relative;
+        right: -5px;
+      }
+      .pencil-eraser {
+        width: 10px;
+        height: 100%;
+        background-color: #fca5a5;
+        border-left: 2px solid #ccc;
+      }
+      
+      .p-blue .pencil-body { background-color: var(--obj-blue); }
+      .p-blue .pencil-tip { border-left-color: var(--obj-blue); }
+      .p-red .pencil-body { background-color: var(--obj-red); }
+      .p-red .pencil-tip { border-left-color: var(--obj-red); }
+      .p-green .pencil-body { background-color: var(--obj-green); }
+      .p-green .pencil-tip { border-left-color: var(--obj-green); }
+
+      /* --- MEDIA QUERY PRINT --- */
+      @media print {
+        @page { size: A4; margin: 0; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        body { background-color: white; margin: 0; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; height: auto; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; border: none; padding: 1cm; }
+        .page:last-child { page-break-after: avoid; }
+        .bg-gray-50 { background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; border: 1px solid #dbeafe !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; border: 1px solid #fef9c3 !important; }
+        .print\:grid-cols-2 { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 1rem !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide font-montserrat">Discovery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Topik: Panjang (Length)</div>
+                    <div class="text-[9px] text-black font-medium mt-0.5">Membandingkan Panjang & Pendek</div>
+                    <div class="text-[10px] text-black font-bold mt-0.5">Kode : D2-S122</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-2">
+                <h1 class="text-xl font-bold uppercase tracking-wide text-gray-800 font-montserrat">
+                    Mana yang Lebih Panjang?
+                </h1>
+                <p class="text-xs text-gray-500 italic">Pastikan ujung benda sejajar di garis mulai.</p>
+            </div>
+
+            <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 mb-2 flex items-center gap-4">
+                <div class="w-10 h-10 flex items-center justify-center bg-white rounded-full text-2xl">📏</div>
+                <div class="text-xs text-gray-700 leading-snug">
+                    <b>Tips:</b> Untuk membandingkan panjang, letakkan benda dimulai dari garis yang sama (garis lurus).<br>
+                    Benda yang ujungnya lebih jauh adalah yang <b>LEBIH PANJANG</b>.
+                </div>
+            </div>
+
+            <div class="section-label">Latihan 1: Bandingkan Dua Benda</div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4">
+                
+                <!-- Q1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">1. Manakah yang <b>lebih panjang</b>?</div>
+                    <div class="compare-box">
+                        <div class="start-line"></div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-xs font-bold w-4">A</div>
+                            <div class="visual-bar bar-red w-[60%]"></div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-xs font-bold w-4">B</div>
+                            <div class="visual-bar bar-blue w-[90%]"></div>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="choice-item"><div class="choice-box"></div> Benda A</label>
+                        <label class="choice-item"><div class="choice-box"></div> Benda B</label>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">2. Manakah pensil yang <b>lebih pendek</b>?</div>
+                    <div class="compare-box">
+                        <div class="start-line"></div>
+                        <div class="flex items-center gap-2 w-full">
+                            <div class="text-xs font-bold w-4">A</div>
+                            <div class="flex w-[80%] items-center p-green">
+                                <div class="pencil-eraser"></div>
+                                <div class="pencil-body"></div>
+                                <div class="pencil-tip"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 w-full">
+                            <div class="text-xs font-bold w-4">B</div>
+                            <div class="flex w-[40%] items-center p-yellow"> 
+                                <div class="pencil-eraser" style="background:#fde047"></div>
+                                <div class="pencil-body" style="background:#eab308"></div>
+                                <div class="pencil-tip" style="border-left-color:#eab308"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="choice-item"><div class="choice-box"></div> Pensil A</label>
+                        <label class="choice-item"><div class="choice-box"></div> Pensil B</label>
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">3. Pita mana yang paling panjang?</div>
+                    <div class="compare-box">
+                        <div class="start-line"></div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-xs font-bold w-4">1</div>
+                            <div class="visual-bar bar-green w-[50%]"></div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-xs font-bold w-4">2</div>
+                            <div class="visual-bar bar-red w-[75%]"></div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-xs font-bold w-4">3</div>
+                            <div class="visual-bar bar-blue w-[40%]"></div>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="choice-item"><div class="choice-box"></div> Pita 1</label>
+                        <label class="choice-item"><div class="choice-box"></div> Pita 2</label>
+                        <label class="choice-item"><div class="choice-box"></div> Pita 3</label>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">4. Urutkan dari yang <b>terpendek</b>.</div>
+                    <div class="compare-box">
+                        <div class="start-line"></div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-xs font-bold w-4">X</div>
+                            <div class="visual-bar bar-yellow w-[90%]"></div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-xs font-bold w-4">Y</div>
+                            <div class="visual-bar bar-blue w-[30%]"></div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-xs font-bold w-4">Z</div>
+                            <div class="visual-bar bar-green w-[60%]"></div>
+                        </div>
+                    </div>
+                    <div class="choice-container flex-col !gap-2">
+                        <label class="choice-item"><div class="choice-box"></div> Y, Z, X</label>
+                        <label class="choice-item"><div class="choice-box"></div> X, Z, Y</label>
+                        <label class="choice-item"><div class="choice-box"></div> Z, Y, X</label>
+                    </div>
+                </div>
+
+            </div>
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i class="block sm:inline">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide font-montserrat">Discovery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Topik: Panjang (Length)</div>
+                    <div class="text-[9px] text-black font-bold mt-0.5">Kode : D2-S122</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="section-label">Latihan 2: Membandingkan Tinggi</div>
+            
+            <!-- Context Box -->
+            <div class="bg-gray-50 p-3 rounded border border-gray-200 text-sm mb-4">
+                <p>Perhatikan gambar menara balok di bawah ini untuk menjawab soal nomor 5, 6, dan 7.</p>
+            </div>
+
+            <!-- VISUAL: Vertical Stacks (Height) FIXED LAYOUT -->
+            <div class="flex justify-center items-end gap-12 h-48 mb-6 border-b-2 border-gray-400 relative pt-4">
+                <!-- Tower A -->
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 bg-red-400 border border-red-600 rounded-sm mb-0.5"></div>
+                    <div class="w-8 h-8 bg-red-400 border border-red-600 rounded-sm mb-0.5"></div>
+                    <div class="w-8 h-8 bg-red-400 border border-red-600 rounded-sm mb-0.5"></div>
+                    <div class="text-sm font-bold mt-2">A</div>
+                </div>
+                <!-- Tower B (Adjusted Height to not crash) -->
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 bg-blue-400 border border-blue-600 rounded-sm mb-0.5"></div>
+                    <div class="w-8 h-8 bg-blue-400 border border-blue-600 rounded-sm mb-0.5"></div>
+                    <div class="w-8 h-8 bg-blue-400 border border-blue-600 rounded-sm mb-0.5"></div>
+                    <div class="w-8 h-8 bg-blue-400 border border-blue-600 rounded-sm mb-0.5"></div>
+                    <div class="w-8 h-8 bg-blue-400 border border-blue-600 rounded-sm mb-0.5"></div>
+                    <div class="text-sm font-bold mt-2">B</div>
+                </div>
+                <!-- Tower C -->
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 bg-green-400 border border-green-600 rounded-sm mb-0.5"></div>
+                    <div class="w-8 h-8 bg-green-400 border border-green-600 rounded-sm mb-0.5"></div>
+                    <div class="text-sm font-bold mt-2">C</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
+                <!-- Q5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">5. Menara mana yang paling tinggi?</div>
+                    <div class="choice-container flex-col">
+                        <label class="choice-item"><div class="choice-box"></div> Menara A</label>
+                        <label class="choice-item"><div class="choice-box"></div> Menara B</label>
+                        <label class="choice-item"><div class="choice-box"></div> Menara C</label>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">6. Lengkapi kalimat ini:</div>
+                    <div class="text-sm italic text-gray-600 mb-3">"Menara A lebih _______ dari Menara C."</div>
+                    <div class="choice-container flex-col">
+                        <label class="choice-item"><div class="choice-box"></div> Pendek</label>
+                        <label class="choice-item"><div class="choice-box"></div> Tinggi</label>
+                        <label class="choice-item"><div class="choice-box"></div> Sama tinggi</label>
+                    </div>
+                </div>
+
+                <!-- Q7 (New) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">7. Urutkan menara dari yang paling rendah.</div>
+                    <div class="choice-container flex-col">
+                        <label class="choice-item"><div class="choice-box"></div> C, A, B</label>
+                        <label class="choice-item"><div class="choice-box"></div> A, B, C</label>
+                        <label class="choice-item"><div class="choice-box"></div> B, A, C</label>
+                    </div>
+                </div>
+
+                <!-- Q8 (New) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">8. Berapa beda tinggi Menara A dan C?</div>
+                    <div class="text-xs text-gray-500 italic mb-2">(Hitung selisih jumlah kotaknya)</div>
+                    <div class="choice-container flex-col">
+                        <label class="choice-item"><div class="choice-box"></div> 1 kotak</label>
+                        <label class="choice-item"><div class="choice-box"></div> 2 kotak</label>
+                        <label class="choice-item"><div class="choice-box"></div> 3 kotak</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-label mt-6">Bagian 3: Tantangan Logika</div>
+
+            <!-- Q9 Logic -->
+            <div class="soal-item bg-yellow-50 border-yellow-200 mb-4">
+                <div class="font-bold mb-2 text-sm text-yellow-900">9. Teka-Teki Panjang</div>
+                <div class="text-sm mb-3">
+                    <ul class="list-disc ml-5 space-y-1">
+                        <li>Pita Merah lebih panjang dari Pita Biru.</li>
+                        <li>Pita Kuning lebih panjang dari Pita Merah.</li>
+                    </ul>
+                    <br>
+                    Pita manakah yang <b>paling pendek</b>?
+                </div>
+                <div class="choice-container">
+                    <label class="choice-item"><div class="choice-box"></div> Pita Merah</label>
+                    <label class="choice-item"><div class="choice-box"></div> Pita Biru</label>
+                    <label class="choice-item"><div class="choice-box"></div> Pita Kuning</label>
+                </div>
+            </div>
+
+            <!-- Q10 Logic (New) -->
+            <div class="soal-item bg-yellow-50 border-yellow-200">
+                <div class="font-bold mb-2 text-sm text-yellow-900">10. Siapa Paling Tinggi?</div>
+                <div class="text-sm mb-3">
+                    <ul class="list-disc ml-5 space-y-1">
+                        <li>Ani lebih tinggi dari Budi.</li>
+                        <li>Budi sama tingginya dengan Cici.</li>
+                        <li>Dina lebih pendek dari Cici.</li>
+                    </ul>
+                    <br>
+                    Siapakah yang <b>paling tinggi</b>?
+                </div>
+                <div class="choice-container">
+                    <label class="choice-item"><div class="choice-box"></div> Ani</label>
+                    <label class="choice-item"><div class="choice-box"></div> Budi</label>
+                    <label class="choice-item"><div class="choice-box"></div> Dina</label>
+                </div>
+            </div>
+
+            <div class="mt-auto mb-4 text-center pt-6">
+                <div class="text-sm font-bold text-gray-500 italic px-8 py-2 border-t border-b border-gray-200 inline-block">
+                    Kerja rapi, nilai menghampiri.
+                </div>
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i class="block sm:inline">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
