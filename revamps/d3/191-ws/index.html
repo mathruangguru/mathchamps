@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Pengurangan Dalam 1000 (D3-S191)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .bar-model-box,
+        .tcolorbox,
+        .vertical-math-table td {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-blue-100 { background-color: #dbeafe !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 60px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.2rem;
+        margin-top: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+        margin-left: 1.5rem;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.4cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.6rem;
+        background-color: #f3f4f6;
+        padding: 0.2rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* --- VISUAL MATH SPECIFICS --- */
+      .disk-circle {
+          stroke: #666;
+          stroke-width: 1;
+      }
+      .disk-text {
+          font-family: 'Noto Sans', sans-serif;
+          font-size: 10px;
+          font-weight: bold;
+          text-anchor: middle;
+          dominant-baseline: central;
+          fill: #333;
+      }
+      
+      /* Singapore Bar Model */
+      .bar-model-container {
+          margin: 10px auto;
+          width: 100%;
+          max-width: 300px;
+          font-size: 0.85rem;
+      }
+      .bar-total {
+          background-color: #f3f4f6;
+          border: 1.5px solid #333;
+          text-align: center;
+          padding: 4px;
+          font-weight: bold;
+          margin-bottom: 4px;
+          border-radius: 4px;
+      }
+      .bar-parts {
+          display: flex;
+          gap: 4px;
+          height: 40px;
+      }
+      .bar-part {
+          border: 1.5px solid #333;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          border-radius: 4px;
+      }
+
+      /* Concept Box */
+      .tcolorbox {
+          border: 1px solid #60a5fa;
+          background-color: #eff6ff;
+          border-radius: 8px;
+          overflow: hidden;
+          margin-bottom: 1rem;
+      }
+      .tcolorbox-header {
+          background-color: #93c5fd;
+          color: #1e3a8a;
+          font-weight: bold;
+          padding: 4px 12px;
+          font-size: 0.85rem;
+      }
+      .tcolorbox-content {
+          padding: 10px;
+      }
+
+      /* Vertical Math Table */
+      .vertical-math-table {
+          width: auto;
+          margin: 0 auto;
+          font-family: 'Noto Sans', monospace;
+          font-size: 1.1rem;
+          font-weight: bold;
+          border-collapse: collapse;
+      }
+      .vertical-math-table td {
+          padding: 2px 10px;
+          text-align: right;
+          width: 35px;
+      }
+      .vertical-line {
+          border-bottom: 2px solid black;
+      }
+      .operator {
+          text-align: left !important;
+          width: 15px !important;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pengurangan Dalam 1000</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Masalah Pengurangan Dalam Kehidupan Sehari-hari
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S191</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-6 mt-2">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    PENGURANGAN SATU LANGKAH
+                </h1>
+            </div>
+
+            <!-- CONTOH VISUAL -->
+            <div class="tcolorbox">
+                <div class="tcolorbox-header">Konsep Bar Model (Part-Whole)</div>
+                <div class="tcolorbox-content">
+                    <div class="flex items-center justify-around">
+                        <div class="text-xs max-w-[250px]">
+                            Dalam pengurangan, kita memiliki <b>Keseluruhan (Total)</b>. 
+                            Jika satu <b>Bagian</b> diambil atau hilang, kita mencari <b>Sisa Bagian</b> lainnya.
+                        </div>
+                        <div class="bar-model-container !m-0">
+                            <div class="bar-total">Total: 500</div>
+                            <div class="bar-parts">
+                                <div class="bar-part w-[40%] bg-blue-100">Hilang: 200</div>
+                                <div class="bar-part w-[60%] border-dashed">Sisa: ?</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION A -->
+            <div class="instruction-text">
+                A. Pilihlah Jawaban yang Paling Tepat
+            </div>
+
+            <div class="soal-grid">
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        1. Budi memiliki 542 kelereng. Ia memberikan 125 kelereng kepada temannya. Berapa sisa kelereng Budi sekarang?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a. 417</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b. 423</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c. 317</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d. 427</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        2. Sebuah toko roti membuat 800 roti. Di siang hari, 347 roti telah terjual. Gunakan model bar di bawah untuk mencari roti yang belum terjual!
+                    </div>
+                    <div class="bar-model-container">
+                        <div class="bar-total">Total: 800</div>
+                        <div class="bar-parts">
+                            <div class="bar-part w-[43%] bg-gray-100">Terjual: 347</div>
+                            <div class="bar-part w-[57%] border-dashed">Sisa: ?</div>
+                        </div>
+                    </div>
+                    <div class="ml-6 font-bold">
+                        Jawaban: <span class="input-box w-24"></span> roti.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        3. Perpustakaan sekolah memiliki 925 buku cerita. Sebanyak 188 buku sedang dipinjam oleh siswa. Berapa banyak buku yang masih ada di rak?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a. 737</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b. 747</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c. 837</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d. 733</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pengurangan Dalam 1000</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Masalah Pengurangan Dalam Kehidupan Sehari-hari
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S191</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text">
+                B. Isilah dengan Jawaban yang Benar
+            </div>
+
+            <div class="soal-grid">
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        4. Pak Tani memanen 672 butir telur. Namun, ada 245 telur yang pecah. Hitunglah telur yang masih utuh menggunakan cara bersusun!
+                    </div>
+                    <div class="flex items-center justify-around">
+                        <table class="vertical-math-table">
+                            <tr><td></td><td>6</td><td>7</td><td>2</td></tr>
+                            <tr class="vertical-line"><td class="operator">-</td><td>2</td><td>4</td><td>5</td></tr>
+                            <tr><td></td><td>...</td><td>...</td><td>...</td></tr>
+                        </table>
+                        <div class="font-bold">Sisa telur: <span class="input-box w-20"></span></div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        5. Stok mobil-mobilan di toko adalah 450. Setelah liburan, tersisa 175. Berapa banyak mobil yang sudah terjual?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a. 285</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b. 275</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c. 325</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d. 225</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. Ibu menggunakan 289 gram gula dari total 500 gram untuk membuat kue. Berapa sisa gula Ibu?
+                    </div>
+                    <div class="flex justify-center mt-4">
+                        <svg width="240" height="110">
+                            <!-- Garis Kiri (diatur agar tidak menembus lingkaran r=22) -->
+                            <line x1="103" y1="39" x2="77" y2="61" stroke="black" stroke-width="1.5" />
+                            <!-- Garis Kanan (diatur agar tidak menembus lingkaran r=22) -->
+                            <line x1="137" y1="39" x2="163" y2="61" stroke="black" stroke-width="1.5" />
+                            
+                            <!-- Whole -->
+                            <circle cx="120" cy="25" r="22" fill="none" stroke="black" stroke-width="1.5"/>
+                            <text x="120" y="25" text-anchor="middle" dominant-baseline="middle" font-weight="bold">500</text>
+                            
+                            <!-- Part 1 -->
+                            <circle cx="60" cy="75" r="22" fill="none" stroke="black" stroke-width="1.5"/>
+                            <text x="60" y="75" text-anchor="middle" dominant-baseline="middle">289</text>
+                            
+                            <!-- Part 2 -->
+                            <circle cx="180" cy="75" r="22" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="4"/>
+                            <text x="180" y="75" text-anchor="middle" dominant-baseline="middle">?</text>
+                        </svg>
+                    </div>
+                    <div class="text-center font-bold mt-2">Jawaban: <span class="input-box w-20"></span> gram.</div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        7. Terdapat 731 bunga mawar. Sebanyak 456 bunga sudah mekar. Berapa bunga mawar yang belum mekar?
+                    </div>
+                    <div class="bar-model-container">
+                        <div class="bar-total">Total: 731</div>
+                        <div class="bar-parts">
+                            <div class="bar-part w-[62%] bg-blue-50">Mekar: 456</div>
+                            <div class="bar-part w-[38%] border-dashed">?</div>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a. 275</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b. 285</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c. 375</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d. 265</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pengurangan Dalam 1000</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Masalah Pengurangan Dalam Kehidupan Sehari-hari
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S191</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             <div class="instruction-text">
+                C. Selesaikan Masalah Berikut
+            </div>
+            
+            <div class="soal-grid mt-4">
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Seekor kura-kura harus menempuh jarak 850 meter. Ia sudah merangkak sejauh 368 meter. Berapa sisa jarak yang harus ditempuh?
+                    </div>
+                    <div class="flex items-center gap-10 ml-6">
+                        <table class="vertical-math-table">
+                            <tr><td></td><td>8</td><td>5</td><td>0</td></tr>
+                            <tr class="vertical-line"><td class="operator">-</td><td>3</td><td>6</td><td>8</td></tr>
+                            <tr><td></td><td>...</td><td>...</td><td>...</td></tr>
+                        </table>
+                        <div class="bg-gray-50 p-3 border rounded text-xs">
+                            <b>Tips Regrouping:</b><br>
+                            0 tidak bisa dikurangi 8.<br>Pinjam 1 puluhan dari 5.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        9. Paman memiliki 900 ekor ayam. Paman menjual 512 ekor ke pasar. Berapa ekor ayam yang tersisa?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a. 488</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b. 388</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c. 398</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d. 412</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. Sebuah gedung bioskop memiliki 620 kursi. Sebanyak 475 kursi sudah diduduki. Berapa banyak kursi yang masih kosong?
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded p-4 mx-4">
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm font-bold">Kalimat Matematika:</span>
+                            <span class="input-box w-16">620</span> - <span class="input-box w-16">475</span> = <span class="input-box w-20"></span>
+                        </div>
+                        <div class="mt-4 font-bold text-center">
+                            Jadi, kursi yang kosong ada <span class="input-box w-20"></span> kursi.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center italic text-xs text-gray-400 mt-12">
+                "Hebat! Kamu telah menyelesaikan petualangan angka hari ini!"
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
