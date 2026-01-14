@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Perkalian 3 dan 4 (D3-S219)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3; /* Sedikit dikurangi dari 1.4 */
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; 
+        min-height: 29.7cm; 
+        padding: 0.6cm 2cm; /* Padding atas/bawah dikurangi */
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 4px; /* Margin header dikurangi */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 0.6cm 2cm; }
+        .page:last-child { page-break-after: avoid; }
+      }
+
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem; /* Gap antar soal diperkecil */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 60px;
+        height: 24px; /* Tinggi input dikurangi sedikit */
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 4px;
+        padding: 0 5px;
+        vertical-align: middle;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1rem; /* Gap antar pilihan diperkecil */
+        margin-top: 4px; /* Margin atas pilihan diperkecil */
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+        margin-left: 1rem;
+      }
+
+      .choice-box {
+        width: 16px; /* Ukuran kotak pilihan sedikit diperkecil */
+        height: 16px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        border-radius: 4px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.3cm 0; /* Margin separator diperkecil signifikan */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.4rem; /* Margin bawah instruksi diperkecil */
+        background-color: #f3f4f6;
+        padding: 0.3rem 1rem; /* Padding instruksi diperkecil */
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+      
+      .visual-box {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        padding: 0.6rem; /* Padding visual box diperkecil */
+        background-color: #fff;
+        border: 1px dashed #ccc;
+        border-radius: 8px;
+        margin: 0.3rem 0; /* Margin visual box diperkecil */
+        flex-wrap: wrap;
+      }
+
+      /* Styles for Singapore Math Visuals */
+      .group-circle {
+        width: 50px; /* Ukuran lingkaran diperkecil sedikit */
+        height: 50px;
+        border: 2px solid #333;
+        border-radius: 50%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        padding: 6px;
+        gap: 3px;
+      }
+
+      .dot {
+        width: 7px; /* Titik diperkecil sedikit */
+        height: 7px;
+        background-color: #333;
+        border-radius: 50%;
+      }
+
+      /* Dice pattern for 4 */
+      .dice-4 {
+          width: 100%;
+          height: 100%;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: 1fr 1fr;
+          gap: 4px;
+          padding: 6px;
+      }
+      .dice-4 .dot {
+          width: 7px;
+          height: 7px;
+          margin: auto;
+      }
+
+      .grid-array {
+          display: grid;
+          gap: 2px;
+          background-color: #fff;
+          padding: 4px;
+      }
+      .array-box {
+          width: 22px; /* Kotak array diperkecil sedikit */
+          height: 22px;
+          background-color: #e5e7eb;
+          border: 1px solid #9ca3af;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Perkalian 3 dan 4</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Soal Perkalian Satu Langkah
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S219</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-4 mt-1"> <!-- Margin header dikurangi -->
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: PERKALIAN 3 DAN 4
+                </h1>
+            </div>
+
+ 
+
+            <div class="instruction-text">
+                Bagian A: Konsep Visual & Pengelompokan
+            </div>
+            
+            <div class="soal-grid">
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. Perhatikan gambar di bawah ini. Ada 3 lingkaran (kelompok), dan setiap lingkaran berisi 4 titik.
+                    </div>
+                    <div class="visual-box">
+                        <!-- 3 Groups of 4 (Dice pattern) -->
+                        <div class="group-circle">
+                            <div class="dice-4">
+                                <div class="dot"></div><div class="dot"></div>
+                                <div class="dot"></div><div class="dot"></div>
+                            </div>
+                        </div>
+                        <div class="group-circle">
+                            <div class="dice-4">
+                                <div class="dot"></div><div class="dot"></div>
+                                <div class="dot"></div><div class="dot"></div>
+                            </div>
+                        </div>
+                        <div class="group-circle">
+                            <div class="dice-4">
+                                <div class="dot"></div><div class="dot"></div>
+                                <div class="dot"></div><div class="dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="font-medium ml-2 mb-1">
+                        Bentuk perkalian yang benar untuk gambar di atas adalah...
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> a) 3 + 4 = 7</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> b) 4 × 3 = 12</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> c) 3 × 4 = 12</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> d) 4 × 4 = 16</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. Ibu membeli jeruk. Ibu menaruhnya dalam piring sebagai berikut:
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded p-2 mx-2 text-center text-lg font-bold text-gray-700 tracking-wider">
+                        4 + 4 + 4 + 4 + 4
+                    </div>
+                    <div class="mt-2 ml-2 font-medium">
+                        Kalimat matematika perkalian untuk penjumlahan berulang di atas adalah...
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> a) 5 × 4</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> b) 4 × 5</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> c) 4 × 4</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> d) 5 + 4</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        3. Perhatikan susunan kotak berikut ini (3 baris, 4 kolom):
+                    </div>
+                    <div class="visual-box">
+                        <div class="grid-array" style="grid-template-columns: repeat(4, 1fr);">
+                            <!-- Row 1 -->
+                            <div class="array-box"></div><div class="array-box"></div><div class="array-box"></div><div class="array-box"></div>
+                            <!-- Row 2 -->
+                            <div class="array-box"></div><div class="array-box"></div><div class="array-box"></div><div class="array-box"></div>
+                            <!-- Row 3 -->
+                            <div class="array-box"></div><div class="array-box"></div><div class="array-box"></div><div class="array-box"></div>
+                        </div>
+                    </div>
+                    <div class="font-medium ml-2">
+                        Berapa jumlah total kotak?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> a) 7</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> b) 12</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> c) 15</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> d) 16</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+                
+                 <!-- SOAL 4 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        4. Seekor kucing memiliki 4 kaki. Jika ada 3 ekor kucing sedang bermain di taman, berapa jumlah kaki kucing seluruhnya?
+                    </div>
+                    <div class="choice-container flex-col gap-1">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) 3 + 4 = 7 kaki</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) 3 × 4 = 12 kaki</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) 4 × 4 = 16 kaki</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) 4 × 3 = 14 kaki</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Perkalian 3 dan 4</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Soal Perkalian Satu Langkah
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S219</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mt-2">
+                Bagian B: Pola Bilangan & Pemahaman
+            </div>
+
+            <div class="soal-grid mt-2">
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        5. Lengkapi pola bilangan lompat 3 berikut ini:
+                    </div>
+                    <div class="flex justify-center gap-3 text-lg font-bold my-2">
+                        <div class="border-2 border-gray-300 rounded-full w-10 h-10 flex items-center justify-center bg-gray-50">3</div>
+                        <div class="self-center text-gray-400">→</div>
+                        <div class="border-2 border-gray-300 rounded-full w-10 h-10 flex items-center justify-center bg-gray-50">6</div>
+                        <div class="self-center text-gray-400">→</div>
+                        <div class="border-2 border-gray-300 rounded-full w-10 h-10 flex items-center justify-center bg-gray-50">9</div>
+                        <div class="self-center text-gray-400">→</div>
+                        <div class="border-2 border-blue-500 text-blue-600 rounded-full w-10 h-10 flex items-center justify-center bg-blue-50">?</div>
+                        <div class="self-center text-gray-400">→</div>
+                        <div class="border-2 border-gray-300 rounded-full w-10 h-10 flex items-center justify-center bg-gray-50">15</div>
+                    </div>
+                    <div class="font-medium ml-2">
+                        Angka yang tepat untuk mengisi tanda tanya adalah...
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> a) 10</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> b) 11</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> c) 12</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> d) 13</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        6. Apa arti dari <b>6 × 3</b>?
+                    </div>
+                    <div class="choice-container flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Ada 6 kelompok, setiap kelompok isinya 3.</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Ada 3 kelompok, setiap kelompok isinya 6.</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Angka 6 ditambah 3.</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Angka 6 dikurangi 3.</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        7. Perhatikan gambar berikut. Ada 4 kelompok, masing-masing berisi 3 titik.
+                    </div>
+                    <div class="visual-box">
+                         <!-- 4 Groups of 3 -->
+                         <div class="group-circle">
+                            <div class="flex gap-1 flex-wrap justify-center w-full">
+                                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                            </div>
+                        </div>
+                        <div class="group-circle">
+                            <div class="flex gap-1 flex-wrap justify-center w-full">
+                                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                            </div>
+                        </div>
+                        <div class="group-circle">
+                            <div class="flex gap-1 flex-wrap justify-center w-full">
+                                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                            </div>
+                        </div>
+                        <div class="group-circle">
+                            <div class="flex gap-1 flex-wrap justify-center w-full">
+                                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-4 font-bold justify-center">
+                        <span class="input-box w-16"></span>
+                        <span> × </span>
+                        <span class="input-box w-16"></span>
+                        <span> = </span>
+                        <span class="input-box w-16"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        8. Budi menyusun mainan mobil-mobilan. Ia membuat <b>4 barisan</b>. Setiap barisan berisi <b>4 mobil</b>.
+                    </div>
+                    <div class="ml-4 mt-1">
+                        Berapa jumlah mobil Budi seluruhnya?
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-4 font-bold">
+                        <span>Jawaban: </span>
+                        <span class="input-box w-24"></span>
+                        <span> mobil.</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Perkalian 3 dan 4</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Soal Perkalian Satu Langkah
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S219</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mt-2">
+                Bagian C: Analisis & Pemecahan Masalah
+            </div>
+
+            <div class="soal-grid mt-2">
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. Bandingkan kedua perkalian berikut. Manakah yang hasilnya LEBIH BESAR?
+                    </div>
+                    <div class="flex justify-center gap-8 my-3">
+                        <div class="text-center p-3 border-2 border-gray-200 rounded-lg bg-gray-50 w-32">
+                            <div class="text-gray-500 text-xs mb-1">Pilihan A</div>
+                            <div class="text-lg font-bold">5 × 3</div>
+                        </div>
+                        <div class="text-center p-3 border-2 border-gray-200 rounded-lg bg-gray-50 w-32">
+                            <div class="text-gray-500 text-xs mb-1">Pilihan B</div>
+                            <div class="text-lg font-bold">3 × 4</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 ml-4 font-bold">
+                        <span>Jawaban (Tulis A atau B): </span>
+                        <span class="input-box w-24"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        10. Sebuah becak memiliki <b>3 roda</b>. Pak Tono sedang memarkir <b>8 becak</b> di pangkalan.
+                    </div>
+                    <div class="ml-4 mt-1 mb-2">
+                        Hitunglah jumlah roda seluruhnya dengan cara perkalian!
+                    </div>
+                    
+                    <div class="flex items-center justify-center gap-2 mt-2 font-bold text-lg bg-gray-50 p-3 border border-dashed border-gray-400 rounded-lg max-w-md mx-auto">
+                        <span class="input-box w-16"></span>
+                        <span> × </span>
+                        <span class="input-box w-16"></span>
+                        <span> = </span>
+                        <span class="input-box w-20"></span>
+                        <span> roda</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center italic text-xs text-gray-400 mt-12">
+                "Matematika itu Menyenangkan! Teruslah Berlatih."
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
