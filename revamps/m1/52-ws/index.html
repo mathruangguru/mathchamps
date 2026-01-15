@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Pecahan (M1-S52)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --shaded-color: #cbd5e1;
+        --highlight-bg: #f0f9ff;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3; 
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      /* SETTING KERTAS LETTER (2 Halaman Compact) */
+      .page {
+        background: white;
+        width: 8.5in;  
+        height: 11in; 
+        padding: 0.5in 0.6in;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+        border-bottom: 2px solid black;
+        padding-bottom: 5px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 8pt;
+        color: var(--grey-text);
+        padding-top: 5px;
+        margin-top: auto; 
+        border-top: 1px solid #ccc;
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: letter;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          height: 11in;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.5in 0.6in;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .instruction-text, .soal-item svg, .bg-gray-50, .bg-blue-50, .bg-purple-50, .bg-yellow-50, .bg-red-50, .bar-part.shaded, .pie-shaded, .grid-block-cell.shaded {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      .grid-2-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        border-bottom: 1px dashed #eee;
+        padding-bottom: 0.5rem;
+      }
+      
+      .soal-item-no-border {
+        border-bottom: none;
+      }
+
+      .input-line {
+        display: inline-block;
+        border: none;
+        border-bottom: 1.5px solid #333;
+        min-width: 40px;
+        text-align: center;
+        padding: 0 2px;
+        color: #2563eb;
+        font-weight: bold;
+        background: transparent;
+        font-family: inherit;
+        font-size: inherit;
+      }
+      
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.6rem; 
+        background-color: #f3f4f6;
+        padding: 0.4rem 0.8rem; 
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* Visual Models */
+      .fraction-display {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        vertical-align: middle;
+        font-size: 1.1em;
+        font-weight: bold;
+      }
+      .fraction-top {
+        border-bottom: 2px solid black;
+        width: 100%;
+        text-align: center;
+        padding-bottom: 1px;
+      }
+      .fraction-bottom {
+        width: 100%;
+        text-align: center;
+        padding-top: 1px;
+      }
+      .mixed-number {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 1.1em;
+        font-weight: bold;
+      }
+      .whole-number {
+        font-size: 1.4em;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pecahan</div>
+                    <div class="text-[9px] text-black font-medium mt-0.5" style="max-width: 250px; line-height: 1.1; margin-left: auto;">
+                        Penjumlahan Pecahan dengan Penyebut Berbeda
+                    </div>
+                    <div class="text-[9px] text-black font-medium mt-0.5">Kode : M1-S52</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text bg-yellow-50 border-yellow-200">
+                <span class="font-bold">Konsep:</span> Untuk menjumlahkan pecahan berbeda penyebut, samakan penyebutnya terlebih dahulu.<br>
+            </div>
+
+            <!-- Bagian 1 -->
+            <div class="instruction-text mt-1">Bagian 1</div>
+            
+            <div class="grid-2-col mb-2">
+                <!-- Q1: 1/4 + 1/8 -->
+                <div class="soal-item soal-item-no-border border border-gray-200 p-3 rounded bg-white">
+                    <div class="font-bold mb-2 text-sm">1.</div>
+                    <div class="flex flex-col items-center gap-2 my-2">
+                        <!-- Visual -->
+                        <div class="flex flex-col gap-1 items-center mb-2">
+                             <svg width="220" height="90" viewBox="0 0 220 90">
+                                <!-- Label Top -->
+                                <text x="25" y="12" font-size="10" font-weight="bold" text-anchor="middle" fill="#555">1/4</text>
+                                
+                                <!-- Bar 1: 1/4 -->
+                                <rect x="0" y="15" width="200" height="20" fill="white" stroke="black" stroke-width="1"/>
+                                <rect x="0" y="15" width="50" height="20" fill="#cbd5e1" stroke="none"/>
+                                <path d="M50 15v20 M100 15v20 M150 15v20" stroke="black" stroke-width="1"/>
+                                <rect x="0" y="15" width="200" height="20" fill="none" stroke="black" stroke-width="1"/>
+
+                                <!-- Arrow Down -->
+                                <path d="M25 38 L25 48" stroke="gray" stroke-width="1" marker-end="url(#arrowhead)"/>
+
+                                <!-- Bar 2: 2/8 + 1/8 -->
+                                <rect x="0" y="50" width="200" height="20" fill="white" stroke="black" stroke-width="1"/>
+                                <!-- 2/8 (equivalent to 1/4) -->
+                                <rect x="0" y="50" width="50" height="20" fill="#cbd5e1" stroke="none"/>
+                                <!-- + 1/8 -->
+                                <rect x="50" y="50" width="25" height="20" fill="#93c5fd" stroke="none"/> 
+                                <!-- Grid Lines 8 parts -->
+                                <path d="M25 50v20 M50 50v20 M75 50v20 M100 50v20 M125 50v20 M150 50v20 M175 50v20" stroke="black" stroke-width="0.5"/>
+                                <rect x="0" y="50" width="200" height="20" fill="none" stroke="black" stroke-width="1"/>
+                                
+                                <!-- Label Bottom -->
+                                <text x="25" y="82" font-size="10" font-weight="bold" text-anchor="middle" fill="#555">2/8</text>
+                                <text x="62.5" y="82" font-size="10" font-weight="bold" text-anchor="middle" fill="#2563eb">1/8</text>
+                             </svg>
+                        </div>
+
+                        <div class="flex items-center gap-2 text-sm font-bold">
+                            <div class="fraction-display scale-90">
+                                <span class="fraction-top">1</span>
+                                <span class="fraction-bottom">4</span>
+                            </div>
+                            <span>+</span>
+                            <div class="fraction-display scale-90">
+                                <span class="fraction-top">1</span>
+                                <span class="fraction-bottom">8</span>
+                            </div>
+                            <span>=</span>
+                            <div class="fraction-display scale-90">
+                                <span class="fraction-top text-gray-500">2</span>
+                                <span class="fraction-bottom text-gray-500">8</span>
+                            </div>
+                            <span>+</span>
+                            <div class="fraction-display scale-90">
+                                <span class="fraction-top">1</span>
+                                <span class="fraction-bottom">8</span>
+                            </div>
+                            <span>=</span>
+                            <div class="fraction-display scale-90">
+                                <span class="fraction-top"><input type="text" class="input-line w-4 text-center border-none p-0 h-4"></span>
+                                <span class="fraction-bottom"><input type="text" class="input-line w-4 text-center border-none p-0 h-4"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q2: 1/2 + 1/6 -->
+                <div class="soal-item soal-item-no-border border border-gray-200 p-3 rounded bg-white">
+                    <div class="font-bold mb-2 text-sm">2.</div>
+                    <div class="flex flex-col items-center gap-2 my-2">
+                        <!-- Visual -->
+                        <div class="flex flex-col gap-1 items-center mb-2">
+                             <svg width="180" height="90" viewBox="0 0 180 90">
+                                <!-- Label Top -->
+                                <text x="45" y="12" font-size="10" font-weight="bold" text-anchor="middle" fill="#555">1/2</text>
+
+                                <!-- Bar 1: 1/2 -->
+                                <rect x="0" y="15" width="180" height="20" fill="white" stroke="black" stroke-width="1"/>
+                                <rect x="0" y="15" width="90" height="20" fill="#cbd5e1" stroke="none"/>
+                                <line x1="90" y1="15" x2="90" y2="35" stroke="black" stroke-width="1"/>
+                                <rect x="0" y="15" width="180" height="20" fill="none" stroke="black" stroke-width="1"/>
+
+                                <!-- Bar 2: 3/6 + 1/6 -->
+                                <rect x="0" y="50" width="180" height="20" fill="white" stroke="black" stroke-width="1"/>
+                                <!-- 3/6 (equivalent to 1/2) -->
+                                <rect x="0" y="50" width="90" height="20" fill="#cbd5e1" stroke="none"/>
+                                <!-- + 1/6 -->
+                                <rect x="90" y="50" width="30" height="20" fill="#93c5fd" stroke="none"/>
+                                <!-- Grid Lines 6 parts -->
+                                <path d="M30 50v20 M60 50v20 M90 50v20 M120 50v20 M150 50v20" stroke="black" stroke-width="0.5"/>
+                                <rect x="0" y="50" width="180" height="20" fill="none" stroke="black" stroke-width="1"/>
+                                
+                                <!-- Label Bottom -->
+                                <text x="45" y="82" font-size="10" font-weight="bold" text-anchor="middle" fill="#555">3/6</text>
+                                <text x="105" y="82" font-size="10" font-weight="bold" text-anchor="middle" fill="#2563eb">1/6</text>
+                             </svg>
+                        </div>
+
+                        <div class="flex items-center gap-2 text-sm font-bold">
+                            <div class="fraction-display scale-90">
+                                <span class="fraction-top">1</span>
+                                <span class="fraction-bottom">2</span>
+                            </div>
+                            <span>+</span>
+                            <div class="fraction-display scale-90">
+                                <span class="fraction-top">1</span>
+                                <span class="fraction-bottom">6</span>
+                            </div>
+                            <span>=</span>
+                            <div class="fraction-display scale-90">
+                                <span class="fraction-top"><input type="text" class="input-line w-4 text-center border-none p-0 h-4"></span>
+                                <span class="fraction-bottom">6</span>
+                            </div>
+                            <span>+</span>
+                            <div class="fraction-display scale-90">
+                                <span class="fraction-top">1</span>
+                                <span class="fraction-bottom">6</span>
+                            </div>
+                            <span>=</span>
+                            <div class="fraction-display scale-90">
+                                <span class="fraction-top"><input type="text" class="input-line w-4 text-center border-none p-0 h-4"></span>
+                                <span class="fraction-bottom"><input type="text" class="input-line w-4 text-center border-none p-0 h-4"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian 2 -->
+            <div class="instruction-text mt-2">Bagian 2</div>
+
+            <div class="grid-2-col">
+                <!-- Q3 -->
+                <div class="soal-item border border-blue-100 bg-blue-50 p-3 rounded">
+                    <div class="font-bold mb-2 text-sm">3.</div>
+                    <div class="flex items-center justify-center gap-2">
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top">1</span>
+                            <span class="fraction-bottom">2</span>
+                        </div>
+                        <span>+</span>
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top">3</span>
+                            <span class="fraction-bottom">10</span>
+                        </div>
+                        <span>=</span>
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top"><input type="text" class="input-line w-4 text-center border-none p-0 bg-transparent h-4"></span>
+                            <span class="fraction-bottom">10</span>
+                        </div>
+                        <span>+</span>
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top">3</span>
+                            <span class="fraction-bottom">10</span>
+                        </div>
+                        <span>=</span>
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top"><input type="text" class="input-line w-4 text-center border-none p-0 bg-transparent h-4"></span>
+                            <span class="fraction-bottom"><input type="text" class="input-line w-4 text-center border-none p-0 bg-transparent h-4"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="soal-item border border-blue-100 bg-blue-50 p-3 rounded">
+                    <div class="font-bold mb-2 text-sm">4.</div>
+                    <div class="flex items-center justify-center gap-2">
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top">1</span>
+                            <span class="fraction-bottom">3</span>
+                        </div>
+                        <span>+</span>
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top">4</span>
+                            <span class="fraction-bottom">9</span>
+                        </div>
+                        <span>=</span>
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top"><input type="text" class="input-line w-4 text-center border-none p-0 bg-transparent h-4"></span>
+                            <span class="fraction-bottom">9</span>
+                        </div>
+                        <span>+</span>
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top">4</span>
+                            <span class="fraction-bottom">9</span>
+                        </div>
+                        <span>=</span>
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top"><input type="text" class="input-line w-4 text-center border-none p-0 bg-transparent h-4"></span>
+                            <span class="fraction-bottom"><input type="text" class="input-line w-4 text-center border-none p-0 bg-transparent h-4"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="soal-item border border-green-100 bg-green-50 p-3 rounded">
+                    <div class="font-bold mb-2 text-sm">5.</div>
+                    <div class="flex items-center justify-center gap-2">
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top">2</span>
+                            <span class="fraction-bottom">5</span>
+                        </div>
+                        <span>+</span>
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top">3</span>
+                            <span class="fraction-bottom">10</span>
+                        </div>
+                        <span>=</span>
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top"><input type="text" class="input-line w-4 text-center border-none p-0 bg-transparent h-4"></span>
+                            <span class="fraction-bottom"><input type="text" class="input-line w-4 text-center border-none p-0 bg-transparent h-4"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="soal-item border border-green-100 bg-green-50 p-3 rounded">
+                    <div class="font-bold mb-2 text-sm">6.</div>
+                    <div class="flex items-center justify-center gap-2">
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top">1</span>
+                            <span class="fraction-bottom">4</span>
+                        </div>
+                        <span>+</span>
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top">5</span>
+                            <span class="fraction-bottom">12</span>
+                        </div>
+                        <span>=</span>
+                        <div class="fraction-display scale-90">
+                            <span class="fraction-top"><input type="text" class="input-line w-4 text-center border-none p-0 bg-transparent h-4"></span>
+                            <span class="fraction-bottom"><input type="text" class="input-line w-4 text-center border-none p-0 bg-transparent h-4"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <div class="w-full flex flex-col">
+            <div class="flex justify-between items-center">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <span>Hal 1 dari 2</span>
+            </div>
+            <i class="text-[7pt] mt-0.5">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+          </div>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="flex justify-between items-end">
+                <span class="font-bold text-gray-500 text-sm">Lanjutan Penjumlahan</span>
+                <span class="text-xs font-bold">Kode: M1-S52</span>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <!-- Bagian 3 -->
+            <div class="instruction-text">Bagian 3</div>
+
+            <!-- Q7 -->
+            <div class="soal-item p-4 mb-2 bg-gray-50 border border-gray-200 rounded">
+                <div class="font-bold mb-2 text-sm">7.</div>
+                <div class="flex items-center gap-4 justify-center text-lg font-bold">
+                    <div class="fraction-display">
+                        <span class="fraction-top">1</span>
+                        <span class="fraction-bottom">6</span>
+                    </div>
+                    <span>+</span>
+                    <div class="fraction-display">
+                        <span class="fraction-top">2</span>
+                        <span class="fraction-bottom">3</span>
+                    </div>
+                    <span>=</span>
+                    <div class="fraction-display">
+                        <span class="fraction-top"><input type="text" class="input-line w-6 text-center border-none p-0 bg-transparent h-5"></span>
+                        <span class="fraction-bottom"><input type="text" class="input-line w-6 text-center border-none p-0 bg-transparent h-5"></span>
+                    </div>
+                </div>
+            </div>
+
+             <!-- Q8 -->
+             <div class="soal-item p-4 mb-4 bg-gray-50 border border-gray-200 rounded">
+                <div class="font-bold mb-2 text-sm">8.</div>
+                <div class="flex items-center gap-4 justify-center text-lg font-bold">
+                    <div class="fraction-display">
+                        <span class="fraction-top">3</span>
+                        <span class="fraction-bottom">8</span>
+                    </div>
+                    <span>+</span>
+                    <div class="fraction-display">
+                        <span class="fraction-top">1</span>
+                        <span class="fraction-bottom">2</span>
+                    </div>
+                    <span>=</span>
+                    <div class="fraction-display">
+                        <span class="fraction-top"><input type="text" class="input-line w-6 text-center border-none p-0 bg-transparent h-5"></span>
+                        <span class="fraction-bottom"><input type="text" class="input-line w-6 text-center border-none p-0 bg-transparent h-5"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian 4 -->
+            <div class="instruction-text mt-2">Bagian 4</div>
+
+            <!-- Q9 -->
+            <div class="soal-item p-3 mb-2 border border-gray-200 rounded bg-white">
+                <div class="flex gap-3">
+                    <div class="font-bold text-sm">9.</div>
+                    <div class="text-sm">
+                        Ibu membeli <strong>1/2 kg</strong> apel dan <strong>1/4 kg</strong> jeruk.<br>
+                        Berapa berat total buah yang dibeli Ibu?
+                    </div>
+                </div>
+                <div class="mt-3 ml-8 text-sm font-bold bg-blue-50 p-3 rounded inline-block">
+                    Jawab: <input type="text" class="input-line w-20 text-center"> kg.
+                </div>
+            </div>
+
+            <!-- Q10 -->
+            <div class="soal-item p-3 mb-2 border border-gray-200 rounded bg-white">
+                <div class="flex gap-3">
+                    <div class="font-bold text-sm">10.</div>
+                    <div class="text-sm">
+                        Kakak memiliki pita biru sepanjang <strong>2/3 meter</strong> dan pita merah sepanjang <strong>1/6 meter</strong>.<br>
+                        Berapa panjang seluruh pita kakak?
+                    </div>
+                </div>
+                <div class="mt-3 ml-8 text-sm font-bold bg-blue-50 p-3 rounded inline-block">
+                    Jawab: <input type="text" class="input-line w-20 text-center"> meter.
+                </div>
+            </div>
+
+            <!-- Quote Penyemangat -->
+            <div class="mt-auto mb-4 text-center">
+                <p class="text-gray-600 italic font-semibold text-sm border-t border-gray-200 pt-4 w-3/4 mx-auto">
+                    "Setiap usaha kecil membawamu lebih dekat ke tujuan. 😊"
+                </p>
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <div class="w-full flex flex-col">
+            <div class="flex justify-between items-center">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <span>Hal 2 dari 2</span>
+            </div>
+            <i class="text-[7pt] mt-0.5">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+          </div>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
