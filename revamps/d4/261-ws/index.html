@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Pengurangan Pecahan (D4-S261)</title>
+    
+    <!-- Tailwind untuk layout responsif dan utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MathJax untuk render persamaan matematika yang cantik -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA & VARIABEL --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --bg-page: #525659;
+        --shaded-color: #cbd5e1; /* slate-300 */
+        --cross-color: #ef4444; /* red-500 */
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 9pt; 
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: var(--bg-page);
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      /* Container Halaman Kertas */
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        counter-reset: page;
+      }
+
+      /* SETTING KERTAS LETTER (Compact) */
+      .page {
+        background: white;
+        width: 8.5in;  
+        height: 11in;  
+        padding: 0.4in 0.5in; 
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* Header Style */
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px; 
+        border-bottom: 2px solid black;
+        padding-bottom: 4px;
+      }
+
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem; 
+      }
+
+      /* Footer Style */
+      .page-footer {
+        text-align: left;
+        font-size: 8pt;
+        color: var(--grey-text);
+        padding-top: 5px;
+        margin-top: auto;
+        border-top: 1px solid #ccc;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Layout Grid Soal */
+      .soal-item {
+        height: 100%; 
+        break-inside: avoid;
+        padding: 0.5rem; 
+      }
+
+      /* Pilihan Ganda */
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        margin-bottom: 4px;
+      }
+      
+      .choice-box {
+        width: 20px; 
+        height: 20px; 
+        border: 1.5px solid #333;
+        border-radius: 50%; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        flex-shrink: 0;
+        background: white;
+        font-size: 10px;
+        font-weight: bold;
+      }
+      
+      /* Input Fields */
+      .input-line {
+        border: none;
+        border-bottom: 1.5px solid #333;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        background: transparent;
+        outline: none;
+        font-family: 'Montserrat', sans-serif;
+      }
+      
+      /* Grid Wrapper for layout */
+      .question-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem; 
+        align-items: stretch;
+      }
+
+      /* --- VISUALS --- */
+      .fraction-bar-svg {
+        display: block;
+        margin: 5px auto;
+        overflow: visible;
+      }
+      .bar-outline {
+        fill: none;
+        stroke: black;
+        stroke-width: 1.5;
+      }
+      .bar-shade {
+        fill: var(--shaded-color);
+        stroke: none;
+      }
+      .bar-grid {
+        stroke: black;
+        stroke-width: 1.5;
+      }
+      .bar-cross {
+        stroke: var(--cross-color);
+        stroke-width: 2.5;
+        stroke-linecap: round;
+      }
+      
+      /* --- MEDIA QUERY PRINT --- */
+      @media print {
+        @page {
+          size: letter;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+          padding-bottom: 0;
+        }
+        .page {
+          width: 100%;
+          height: 11in;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          border: none;
+          padding: 0.4in 0.5in;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .math-champs-header, 
+        .bg-gray-50, .bg-yellow-50, .bg-blue-50, .bg-red-50, .bg-purple-50, .bg-green-50, 
+        .bar-shade, .bar-cross {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        /* Ensure backgrounds print */
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-red-50 { background-color: #fef2f2 !important; }
+        .bg-purple-50 { background-color: #faf5ff !important; }
+        .bg-green-50 { background-color: #f0fdf4 !important; }
+        
+        .question-grid {
+              display: grid !important;
+              grid-template-columns: repeat(2, 1fr) !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-8 md:h-10 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-xs font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[9px] text-black font-semibold mt-0.5">Pecahan</div>
+                    <div class="text-[8px] text-black font-medium mt-0.5" style="max-width: 250px; line-height: 1.1; margin-left: auto;">
+                        Pengurangan pecahan berpenyebut sama (penyebut maksimal 12)
+                    </div>
+                    <div class="text-[8px] text-black font-medium mt-0.5">Kode : D4-S261</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- INSTRUCTION PART A -->
+            <div class="bg-yellow-50 border border-yellow-200 p-2 rounded mb-1 text-xs mt-1">
+                <b>Bagian 1: Pengurangan Visual</b><br>
+                Perhatikan model batang berikut. Bagian yang diarsir adalah yang kita miliki. Bagian yang disilang adalah yang kita ambil. Tuliskan kalimat pengurangannya.
+            </div>
+            
+            <!-- Q1 & Q2 Grid -->
+            <div class="question-grid">
+                <!-- Question 1 -->
+                <div class="soal-item bg-gray-50 p-2 rounded border border-gray-200">
+                    <div class="font-bold mb-1 text-xs">
+                        1. Selesaikan.
+                    </div>
+                    <!-- SVG: 5 parts, 4 shaded, 1 crossed -->
+                    <div class="flex justify-center">
+                        <svg width="150" height="25" viewBox="0 0 150 25" class="fraction-bar-svg">
+                            <!-- Shaded: 4/5 * 150 = 120 -->
+                            <rect x="0" y="0" width="120" height="25" class="bar-shade" />
+                            <!-- Grid -->
+                            <line x1="30" y1="0" x2="30" y2="25" class="bar-grid" />
+                            <line x1="60" y1="0" x2="60" y2="25" class="bar-grid" />
+                            <line x1="90" y1="0" x2="90" y2="25" class="bar-grid" />
+                            <line x1="120" y1="0" x2="120" y2="25" class="bar-grid" />
+                            <rect x="0" y="0" width="150" height="25" class="bar-outline" />
+                            <!-- Cross: last shaded (90-120) -->
+                            <line x1="95" y1="3" x2="115" y2="22" class="bar-cross" />
+                            <line x1="115" y1="3" x2="95" y2="22" class="bar-cross" />
+                        </svg>
+                    </div>
+                    <div class="text-center text-sm mt-1">
+                        \(\frac{4}{5} - \frac{1}{5} = \) <input type="text" class="input-line w-10 text-base">
+                    </div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="soal-item bg-gray-50 p-2 rounded border border-gray-200">
+                    <div class="font-bold mb-1 text-xs">
+                        2. Selesaikan.
+                    </div>
+                    <!-- SVG: 6 parts, 5 shaded, 3 crossed -->
+                    <div class="flex justify-center">
+                        <svg width="180" height="25" viewBox="0 0 180 25" class="fraction-bar-svg">
+                            <!-- Shaded: 5/6 * 180 = 150 -->
+                            <rect x="0" y="0" width="150" height="25" class="bar-shade" />
+                            <!-- Grid -->
+                            <line x1="30" y1="0" x2="30" y2="25" class="bar-grid" />
+                            <line x1="60" y1="0" x2="60" y2="25" class="bar-grid" />
+                            <line x1="90" y1="0" x2="90" y2="25" class="bar-grid" />
+                            <line x1="120" y1="0" x2="120" y2="25" class="bar-grid" />
+                            <line x1="150" y1="0" x2="150" y2="25" class="bar-grid" />
+                            <rect x="0" y="0" width="180" height="25" class="bar-outline" />
+                            <!-- Crosses: last 3 (60-150) -->
+                            <!-- 60-90 -->
+                            <line x1="65" y1="3" x2="85" y2="22" class="bar-cross" />
+                            <line x1="85" y1="3" x2="65" y2="22" class="bar-cross" />
+                            <!-- 90-120 -->
+                            <line x1="95" y1="3" x2="115" y2="22" class="bar-cross" />
+                            <line x1="115" y1="3" x2="95" y2="22" class="bar-cross" />
+                            <!-- 120-150 -->
+                            <line x1="125" y1="3" x2="145" y2="22" class="bar-cross" />
+                            <line x1="145" y1="3" x2="125" y2="22" class="bar-cross" />
+                        </svg>
+                    </div>
+                    <div class="text-center text-sm mt-1">
+                        \(\frac{5}{6} - \frac{3}{6} = \) <input type="text" class="input-line w-10 text-base">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 3 (Full Width) -->
+            <div class="soal-item bg-gray-50 p-2 rounded border border-gray-200">
+                <div class="font-bold mb-1 text-xs">
+                    3. Kurangkan dari 1 Bagian Utuh. (Ingat: \( 1 = \frac{4}{4} \))
+                </div>
+                <!-- SVG: 4 parts, 4 shaded, 2 crossed -->
+                <div class="flex justify-center my-1">
+                    <svg width="200" height="25" viewBox="0 0 200 25" class="fraction-bar-svg">
+                        <rect x="0" y="0" width="200" height="25" class="bar-shade" />
+                        <line x1="50" y1="0" x2="50" y2="25" class="bar-grid" />
+                        <line x1="100" y1="0" x2="100" y2="25" class="bar-grid" />
+                        <line x1="150" y1="0" x2="150" y2="25" class="bar-grid" />
+                        <rect x="0" y="0" width="200" height="25" class="bar-outline" />
+                        <!-- Crosses: last 2 (100-200) -->
+                        <line x1="105" y1="3" x2="145" y2="22" class="bar-cross" />
+                        <line x1="145" y1="3" x2="105" y2="22" class="bar-cross" />
+                        <line x1="155" y1="3" x2="195" y2="22" class="bar-cross" />
+                        <line x1="195" y1="3" x2="155" y2="22" class="bar-cross" />
+                    </svg>
+                </div>
+                <div class="text-center text-sm mt-1">
+                    \( 1 - \frac{2}{4} = \) <input type="text" class="input-line w-10 text-base">
+                </div>
+            </div>
+
+            <!-- INSTRUCTION PART B -->
+            <div class="bg-blue-50 border border-blue-200 p-2 rounded mt-2 mb-1 text-xs">
+                <b>Bagian 2: Pilihan Ganda</b><br>
+                Gunakan model untuk membantumu memilih jawaban yang benar.
+            </div>
+
+            <!-- Q4 & Q5 Grid -->
+            <div class="question-grid">
+                <!-- Question 4 -->
+                <div class="soal-item bg-gray-50 p-2 rounded border border-gray-200">
+                    <div class="font-bold mb-1 text-xs">
+                        4. Berapakah \( \frac{7}{8} - \frac{3}{8} \)?
+                    </div>
+                    <!-- SVG: 8 parts, 7 shaded, 3 crossed -->
+                    <div class="flex justify-center my-1">
+                        <svg width="160" height="20" viewBox="0 0 160 20" class="fraction-bar-svg">
+                            <rect x="0" y="0" width="140" height="20" class="bar-shade" />
+                            <path d="M20 0 V20 M40 0 V20 M60 0 V20 M80 0 V20 M100 0 V20 M120 0 V20 M140 0 V20" class="bar-grid" />
+                            <rect x="0" y="0" width="160" height="20" class="bar-outline" />
+                            <!-- Crosses: last 3 of shaded (80-140) -->
+                            <path d="M85 3 L95 17 M95 3 L85 17 M105 3 L115 17 M115 3 L105 17 M125 3 L135 17 M135 3 L125 17" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col gap-0.5 mt-1 text-[10px]">
+                        <label class="choice-item"><div class="choice-box">a</div> &nbsp; \(\frac{3}{8}\)</label>
+                        <label class="choice-item"><div class="choice-box">b</div> &nbsp; \(\frac{4}{8}\)</label>
+                        <label class="choice-item"><div class="choice-box">c</div> &nbsp; \(\frac{5}{8}\)</label>
+                    </div>
+                </div>
+
+                <!-- Question 5 -->
+                <div class="soal-item bg-gray-50 p-2 rounded border border-gray-200">
+                    <div class="font-bold mb-1 text-xs">
+                        5. Temukan selisih \( \frac{9}{10} \) dan \( \frac{4}{10} \).
+                    </div>
+                    <!-- SVG: 10 parts, 9 shaded, 4 crossed -->
+                    <div class="flex justify-center my-1">
+                        <svg width="200" height="20" viewBox="0 0 200 20" class="fraction-bar-svg">
+                            <rect x="0" y="0" width="180" height="20" class="bar-shade" />
+                            <path d="M20 0 V20 M40 0 V20 M60 0 V20 M80 0 V20 M100 0 V20 M120 0 V20 M140 0 V20 M160 0 V20 M180 0 V20" class="bar-grid" />
+                            <rect x="0" y="0" width="200" height="20" class="bar-outline" />
+                            <!-- Crosses: last 4 of shaded (100-180) -->
+                            <path d="M105 3 L115 17 M115 3 L105 17 M125 3 L135 17 M135 3 L125 17 M145 3 L155 17 M155 3 L145 17 M165 3 L175 17 M175 3 L165 17" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col gap-0.5 mt-1 text-[10px]">
+                        <label class="choice-item"><div class="choice-box">a</div> &nbsp; \(\frac{5}{10}\)</label>
+                        <label class="choice-item"><div class="choice-box">b</div> &nbsp; \(\frac{6}{10}\)</label>
+                        <label class="choice-item"><div class="choice-box">c</div> &nbsp; \(\frac{13}{10}\)</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spacer -->
+            <div class="mt-auto"></div>
+        </div>
+
+        <footer class="page-footer">
+            <div class="flex justify-between items-center w-full">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <span>Hal 1 dari 2</span>
+            </div>
+            <i class="text-[7pt] mt-0.5">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="flex justify-between items-end">
+                <span class="font-bold text-gray-500 text-xs">Lanjutan Pengurangan Pecahan</span>
+                <span class="text-[10px] font-bold">Kode: D4-S261</span>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+             
+             <!-- Q6 (Full Width) -->
+            <div class="soal-item bg-gray-50 p-2 rounded border border-gray-200">
+                <div class="font-bold mb-1 text-xs">
+                    6. Kalimat pengurangan mana yang cocok dengan gambar di bawah ini?
+                </div>
+                <div class="flex justify-center my-2">
+                    <!-- 7 parts, 6 shaded, 2 crossed -->
+                    <svg width="210" height="25" viewBox="0 0 210 25" class="fraction-bar-svg">
+                        <rect x="0" y="0" width="180" height="25" class="bar-shade" />
+                        <path d="M30 0 V25 M60 0 V25 M90 0 V25 M120 0 V25 M150 0 V25 M180 0 V25" class="bar-grid" />
+                        <rect x="0" y="0" width="210" height="25" class="bar-outline" />
+                        <!-- Crosses: last 2 of shaded (120-180) -->
+                        <line x1="125" y1="3" x2="145" y2="22" class="bar-cross" />
+                        <line x1="145" y1="3" x2="125" y2="22" class="bar-cross" />
+                        <line x1="155" y1="3" x2="175" y2="22" class="bar-cross" />
+                        <line x1="175" y1="3" x2="155" y2="22" class="bar-cross" />
+                    </svg>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mt-1 text-xs">
+                    <label class="choice-item"><div class="choice-box">a</div> &nbsp; \(\frac{6}{7} - \frac{4}{7} = \frac{2}{7}\)</label>
+                    <label class="choice-item"><div class="choice-box">b</div> &nbsp; \(\frac{7}{7} - \frac{2}{7} = \frac{5}{7}\)</label>
+                    <label class="choice-item"><div class="choice-box">c</div> &nbsp; \(\frac{6}{7} - \frac{2}{7} = \frac{4}{7}\)</label>
+                    <label class="choice-item"><div class="choice-box">d</div> &nbsp; \(\frac{2}{7} + \frac{4}{7} = \frac{6}{7}\)</label>
+                </div>
+            </div>
+
+             <!-- INSTRUCTION PART C -->
+             <div class="bg-red-50 border border-red-200 p-2 rounded-lg mt-2 mb-1 text-xs">
+                <b>Bagian 3: Soal Cerita & Isian</b><br>
+                Gambarlah modelnya jika kamu butuh bantuan, lalu tulis jawabannya.
+            </div>
+
+            <!-- Question 7: Fill in blank -->
+            <div class="soal-item bg-white p-2 rounded border border-gray-300 shadow-sm">
+                <div class="font-bold mb-1 text-xs">
+                    7. Isilah titik-titik di bawah ini.
+                </div>
+                <div class="ml-2 mt-1 text-xs">
+                    Mulailah dengan 1 Bagian Utuh. Ambil 5 per dua belas.
+                    <div class="text-base mt-2 text-center font-bold">
+                        \[ 1 - \frac{5}{12} = \frac{\square}{12} - \frac{5}{12} = \frac{\square}{12} \]
+                    </div>
+                    <div class="text-[9px] text-center mt-1 text-blue-600 italic">
+                        (Petunjuk: Ubah 1 Utuh menjadi pecahan terlebih dahulu)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 8: Word Problem -->
+            <div class="soal-item bg-purple-50 p-3 rounded border border-purple-200 shadow-sm mt-1">
+                <div class="font-bold mb-1 text-xs text-purple-900">
+                    8. Soal Cerita
+                </div>
+                <div class="text-xs mb-2 leading-relaxed">
+                    Ibu memotong pizza menjadi <b>8 irisan sama besar</b>. David menaruh \(\frac{5}{8}\) pizza di piring. Dia memakan \(\frac{2}{8}\) pizza tersebut. <br>
+                    <b>Berapa sisa pizza di piring?</b>
+                </div>
+                <div class="bg-white p-2 border border-dashed border-purple-300 rounded text-center">
+                    <div class="text-[9px] text-gray-500 mb-1">Ruang Kerja (Arsir dan silang untuk menyelesaikan)</div>
+                    <svg width="160" height="20" viewBox="0 0 160 20" class="block mx-auto opacity-60">
+                        <rect x="0" y="0" width="160" height="20" fill="none" stroke="black" stroke-width="1"/>
+                        <path d="M20 0 V20 M40 0 V20 M60 0 V20 M80 0 V20 M100 0 V20 M120 0 V20 M140 0 V20" stroke="black" stroke-width="1"/>
+                    </svg>
+                </div>
+                <div class="mt-2 text-center text-xs">
+                    <b>Jawaban:</b> <input type="text" class="input-line w-20 text-base text-center">
+                </div>
+            </div>
+
+            <!-- Grid for Q9 and Q10 -->
+            <div class="question-grid mt-1">
+                <!-- Question 9 -->
+                <div class="soal-item bg-gray-50 p-2 rounded border border-gray-200">
+                    <div class="font-bold mb-1 text-xs">
+                        9. Bagian yang Hilang
+                    </div>
+                    <div class="text-[10px] mb-2">
+                        Temukan angka yang hilang agar kalimatnya benar.
+                    </div>
+                    <div class="text-base text-center font-bold">
+                        \[ \frac{7}{9} - \square = \frac{2}{9} \]
+                    </div>
+                    <div class="mt-2 text-center text-xs">
+                        <b>Jawab:</b> <input type="text" class="input-line w-16 text-base text-center">
+                    </div>
+                </div>
+
+                <!-- Question 10 -->
+                <div class="soal-item bg-green-50 p-2 rounded border border-green-200">
+                    <div class="font-bold mb-1 text-xs text-green-900">
+                        10. Tantangan
+                    </div>
+                    <div class="text-[10px] leading-relaxed">
+                        Sarah memiliki \(\frac{3}{10}\) batang cokelat. Tom memiliki \(\frac{9}{10}\) batang cokelat yang sama. <br>
+                        <b>Berapa lebihnya cokelat yang dimiliki Tom dibandingkan Sarah?</b>
+                    </div>
+                    <div class="mt-2 text-center text-xs">
+                        <b>Jawab:</b> <input type="text" class="input-line w-16 text-base text-center">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center bg-green-50 p-2 rounded-lg border border-green-200">
+                <p class="font-bold text-green-800 text-sm">Kerja bagus! Periksa kembali pekerjaanmu.</p>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+
+        <footer class="page-footer">
+            <div class="flex justify-between items-center w-full">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <span>Hal 2 dari 2</span>
+            </div>
+            <i class="text-[7pt] mt-0.5">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
