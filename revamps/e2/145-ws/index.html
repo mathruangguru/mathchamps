@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Mencari Kuantitas Per Item</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 1cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 1cm 2cm; }
+        .page:last-child { page-break-after: avoid; }
+        
+        .math-champs-header,
+        .print-color,
+        .bar-remainder,
+        .worked-example-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      .math-champs-header {
+        background-color: white; 
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black; 
+      }
+
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1cm 1cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        margin-bottom: 1rem;
+      }
+
+      .ans-line {
+        border-bottom: 1px solid black;
+        width: 80px;
+        display: inline-block;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.5cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+      }
+      
+      .no-break { page-break-inside: avoid; }
+
+      /* --- Custom for Bar Models --- */
+      .bar-model-container {
+        position: relative;
+        margin: 15px 0;
+        width: 100%;
+        max-width: 400px;
+      }
+      .brace-label {
+        text-align: center;
+        font-weight: bold;
+        font-size: 0.8rem;
+        margin-bottom: -2px;
+      }
+      .brace-svg {
+        width: 100%;
+        height: 15px;
+        display: block;
+      }
+      .brace-path {
+        fill: none;
+        stroke: black;
+        stroke-width: 1.5;
+      }
+      .bar-row {
+        display: flex;
+        border: 2px solid black;
+        height: 40px;
+        margin-top: 2px;
+      }
+      .bar-unit {
+        flex: 1;
+        border-right: 1px solid black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        background: white;
+        font-size: 0.9rem;
+      }
+      .bar-unit:last-child {
+        border-right: none;
+      }
+      .bar-remainder {
+        width: 60px;
+        background-color: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-left: 2px solid black;
+        font-size: 0.7rem;
+        flex-shrink: 0;
+        flex-direction: column;
+        line-height: 1.2;
+        text-align: center;
+        padding: 0 2px;
+      }
+
+      .worked-example-box {
+        background-color: #f9fafb;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1: Worked Example -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0">Kemampuan Tinggi - Perkalian & Pembagian</div>
+                    <div class="text-[10px] text-black font-medium">Mencari jumlah per barang (Dengan Sisa)</div>
+                    <div class="text-[10px] text-black font-medium">Kode: E2-S145</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-6 mt-4">
+                <h1 class="text-2xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                    PEMBAGIAN DENGAN SISA
+                </h1>
+                <p class="text-sm italic text-gray-500">Mencari Isi Per Kelompok</p>
+            </div>
+
+            <!-- WORKED EXAMPLE -->
+            <div class="worked-example-box print-color">
+                <div class="font-bold text-lg mb-3 border-b border-gray-300 pb-2">Contoh Pengerjaan (Model Batang)</div>
+                <p class="text-base mb-4 text-gray-800 leading-relaxed">
+                    <strong>Masalah:</strong> Ibu membeli <strong>125 cm</strong> pita. Dia memotong <strong>5 cm</strong> untuk hiasan kado. Sisanya dipotong sama panjang menjadi <strong>6</strong> bagian untuk kerajinan tangan. Berapa panjang setiap potongan kerajinan tangan?
+                </p>
+                
+                <!-- Bar Model Visualization -->
+                <div class="bar-model-container mx-auto mb-6">
+                    <div class="brace-label">Total Awal = 125 cm</div>
+                    <svg class="brace-svg" viewBox="0 0 500 15" preserveAspectRatio="none">
+                        <path d="M1,15 Q1,1 10,1 L240,1 Q250,1 250,0 Q250,1 260,1 L490,1 Q499,1 499,15" class="brace-path" />
+                    </svg>
+                    <div class="bar-row">
+                        <div class="bar-unit text-blue-600">?</div>
+                        <div class="bar-unit text-blue-600">?</div>
+                        <div class="bar-unit text-blue-600">?</div>
+                        <div class="bar-unit text-blue-600">?</div>
+                        <div class="bar-unit text-blue-600">?</div>
+                        <div class="bar-unit text-blue-600">?</div>
+                        <div class="bar-remainder">
+                            <span class="font-bold text-xs text-red-600">Sisa: 5</span>
+                        </div>
+                    </div>
+                    <div class="text-center text-xs mt-1 font-bold text-gray-600">6 Bagian Sama Panjang (Unit)</div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 text-sm bg-white p-4 rounded border border-gray-200">
+                    <div>
+                        <strong class="text-blue-800 block mb-1">Langkah 1: Cari sisa yang dibagi.</strong>
+                        <div class="text-xs text-gray-500 mb-1">Total Awal - Sisa Tak Terpakai</div>
+                        <div class="font-bold text-xl font-mono text-gray-800">125 - 5 = 120</div>
+                    </div>
+                    <div>
+                        <strong class="text-blue-800 block mb-1">Langkah 2: Bagi dengan jumlah unit.</strong>
+                        <div class="text-xs text-gray-500 mb-1">Sisa yang dibagi ÷ Jumlah Bagian</div>
+                        <div class="font-bold text-xl font-mono text-gray-800">120 ÷ 6 = 20</div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <span class="inline-block bg-green-100 border border-green-300 text-green-800 px-4 py-2 rounded font-bold">
+                        Jawaban: Setiap potongan panjangnya 20 cm.
+                    </span>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2: Practice Q1 & Q2 (Visual Scaffolding) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0">Kode: E2-S145</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mb-6 text-base border-b-2 border-black inline-block">
+                Latihan Soal dengan Bantuan Visual
+            </div>
+
+            <!-- Q1 -->
+            <div class="soal-item mb-10 no-break">
+                <div class="text-base mb-3 font-medium">
+                    1. Sebuah pabrik membuat <strong>500</strong> mainan. Saat pengecekan, ditemukan <strong>20</strong> mainan rusak dan dibuang. Sisanya dikemas sama rata ke dalam <strong>8</strong> kotak besar. Berapa isi setiap kotak?
+                </div>
+                
+                <div class="bar-model-container">
+                    <div class="brace-label">Total = 500</div>
+                    <svg class="brace-svg" viewBox="0 0 400 15" preserveAspectRatio="none">
+                        <path d="M1,15 Q1,1 10,1 L190,1 Q200,1 200,0 Q200,1 210,1 L390,1 Q399,1 399,15" class="brace-path" />
+                    </svg>
+                    <div class="bar-row h-12">
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-remainder bg-red-50">
+                            <span class="font-bold text-xs text-red-600">Rusak: 20</span>
+                        </div>
+                    </div>
+                    <div class="text-center text-xs mt-1 text-gray-500 font-bold">8 Kotak</div>
+                </div>
+                <div class="text-right mt-4 text-base font-bold">
+                    Jawaban: <div class="ans-line"></div> mainan
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- Q2 -->
+            <div class="soal-item mb-8 no-break">
+                <div class="text-base mb-3 font-medium">
+                    2. Paman memanen <strong>95 kg</strong> mangga. Ia memberikan <strong>5 kg</strong> kepada tetangga. Sisanya dimasukkan sama berat ke dalam <strong>9</strong> keranjang untuk dijual di pasar. Berapa berat mangga di setiap keranjang?
+                </div>
+                
+                <div class="bar-model-container">
+                    <div class="brace-label">Total = 95 kg</div>
+                    <svg class="brace-svg" viewBox="0 0 400 15" preserveAspectRatio="none">
+                        <path d="M1,15 Q1,1 10,1 L190,1 Q200,1 200,0 Q200,1 210,1 L390,1 Q399,1 399,15" class="brace-path" />
+                    </svg>
+                    <div class="bar-row h-12">
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-unit">?</div>
+                        <div class="bar-remainder bg-green-50">
+                            <span class="font-bold text-xs text-green-700">Diberi: 5</span>
+                        </div>
+                    </div>
+                    <div class="text-center text-xs mt-1 text-gray-500 font-bold">9 Keranjang</div>
+                </div>
+                <div class="text-right mt-4 text-base font-bold">
+                    Jawaban: <div class="ans-line"></div> kg
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3: Questions 3-10 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                    <div class="text-[10px] text-black font-semibold">Kode: E2-S145</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mb-4 text-base border-b-2 border-black inline-block">
+                Pemecahan Masalah (Tingkat Lanjut)
+            </div>
+            
+            <div class="soal-grid text-sm">
+                
+                <!-- Q3 -->
+                <div class="soal-item no-break">
+                    <div class="font-bold mb-1 text-gray-500">💰 Uang & Belanja</div>
+                    <p class="mb-2">
+                        3. Ayah punya uang <strong>$100</strong>. Dia membeli tiket parkir seharga <strong>$4</strong>. Sisa uangnya digunakan untuk membeli <strong>8</strong> tiket bioskop dengan harga sama. Berapa harga satu tiket bioskop?
+                    </p>
+                    <div class="text-right text-xs font-bold">Jawab: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="soal-item no-break">
+                    <div class="font-bold mb-1 text-gray-500">📿 Kerajinan</div>
+                    <p class="mb-2">
+                        4. Seorang pengrajin memiliki <strong>150</strong> manik-manik. <strong>6</strong> manik-manik hilang. Sisanya dirangkai menjadi <strong>9</strong> gelang dengan jumlah manik-manik yang sama. Berapa manik-manik per gelang?
+                    </p>
+                    <div class="text-right text-xs font-bold">Jawab: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="soal-item no-break">
+                    <div class="font-bold mb-1 text-gray-500">🍹 Minuman</div>
+                    <p class="mb-2">
+                        5. Dalam sebuah teko terdapat <strong>200 ml</strong> sirup. Tumpah sebanyak <strong>20 ml</strong>. Sisa sirup dituang rata ke dalam <strong>6</strong> gelas es serut. Berapa ml sirup di setiap gelas?
+                    </p>
+                    <div class="text-right text-xs font-bold">Jawab: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="soal-item no-break">
+                    <div class="font-bold mb-1 text-gray-500">🍰 Memasak</div>
+                    <p class="mb-2">
+                        6. Ibu membeli <strong>500 gram</strong> tepung terigu. Tidak sengaja tumpah <strong>20 gram</strong>. Sisanya digunakan untuk membuat <strong>8</strong> loyang kue bolu. Berapa gram tepung untuk satu loyang?
+                    </p>
+                    <div class="text-right text-xs font-bold">Jawab: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q7 -->
+                <div class="soal-item no-break">
+                    <div class="font-bold mb-1 text-gray-500">🪑 Perabot</div>
+                    <p class="mb-2">
+                        7. Ada <strong>75</strong> kursi di aula. <strong>3</strong> kursi rusak dan dikeluarkan. Kursi yang bagus disusun menjadi <strong>9</strong> baris yang sama banyak. Berapa kursi dalam satu baris?
+                    </p>
+                    <div class="text-right text-xs font-bold">Jawab: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q8 -->
+                <div class="soal-item no-break">
+                    <div class="font-bold mb-1 text-gray-500">📖 Membaca</div>
+                    <p class="mb-2">
+                        8. Sebuah buku tebalnya <strong>125</strong> halaman. Rina sudah membaca <strong>5</strong> halaman. Sisanya ia baca dengan jumlah halaman yang sama setiap hari selama <strong>6</strong> hari. Berapa halaman yang ia baca per hari?
+                    </p>
+                    <div class="text-right text-xs font-bold">Jawab: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q9 -->
+                <div class="soal-item no-break">
+                    <div class="font-bold mb-1 text-gray-500">🔮 Mainan</div>
+                    <p class="mb-2">
+                        9. Sekantong berisi <strong>300</strong> kelereng. Budi mengambil <strong>20</strong> kelereng untuk dirinya. Sisanya dibagikan sama rata kepada <strong>7</strong> temannya. Berapa kelereng yang diterima setiap teman?
+                    </p>
+                    <div class="text-right text-xs font-bold">Jawab: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q10 -->
+                <div class="soal-item no-break bg-blue-50 p-3 rounded border border-blue-200">
+                    <div class="font-bold mb-1 text-blue-800">🏆 Tantangan</div>
+                    <p class="mb-2 font-semibold text-blue-900">
+                        10. Pak Guru punya <strong>1.000</strong> lembar kertas. Dia memakai <strong>40</strong> lembar untuk ujian guru. Sisanya dibagikan ke <strong>8</strong> kelas dengan jumlah sama. Berapa lembar kertas untuk setiap kelas?
+                    </p>
+                    <div class="text-right text-xs font-bold">Jawab: <div class="ans-line"></div></div>
+                </div>
+
+            </div>
+
+            <!-- RANDOM ENCOURAGEMENT FOOTER -->
+            <div class="mt-8 text-center py-4 border-t border-gray-200">
+                <p class="text-lg font-bold text-blue-600 italic font-handwriting">
+                    "Hebat! Kamu sudah latihan dengan serius dan fokus."
+                </p>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
