@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Pecahan (D4-S340)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MathJax untuk render matematika (Pecahan) -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --mc-blue: #3b82f6;
+        --bar-blue: #dbeafe; /* blue-100 */
+        --bar-gray: #e5e7eb; /* gray-200 */
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.2;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; 
+        min-height: 29.7cm; 
+        padding: 0.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        margin-top: 5px;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 2px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 0.5cm 2cm; }
+        .page:last-child { page-break-after: avoid; }
+      }
+
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* Grid Soal */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 80px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 4px;
+        padding: 0 5px;
+        vertical-align: middle;
+        background-color: white;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+        margin-left: 0.5rem;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        border-radius: 3px;
+        vertical-align: text-bottom;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.4cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.3rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 5px solid #333;
+      }
+      
+      .visual-box {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 0.5rem;
+        background-color: #fff;
+        border-radius: 8px;
+        margin: 0.5rem 0;
+        flex-wrap: wrap;
+      }
+
+      /* SVG Styles */
+      .math-svg {
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        overflow: visible;
+      }
+      .bar-stroke { stroke: #333; stroke-width: 2px; }
+      .bar-text { font-size: 12px; fill: #1f2937; text-anchor: middle; dominant-baseline: middle; }
+      .brace-path { fill: none; stroke: #555; stroke-width: 1.5px; }
+      .brace-text { font-size: 12px; fill: #555; text-anchor: middle; }
+      .text-small { font-size: 11px; fill: #555; }
+      .text-bold { font-weight: 700; }
+      .dashed-box { fill: none; stroke: #333; stroke-width: 2px; stroke-dasharray: 5,5; }
+      
+      /* Style khusus untuk label di dalam SVG agar tidak bentrok */
+      .fo-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+        font-size: 11px;
+        color: #1f2937;
+        line-height: 1;
+      }
+      .label-bg {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 1px 4px;
+        border-radius: 4px;
+        box-shadow: 0 0 2px rgba(255,255,255,0.8);
+      }
+
+    </style>
+  </head>
+  <body>
+
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pecahan Tingkat Lanjut</div>
+                    <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto">
+                        Pecahan dan Jumlah Benda
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D4-S340</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+
+
+            <!-- Intro Box -->
+            <div class="bg-gray-100 border border-gray-300 rounded-lg p-3 mb-4 text-sm">
+                <div class="font-bold mb-1 border-b border-gray-300 pb-1">Instruksi:</div>
+                <p>Pada lembar kerja ini, kita akan mencari jumlah benda milik seseorang jika kita mengetahui jumlah total, jumlah milik orang lain, dan nilai pecahannya. Gunakan model batang untuk membantumu!</p>
+            </div>
+
+            <div class="soal-grid">
+                <!-- CONTOH -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 bg-yellow-50 p-2 rounded border border-yellow-200">
+                        Contoh: Ibu mempunyai <strong>8</strong> kue. Adik memakan <strong>2</strong> kue. Sisa kue adalah milik Kakak, yaitu \(\frac{3}{4}\) dari total. Berapa banyak kue Kakak?
+                    </div>
+                    <div class="visual-box">
+                        <svg width="400" height="90" class="math-svg">
+                            <!-- Total Bar: 8 units -->
+                            <rect x="50" y="20" width="50" height="30" fill="#e5e7eb" class="bar-stroke" /> <!-- Adik (2) -->
+                            <rect x="100" y="20" width="150" height="30" fill="#dbeafe" class="bar-stroke" /> <!-- Kakak (6) -->
+                            
+                            <!-- Dividers -->
+                            <line x1="75" y1="20" x2="75" y2="50" stroke="#333" stroke-width="1" />
+                            <line x1="100" y1="20" x2="100" y2="50" stroke="#333" stroke-width="1" />
+                            <line x1="125" y1="20" x2="125" y2="50" stroke="#333" stroke-width="1" />
+                            <line x1="150" y1="20" x2="150" y2="50" stroke="#333" stroke-width="1" />
+                            <line x1="175" y1="20" x2="175" y2="50" stroke="#333" stroke-width="1" />
+                            <line x1="200" y1="20" x2="200" y2="50" stroke="#333" stroke-width="1" />
+                            <line x1="225" y1="20" x2="225" y2="50" stroke="#333" stroke-width="1" />
+
+                            <!-- Labels using ForeignObject for MathJax -->
+                            <foreignObject x="50" y="20" width="50" height="30">
+                              <div xmlns="http://www.w3.org/1999/xhtml" class="fo-label">
+                                <span class="label-bg">Adik (2)</span>
+                              </div>
+                            </foreignObject>
+                            
+                            <foreignObject x="100" y="20" width="150" height="30">
+                              <div xmlns="http://www.w3.org/1999/xhtml" class="fo-label">
+                                <span class="label-bg">Kakak \(\left(\frac{3}{4}\right)\)</span>
+                              </div>
+                            </foreignObject>
+
+                            <!-- Brace Total -->
+                            <path d="M 50 55 Q 50 65 60 65 L 140 65 Q 150 65 150 75 Q 150 65 160 65 L 240 65 Q 250 65 250 55" class="brace-path" />
+                            <text x="150" y="85" class="brace-text text-bold">Total = 8</text>
+                        </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 ml-1 font-bold">
+                        <span>Jawab: Total 8 - 2 = 6. (Cek: \(\frac{3}{4}\) dari 8 adalah 6). Jadi kue Kakak ada <strong>6</strong>.</span>
+                    </div>
+                </div>
+
+                <div class="instruction-text mt-2">
+                    Bagian A: Isian Singkat (Gunakan Gambar)
+                </div>
+
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. Ada total <strong>10</strong> bola. Budi mengambil <strong>2</strong> bola. Sisa bola adalah milik Siti, yaitu \(\frac{4}{5}\) dari total. Berapa banyak bola Siti?
+                    </div>
+                    <div class="visual-box">
+                         <svg width="350" height="80" class="math-svg">
+                             <!-- Scale: 25px per unit. Total 10 units = 250px -->
+                             <!-- Budi: 2 units (50px) -->
+                             <rect x="25" y="10" width="50" height="30" fill="#e5e7eb" class="bar-stroke" />
+                             
+                             <!-- Siti: 8 units (200px) -->
+                             <rect x="75" y="10" width="200" height="30" fill="#dbeafe" class="bar-stroke" />
+                             
+                             <!-- Grid lines every 25px -->
+                             <line x1="50" y1="10" x2="50" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="75" y1="10" x2="75" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="100" y1="10" x2="100" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="125" y1="10" x2="125" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="150" y1="10" x2="150" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="175" y1="10" x2="175" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="200" y1="10" x2="200" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="225" y1="10" x2="225" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="250" y1="10" x2="250" y2="40" stroke="#333" stroke-width="0.5" />
+
+                             <foreignObject x="25" y="10" width="50" height="30">
+                              <div xmlns="http://www.w3.org/1999/xhtml" class="fo-label">
+                                <span class="label-bg">Budi (2)</span>
+                              </div>
+                            </foreignObject>
+
+                             <foreignObject x="75" y="10" width="200" height="30">
+                              <div xmlns="http://www.w3.org/1999/xhtml" class="fo-label">
+                                <span class="label-bg">Siti \(\left(\frac{4}{5}\right)\)</span>
+                              </div>
+                            </foreignObject>
+
+                             <path d="M 25 45 Q 25 55 35 55 L 140 55 Q 150 55 150 65 Q 150 55 160 55 L 265 55 Q 275 55 275 45" class="brace-path" />
+                             <text x="150" y="75" class="brace-text text-bold">Total = 10</text>
+                         </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-1 font-bold">
+                        <span>Jawaban: </span>
+                        <span class="input-box"></span>
+                        <span>bola</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. Ada total <strong>6</strong> apel. Ayah memakan <strong>1</strong> apel. Sisa apel diberikan kepada Ibu, yaitu \(\frac{5}{6}\) dari total. Berapa banyak apel Ibu?
+                    </div>
+                    <div class="visual-box">
+                         <svg width="300" height="80" class="math-svg">
+                             <!-- Scale: 40px per unit. Total 6 units = 240px -->
+                             <!-- Ayah: 1 unit (40px) -->
+                             <rect x="30" y="10" width="40" height="30" fill="#e5e7eb" class="bar-stroke" />
+                             
+                             <!-- Ibu: 5 units (200px) -->
+                             <rect x="70" y="10" width="200" height="30" fill="#dbeafe" class="bar-stroke" />
+                             
+                             <!-- Grid lines -->
+                             <line x1="70" y1="10" x2="70" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="110" y1="10" x2="110" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="150" y1="10" x2="150" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="190" y1="10" x2="190" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="230" y1="10" x2="230" y2="40" stroke="#333" stroke-width="0.5" />
+
+                             <foreignObject x="30" y="10" width="40" height="30">
+                              <div xmlns="http://www.w3.org/1999/xhtml" class="fo-label">
+                                <span class="label-bg">Ayah</span>
+                              </div>
+                            </foreignObject>
+
+                             <foreignObject x="70" y="10" width="200" height="30">
+                              <div xmlns="http://www.w3.org/1999/xhtml" class="fo-label">
+                                <span class="label-bg">Ibu \(\left(\frac{5}{6}\right)\)</span>
+                              </div>
+                            </foreignObject>
+
+                             <path d="M 30 45 Q 30 55 40 55 L 140 55 Q 150 55 150 65 Q 150 55 160 55 L 260 55 Q 270 55 270 45" class="brace-path" />
+                             <text x="150" y="75" class="brace-text text-bold">Total = 6</text>
+                         </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-1 font-bold">
+                        <span>Jawaban: </span>
+                        <span class="input-box"></span>
+                        <span>apel</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pecahan Tingkat Lanjut</div>
+                    <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto">
+                        Pecahan dan Jumlah Benda
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D4-S340</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid mt-2">
+                
+                <!-- SOAL 3 (Moved here from Page 1) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        3. Di kelas ada <strong>12</strong> siswa. <strong>3</strong> siswa adalah laki-laki. Sisanya adalah perempuan (\(\frac{3}{4}\) dari total). Berapa jumlah siswa perempuan?
+                    </div>
+                    <div class="visual-box">
+                         <svg width="350" height="80" class="math-svg">
+                             <!-- Scale: 20px per unit. Total 12 units = 240px -->
+                             <!-- Laki: 3 units (60px) -->
+                             <rect x="55" y="10" width="60" height="30" fill="#e5e7eb" class="bar-stroke" />
+                             
+                             <!-- Pr: 9 units (180px) -->
+                             <rect x="115" y="10" width="180" height="30" fill="#dbeafe" class="bar-stroke" />
+                             
+                             <!-- Grid lines every unit -->
+                             <line x1="75" y1="10" x2="75" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="95" y1="10" x2="95" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="115" y1="10" x2="115" y2="40" stroke="#333" stroke-width="0.5" />
+                             <!-- Visual grids continued -->
+                             <line x1="135" y1="10" x2="135" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="155" y1="10" x2="155" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="175" y1="10" x2="175" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="195" y1="10" x2="195" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="215" y1="10" x2="215" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="235" y1="10" x2="235" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="255" y1="10" x2="255" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="275" y1="10" x2="275" y2="40" stroke="#333" stroke-width="0.5" />
+
+                             <foreignObject x="55" y="10" width="60" height="30">
+                              <div xmlns="http://www.w3.org/1999/xhtml" class="fo-label">
+                                <span class="label-bg">Lk (3)</span>
+                              </div>
+                            </foreignObject>
+
+                             <foreignObject x="115" y="10" width="180" height="30">
+                              <div xmlns="http://www.w3.org/1999/xhtml" class="fo-label">
+                                <span class="label-bg">Pr \(\left(\frac{3}{4}\right)\)</span>
+                              </div>
+                            </foreignObject>
+
+                             <path d="M 55 45 Q 55 55 65 55 L 165 55 Q 175 55 175 65 Q 175 55 185 55 L 285 55 Q 295 55 295 45" class="brace-path" />
+                             <text x="175" y="75" class="brace-text text-bold">Total = 12</text>
+                         </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-1 font-bold">
+                        <span>Jawaban: </span>
+                        <span class="input-box"></span>
+                        <span>siswa</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        4. Ada <strong>9</strong> permen. <strong>3</strong> permen rasa stroberi. Sisanya rasa jeruk (\(\frac{2}{3}\) dari total). Berapa banyak permen rasa jeruk?
+                    </div>
+                    <div class="visual-box">
+                         <svg width="300" height="80" class="math-svg">
+                             <!-- Scale: 25px. Total 9 = 225px -->
+                             <!-- Str: 3 units (75px) -->
+                             <rect x="35" y="10" width="75" height="30" fill="#e5e7eb" class="bar-stroke" />
+                             
+                             <!-- Jeruk: 6 units (150px) -->
+                             <rect x="110" y="10" width="150" height="30" fill="#dbeafe" class="bar-stroke" />
+                             
+                             <!-- Grids -->
+                             <line x1="60" y1="10" x2="60" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="85" y1="10" x2="85" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="110" y1="10" x2="110" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="135" y1="10" x2="135" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="160" y1="10" x2="160" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="185" y1="10" x2="185" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="210" y1="10" x2="210" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="235" y1="10" x2="235" y2="40" stroke="#333" stroke-width="0.5" />
+
+                             <foreignObject x="35" y="10" width="75" height="30">
+                              <div xmlns="http://www.w3.org/1999/xhtml" class="fo-label">
+                                <span class="label-bg">Str (3)</span>
+                              </div>
+                            </foreignObject>
+
+                             <foreignObject x="110" y="10" width="150" height="30">
+                              <div xmlns="http://www.w3.org/1999/xhtml" class="fo-label">
+                                <span class="label-bg">Jeruk \(\left(\frac{2}{3}\right)\)</span>
+                              </div>
+                            </foreignObject>
+
+                             <path d="M 35 45 Q 35 55 45 55 L 140 55 Q 150 55 150 65 Q 150 55 160 55 L 250 55 Q 260 55 260 45" class="brace-path" />
+                             <text x="150" y="75" class="brace-text text-bold">Total = 9</text>
+                         </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-1 font-bold">
+                        <span>Jawaban: </span>
+                        <span class="input-box"></span>
+                        <span>permen</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        5. Paman punya <strong>8</strong> balon. <strong>4</strong> balon meletus. Sisa balon yang masih utuh adalah \(\frac{1}{2}\) dari total. Berapa balon yang masih utuh?
+                    </div>
+                    <div class="visual-box">
+                         <svg width="300" height="80" class="math-svg">
+                             <!-- Scale: 30px. Total 8 = 240px -->
+                             <!-- Meletus: 4 units (120px) -->
+                             <rect x="30" y="10" width="120" height="30" fill="#e5e7eb" class="bar-stroke" />
+                             
+                             <!-- Utuh: 4 units (120px) -->
+                             <rect x="150" y="10" width="120" height="30" fill="#dbeafe" class="bar-stroke" />
+                             
+                             <!-- Grids -->
+                             <line x1="60" y1="10" x2="60" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="90" y1="10" x2="90" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="120" y1="10" x2="120" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="150" y1="10" x2="150" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="180" y1="10" x2="180" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="210" y1="10" x2="210" y2="40" stroke="#333" stroke-width="0.5" />
+                             <line x1="240" y1="10" x2="240" y2="40" stroke="#333" stroke-width="0.5" />
+
+                             <foreignObject x="30" y="10" width="120" height="30">
+                              <div xmlns="http://www.w3.org/1999/xhtml" class="fo-label">
+                                <span class="label-bg">Meletus (4)</span>
+                              </div>
+                            </foreignObject>
+
+                             <foreignObject x="150" y="10" width="120" height="30">
+                              <div xmlns="http://www.w3.org/1999/xhtml" class="fo-label">
+                                <span class="label-bg">Utuh \(\left(\frac{1}{2}\right)\)</span>
+                              </div>
+                            </foreignObject>
+
+                             <path d="M 30 45 Q 30 55 40 55 L 140 55 Q 150 55 150 65 Q 150 55 160 55 L 260 55 Q 270 55 270 45" class="brace-path" />
+                             <text x="150" y="75" class="brace-text text-bold">Total = 8</text>
+                         </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-1 font-bold">
+                        <span>Jawaban: </span>
+                        <span class="input-box"></span>
+                        <span>balon</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+                
+                <div class="instruction-text mt-2">
+                    Bagian B: Pemecahan Masalah (Bayangkan Modelnya!)
+                </div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        6. Ada 15 buku di rak. Adik mengambil 5 buku untuk dibaca. Sisa buku di rak adalah milik Kakak (\(\frac{2}{3}\) dari total). Berapa banyak buku milik Kakak?
+                    </div>
+                    <div class="text-sm ml-4 mb-2 text-gray-600">
+                        <ul class="list-disc pl-4">
+                            <li>Total buku: 15</li>
+                            <li>Buku Adik: 5</li>
+                        </ul>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 5 buku</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 8 buku</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 10 buku</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 12 buku</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pecahan Tingkat Lanjut</div>
+                    <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto">
+                        Pecahan dan Jumlah Benda
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D4-S340</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid mt-2">
+                
+                <!-- SOAL 7 (Moved here from Page 2) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        7. Di dalam kotak ada 20 kelereng. Andi mengambil 5 kelereng. Sisa kelereng adalah milik Bayu. Bagian Bayu adalah \(\frac{3}{4}\) dari total kelereng. Berapa banyak kelereng Bayu?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 10 kelereng</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 15 kelereng</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 5 kelereng</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 20 kelereng</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        8. Ibu membeli 16 donat. 4 donat diberikan kepada tamu. Sisa donat disimpan di kulkas untuk anak-anak. Jika sisa donat itu adalah \(\frac{3}{4}\) bagian dari total, berapa donat yang ada di kulkas?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 12 donat</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 4 donat</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 8 donat</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 16 donat</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <div class="instruction-text mt-2">
+                    Tantangan Berpikir (High Ability)
+                </div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. Pak Tani memanen 10 semangka. Dia menjual 2 semangka ke pasar. Sisanya dia bawa pulang. Semangka yang dibawa pulang adalah <strong>\(\frac{4}{5}\)</strong> bagian dari seluruh panen.
+                    </div>
+                    <div class="ml-4 mt-2">
+                        <div class="mb-2">a) Berapa semangka yang dibawa pulang? <span class="input-box ml-2"></span></div>
+                        <div class="mb-2">b) Buktikan: Apakah benar hasilmu itu adalah \(\frac{4}{5}\) dari 10?</div>
+                        <div class="flex gap-4 font-bold ml-4">
+                            <label><span class="choice-box rounded-full"></span> YA</label>
+                            <label><span class="choice-box rounded-full"></span> TIDAK</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        10. Dalam satu kotak pensil ada 12 pensil warna. Rina mengambil 4 pensil warna merah. Sisanya adalah pensil warna biru. Pensil biru adalah <strong>\(\frac{2}{3}\)</strong> dari total pensil.
+                    </div>
+                    <div class="bg-gray-50 border border-dashed border-gray-400 rounded p-4 text-center text-gray-400 text-sm h-32 flex items-center justify-center">
+                        Gambarlah model batangmu di sini
+                    </div>
+                    <div class="flex items-center gap-2 mt-3 ml-1 font-bold">
+                        <span>Jawaban: Jumlah pensil biru adalah</span>
+                        <span class="input-box"></span>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="text-center italic text-xs text-gray-400 mt-8">
+                "Semangat belajar! Matematika itu menyenangkan!"
+            </div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
