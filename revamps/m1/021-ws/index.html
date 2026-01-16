@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Estimasi Hasil Bagi (M1-S021)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3; /* Sedikit diperkecil dari 1.4 */
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px; /* Dikurangi */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .icon-filled,
+        .icon-stroke,
+        .input-box,
+        .disc-fill,
+        .disc-stroke,
+        .example-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem; /* Dikurangi dari 0.8rem */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 28px; /* Sedikit diperkecil */
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 26px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.2rem; /* Sedikit diperkecil */
+        margin-top: 4px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 16px; /* Sedikit diperkecil */
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.1cm 0; /* Dikurangi dari 0.2cm */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.25rem 0.8rem; /* Padding lebih tipis */
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      .example-box {
+        background-color: #fefce8; /* yellow-50 */
+        border: 1px solid #fde047;
+        padding: 0.6rem; /* Padding lebih tipis */
+        border-radius: 0.5rem;
+        margin-bottom: 0.8rem;
+      }
+      
+      /* Visual Math Singapore Specifics */
+      .disc-fill {
+        fill: #f3f4f6; /* gray-100 */
+        stroke: #333;
+        stroke-width: 1.5;
+      }
+      
+      .disc-text {
+        font-family: 'Noto Sans', sans-serif;
+        font-weight: 700;
+        font-size: 10px;
+        fill: #333;
+        text-anchor: middle;
+        dominant-baseline: central;
+      }
+
+      .arrow-line {
+        stroke: #2563eb; /* blue-600 */
+        stroke-width: 2;
+        fill: none;
+        stroke-dasharray: 4;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        4 Operasi Pada Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Estimasi Hasil Bagi
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S021
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-3 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: ESTIMASI HASIL BAGI
+                </h1>
+            </div>
+
+            <!-- PANDUAN -->
+            <div class="example-box">
+                <div class="font-bold text-sm mb-1 text-yellow-800 uppercase tracking-wide">Panduan (Visual Thinking)</div>
+                <div class="text-sm mb-2">
+                    Untuk menaksir hasil bagi, gantilah bilangan yang dibagi dengan <b>bilangan yang kompatibel</b> (bilangan yang dekat nilainya dan mudah dibagi oleh pembagi).
+                </div>
+                <div class="bg-white p-2 rounded border border-yellow-200 flex flex-col items-center">
+                    <div class="text-sm font-semibold mb-1 text-gray-600 w-full text-left">Contoh: Taksirlah 332 &div; 8</div>
+                    <svg width="300" height="50" viewBox="0 0 300 50">
+                        <text x="40" y="30" font-family="Montserrat" font-weight="bold" font-size="16" text-anchor="middle">332 &div; 8</text>
+                        <!-- Arrow -->
+                        <path d="M 90 25 Q 120 5 150 25" stroke="#2563eb" stroke-width="2" fill="none" marker-end="url(#arrowhead-blue)"/>
+                        <text x="120" y="10" font-size="8" fill="#2563eb" text-anchor="middle">dibulatkan ke</text>
+                        
+                        <text x="220" y="30" font-family="Montserrat" font-weight="bold" font-size="16" text-anchor="middle">320 &div; 8 = 40</text>
+                    </svg>
+                    <div class="text-xs text-gray-500 italic mt-0.5">(320 adalah kelipatan 8 yang dekat dengan 332)</div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-2 py-1 text-sm">
+                Bagian A: Pilihlah estimasi yang paling tepat dengan menggunakan bilangan yang kompatibel.
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-0.5">
+                        1. Taksiran terbaik untuk <b>635 &div; 9</b> adalah ...
+                    </div>
+                    <div class="text-xs italic text-gray-500 ml-4 mb-1">(Petunjuk: 9 &times; 7 = 63)</div>
+                    
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-[45%]"><span class="choice-box"></span> a. 600 &div; 9</label>
+                        <label class="flex items-center cursor-pointer w-[45%]"><span class="choice-box"></span> b. 630 &div; 9</label>
+                        <label class="flex items-center cursor-pointer w-[45%]"><span class="choice-box"></span> c. 640 &div; 9</label>
+                        <label class="flex items-center cursor-pointer w-[45%]"><span class="choice-box"></span> d. 700 &div; 9</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-0.5">
+                        2. Bilangan yang paling cocok untuk menaksir <b>2.789 &div; 4</b> adalah ...
+                    </div>
+                    
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-[45%]"><span class="choice-box"></span> a. 2.000 (karena 20 &div; 4)</label>
+                        <label class="flex items-center cursor-pointer w-[45%]"><span class="choice-box"></span> b. 2.400 (karena 24 &div; 4)</label>
+                        <label class="flex items-center cursor-pointer w-[45%]"><span class="choice-box"></span> c. 2.800 (karena 28 &div; 4)</label>
+                        <label class="flex items-center cursor-pointer w-[45%]"><span class="choice-box"></span> d. 3.000 (karena 30 &div; 4)</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-0.5">
+                        3. Hasil taksiran dari <b>348 &div; 5</b> adalah ...
+                    </div>
+                    
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-[20%]"><span class="choice-box"></span> a. 50</label>
+                        <label class="flex items-center cursor-pointer w-[20%]"><span class="choice-box"></span> b. 60</label>
+                        <label class="flex items-center cursor-pointer w-[20%]"><span class="choice-box"></span> c. 70</label>
+                        <label class="flex items-center cursor-pointer w-[20%]"><span class="choice-box"></span> d. 80</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-0.5">
+                        4. Pabrik memproduksi <b>4.120</b> mainan untuk dimasukkan ke <b>7</b> kotak. Kira-kira berapa isi tiap kotak?
+                    </div>
+                    
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-[20%]"><span class="choice-box"></span> a. 400</label>
+                        <label class="flex items-center cursor-pointer w-[20%]"><span class="choice-box"></span> b. 500</label>
+                        <label class="flex items-center cursor-pointer w-[20%]"><span class="choice-box"></span> c. 600</label>
+                        <label class="flex items-center cursor-pointer w-[20%]"><span class="choice-box"></span> d. 700</label>
+                    </div>
+                </div>
+                
+                <div class="h-separator"></div>
+                
+                 <!-- SOAL 5 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-0.5">
+                        5. Manakah pasangan bilangan kompatibel yang BENAR untuk <b>5.525 &div; 9</b>?
+                    </div>
+                    
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-[45%]"><span class="choice-box"></span> a. 5.000 &div; 9</label>
+                        <label class="flex items-center cursor-pointer w-[45%]"><span class="choice-box"></span> b. 5.400 &div; 9</label>
+                        <label class="flex items-center cursor-pointer w-[45%]"><span class="choice-box"></span> c. 5.500 &div; 9</label>
+                        <label class="flex items-center cursor-pointer w-[45%]"><span class="choice-box"></span> d. 6.000 &div; 9</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        4 Operasi Pada Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Estimasi Hasil Bagi
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S021
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <!-- INSTRUCTION B -->
+            <div class="instruction-text mb-2 py-1 text-sm">
+                Bagian B: Isilah kotak kosong dengan bilangan yang kompatibel, kemudian hitung hasil taksirannya.
+            </div>
+
+            <div class="soal-grid mb-3">
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        6. Taksirlah hasil dari <b>7.123 &div; 8</b>.
+                    </div>
+
+                    <div class="flex flex-col items-center mb-0.5 bg-gray-50 p-1.5 rounded border border-gray-200">
+                        <svg width="400" height="60" viewBox="0 0 400 60">
+                            <!-- Awal -->
+                            <text x="50" y="35" font-family="Montserrat" font-size="16" font-weight="bold" text-anchor="middle">7.123</text>
+                            
+                            <!-- Panah -->
+                            <path d="M 85 30 L 145 30" class="arrow-line" marker-end="url(#arrowhead-blue)"/>
+                            <text x="115" y="20" font-size="9" fill="#2563eb" text-anchor="middle">taksir ke</text>
+
+                            <!-- Kotak Input -->
+                            <rect x="155" y="10" width="80" height="40" rx="4" fill="white" stroke="#333" stroke-width="1.5"/>
+                            
+                            <!-- Operasi Lanjutan -->
+                            <text x="315" y="35" font-family="Montserrat" font-size="16" font-weight="bold" text-anchor="middle">&div; 8 = ______</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        7. Taksirlah hasil dari <b>436 &div; 6</b>.
+                    </div>
+
+                    <div class="flex flex-col items-center mb-0.5 bg-gray-50 p-1.5 rounded border border-gray-200">
+                        <svg width="400" height="60" viewBox="0 0 400 60">
+                            <text x="50" y="35" font-family="Montserrat" font-size="16" font-weight="bold" text-anchor="middle">436</text>
+                            <path d="M 85 30 L 145 30" class="arrow-line" marker-end="url(#arrowhead-blue)"/>
+                            <text x="115" y="20" font-size="9" fill="#2563eb" text-anchor="middle">taksir ke</text>
+                            <rect x="155" y="10" width="80" height="40" rx="4" fill="white" stroke="#333" stroke-width="1.5"/>
+                            <text x="315" y="35" font-family="Montserrat" font-size="16" font-weight="bold" text-anchor="middle">&div; 6 = ______</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        8. Taksirlah hasil dari <b>8.092 &div; 9</b>.
+                    </div>
+
+                    <div class="flex flex-col items-center mb-0.5 bg-gray-50 p-1.5 rounded border border-gray-200">
+                        <svg width="400" height="60" viewBox="0 0 400 60">
+                            <text x="50" y="35" font-family="Montserrat" font-size="16" font-weight="bold" text-anchor="middle">8.092</text>
+                            <path d="M 85 30 L 145 30" class="arrow-line" marker-end="url(#arrowhead-blue)"/>
+                            <text x="115" y="20" font-size="9" fill="#2563eb" text-anchor="middle">taksir ke</text>
+                            <rect x="155" y="10" width="80" height="40" rx="4" fill="white" stroke="#333" stroke-width="1.5"/>
+                            <text x="315" y="35" font-family="Montserrat" font-size="16" font-weight="bold" text-anchor="middle">&div; 9 = ______</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- INSTRUCTION C -->
+                <div class="instruction-text mb-2 py-1 text-sm mt-3">
+                    Bagian C: Pemecahan Masalah (Model Drawing). Jawablah dengan mengisi titik-titik.
+                </div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. Pak Budi memiliki <b>Rp 3.580.000</b>. Uang tersebut akan dibagikan kepada 6 anaknya sama rata.
+                    </div>
+                    
+                    <div class="ml-4 flex flex-col gap-1.5 text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="w-4 h-4 bg-gray-800 text-white rounded-full flex items-center justify-center text-[10px]">1</span>
+                            <span>Bilangan kompatibel untuk Rp 3.580.000 (dekat kelipatan 6) adalah:</span>
+                        </div>
+                        <div class="ml-6 font-bold text-lg">Rp <span class="input-box" style="width: 120px;"></span></div>
+                        
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="w-4 h-4 bg-gray-800 text-white rounded-full flex items-center justify-center text-[10px]">2</span>
+                            <span>Taksiran uang yang diterima setiap anak adalah:</span>
+                        </div>
+                        <div class="ml-6 font-bold text-lg">Rp <span class="input-box" style="width: 120px;"></span></div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        10. Truk mengangkut <b>2.315 kg</b> beras untuk 4 toko dengan jumlah sama rata.
+                    </div>
+                    
+                    <div class="ml-4 flex flex-col gap-1.5 text-sm">
+                         <div class="flex items-center gap-2">
+                            <span class="w-4 h-4 bg-gray-800 text-white rounded-full flex items-center justify-center text-[10px]">&rarr;</span>
+                            <span>Taksiran berat beras per toko adalah:</span>
+                        </div>
+                        <div class="ml-6 font-bold text-lg">
+                            <span class="input-box" style="width: 80px;"></span> kg.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+
+    <!-- Hidden SVG Definitions for Arrowheads -->
+    <svg style="display: none;">
+        <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+            </marker>
+            <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb" />
+            </marker>
+        </defs>
+    </svg>
+  </body>
+</html>
