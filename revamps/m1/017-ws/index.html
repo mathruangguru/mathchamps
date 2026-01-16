@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Pembulatan (M1-S017)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.6cm 2cm; /* Margin dipadatkan */
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.6cm 2cm;
+          border: none;
+          display: block;
+          position: relative;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .number-line-stroke,
+        .number-line-fill {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+        
+        .page-footer {
+            position: absolute;
+            bottom: 0.6cm;
+            width: calc(100% - 4cm);
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem; /* Jarak antar soal lebih rapat */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 80px;
+        height: 26px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 24px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 4px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.1cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.3rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* Visual Math Singapore Specifics (Number Lines) */
+      .number-line-stroke {
+        stroke: #333;
+        stroke-width: 2;
+        fill: none;
+      }
+      .number-line-text {
+        font-family: 'Noto Sans', sans-serif;
+        font-weight: 600;
+        font-size: 11px;
+        fill: #333;
+        text-anchor: middle;
+      }
+      .point-dot {
+        fill: #ef4444; /* red-500 */
+      }
+      .point-text {
+        font-family: 'Noto Sans', sans-serif;
+        font-weight: 700;
+        font-size: 11px;
+        fill: #ef4444;
+        text-anchor: middle;
+      }
+      .curve-arrow {
+        stroke: #ef4444;
+        stroke-width: 1.5;
+        fill: none;
+        stroke-dasharray: 4;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        4 Operasi Pada Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Pembulatan ke Ratusan dan Ribuan Terdekat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S017
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-2 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: PEMBULATAN BILANGAN
+                </h1>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text">
+                Bagian A: Pemahaman Visual. Gunakan garis bilangan untuk membantu membulatkan angka.
+                <br><span class="font-normal text-xs italic">Ingat: Lihatlah angka tersebut lebih dekat ke "bukit" mana?</span>
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. Perhatikan garis bilangan di bawah ini untuk angka <b>340</b>.
+                    </div>
+                    
+                    <div class="flex flex-col items-center gap-1 mb-1 mt-1">
+                         <!-- Visual: Number Line 300-400 -->
+                        <svg width="350" height="70" viewBox="0 0 350 70">
+                            <!-- Main Line -->
+                            <line x1="20" y1="40" x2="330" y2="40" class="number-line-stroke" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-rev)" />
+                            
+                            <!-- Ticks -->
+                            <line x1="30" y1="35" x2="30" y2="45" class="number-line-stroke" />
+                            <text x="30" y="60" class="number-line-text">300</text>
+                            
+                            <line x1="175" y1="35" x2="175" y2="45" class="number-line-stroke" />
+                            <text x="175" y="60" class="number-line-text">350</text>
+                            
+                            <line x1="320" y1="35" x2="320" y2="45" class="number-line-stroke" />
+                            <text x="320" y="60" class="number-line-text">400</text>
+
+                            <!-- Point 340 (approx 146px) -->
+                            <circle cx="146" cy="40" r="4" class="point-dot" />
+                            
+                            <!-- REVISI: Teks 340 dipindah ke bawah (y=60) agar sejajar dengan 300 & 400 -->
+                            <text x="146" y="60" class="point-text">340</text>
+                            
+                            <!-- Visual curve to 300 (tetap di atas) -->
+                            <path d="M 146 20 Q 88 5 30 30" class="curve-arrow" marker-end="url(#arrowhead-red)" fill="none" />
+                        </svg>
+
+                        <div class="text-sm font-medium text-gray-700 mt-0 mb-1 text-center w-full px-4">
+                            Angka 340 lebih dekat ke 300 daripada ke 400. <br>Maka, 340 jika dibulatkan ke <b>ratusan terdekat</b> menjadi...
+                        </div>
+
+                        <div class="choice-container justify-center">
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 300</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 350</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 400</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 450</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. Lihat posisi angka <b>2.800</b> pada garis bilangan ribuan berikut.
+                    </div>
+                    
+                    <div class="flex flex-col items-center gap-1 mb-1 mt-1">
+                        <!-- Visual: Number Line 2000-3000 -->
+                        <svg width="350" height="70" viewBox="0 0 350 70">
+                            <!-- Main Line -->
+                            <line x1="20" y1="40" x2="330" y2="40" class="number-line-stroke" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-rev)" />
+                            
+                            <!-- Ticks -->
+                            <line x1="30" y1="35" x2="30" y2="45" class="number-line-stroke" />
+                            <text x="30" y="60" class="number-line-text">2.000</text>
+                            
+                            <line x1="175" y1="35" x2="175" y2="45" class="number-line-stroke" />
+                            <text x="175" y="60" class="number-line-text">2.500</text>
+                            
+                            <line x1="320" y1="35" x2="320" y2="45" class="number-line-stroke" />
+                            <text x="320" y="60" class="number-line-text">3.000</text>
+
+                            <!-- Point 2800 (approx 262px) -->
+                            <circle cx="262" cy="40" r="4" class="point-dot" style="fill: #2563eb;" />
+                            <text x="262" y="25" class="point-text" style="fill: #2563eb;">2.800</text>
+                        </svg>
+
+                        <div class="text-sm font-medium text-gray-700 mt-0 mb-1 text-center w-full px-4">
+                            2.800 dibulatkan ke <b>ribuan terdekat</b> adalah...
+                        </div>
+
+                        <div class="choice-container justify-center">
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 2.000</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 2.500</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 2.900</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 3.000</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 & 4 (Combined for Layout) -->
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="soal-item flex-1">
+                        <div class="font-bold mb-2">
+                            3. Bulatkan ke ratusan terdekat.
+                        </div>
+                        <div class="pl-4 space-y-1">
+                            <div class="flex justify-between items-center bg-gray-50 p-1.5 rounded">
+                                <span class="font-mono text-lg">675 &approx;</span>
+                                <span class="input-box"></span>
+                            </div>
+                            <div class="flex justify-between items-center bg-gray-50 p-1.5 rounded">
+                                <span class="font-mono text-lg">1.239 &approx;</span>
+                                <span class="input-box"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="soal-item flex-1">
+                        <div class="font-bold mb-2">
+                            4. Bulatkan ke ribuan terdekat.
+                        </div>
+                        <div class="pl-4 space-y-1">
+                            <div class="flex justify-between items-center bg-gray-50 p-1.5 rounded">
+                                <span class="font-mono text-lg">4.150 &approx;</span>
+                                <span class="input-box"></span>
+                            </div>
+                            <div class="flex justify-between items-center bg-gray-50 p-1.5 rounded">
+                                <span class="font-mono text-lg">8.920 &approx;</span>
+                                <span class="input-box"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SOAL 5 DIPINDAHKAN KE HALAMAN 2 UNTUK MENGHINDARI "NABRAK" -->
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        4 Operasi Pada Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Pembulatan ke Ratusan dan Ribuan Terdekat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S017
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+             <!-- SOAL 5 (Pindahan dari Halaman 1) -->
+             <div class="soal-item mb-4">
+                <div class="font-bold mb-1">
+                    5. Bilangan <b>5.489</b>.
+                </div>
+                <div class="ml-4 mb-1 text-sm text-gray-700">
+                    Jika dibulatkan ke ribuan terdekat menjadi 5.000.<br>
+                    Namun, jika dibulatkan ke <b>ratusan terdekat</b>, berapakah hasilnya?
+                </div>
+                
+                <div class="choice-container ml-4">
+                    <label class="flex items-center cursor-pointer w-full md:w-auto"><span class="choice-box"></span> a. 5.400</label>
+                    <label class="flex items-center cursor-pointer w-full md:w-auto"><span class="choice-box"></span> b. 5.500</label>
+                    <label class="flex items-center cursor-pointer w-full md:w-auto"><span class="choice-box"></span> c. 5.490</label>
+                    <label class="flex items-center cursor-pointer w-full md:w-auto"><span class="choice-box"></span> d. 6.000</label>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+             <!-- INSTRUCTION B -->
+            <div class="instruction-text mb-3">
+                Bagian C: Aplikasi dan Estimasi. Kerjakan soal cerita berikut dengan teliti.
+            </div>
+
+             <div class="soal-grid mb-3">
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        6. Sekolah "Tunas Bangsa" memiliki siswa sebanyak <b>1.458</b> orang.
+                    </div>
+                    <div class="ml-4 text-sm text-gray-700 mb-1">
+                        Kepala sekolah ingin membulatkan jumlah siswa ke <b>ratusan terdekat</b> untuk laporan. Berapa jumlah siswa dalam laporan tersebut?
+                    </div>
+
+                    <div class="flex items-center gap-2 mt-1 ml-4">
+                        <span class="input-box" style="width: 120px;"></span>
+                        <span class="font-bold"> siswa.</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        7. Ayah membeli elektronik.
+                    </div>
+                    <div class="bg-gray-50 p-2 rounded mx-4 border border-gray-200 text-sm">
+                        <ul class="list-disc ml-5 space-y-0.5">
+                            <li>Harga Televisi: <b>Rp 3.875.400</b></li>
+                            <li>Harga Kulkas: <b>Rp 4.210.800</b></li>
+                        </ul>
+                    </div>
+                    <div class="ml-4 mt-1 text-sm text-gray-700">
+                        Taksirlah total belanjaan Ayah dengan membulatkan setiap harga ke <b>ribuan terdekat</b> terlebih dahulu!
+                    </div>
+
+                    <div class="flex items-center gap-2 mt-2 ml-4">
+                        <span class="font-bold">Rp</span>
+                        <span class="input-box" style="width: 150px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        8. Suatu bilangan dibulatkan ke ratusan terdekat menjadi <b>700</b>.
+                    </div>
+                    <div class="ml-4 mb-1 text-sm text-gray-700">
+                        Manakah di antara bilangan berikut yang <b>TIDAK</b> mungkin menjadi bilangan aslinya?
+                    </div>
+
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 655</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 690</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 749</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 752</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. Hitung hasil taksiran ke <b>ratusan terdekat</b>.
+                    </div>
+                    
+                    <div class="flex justify-center items-center gap-2 my-2">
+                         <span class="font-mono text-xl font-bold bg-white px-4 py-1 border border-gray-300 rounded">2.615 + 1.382 &approx; ...</span>
+                    </div>
+
+                    <div class="flex justify-center mt-1">
+                        <span class="font-bold mr-2">Jawaban:</span> <span class="input-box" style="width: 100px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        10. Berat beras adalah <b>9.825</b> gram.
+                    </div>
+                    <div class="ml-4 mt-1 grid grid-cols-1 gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-40 text-sm font-semibold">a. Ribuan terdekat:</span>
+                            <span class="input-box" style="width: 100px;"></span> gram
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-40 text-sm font-semibold">b. Ratusan terdekat:</span>
+                            <span class="input-box" style="width: 100px;"></span> gram
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+
+    <!-- Hidden SVG Definitions for Arrowheads -->
+    <svg style="display: none;">
+        <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+            </marker>
+             <marker id="arrowhead-rev" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto">
+                <polygon points="10 0, 0 3.5, 10 7" fill="#333" />
+            </marker>
+            <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
+            </marker>
+        </defs>
+    </svg>
+  </body>
+</html>
