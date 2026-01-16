@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Mastery 2 - Menghitung Persentase</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 1cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- PRINT STYLES (ENHANCED FOR VISIBILITY) --- */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 1cm 2cm; }
+        .page:last-child { page-break-after: avoid; }
+        
+        /* 1. Force Background Graphics & Colors */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+
+        /* 2. Force Dark Borders on All Visual Elements */
+        .hundred-grid, .grid-cell, 
+        .percentage-bar, .bar-segment,
+        .fraction-box, .frac-top, .frac-bottom,
+        .input-line, .worked-example-box,
+        .battery-container, .v-battery, 
+        .donut-box, .donut,
+        .soal-item, [class*="border"] {
+            border-color: #000 !important;
+        }
+
+        /* 3. Specific Element Adjustments for Print Clarity */
+        .grid-cell {
+            border: 1px solid #000 !important; /* Make grid lines explicit */
+        }
+        
+        .bg-gray-50, .bg-red-50, .bg-yellow-50, .bg-blue-50, .bg-green-50, .bg-purple-50, .bg-pink-50 {
+             border: 1px solid #666 !important; /* Add outline to colored boxes */
+        }
+
+        .bar-segment {
+            border-right: 1px solid #000 !important;
+        }
+        
+        .frac-top {
+            border-bottom: 1px solid #000 !important;
+        }
+
+        svg circle, svg path, svg line {
+            stroke: #000 !important; /* Ensure SVG lines are black */
+        }
+      }
+
+      .math-champs-header {
+        background-color: white; 
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black; 
+      }
+
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1cm 1cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        margin-bottom: 1rem;
+      }
+
+      .input-line {
+        border: 1px solid #333;
+        width: 60px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        vertical-align: middle;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.3cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+      }
+      
+      .no-break { page-break-inside: avoid; }
+
+      /* --- Visual Custom --- */
+      .worked-example-box {
+        background-color: #f9fafb;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+      }
+
+      .fraction-box {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        vertical-align: middle;
+        margin: 0 5px;
+      }
+      .frac-top {
+        border-bottom: 1px solid black;
+        width: 100%;
+        text-align: center;
+        line-height: 1;
+      }
+      .frac-bottom {
+        width: 100%;
+        text-align: center;
+        line-height: 1;
+      }
+
+      /* Custom Bar Model for Percentage of Whole */
+      .percentage-bar {
+        display: flex;
+        width: 100%;
+        height: 40px;
+        border: 2px solid #333;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 5px;
+      }
+      .bar-segment {
+        flex: 1;
+        border-right: 1px solid #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: bold;
+        background: white;
+      }
+      .bar-segment:last-child { border-right: none; }
+      .bar-segment.active {
+        background-color: #3b82f6;
+        color: white;
+      }
+
+      /* --- NEW Visuals for Section B --- */
+      
+      /* Q3: Progress Bar */
+      .progress-container {
+        width: 100%;
+        height: 16px;
+        background-color: #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #9ca3af;
+      }
+      .progress-fill {
+        height: 100%;
+        background-color: #3b82f6;
+        width: 75%; /* 75% */
+      }
+
+      /* Q4: Discount Sticker */
+      .discount-sticker {
+        width: 50px;
+        height: 50px;
+        background-color: #ef4444;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.7rem;
+        transform: rotate(-10deg);
+        border: 2px dashed white;
+        box-shadow: 0 0 0 2px #ef4444;
+      }
+
+      /* Q5: Vertical Battery */
+      .v-battery {
+        width: 24px;
+        height: 40px;
+        border: 2px solid #333;
+        border-radius: 2px;
+        position: relative;
+        padding: 1px;
+        background: white;
+        display: flex;
+        align-items: flex-end;
+      }
+      .v-battery::before {
+        content: '';
+        position: absolute;
+        top: -4px;
+        left: 6px;
+        width: 8px;
+        height: 4px;
+        background: #333;
+        border-radius: 1px;
+      }
+      .v-battery-level {
+        width: 100%;
+        background-color: #eab308; /* yellow-500 */
+        height: 20%; /* 20% */
+      }
+
+      /* Q6: Donut Box */
+      .donut-box {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2px;
+        background: #fdf2f8;
+        padding: 4px;
+        border: 1px solid #db2777;
+        border-radius: 4px;
+        width: 80px;
+      }
+      .donut {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid #be185d;
+        background: white;
+      }
+      .donut.choco {
+        background: #78350f; /* brown */
+        border-color: #451a03;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0">
+                        Persentase
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Mencari nilai persentase dari suatu bilangan
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M2-S112
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-6 mt-4">
+                <h1 class="text-2xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                    MENGHITUNG PERSENTASE
+                </h1>
+                <p class="text-sm italic text-gray-500">Menentukan sebagian nilai dari total keseluruhan.</p>
+            </div>
+
+            <!-- WORKED EXAMPLE -->
+            <div class="worked-example-box print-color">
+                <div class="font-bold text-lg mb-3 border-b border-gray-300 pb-2">Contoh Pengerjaan</div>
+                <p class="text-base mb-4 text-gray-800 leading-relaxed">
+                    <strong>Masalah:</strong> Berapakah <strong>40%</strong> dari <strong>50</strong>?
+                </p>
+                
+                <!-- Visual Visualization -->
+                <div class="w-full max-w-md mx-auto mb-4">
+                    <div class="text-center text-xs font-bold mb-1 w-full flex justify-between px-1">
+                        <span>0</span>
+                        <span>Total = 50</span>
+                    </div>
+                    <div class="percentage-bar">
+                        <!-- 5 Segments of 20% each. 40% = 2 segments -->
+                        <div class="bar-segment active">10</div>
+                        <div class="bar-segment active">10</div>
+                        <div class="bar-segment">10</div>
+                        <div class="bar-segment">10</div>
+                        <div class="bar-segment">10</div>
+                    </div>
+                    <div class="w-full flex text-xs font-bold text-blue-600">
+                        <div style="width: 40%; text-align: center;">40%</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 text-sm bg-white p-4 rounded border border-gray-200">
+                    <div>
+                        <strong class="text-blue-800 block mb-1">Langkah 1: Ubah persen ke pecahan</strong>
+                        <div class="flex items-center gap-2">
+                            <span>40% =</span>
+                            <div class="fraction-box font-bold">
+                                <div class="frac-top">40</div>
+                                <div class="frac-bottom">100</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <strong class="text-red-800 block mb-1">Langkah 2: Kalikan dengan Total</strong>
+                        <div class="flex items-center gap-2">
+                            <div class="fraction-box font-bold">
+                                <div class="frac-top">40</div>
+                                <div class="frac-bottom">100</div>
+                            </div>
+                            <span>x 50 = <strong>20</strong></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 text-center">
+                    <span class="inline-block bg-green-100 border border-green-300 text-green-800 px-4 py-1 rounded font-bold text-sm">
+                        Jawaban: 20
+                    </span>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SECTION A: Konsep Dasar (Visual) -->
+            <div class="instruction-text bg-blue-50 p-2 rounded border-l-4 border-blue-500 mb-4">
+                A. Konsep Dasar (Visual)
+            </div>
+
+            <!-- Q1 -->
+            <div class="soal-item no-break">
+                <div class="text-base mb-3 font-medium">
+                    1. Diagram di bawah menunjukkan total nilai <strong>20</strong>. Berapakah <strong>50%</strong> dari 20?
+                </div>
+                
+                <div class="w-full max-w-sm mx-auto mb-2 print-color">
+                    <div class="percentage-bar h-8">
+                        <div class="bar-segment active"></div>
+                        <div class="bar-segment active"></div> <!-- 50% -->
+                        <div class="bar-segment"></div>
+                        <div class="bar-segment"></div>
+                    </div>
+                    <div class="w-full flex justify-between text-xs text-gray-500">
+                        <span>0</span>
+                        <span class="font-bold text-black">20</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-center gap-2 font-bold text-sm">
+                    <span>Jawab:</span>
+                    <input type="text" class="input-line">
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0">
+                        Persentase
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Mencari nilai persentase dari suatu bilangan
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M2-S112
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text text-gray-500 text-sm mb-2 italic">
+                Lanjutan: Konsep Dasar (Visual)
+            </div>
+
+            <!-- Q2 -->
+            <div class="soal-item mb-8 no-break">
+                <div class="text-base mb-3 font-medium">
+                    2. Ada <strong>16</strong> bintang. Lingkarilah <strong>25%</strong> dari total bintang tersebut dan hitung jumlahnya.
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded border border-gray-200 text-center mb-3">
+                    <div class="grid grid-cols-4 gap-2 w-32 mx-auto">
+                        <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+                        <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+                        <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+                        <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 text-sm justify-center">
+                    <span>25% dari 16 = </span>
+                    <input type="text" class="input-line">
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SECTION B: Penerapan Hitung -->
+            <div class="instruction-text bg-green-50 p-2 rounded border-l-4 border-green-500 mb-4">
+                B. Penerapan Hitung (Variasi Kontekstual)
+            </div>
+
+            <div class="soal-grid text-sm">
+                <!-- Q3 (Isian Singkat - Download) -->
+                <div class="soal-item no-break bg-blue-50 p-3 rounded border border-blue-200">
+                    <div class="mb-2 font-medium">
+                        3. Kakak sedang mengunduh game berukuran <strong>200 MB</strong>. Progress bar menunjukkan proses sudah berjalan <strong>75%</strong>. Berapa MB data yang sudah terunduh?
+                    </div>
+                    <div class="progress-container mb-2">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold">Jawab:</span>
+                        <input type="text" class="input-line w-16 text-center"> MB
+                    </div>
+                </div>
+
+                <!-- Q4 (Pilihan Ganda - Diskon) -->
+                <div class="soal-item no-break bg-red-50 p-3 rounded border border-red-200">
+                    <div class="mb-2 font-medium flex justify-between items-start">
+                        <p class="leading-snug pr-2">4. Harga Pizza Raksasa adalah <strong>Rp120.000</strong>. Hari ini ada promo diskon spesial. Berapa besar potongannya?</p>
+                        <div class="discount-sticker flex-shrink-0 bg-red-600">
+                            <span>DISKON</span>
+                            <span class="text-lg">10%</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 mt-2">
+                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-1 rounded border border-gray-200 hover:border-red-400">
+                            <div class="w-4 h-4 border border-black rounded-full"></div> Rp 10.000
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-1 rounded border border-gray-200 hover:border-red-400">
+                            <div class="w-4 h-4 border border-black rounded-full"></div> Rp 12.000
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-1 rounded border border-gray-200 hover:border-red-400">
+                            <div class="w-4 h-4 border border-black rounded-full"></div> Rp 15.000
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q5 (Pilihan Ganda - Powerbank) -->
+                <div class="soal-item no-break bg-yellow-50 p-3 rounded border border-yellow-200">
+                    <div class="mb-2 font-medium flex justify-between items-start">
+                        <p class="leading-snug pr-2">5. Kapasitas powerbank adalah <strong>10.000 mAh</strong>. Indikator menunjukkan sisa daya. Berapa mAh sisa dayanya?</p>
+                        <div class="v-battery flex-shrink-0">
+                            <div class="v-battery-level"></div> <!-- 20% height -->
+                        </div>
+                    </div>
+                    <div class="text-xs text-center text-gray-500 mb-2">(Indikator: 20%)</div>
+                    <div class="flex flex-col gap-2">
+                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-1 rounded border border-gray-200 hover:border-yellow-400">
+                            <div class="w-4 h-4 border border-black rounded-full"></div> 2.000 mAh
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-1 rounded border border-gray-200 hover:border-yellow-400">
+                            <div class="w-4 h-4 border border-black rounded-full"></div> 5.000 mAh
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q6 (Isian Singkat - Donat) -->
+                <div class="soal-item no-break bg-pink-50 p-3 rounded border border-pink-200">
+                    <div class="mb-2 font-medium flex justify-between items-start">
+                        <p class="leading-snug pr-2">6. Dalam satu kotak berisi <strong>12 donat</strong>. Sebanyak <strong>50%</strong> dari donat tersebut bertabur coklat. Berapa banyak donat coklat?</p>
+                        <div class="donut-box flex-shrink-0">
+                            <div class="donut choco"></div><div class="donut choco"></div><div class="donut choco"></div><div class="donut choco"></div>
+                            <div class="donut choco"></div><div class="donut choco"></div><div class="donut"></div><div class="donut"></div>
+                            <div class="donut"></div><div class="donut"></div><div class="donut"></div><div class="donut"></div>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-right">
+                        <span class="font-bold">Jawab:</span>
+                        <input type="text" class="input-line w-16 text-center"> donat
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3: Section C & Section D -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0">
+                        Persentase
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Mencari nilai persentase dari suatu bilangan
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M2-S112
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- SECTION C: Logika & Masalah -->
+            <div class="instruction-text bg-yellow-50 p-2 rounded border-l-4 border-yellow-500 mb-4">
+                C. Logika & Masalah
+            </div>
+
+            <div class="soal-grid text-sm mb-6">
+                <!-- Q7 -->
+                <div class="soal-item no-break w-full col-span-2">
+                    <p class="mb-2">
+                        7. Manakah nilai yang lebih besar?
+                    </p>
+                    <div class="flex flex-col gap-2 ml-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <div class="w-4 h-4 border border-black rounded-full"></div>
+                            <strong>A.</strong> 50% dari 10 (Setengah dari 10)
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <div class="w-4 h-4 border border-black rounded-full"></div>
+                            <strong>B.</strong> 10% dari 100 (Sepersepuluh dari 100)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q8 -->
+                <div class="soal-item no-break w-full col-span-2">
+                    <p class="mb-2">
+                        8. Sebuah buku memiliki <strong>200 halaman</strong>. Ani sudah membaca <strong>60%</strong> dari buku tersebut. Berapa halaman yang sudah dibaca Ani?
+                    </p>
+                    <div class="flex items-center gap-2 justify-end">
+                        <div class="text-right font-bold ml-4">Jawab: <input type="text" class="input-line"> halaman</div>
+                    </div>
+                </div>
+
+                <!-- Q9 -->
+                <div class="soal-item no-break w-full col-span-2">
+                    <p class="mb-2">
+                        9. Di dalam kotak ada <strong>20</strong> bola. <strong>5</strong> bola berwarna merah. Berapa persen bola merah?
+                    </p>
+                    <div class="text-right font-bold">Jawab: <input type="text" class="input-line"> %</div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SECTION D: Tantangan Konsep -->
+            <div class="instruction-text bg-purple-50 p-2 rounded border-l-4 border-purple-500 mb-4">
+                D. Tantangan Konsep
+            </div>
+
+            <!-- Q10 -->
+            <div class="soal-item no-break bg-blue-50 p-4 rounded border border-blue-200">
+                <p class="mb-2 font-semibold text-blue-900 text-sm">
+                    10. Tantangan Campuran: Seorang petani memiliki campuran semen dan pasir seberat <strong>20 kg</strong>. Campuran tersebut terdiri dari <strong>30%</strong> semen dan sisanya pasir. Berapa kg berat pasir dalam campuran tersebut?
+                </p>
+                <div class="flex items-center gap-2 text-sm font-bold">
+                    Jawab: <input type="text" class="input-line w-24"> kg
+                </div>
+            </div>
+
+            <!-- RANDOM ENCOURAGEMENT FOOTER -->
+            <div class="mt-8 text-center py-4 border-t border-gray-200">
+                <p class="text-lg font-bold text-blue-600 italic font-handwriting">
+                    "Teliti bikin juara."
+                </p>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
