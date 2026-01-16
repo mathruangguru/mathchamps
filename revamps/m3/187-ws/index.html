@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Rasio (Sebelum & Sesudah)</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 11pt;
+        line-height: 1.3; /* Line height diperkecil sedikit */
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 1cm 1.5cm; /* Padding diperkecil agar muat lebih banyak */
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px; /* Margin header diperkecil */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 7pt;
+        color: var(--grey-text);
+        padding-top: 5px;
+        margin-top: auto;
+        border-top: 1px solid var(--grey-text);
+        width: 100%;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          height: auto;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1cm 1.5cm; /* Samakan dengan tampilan layar */
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .math-champs-header {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0; /* Padding header diperkecil */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem; /* Gap antar soal diperkecil signifikan */
+      }
+
+      .soal-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        break-inside: avoid;
+        position: relative;
+        margin-bottom: 0.2rem;
+      }
+
+      .soal-number {
+        font-weight: 700;
+        font-size: 1rem;
+        flex-shrink: 0;
+        width: 25px;
+      }
+
+      .soal-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .soal-text {
+        margin-bottom: 0.3rem;
+        display: block;
+      }
+
+      /* --- Input & Choices --- */
+      .input-line {
+        border: none;
+        border-bottom: 1px solid #333;
+        width: 150px;
+        height: 25px; /* Tinggi input diperkecil */
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        background: transparent;
+      }
+
+      .choice-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px; /* Gap pilihan ganda diperkecil */
+        margin-top: 2px;
+        max-width: 400px;
+      }
+
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 10pt;
+      }
+
+      .radio-custom {
+        width: 16px;
+        height: 16px;
+        border: 2px solid black;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .drawing-box {
+        border: 1px dashed #ccc;
+        border-radius: 6px;
+        height: 90px; /* Tinggi default box diperkecil */
+        width: 100%;
+        margin-top: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-style: italic;
+        background-color: #f9f9f9;
+        font-size: 0.9em;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #eee;
+        margin: 0.2cm 0; /* Margin separator diperkecil drastis */
+      }
+
+      /* Utilities */
+      .text-highlight {
+        font-weight: 700;
+        color: #000;
+      }
+
+      .concept-tag {
+        display: inline-block;
+        background-color: #eee;
+        padding: 1px 5px;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 2px;
+        color: #555;
+      }
+      
+      /* SVG Styles */
+      .bar-model-svg {
+        display: block;
+        margin: 2px 0 2px 0;
+        overflow: visible;
+      }
+      .svg-text {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .svg-label {
+        font-size: 11px;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-8 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Rasio Tingkat Lanjut
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Perubahan Kuantitas dalam Rasio
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M3-187
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-4 mt-1">
+                <h1 class="text-xl font-black uppercase tracking-wider text-gray-800">
+                    RASIO: SEBELUM & SESUDAH
+                </h1>
+                <p class="text-xs font-medium text-gray-600">Pendekatan Visual (Bar Model)</p>
+            </div>
+
+            <div class="soal-container">
+                
+                <!-- Soal 1 -->
+                <div class="soal-item">
+                    <div class="soal-number">1.</div>
+                    <div class="soal-content">
+                        <span class="concept-tag">Konsep: Satu Variabel Tetap</span>
+                        <span class="soal-text">
+                            Rasio jumlah kelereng merah terhadap kelereng biru dalam sebuah kantong adalah 3 : 5. Setelah Andi memasukkan 12 kelereng merah lagi ke dalam kantong, rasionya berubah menjadi 3 : 4.
+                            Berapa jumlah kelereng biru dalam kantong tersebut?
+                        </span>
+                        
+                        <!-- Visual Hint SVG -->
+                        <div class="mb-1">
+                             <svg class="bar-model-svg" width="300" height="70" viewBox="0 0 300 70">
+                                <text x="0" y="20" class="svg-text">Merah</text>
+                                <rect x="50" y="5" width="30" height="18" fill="#ddd" stroke="#333" />
+                                <rect x="82" y="5" width="30" height="18" fill="#ddd" stroke="#333" />
+                                <rect x="114" y="5" width="30" height="18" fill="#ddd" stroke="#333" />
+                                
+                                <text x="0" y="50" class="svg-text">Biru</text>
+                                <rect x="50" y="35" width="30" height="18" fill="white" stroke="#333" />
+                                <rect x="82" y="35" width="30" height="18" fill="white" stroke="#333" />
+                                <rect x="114" y="35" width="30" height="18" fill="white" stroke="#333" />
+                                <rect x="146" y="35" width="30" height="18" fill="white" stroke="#333" />
+                                <rect x="178" y="35" width="30" height="18" fill="white" stroke="#333" />
+                                
+                                <text x="220" y="45" class="svg-label" fill="#666">(Biru Tetap)</text>
+                            </svg>
+                        </div>
+
+                        <div class="choice-container">
+                            <div class="choice-item"><span class="radio-custom"></span> a. 60</div>
+                            <div class="choice-item"><span class="radio-custom"></span> b. 70</div>
+                            <div class="choice-item"><span class="radio-custom"></span> c. 80</div>
+                            <div class="choice-item"><span class="radio-custom"></span> d. 90</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 2 -->
+                <div class="soal-item">
+                    <div class="soal-number">2.</div>
+                    <div class="soal-content">
+                        <span class="concept-tag">Konsep: Jumlah Total Tetap (Transfer)</span>
+                        <span class="soal-text">
+                            Awalnya, rasio uang Hasan terhadap uang Umar adalah 4 : 1. Kemudian, Hasan memberikan Rp 30.000 kepada Umar. Sekarang, rasio uang mereka menjadi 2 : 3. Berapa total uang mereka berdua?
+                        </span>
+
+                        <div class="mb-1">
+                            <span class="text-xs font-semibold text-gray-500">Gambarkan model batangmu di sini (Perhatikan panjang total):</span>
+                            <div class="drawing-box">
+                                (Area Gambar Model Bar)
+                            </div>
+                        </div>
+
+                        <div class="choice-container">
+                            <div class="choice-item"><span class="radio-custom"></span> a. Rp 50.000</div>
+                            <div class="choice-item"><span class="radio-custom"></span> b. Rp 60.000</div>
+                            <div class="choice-item"><span class="radio-custom"></span> c. Rp 75.000</div>
+                            <div class="choice-item"><span class="radio-custom"></span> d. Rp 100.000</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 3 -->
+                <div class="soal-item">
+                    <div class="soal-number">3.</div>
+                    <div class="soal-content">
+                        <span class="concept-tag">Konsep: Selisih Tetap (Umur)</span>
+                        <span class="soal-text">
+                            Saat ini, rasio umur Ayah dan Budi adalah 7 : 2. Lima tahun yang akan datang, rasio umur mereka akan menjadi 8 : 3. Berapa umur Ayah saat ini?
+                        </span>
+                        
+                        <div class="mb-1 mt-1">
+                            <div class="drawing-box" style="height: 80px;">
+                                (Area Hitungan)
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="font-bold mr-2 text-sm">Jawaban:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <span class="ml-2">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-8 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Rasio Tingkat Lanjut</div>
+                    <div class="text-[10px] text-black font-medium">Perubahan Kuantitas dalam Rasio</div>
+                    <div class="text-[10px] text-black font-medium">Kode : M3-187</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-container">
+
+                <!-- Soal 4 -->
+                <div class="soal-item">
+                    <div class="soal-number">4.</div>
+                    <div class="soal-content">
+                        <span class="concept-tag">Konsep: Satu Variabel Tetap (Pengurangan)</span>
+                        <span class="soal-text">
+                            Di sebuah perpustakaan, rasio buku fiksi terhadap buku non-fiksi adalah 5 : 3. Setelah 40 buku fiksi dipinjam (keluar), rasionya menjadi 1 : 1. Berapa jumlah buku non-fiksi di perpustakaan tersebut?
+                        </span>
+
+                        <div class="mb-1">
+                            <div class="drawing-box">
+                                (Gambarkan perubahan unit Fiksi)
+                            </div>
+                        </div>
+
+                        <div class="choice-container">
+                            <div class="choice-item"><span class="radio-custom"></span> a. 20</div>
+                            <div class="choice-item"><span class="radio-custom"></span> b. 40</div>
+                            <div class="choice-item"><span class="radio-custom"></span> c. 60</div>
+                            <div class="choice-item"><span class="radio-custom"></span> d. 80</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 5 -->
+                <div class="soal-item">
+                    <div class="soal-number">5.</div>
+                    <div class="soal-content">
+                        <span class="concept-tag">Konsep: Jumlah Total Tetap</span>
+                        <span class="soal-text">
+                            Dalam sebuah kelas, rasio siswa laki-laki terhadap perempuan adalah 2 : 3. Jika 6 siswa perempuan pindah duduk ke kelompok laki-laki (jenis kelamin tidak berubah, hanya posisi kelompok), rasio kelompok A (laki-laki) terhadap kelompok B (perempuan) menjadi 3 : 2. Berapa total siswa di kelas tersebut?
+                        </span>
+                        
+                        <div class="mb-1 mt-1">
+                            <div class="drawing-box" style="height: 80px;">
+                                (Area Coretan)
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="font-bold mr-2 text-sm">Jawaban:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 6 -->
+                <div class="soal-item">
+                    <div class="soal-number">6.</div>
+                    <div class="soal-content">
+                        <span class="concept-tag">Konsep: Selisih Tetap</span>
+                        <span class="soal-text">
+                            Rasio tabungan Ani dan Bety adalah 3 : 5. Masing-masing dari mereka mendapatkan tambahan uang jajan sebesar Rp 20.000. Rasio uang mereka sekarang menjadi 5 : 7. Berapa uang tabungan Ani mula-mula?
+                        </span>
+
+                        <div class="choice-container">
+                            <div class="choice-item"><span class="radio-custom"></span> a. Rp 15.000</div>
+                            <div class="choice-item"><span class="radio-custom"></span> b. Rp 30.000</div>
+                            <div class="choice-item"><span class="radio-custom"></span> c. Rp 45.000</div>
+                            <div class="choice-item"><span class="radio-custom"></span> d. Rp 60.000</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <span class="ml-2">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-8 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Rasio Tingkat Lanjut</div>
+                    <div class="text-[10px] text-black font-medium">Perubahan Kuantitas dalam Rasio</div>
+                    <div class="text-[10px] text-black font-medium">Kode : M3-187</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-container">
+
+                <!-- Soal 7 -->
+                <div class="soal-item">
+                    <div class="soal-number">7.</div>
+                    <div class="soal-content">
+                        <span class="concept-tag">Konsep: Analisis Bar Model (Kompleks)</span>
+                        <span class="soal-text">
+                            Petani A dan Petani B memanen apel. Rasio apel Petani A : Petani B adalah 3 : 7. Petani B menjual 54 kg apelnya ke pasar. Sekarang rasio apel Petani A : Petani B menjadi 6 : 5. Berapa kg apel yang dimiliki Petani A?
+                        </span>
+                        
+                        <div class="mb-1">
+                            <span class="text-xs font-semibold text-gray-500">Tips: Samakan unit Petani A (karena tidak berubah)</span>
+                            <div class="drawing-box">
+                                (Area Gambar)
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="font-bold mr-2 text-sm">Jawaban:</span>
+                            <input type="text" class="input-line"> kg
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 8 -->
+                <div class="soal-item">
+                    <div class="soal-number">8.</div>
+                    <div class="soal-content">
+                        <span class="concept-tag">Konsep: Tingkat Lanjut (Rasio Bertingkat)</span>
+                        <span class="soal-text">
+                            Rasio permen merah terhadap permen hijau adalah 1 : 2. Rasio permen hijau terhadap permen kuning adalah 2 : 3. Ibu menambahkan 10 permen merah lagi, sehingga jumlah permen merah sekarang sama dengan jumlah permen kuning. Berapa jumlah permen hijau?
+                        </span>
+
+                        <div class="choice-container">
+                            <div class="choice-item"><span class="radio-custom"></span> a. 5</div>
+                            <div class="choice-item"><span class="radio-custom"></span> b. 10</div>
+                            <div class="choice-item"><span class="radio-custom"></span> c. 15</div>
+                            <div class="choice-item"><span class="radio-custom"></span> d. 20</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 9 -->
+                <div class="soal-item">
+                    <div class="soal-number">9.</div>
+                    <div class="soal-content">
+                        <span class="concept-tag">Pemecahan Masalah</span>
+                        <span class="soal-text">
+                            Sebuah kotak berisi manik-manik hitam dan putih dengan rasio 7 : 4. Setelah 25 manik-manik hitam diambil keluar, rasio manik-manik hitam terhadap putih menjadi 1 : 2. Berapa jumlah manik-manik hitam mula-mula?
+                        </span>
+                        
+                        <div class="mb-1">
+                             <div class="drawing-box" style="height: 80px;">
+                                (Area Coretan)
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="font-bold mr-2 text-sm">Jawaban:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <span class="ml-2">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 4 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-8 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Rasio Tingkat Lanjut</div>
+                    <div class="text-[10px] text-black font-medium">Perubahan Kuantitas dalam Rasio</div>
+                    <div class="text-[10px] text-black font-medium">Kode : M3-187</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-container">
+
+                <!-- Soal 10 -->
+                <div class="soal-item">
+                    <div class="soal-number">10.</div>
+                    <div class="soal-content">
+                        <span class="concept-tag text-white bg-black">Tantangan - Mastery</span>
+                        <span class="soal-text">
+                            Rasio uang Dani terhadap uang Eko adalah 3 : 4. Dani membelanjakan Rp 15.000 dan Eko membelanjakan Rp 30.000. Rasio uang mereka sekarang menjadi 3 : 2. Berapa uang Dani mula-mula?
+                        </span>
+                        
+                        <div class="mb-2">
+                            <span class="text-xs font-semibold text-gray-500">Gunakan metode Unit dan Bagian atau Model Bar:</span>
+                            <div class="drawing-box" style="height: 120px;">
+                                (Area Pengerjaan)
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="font-bold mr-2 text-sm">Jawaban Akhir:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <span class="ml-2">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
