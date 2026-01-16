@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Operasi Bilangan Cacah (M1-S037)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3; /* Sedikit dikurangi dari 1.4 */
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.6cm 2cm; /* Margin atas/bawah dikurangi sedikit */
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 5px; /* Margin header dikurangi */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.6cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .concept-box,
+        .input-box,
+        .disc-fill,
+        .place-value-header {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0; /* Padding dikurangi */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem; /* Gap antar soal dikurangi */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        margin-bottom: 4px; /* Margin item dikurangi */
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 28px; /* Tinggi sedikit dikurangi */
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 26px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 3px; /* Margin dikurangi */
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.05cm 0; /* Margin separator dikurangi */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.4rem; /* Margin dikurangi */
+        background-color: #f3f4f6;
+        padding: 0.2rem 1rem; /* Padding dikurangi */
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CONCEPT BOX --- */
+      .concept-box {
+        border: 2px solid #60a5fa;
+        background-color: #eff6ff;
+        border-radius: 10px;
+        padding: 8px; /* Padding dikurangi */
+        margin-bottom: 10px; /* Margin dikurangi */
+        font-size: 0.9rem;
+      }
+      
+      /* Visual Math Specifics */
+      .bar-model-rect {
+        fill: #f3f4f6;
+        stroke: #333;
+        stroke-width: 1.5;
+      }
+      .brace-line {
+        fill: none;
+        stroke: #000;
+        stroke-width: 1.5;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        4 Operasi Pada Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Operasi Bilangan Cacah (Perkalian & Pembagian)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S037
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-2 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: Perkalian & Pembagian
+                </h1>
+            </div>
+
+            <!-- CONCEPT SECTION -->
+            <div class="concept-box">
+                <div class="font-bold text-blue-800 mb-1">Pendekatan Visual: Model Batang (Bar Model)</div>
+                <div class="mb-2 text-gray-700">
+                    Kita dapat menggunakan kotak-kotak (bar model) untuk memvisualisasikan perkalian dan pembagian.
+                </div>
+                <div class="flex justify-center gap-8">
+                    <!-- Concept Diagram 1: Multiplication -->
+                    <div class="text-center">
+                        <svg width="150" height="60" viewBox="0 0 150 60">
+                            <rect x="10" y="10" width="30" height="30" class="bar-model-rect" />
+                            <text x="25" y="30" text-anchor="middle" font-size="10">10</text>
+                            <rect x="40" y="10" width="30" height="30" class="bar-model-rect" />
+                            <text x="55" y="30" text-anchor="middle" font-size="10">10</text>
+                            <rect x="70" y="10" width="30" height="30" class="bar-model-rect" />
+                            <text x="85" y="30" text-anchor="middle" font-size="10">10</text>
+                            
+                            <!-- Brace Bottom -->
+                            <path d="M 10 45 Q 55 55 100 45" stroke="black" fill="none" />
+                            <text x="55" y="58" text-anchor="middle" font-size="10" font-weight="bold">Total = 30</text>
+                        </svg>
+                        <p class="text-[10px] font-bold mt-1">3 x 10 = 30</p>
+                    </div>
+
+                    <!-- Concept Diagram 2: Division -->
+                    <div class="text-center">
+                         <svg width="150" height="60" viewBox="0 0 150 60">
+                            <rect x="10" y="10" width="100" height="30" class="bar-model-rect" />
+                            <!-- Dividers -->
+                            <line x1="60" y1="10" x2="60" y2="40" stroke="#333" stroke-width="1.5" />
+                            
+                            <!-- Brace Top -->
+                            <path d="M 10 5 Q 60 -5 110 5" stroke="black" fill="none" />
+                            <text x="60" y="-2" text-anchor="middle" font-size="10" font-weight="bold">Total = 100</text>
+                            
+                            <text x="35" y="30" text-anchor="middle" font-size="10">?</text>
+                            <text x="85" y="30" text-anchor="middle" font-size="10">?</text>
+                        </svg>
+                        <p class="text-[10px] font-bold mt-1">100 ÷ 2 = 50</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-2 py-1 text-sm">
+                Bagian A: Pilihan Ganda (Pilihlah jawaban yang paling tepat)
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. Hitunglah hasil dari <b>324 × 12</b>.
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> a) 3.888</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> b) 3.688</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> c) 3.240</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> d) 4.248</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 (Visual) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. Perhatikan model batang di bawah ini. Berapakah nilai total (?) tersebut?
+                    </div>
+                    <div class="ml-4 mb-1">
+                        <!-- Perbaikan: Height ditambah jadi 80, teks ? diturunkan ke y=75 agar tidak nabrak brace -->
+                        <svg width="320" height="80" viewBox="0 0 320 80">
+                            <!-- 5 blocks of 45 -->
+                            <rect x="0" y="0" width="60" height="40" class="bar-model-rect" />
+                            <text x="30" y="25" text-anchor="middle" font-size="14">45</text>
+                            
+                            <rect x="60" y="0" width="60" height="40" class="bar-model-rect" />
+                            <text x="90" y="25" text-anchor="middle" font-size="14">45</text>
+                            
+                            <rect x="120" y="0" width="60" height="40" class="bar-model-rect" />
+                            <text x="150" y="25" text-anchor="middle" font-size="14">45</text>
+                            
+                            <rect x="180" y="0" width="60" height="40" class="bar-model-rect" />
+                            <text x="210" y="25" text-anchor="middle" font-size="14">45</text>
+                            
+                            <rect x="240" y="0" width="60" height="40" class="bar-model-rect" />
+                            <text x="270" y="25" text-anchor="middle" font-size="14">45</text>
+                            
+                            <!-- Brace Bottom -->
+                            <path d="M 0 45 Q 150 65 300 45" stroke="black" fill="none" stroke-width="1.5"/>
+                            <!-- Teks diturunkan -->
+                            <text x="150" y="75" text-anchor="middle" font-size="14" font-weight="bold">?</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> a) 205</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> b) 215</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> c) 225</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> d) 245</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1">
+                        3. Hitunglah: <b>2.500 ÷ 50 = ...</b>
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> a) 5</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> b) 50</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> c) 500</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> d) 250</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 (Visual) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        4. Perhatikan model batang berikut. Total seluruh batang adalah 720. Berapakah nilai satu bagian kotak?
+                    </div>
+                    <div class="ml-4 mb-1">
+                        <!-- Perbaikan: Height jadi 80, elemen diturunkan, brace top disesuaikan agar teks Total tidak nabrak -->
+                        <svg width="250" height="80" viewBox="0 0 250 80">
+                            <!-- Top brace text (di atas) -->
+                            <text x="120" y="10" text-anchor="middle" font-size="12" font-weight="bold">Total = 720</text>
+                            
+                            <!-- Top brace path (kurva diturunkan sedikit) -->
+                            <path d="M 0 25 Q 120 15 240 25" stroke="black" fill="none" stroke-width="1.5"/>
+
+                            <!-- Rect (diturunkan ke y=30) -->
+                            <rect x="0" y="30" width="240" height="40" class="bar-model-rect" />
+                            <!-- Dividers for 4 parts -->
+                            <line x1="60" y1="30" x2="60" y2="70" stroke="#333" stroke-width="1.5"/>
+                            <line x1="120" y1="30" x2="120" y2="70" stroke="#333" stroke-width="1.5"/>
+                            <line x1="180" y1="30" x2="180" y2="70" stroke="#333" stroke-width="1.5"/>
+                            
+                            <text x="30" y="55" text-anchor="middle" font-size="14" font-weight="bold">?</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> a) 120</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> b) 150</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> c) 180</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> d) 240</label>
+                    </div>
+                </div>
+                
+                <div class="h-separator"></div>
+
+                 <!-- SOAL 5 -->
+                 <div class="soal-item">
+                     <div class="font-bold mb-1">
+                        5. Manakah dari berikut ini yang <b>tidak</b> sama dengan 18 × 25?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-1">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) 18 × 5 × 5</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) 9 × 2 × 25</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) 9 × 50</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) 18 × 20 × 5</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        4 Operasi Pada Bilangan Bulat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Operasi Bilangan Cacah (Perkalian & Pembagian)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S037
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+             <!-- INSTRUCTION B -->
+             <div class="instruction-text mb-2 py-1 text-sm">
+                Bagian B: Isian Singkat & Uraian
+            </div>
+
+             <div class="soal-grid mb-4">
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="flex flex-col gap-1">
+                         <div class="font-bold text-base">
+                            6. Sebuah bilangan jika dikalikan dengan 15 hasilnya adalah 450. Bilangan berapakah itu?
+                        </div>
+                         <div class="ml-5">
+                             Jawaban: <span class="input-box" style="width: 150px"></span>
+                         </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        7. Pak Budi memanen jeruk. Ia memasukkan jeruk tersebut ke dalam 24 keranjang. Setiap keranjang berisi 35 buah jeruk. Berapa total jeruk yang dipanen Pak Budi?
+                    </div>
+                    <div class="ml-5 text-sm italic text-gray-600 mb-1">
+                        (Tips: Bayangkan 24 kelompok yang masing-masing berisi 35)
+                    </div>
+                    <div class="ml-5 border-2 border-dashed border-gray-300 h-20 rounded-lg w-full mb-1"></div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        8. Sebuah pabrik memproduksi 1.440 mainan dalam sehari. Mainan tersebut dimasukkan ke dalam kotak yang memuat 12 mainan. Berapa banyak kotak yang dibutuhkan?
+                    </div>
+                    <div class="ml-5 border-2 border-dashed border-gray-300 h-20 rounded-lg w-full mb-1"></div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 (Visual Comparison) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. Perhatikan gambar model di bawah ini:
+                    </div>
+                    <div class="ml-4 mb-1">
+                         <svg width="300" height="100" viewBox="0 0 300 100">
+                             <!-- Unit A -->
+                             <text x="50" y="30" text-anchor="end" font-size="12" font-weight="bold">Kotak A</text>
+                             <rect x="60" y="15" width="60" height="25" fill="#e5e7eb" stroke="black" stroke-width="1.5" />
+                             
+                             <!-- Unit B -->
+                             <text x="50" y="75" text-anchor="end" font-size="12" font-weight="bold">Kotak B</text>
+                             <rect x="60" y="60" width="180" height="25" fill="#e5e7eb" stroke="black" stroke-width="1.5" />
+                             
+                             <!-- Dividers for B -->
+                             <line x1="120" y1="60" x2="120" y2="85" stroke="black" stroke-width="1.5"/>
+                             <line x1="180" y1="60" x2="180" y2="85" stroke="black" stroke-width="1.5"/>
+                             
+                             <text x="250" y="77" font-size="11" font-style="italic">Kotak B = 3 x Kotak A</text>
+                         </svg>
+                    </div>
+                    <div class="font-bold mb-1">
+                        Jika Kotak A berisi 125 butir kelereng, berapakah jumlah kelereng di Kotak B?
+                    </div>
+                    <div class="ml-5">
+                        Jawaban: <span class="input-box" style="width: 150px"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        10. Hitunglah hasil dari operasi campuran berikut:
+                    </div>
+                    <div class="text-center text-lg font-bold mb-1 bg-gray-50 py-1 rounded">
+                        1.200 ÷ 40 × 15 = ...
+                    </div>
+                    <div class="ml-5">
+                         Jawaban: <span class="input-box" style="width: 150px"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
