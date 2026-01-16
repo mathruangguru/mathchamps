@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Perbandingan Berantai</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --header-blue: #c8dcff;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 11pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 7pt;
+        color: var(--grey-text);
+        padding-top: 8px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          height: auto;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1.5cm 2cm;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .math-champs-header {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .concept-box {
+          background-color: #f0f9ff !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .soal-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        break-inside: avoid;
+        position: relative;
+        margin-bottom: 0.5rem;
+      }
+
+      .soal-number {
+        font-weight: 700;
+        font-size: 1rem;
+        flex-shrink: 0;
+        width: 25px;
+      }
+
+      .soal-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .soal-text {
+        margin-bottom: 0.5rem;
+        display: block;
+        text-align: justify;
+      }
+
+      /* --- Input & Choices --- */
+      .input-line {
+        border: none;
+        border-bottom: 2px solid #333;
+        width: 150px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        background: transparent;
+      }
+
+      .choice-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 5px;
+        max-width: 400px;
+      }
+
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-weight: 500;
+      }
+
+      .radio-custom {
+        width: 18px;
+        height: 18px;
+        border: 2px solid black;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .drawing-box {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        height: 100px;
+        width: 100%;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-style: italic;
+        background-color: #fafafa;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #eee;
+        margin: 0.5cm 0;
+      }
+
+      /* Utilities */
+      .text-highlight {
+        font-weight: 700;
+        color: #000;
+      }
+      
+      /* Concept Box Style */
+      .concept-box {
+        background-color: #eff6ff;
+        border: 2px solid #1e3a8a;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+      }
+      
+      .concept-table {
+        width: 100%;
+        margin-top: 10px;
+        border-collapse: collapse;
+        font-family: 'Noto Sans', sans-serif;
+      }
+      .concept-table th, .concept-table td {
+        padding: 5px;
+        text-align: center;
+      }
+      .common-party {
+        background-color: #dbeafe;
+        font-weight: bold;
+        color: #1e40af;
+        border-radius: 4px;
+      }
+      .ratio-box {
+        display: inline-block;
+        padding: 2px 8px;
+        background: white;
+        border: 1px solid #9ca3af;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Rasio Tingkat Lanjut
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Perbandingan Berantai
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : M3-185
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-6 mt-2">
+                <h1 class="text-2xl font-black uppercase tracking-wider text-gray-800">
+                    PERBANDINGAN BERANTAI
+                </h1>
+                <p class="text-sm font-medium text-gray-600">Pendekatan Visual (Ratio Linking)</p>
+            </div>
+
+            <!-- CONCEPT BOX -->
+            <div class="concept-box">
+                <div class="font-bold text-blue-900 mb-2 border-b border-blue-200 pb-1">KONSEP INTI: Menyamakan Pihak yang Sama (The Common Party)</div>
+                <p class="mb-2">Jika diketahui perbandingan <b>A : B</b> dan <b>B : C</b>, kita harus menyamakan nilai "B" (Pihak yang sama) menggunakan KPK (Kelipatan Persekutuan Terkecil) agar kedua rasio dapat digabung menjadi <b>A : B : C</b>.</p>
+                
+                <div class="bg-white p-3 rounded border border-blue-100">
+                    <p class="text-xs font-bold mb-1">Contoh: A : B = 2 : 3 dan B : C = 4 : 5</p>
+                    <p class="text-xs italic mb-2">Pihak yang sama adalah B. KPK dari 3 dan 4 adalah 12.</p>
+                    <table class="concept-table">
+                        <tr class="font-bold text-gray-600">
+                            <td></td>
+                            <td>A</td>
+                            <td>:</td>
+                            <td class="text-blue-700">B</td>
+                            <td>:</td>
+                            <td>C</td>
+                        </tr>
+                        <tr>
+                            <td class="text-xs text-right">Rasio 1 (×4):</td>
+                            <td><span class="ratio-box">8</span></td>
+                            <td>:</td>
+                            <td><span class="ratio-box common-party">12</span></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="text-xs text-right">Rasio 2 (×3):</td>
+                            <td></td>
+                            <td></td>
+                            <td><span class="ratio-box common-party">12</span></td>
+                            <td>:</td>
+                            <td><span class="ratio-box">15</span></td>
+                        </tr>
+                        <tr class="border-t border-gray-300">
+                            <td class="text-xs text-right font-bold">Gabungan:</td>
+                            <td><b>8</b></td>
+                            <td>:</td>
+                            <td><b>12</b></td>
+                            <td>:</td>
+                            <td><b>15</b></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="soal-container">
+                <div class="font-bold mb-2 border-b pb-1">Bagian A: Pilihan Ganda</div>
+
+                <!-- Soal 1 -->
+                <div class="soal-item">
+                    <div class="soal-number">1.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            Diketahui rasio kelereng Andi : Budi = 3 : 4 dan kelereng Budi : Candra = 2 : 5. Jika Candra memiliki 50 kelereng, berapakah kelereng Andi?
+                        </span>
+                        
+                        <div class="choice-container">
+                            <div class="choice-item"><span class="radio-custom"></span> a. 15</div>
+                            <div class="choice-item"><span class="radio-custom"></span> b. 20</div>
+                            <div class="choice-item"><span class="radio-custom"></span> c. 30</div>
+                            <div class="choice-item"><span class="radio-custom"></span> d. 40</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 2 -->
+                <div class="soal-item">
+                    <div class="soal-number">2.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            Perbandingan uang Sinta : Tono = 5 : 2. Perbandingan uang Tono : Usman = 3 : 4. Jika jumlah uang Sinta adalah Rp 75.000, berapakah jumlah uang Usman?
+                        </span>
+                        
+                        <div class="choice-container">
+                            <div class="choice-item"><span class="radio-custom"></span> a. Rp 20.000</div>
+                            <div class="choice-item"><span class="radio-custom"></span> b. Rp 30.000</div>
+                            <div class="choice-item"><span class="radio-custom"></span> c. Rp 40.000</div>
+                            <div class="choice-item"><span class="radio-custom"></span> d. Rp 45.000</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <span class="ml-2">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Rasio Tingkat Lanjut</div>
+                    <div class="text-[11px] text-black font-medium">Perbandingan Berantai</div>
+                    <div class="text-[11px] text-black font-medium">Kode : M3-185</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-container">
+                
+                <!-- Soal 3 -->
+                <div class="soal-item">
+                    <div class="soal-number">3.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            Sebuah toko buah memiliki perbandingan Apel : Jeruk = 3 : 5 dan Jeruk : Mangga = 2 : 3. Jika selisih antara jumlah Apel dan Mangga adalah 36 buah, berapakah jumlah Jeruk?
+                        </span>
+                        
+                        <div class="choice-container">
+                            <div class="choice-item"><span class="radio-custom"></span> a. 20</div>
+                            <div class="choice-item"><span class="radio-custom"></span> b. 30</div>
+                            <div class="choice-item"><span class="radio-custom"></span> c. 40</div>
+                            <div class="choice-item"><span class="radio-custom"></span> d. 60</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 4 -->
+                <div class="soal-item">
+                    <div class="soal-number">4.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            Terdapat tiga pita berwarna Merah, Kuning, dan Hijau. Panjang Merah : Kuning = 2 : 3. Panjang Merah : Hijau = 4 : 5. (Perhatikan: Merah adalah penghubungnya). Jika panjang pita Hijau adalah 25 cm, berapakah panjang pita Kuning?
+                        </span>
+                        
+                        <div class="choice-container">
+                            <div class="choice-item"><span class="radio-custom"></span> a. 20 cm</div>
+                            <div class="choice-item"><span class="radio-custom"></span> b. 30 cm</div>
+                            <div class="choice-item"><span class="radio-custom"></span> c. 35 cm</div>
+                            <div class="choice-item"><span class="radio-custom"></span> d. 40 cm</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <div class="font-bold mb-2 border-b pb-1 mt-4">Bagian B: Isian Singkat & Uraian</div>
+
+                <!-- Soal 5 -->
+                <div class="soal-item">
+                    <div class="soal-number">5.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            <span class="text-highlight">Soal Cerita (Hewan Ternak):</span> Di sebuah peternakan, perbandingan jumlah Ayam : Bebek adalah 4 : 3. Perbandingan jumlah Bebek : Angsa adalah 2 : 5. Jika diketahui jumlah Angsa ada 45 ekor, hitunglah total seluruh hewan ternak tersebut!
+                        </span>
+                        
+                        <div class="mb-4">
+                            <span class="text-sm font-semibold text-gray-500">Gunakan metode penyamaan unit:</span>
+                            <div class="drawing-box" style="height: 150px;">
+                                (Area Pengerjaan)
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <span class="font-bold mr-2">Jawaban:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <span class="ml-2">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Rasio Tingkat Lanjut</div>
+                    <div class="text-[11px] text-black font-medium">Perbandingan Berantai</div>
+                    <div class="text-[11px] text-black font-medium">Kode : M3-185</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-container" style="gap: 0.75rem;"> <!-- Reduced gap from 1rem -->
+                
+                <!-- Soal 6 -->
+                <div class="soal-item">
+                    <div class="soal-number">6.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            <span class="text-highlight">Soal Cerita (Tabungan):</span> Uang tabungan Ali : Bima = 3 : 5. Uang tabungan Bima : Citra = 2 : 3. Jika jumlah uang Ali dan Citra digabungkan adalah Rp 420.000, berapakah uang Bima?
+                        </span>
+                        
+                        <div class="mb-3"> <!-- Reduced from mb-4 -->
+                            <div class="drawing-box" style="height: 100px;"> <!-- Reduced from 120px -->
+                                (Area Pengerjaan)
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <span class="font-bold mr-2">Jawaban:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator" style="margin: 0.25cm 0;"></div> <!-- Reduced margin -->
+
+                <!-- Soal 7 -->
+                <div class="soal-item">
+                    <div class="soal-number">7.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            <span class="text-highlight">Analisis Selisih:</span> Rasio berat badan X : Y = 5 : 6. Rasio berat badan Y : Z = 4 : 3. Jika selisih berat badan X dan Z adalah 4 kg, berapakah berat badan Y?
+                        </span>
+                        
+                        <div class="mb-3"> <!-- Reduced from mb-4 -->
+                            <div class="drawing-box" style="height: 100px;"> <!-- Reduced from 120px -->
+                                (Area Pengerjaan)
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <span class="font-bold mr-2">Jawaban:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator" style="margin: 0.25cm 0;"></div> <!-- Reduced margin -->
+
+                <!-- Soal 8 -->
+                <div class="soal-item">
+                    <div class="soal-number">8.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                             <span class="text-highlight">Geometri & Rasio:</span> Panjang sisi segitiga A, B, dan C memiliki perbandingan sebagai berikut: Sisi A : Sisi B = 3 : 4 dan Sisi B : Sisi C = 2 : 3. Jika keliling segitiga (Total A+B+C) adalah 78 cm, berapakah panjang sisi terpanjang?
+                        </span>
+                        
+                        <div class="mb-3"> <!-- Reduced from mb-4 -->
+                            <div class="drawing-box" style="height: 100px;"> <!-- Reduced from 120px -->
+                                (Area Pengerjaan)
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <span class="font-bold mr-2">Jawaban:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <span class="ml-2">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 4 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Rasio Tingkat Lanjut</div>
+                    <div class="text-[11px] text-black font-medium">Perbandingan Berantai</div>
+                    <div class="text-[11px] text-black font-medium">Kode : M3-185</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-container">
+                
+                <!-- Soal 9 -->
+                <div class="soal-item">
+                    <div class="soal-number">9.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            <span class="text-highlight">Tantangan (High Ability):</span> Dalam sebuah perpustakaan, rasio buku Fiksi : Non-Fiksi = 2 : 3. Rasio buku Non-Fiksi : Majalah = 4 : 1. Kemudian, perpustakaan membeli sejumlah Majalah baru sehingga jumlah Majalah menjadi dua kali lipat. Berapakah rasio baru buku Fiksi : Majalah (dalam bentuk paling sederhana)?
+                        </span>
+                        
+                        <div class="mb-4">
+                            <span class="text-sm font-semibold text-gray-500">Gambarkan model batangmu:</span>
+                            <div class="drawing-box" style="height: 150px;">
+                                (Area Gambar)
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <span class="font-bold mr-2">Jawaban Akhir:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 10 -->
+                <div class="soal-item">
+                    <div class="soal-number">10.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            <span class="text-highlight">Mastery Challenge:</span> Perbandingan kelereng Merah : Biru = 2 : 5. Perbandingan kelereng Biru : Kuning = 3 : 4. Jika kelereng Kuning diberikan 14 butir kepada kelereng Merah, jumlah kelereng Kuning dan Merah menjadi sama banyak. Berapakah jumlah kelereng Biru?
+                        </span>
+                        
+                        <div class="mb-4">
+                            <div class="drawing-box" style="height: 150px;">
+                                (Area Pengerjaan)
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <span class="font-bold mr-2">Jawaban Akhir:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <span class="ml-2">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
