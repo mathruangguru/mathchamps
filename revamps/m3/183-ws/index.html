@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Rasio Mastery 3 (2 Kolom - 3 Halaman)</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 9.5pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm 1.5cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1cm 1.5cm;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .bar-model-area {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT 2 KOLOM --- */
+      .soal-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1cm 1cm;
+        align-items: start;
+      }
+
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        page-break-inside: avoid;
+      }
+      
+      .col-span-2 {
+        grid-column: span 2;
+      }
+
+      .question-text {
+        font-weight: 500;
+        margin-bottom: 0.3rem;
+        text-align: justify;
+      }
+
+      /* --- Area Kerja Model Batang --- */
+      .bar-model-area {
+        width: 100%;
+        height: 3.5cm;
+        border: 1px dashed #cbd5e1;
+        border-radius: 8px;
+        background-color: #f8fafc;
+        position: relative;
+        margin-top: 0.25rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .bar-model-label {
+        position: absolute;
+        top: 4px;
+        left: 8px;
+        font-size: 7pt;
+        color: #94a3b8;
+        font-style: italic;
+      }
+
+      /* Input & Choices */
+      .choice-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem 1.5rem;
+        margin-top: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      
+      .input-line {
+        border-bottom: 1px solid #333;
+        width: 100%;
+        max-width: 120px;
+        display: inline-block;
+        text-align: center;
+        margin-left: 5px;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.5cm 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1: BAGIAN A (Soal 1-4) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Rasio Tingkat Lanjut
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Perubahan Karena Penambahan
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M3-183
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-4 mt-2">
+                <h1 class="text-xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                    LATIHAN BAGIAN A
+                </h1>
+                <p class="text-xs text-gray-600 font-medium">Pilih jawaban yang tepat. Gunakan area kosong untuk menggambar Model Batang.</p>
+            </div>
+
+            <div class="soal-container">
+                <!-- Soal 1 -->
+                <div class="soal-item">
+                    <div class="flex gap-2">
+                        <div class="font-bold">1.</div>
+                        <div class="w-full">
+                            <div class="question-text">
+                                Perbandingan jumlah kelereng Merah dan Biru dalam sebuah toples adalah 3 : 4. Setelah Andi memasukkan 12 kelereng Merah lagi ke dalam toples, perbandingannya berubah menjadi 5 : 4. Berapa jumlah kelereng Merah mula-mula?
+                            </div>
+                            <div class="bar-model-area" style="height: 3.2cm;">
+                                <span class="bar-model-label">Area Model Batang</span>
+                            </div>
+                            <div class="choice-container">
+                                <span>(A) 12</span>
+                                <span>(B) 15</span>
+                                <span>(C) 18</span>
+                                <span>(D) 24</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal 2 -->
+                <div class="soal-item">
+                    <div class="flex gap-2">
+                        <div class="font-bold">2.</div>
+                        <div class="w-full">
+                            <div class="question-text">
+                                Di sebuah peternakan, perbandingan jumlah Kambing dan Sapi adalah 2 : 5. Pemilik peternakan membeli 18 Sapi lagi. Sekarang, perbandingan Kambing dan Sapi menjadi 1 : 4. Berapa jumlah Kambing di peternakan tersebut?
+                            </div>
+                            <div class="bar-model-area" style="height: 3.2cm;">
+                                <span class="bar-model-label">Area Model Batang</span>
+                            </div>
+                            <div class="choice-container">
+                                <span>(A) 12 ekor</span>
+                                <span>(B) 18 ekor</span>
+                                <span>(C) 20 ekor</span>
+                                <span>(D) 24 ekor</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal 3 -->
+                <div class="soal-item">
+                    <div class="flex gap-2">
+                        <div class="font-bold">3.</div>
+                        <div class="w-full">
+                            <div class="question-text">
+                                Rasio uang tabungan Budi dan Citra adalah 3 : 7. Setelah Budi menabung lagi sebesar Rp 50.000, rasio tabungan mereka menjadi 1 : 2. Berapakah total uang mereka berdua <b>setelah</b> penambahan?
+                            </div>
+                            <div class="bar-model-area" style="height: 3.2cm;">
+                                <span class="bar-model-label">Area Model Batang</span>
+                            </div>
+                            <div class="choice-container">
+                                <span class="w-full">(A) Rp 750.000</span>
+                                <span class="w-full">(B) Rp 900.000</span>
+                                <span class="w-full">(C) Rp 1.050.000</span>
+                                <span class="w-full">(D) Rp 1.200.000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Soal 4 -->
+                 <div class="soal-item">
+                    <div class="flex gap-2">
+                        <div class="font-bold">4.</div>
+                        <div class="w-full">
+                            <div class="question-text">
+                                Sebuah kotak berisi pita kuning dan pita hijau dengan rasio 4 : 3. Ibu menambahkan 20 pita kuning ke dalam kotak. Rasio pita kuning terhadap hijau menjadi 2 : 1. Berapa banyak pita hijau di dalam kotak?
+                            </div>
+                            <div class="bar-model-area" style="height: 3.2cm;">
+                                <span class="bar-model-label">Area Model Batang</span>
+                            </div>
+                            <div class="choice-container">
+                                <span>(A) 15</span>
+                                <span>(B) 30</span>
+                                <span>(C) 45</span>
+                                <span>(D) 60</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2: SOAL 5 (Bagian A) & SOAL 6-7 (Bagian B) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Rasio Tingkat Lanjut
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Perubahan Karena Penambahan
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M3-183
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+
+            <!-- Soal 5 (Lanjutan Bagian A) -->
+            <div class="soal-container mb-4">
+                 <div class="soal-item col-span-2">
+                    <div class="flex gap-2">
+                        <div class="font-bold">5.</div>
+                        <div class="w-full">
+                            <div class="question-text">
+                                Awalnya, perbandingan jumlah siswa laki-laki dan perempuan di klub sains adalah 5 : 2. Ketika 12 siswa perempuan baru bergabung, jumlah siswa laki-laki menjadi sama dengan jumlah siswa perempuan. Berapa total siswa mula-mula?
+                            </div>
+                            <div class="bar-model-area" style="height: 3.2cm;">
+                                <span class="bar-model-label">Area Model Batang</span>
+                            </div>
+                            <div class="choice-container">
+                                <span>(A) 20</span>
+                                <span>(B) 28</span>
+                                <span>(C) 35</span>
+                                <span>(D) 40</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator" style="margin: 0.5cm 0;"></div>
+
+            <div class="text-center mb-4 mt-2">
+                <h1 class="text-xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                    LATIHAN BAGIAN B
+                </h1>
+                <p class="text-xs text-gray-600 font-medium">Jawablah pertanyaan berikut. Tuliskan langkah penyelesaian.</p>
+            </div>
+
+            <div class="soal-container">
+                
+                <!-- Soal 6 -->
+                <div class="soal-item">
+                    <div class="flex gap-2">
+                        <div class="font-bold">6.</div>
+                        <div class="w-full">
+                            <div class="question-text">
+                                Perbandingan jumlah buku Fiksi dan Non-Fiksi di perpustakaan adalah 2 : 9. Pustakawan membeli 70 buku Fiksi baru. Sekarang, perbandingan buku Fiksi dan Non-Fiksi menjadi 4 : 9. Berapa jumlah buku Fiksi sekarang?
+                            </div>
+                            <div class="bar-model-area" style="height: 4.5cm;">
+                                <span class="bar-model-label">Penyelesaian Model Batang</span>
+                            </div>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="text-sm font-bold">Jawaban:</span>
+                                <div class="input-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal 7 -->
+                <div class="soal-item">
+                    <div class="flex gap-2">
+                        <div class="font-bold">7.</div>
+                        <div class="w-full">
+                            <div class="question-text">
+                                Rasio permen Coklat dan permen Stroberi dalam kantong adalah 1 : 3. Jika adik memasukkan 24 permen Coklat lagi, rasionya berubah menjadi 5 : 9. Berapa jumlah permen Stroberi dalam kantong tersebut?
+                            </div>
+                            <div class="bar-model-area" style="height: 4.5cm;">
+                                <span class="bar-model-label">Penyelesaian Model Batang</span>
+                            </div>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="text-sm font-bold">Jawaban:</span>
+                                <div class="input-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3: SOAL 8-10 (Lanjutan Bagian B) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Rasio Tingkat Lanjut
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Perubahan Karena Penambahan
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M3-183
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+
+            <div class="text-center mb-4 mt-2">
+                <h1 class="text-xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                    LATIHAN BAGIAN B (Lanjutan)
+                </h1>
+                <p class="text-xs text-gray-600 font-medium">Jawablah pertanyaan berikut. Tuliskan langkah penyelesaian.</p>
+            </div>
+
+            <div class="soal-container">
+                
+                <!-- Soal 8 -->
+                <div class="soal-item">
+                    <div class="flex gap-2">
+                        <div class="font-bold">8.</div>
+                        <div class="w-full">
+                            <div class="question-text">
+                                <b>(Tantangan)</b> Rasio uang Anton dan Budi adalah 4 : 5. Anton mendapat hadiah uang sebesar Rp 36.000. Sekarang, rasio uang Anton terhadap Budi menjadi 8 : 5. Berapa jumlah uang Budi?
+                            </div>
+                            <div class="bar-model-area" style="height: 4.5cm;">
+                                <span class="bar-model-label">Penyelesaian Model Batang</span>
+                            </div>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="text-sm font-bold">Jawaban:</span>
+                                <div class="input-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal 9 -->
+                <div class="soal-item">
+                    <div class="flex gap-2">
+                        <div class="font-bold">9.</div>
+                        <div class="w-full">
+                            <div class="question-text">
+                                Di sebuah tangki, perbandingan volume Air dan Minyak adalah 7 : 3. Sebanyak 16 liter Minyak ditambahkan ke dalam tangki. Perbandingan volume Air dan Minyak menjadi 7 : 5. Berapa total volume campuran dalam tangki <b>sebelum</b> minyak ditambahkan?
+                            </div>
+                            <div class="bar-model-area" style="height: 4.5cm;">
+                                <span class="bar-model-label">Penyelesaian Model Batang</span>
+                            </div>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="text-sm font-bold">Jawaban:</span>
+                                <div class="input-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal 10 (Full width untuk penutup yang rapi) -->
+                <div class="soal-item col-span-2">
+                    <div class="flex gap-2">
+                        <div class="font-bold">10.</div>
+                        <div class="w-full">
+                            <div class="question-text">
+                                Perbandingan luas taman bunga Mawar dan Melati adalah 3 : 8. Pemilik taman memperluas area Mawar seluas 42 m². Akibatnya, perbandingan luas taman Mawar dan Melati menjadi 3 : 4. Hitunglah luas taman Melati!
+                            </div>
+                            <div class="bar-model-area" style="height: 4.5cm;">
+                                <span class="bar-model-label">Penyelesaian Model Batang</span>
+                            </div>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="text-sm font-bold">Jawaban:</span>
+                                <div class="input-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Pesan Penutup -->
+            <div class="mt-6 text-center text-gray-500 italic border-t pt-4">
+                "Matematika bukan tentang angka, persamaan, perhitungan, atau algoritma: ini tentang pemahaman."
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
