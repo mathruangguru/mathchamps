@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Mastery 2 - Mencari Banyak Data</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 1cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 1cm 2cm; }
+        .page:last-child { page-break-after: avoid; }
+        
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+
+        .math-champs-header,
+        .print-color,
+        .worked-example-box,
+        .pizza-slice,
+        .basket-item,
+        .coin-stack,
+        .scoreboard,
+        .thermometer-bar,
+        .water-cup,
+        .ruler-segment,
+        .choice-square,
+        .choice-circle {
+           visibility: visible !important;
+           opacity: 1 !important;
+        }
+      }
+
+      .math-champs-header {
+        background-color: white; 
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black; 
+      }
+
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1cm 1cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        margin-bottom: 1rem;
+      }
+
+      .ans-line {
+        border-bottom: 1px solid black;
+        width: 80px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.5cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+      }
+      
+      .no-break { page-break-inside: avoid; }
+
+      .worked-example-box {
+        background-color: #f9fafb;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+      }
+      
+      .input-line {
+        border: 1px solid #333;
+        width: 60px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        vertical-align: middle;
+      }
+
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 5px;
+      }
+      .choice-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        padding: 4px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+      }
+      .choice-label:hover {
+        background-color: #f3f4f6;
+      }
+      .choice-circle {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: white; 
+      }
+      .choice-square {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        border-radius: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: white;
+      }
+
+      /* --- NEW VISUALS FOR VARIETY --- */
+      
+      /* Pizza Slices */
+      .pizza-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 10px;
+      }
+      .pizza-plate {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 2px solid #b45309;
+        background-color: #fef3c7;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #92400e;
+      }
+      
+      /* Baskets */
+      .basket-item {
+        width: 50px;
+        height: 40px;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        border: 2px solid #57534e;
+        background-color: #d6d3d1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        position: relative;
+      }
+      .basket-handle {
+        position: absolute;
+        top: -15px;
+        left: 5px;
+        width: 36px;
+        height: 20px;
+        border-top: 2px solid #57534e;
+        border-left: 2px solid #57534e;
+        border-right: 2px solid #57534e;
+        border-radius: 20px 20px 0 0;
+      }
+
+      /* Coins */
+      .coin-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+      }
+      .coin {
+        width: 40px;
+        height: 12px;
+        background-color: #fcd34d;
+        border: 1px solid #d97706;
+        border-radius: 50%;
+      }
+      
+      /* Scoreboard */
+      .scoreboard {
+        background-color: #1e1b4b;
+        color: #ef4444; /* Digital Red */
+        font-family: monospace;
+        padding: 5px 10px;
+        border: 4px solid #4b5563;
+        border-radius: 4px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        text-align: center;
+        min-width: 60px;
+      }
+
+      /* Thermometer */
+      .thermometer-bar {
+        width: 20px;
+        background-color: #e5e7eb;
+        border: 1px solid #9ca3af;
+        border-radius: 10px;
+        height: 60px;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .thermometer-fill {
+        width: 100%;
+        background-color: #ef4444;
+        position: absolute;
+        bottom: 0;
+        border-radius: 0 0 10px 10px;
+      }
+
+      /* Water Cup */
+      .water-cup {
+        width: 40px;
+        height: 50px;
+        border-left: 2px solid #2563eb;
+        border-right: 2px solid #2563eb;
+        border-bottom: 2px solid #2563eb;
+        border-radius: 0 0 8px 8px;
+        position: relative;
+        background-color: rgba(59, 130, 246, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #1e40af;
+      }
+      .water-level {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: rgba(59, 130, 246, 0.5);
+        z-index: -1;
+      }
+
+      /* Ruler */
+      .ruler-container {
+        display: flex;
+        border-top: 2px solid black;
+        width: 100%;
+        height: 20px;
+      }
+      .ruler-tick {
+        flex: 1;
+        border-right: 1px solid black;
+        height: 10px;
+        position: relative;
+      }
+      .ruler-val {
+        position: absolute;
+        bottom: -20px;
+        right: -5px;
+        font-size: 0.6rem;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0">Average (Rata-rata)</div>
+                    <div class="text-[10px] text-black font-medium">Menentukan banyak data dari rata-rata dan total nilai</div>
+                    <div class="text-[10px] text-black font-medium">Kode: M2-S121</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-6 mt-4">
+                <h1 class="text-2xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                    MENCARI BANYAK DATA
+                </h1>
+                <p class="text-sm italic text-gray-500">Jika kita tahu Total dan Rata-rata, berapa banyak datanya?</p>
+            </div>
+
+            <!-- WORKED EXAMPLE -->
+            <div class="worked-example-box print-color">
+                <div class="font-bold text-lg mb-3 border-b border-gray-300 pb-2">Contoh Pengerjaan</div>
+                <p class="text-base mb-4 text-gray-800 leading-relaxed">
+                    <strong>Masalah:</strong> Ibu memiliki <strong>12</strong> potong pizza (Total). Jika rata-rata setiap kotak berisi <strong>4</strong> potong, berapa banyak <strong>kotak</strong> yang dimiliki Ibu?
+                </p>
+                
+                <!-- Visual Visualization -->
+                <div class="flex justify-center gap-8 items-center mb-6">
+                    <!-- Total -->
+                    <div class="flex flex-col items-center">
+                        <div class="text-center text-xs font-bold mb-2">Total Gabungan (12)</div>
+                        <div class="h-[60px] flex items-center justify-center font-bold text-xl text-orange-800 bg-orange-100 border-2 border-orange-600 rounded px-6 shadow-md">
+                            12 Potong
+                        </div>
+                    </div>
+
+                    <div class="text-2xl font-bold text-gray-400">&rarr;</div>
+
+                    <!-- Split -->
+                    <div class="flex flex-col items-center">
+                        <div class="text-center text-xs font-bold mb-2">Dibagi Rata (4 per kotak)</div>
+                        <div class="pizza-container">
+                            <div class="pizza-plate text-sm">4</div>
+                            <div class="pizza-plate text-sm">4</div>
+                            <div class="pizza-plate text-sm">4</div>
+                        </div>
+                        <div class="text-xs font-bold text-blue-600">Hasil = 3 Kotak</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 text-sm bg-white p-4 rounded border border-gray-200">
+                    <div>
+                        <strong class="text-blue-800 block mb-1">Rumus Cepat</strong>
+                        <div class="p-2 border border-blue-200 bg-blue-50 rounded text-center font-bold text-xs">
+                            Banyak Data = Total ÷ Rata-rata
+                        </div>
+                    </div>
+                    <div>
+                        <strong class="text-red-800 block mb-1">Hitungan</strong>
+                        <div class="text-xs text-gray-500 mb-1">Total = 12, Rata-rata = 4</div>
+                        <div class="font-bold text-lg font-mono text-gray-800">12 ÷ 4 = 3</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SECTION A: Konsep Visual -->
+            <div class="instruction-text bg-blue-50 p-2 rounded border-l-4 border-blue-500 mb-4">
+                A. Konsep Dasar (Visual)
+            </div>
+
+            <!-- Q1: Baskets -->
+            <div class="soal-item no-break">
+                <div class="text-base mb-3 font-medium">
+                    1. Total apel di semua keranjang adalah <strong>20</strong> buah. Jika rata-rata setiap keranjang berisi <strong>5</strong> apel, ada berapa <strong>keranjang</strong>?
+                </div>
+                
+                <div class="flex justify-center gap-4 mb-3 opacity-50">
+                    <div class="basket-item"><div class="basket-handle"></div>5</div>
+                    <div class="basket-item"><div class="basket-handle"></div>5</div>
+                    <div class="basket-item"><div class="basket-handle"></div>5</div>
+                    <div class="text-2xl font-bold flex items-end">...</div>
+                </div>
+                
+                <div class="flex items-center justify-center gap-2 mt-2 text-sm font-bold">
+                    Banyak Keranjang = <input type="text" class="input-line w-16">
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0">Average (Rata-rata)</div>
+                    <div class="text-[10px] text-black font-medium">Menentukan banyak data dari rata-rata dan total nilai</div>
+                    <div class="text-[10px] text-black font-medium">Kode: M2-S121</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text text-gray-500 text-sm mb-2 italic">
+                Lanjutan: Konsep Dasar (Visual)
+            </div>
+
+            <!-- Q2: Coin Stacks (Piggy Banks Concept) -->
+            <div class="soal-item mb-8 no-break">
+                <div class="text-base mb-3 font-medium">
+                    2. Andi memiliki uang total <strong>Rp3.000</strong>. Jika rata-rata isi setiap celengannya adalah <strong>Rp1.000</strong>, berapa <strong>banyak celengan</strong> yang dimiliki Andi?
+                </div>
+                
+                <div class="flex gap-8 justify-center mb-4 items-end bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div class="text-center font-bold text-gray-500">
+                        Total = Rp3.000
+                    </div>
+                    <div class="text-2xl text-gray-400">&rarr;</div>
+                    <div class="text-center">
+                        <div class="coin-stack">
+                            <div class="coin"></div> <!-- 1 coin = 1000 -->
+                        </div>
+                        <div class="text-xs font-bold mt-1">1.000</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="coin-stack">
+                            <div class="coin"></div>
+                        </div>
+                        <div class="text-xs font-bold mt-1">1.000</div>
+                    </div>
+                    <div class="text-center text-sm font-bold flex items-center">...</div>
+                </div>
+
+                <div class="choice-container ml-4 text-sm">
+                    <label class="choice-label"><span class="font-bold text-base">(A)</span> 3 Celengan</label>
+                    <label class="choice-label"><span class="font-bold text-base">(B)</span> 300 Celengan</label>
+                    <label class="choice-label"><span class="font-bold text-base">(C)</span> 10 Celengan</label>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SECTION B: Penerapan Hitung (Fresh Visuals) -->
+            <div class="instruction-text bg-green-50 p-2 rounded border-l-4 border-green-500 mb-4">
+                B. Penerapan Hitung (Berbagai Konteks)
+            </div>
+
+            <div class="soal-grid text-sm">
+                <!-- Q3: Scoreboard -->
+                <div class="soal-item no-break bg-gray-900 text-white p-3 rounded border border-gray-600">
+                    <p class="mb-3 font-medium">
+                        3. Tim basket mencetak total <strong>60 poin</strong>. Jika rata-rata poin per babak adalah <strong>20 poin</strong>, berapa <strong>banyak babak</strong> yang dimainkan?
+                    </p>
+                    <div class="flex justify-center gap-2 mb-3">
+                       <div class="scoreboard bg-black">Total: 60</div>
+                       <div class="scoreboard text-sm flex items-center">Avg: 20</div>
+                    </div>
+                    <div class="choice-container text-white">
+                        <label class="choice-label hover:bg-gray-700"><span class="font-bold">(A)</span> 2 Babak</label>
+                        <label class="choice-label hover:bg-gray-700"><span class="font-bold">(B)</span> 3 Babak</label>
+                        <label class="choice-label hover:bg-gray-700"><span class="font-bold">(C)</span> 4 Babak</label>
+                    </div>
+                </div>
+
+                <!-- Q4: Thermometer (Checkbox) -->
+                <div class="soal-item no-break">
+                    <p class="mb-2 font-medium">
+                        4. Total beban adalah <strong>150 kg</strong>. Rata-rata berat satu kotak adalah <strong>50 kg</strong>.
+                        Pilihlah <strong>DUA</strong> pernyataan yang benar:
+                    </p>
+                    <div class="flex gap-4 justify-center mb-3">
+                        <div class="text-center font-bold text-gray-700 border p-2 rounded bg-gray-100">Total: 150kg</div>
+                        <div class="text-center font-bold text-gray-700 border p-2 rounded bg-gray-100">Rata-rata: 50kg</div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="choice-label"><div class="choice-square"></div><span>Banyak kotak = 150 ÷ 50</span></label>
+                        <label class="choice-label"><div class="choice-square"></div><span>Banyak kotak = 3</span></label>
+                        <label class="choice-label"><div class="choice-square"></div><span>Banyak kotak = 5</span></label>
+                    </div>
+                </div>
+
+                <!-- Q5: Water Cups (Volume) -->
+                <div class="soal-item no-break">
+                    <p class="mb-2">
+                        5. Sebuah teko berisi <strong>800 ml</strong> air (Total). Air tersebut dituang rata ke dalam beberapa gelas. Jika rata-rata setiap gelas berisi <strong>200 ml</strong>, berapa <strong>banyak gelas</strong> yang terisi?
+                    </p>
+                    <div class="flex gap-2 justify-center mb-2 items-end">
+                        <div class="water-cup h-[60px] w-[50px] border-none bg-blue-100 rounded text-xs text-center flex items-center justify-center">Total<br>800</div>
+                        <div class="text-xl">&rarr;</div>
+                        <div class="water-cup"><div class="water-level" style="height: 60%"></div>200</div>
+                        <div class="water-cup"><div class="water-level" style="height: 60%"></div>200</div>
+                        <div class="text-xs mb-1">...</div>
+                    </div>
+                    <div class="text-right text-xs font-bold mt-2">
+                        Jawab: <input type="text" class="input-line w-16"> gelas
+                    </div>
+                </div>
+
+                <!-- Q6: Ruler/Ribbon (Length) -->
+                <div class="soal-item no-break">
+                    <p class="mb-2">
+                        6. Total panjang pita adalah <strong>50 cm</strong>. Pita tersebut dipotong-potong dengan rata-rata panjang <strong>10 cm</strong> per potongan. Berapa <strong>banyak potongan</strong> pita?
+                    </p>
+                    <div class="flex items-center justify-center mb-2">
+                        <div class="h-4 w-full bg-pink-200 rounded flex items-center justify-center text-xs font-bold border border-pink-400">Total 50 cm</div>
+                    </div>
+                    <div class="text-center text-[10px] text-gray-500 mb-2">(Dibagi 10 cm, 10 cm...)</div>
+                    <div class="text-right text-xs font-bold mt-2">
+                        Jawab: <input type="text" class="input-line w-16"> potongan
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0">Average (Rata-rata)</div>
+                    <div class="text-[10px] text-black font-medium">Menentukan banyak data dari rata-rata dan total nilai</div>
+                    <div class="text-[10px] text-black font-medium">Kode: M2-S121</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- SECTION C: Logika & Masalah -->
+            <div class="instruction-text bg-yellow-50 p-2 rounded border-l-4 border-yellow-500 mb-4">
+                C. Logika & Masalah (Tanpa Visual)
+            </div>
+
+            <div class="soal-grid text-sm mb-6">
+                <!-- Q7: Umur -->
+                <div class="soal-item no-break w-full col-span-2">
+                    <p class="mb-2">
+                        7. Jumlah total umur sekelompok anak adalah <strong>100 tahun</strong>.
+                        Jika rata-rata umur mereka adalah <strong>25 tahun</strong>, berapakah <strong>banyak anak</strong> dalam kelompok tersebut?
+                    </p>
+                    <div class="text-right text-xs font-bold mt-1">
+                        Jawab: <input type="text" class="input-line w-24 text-center"> anak
+                    </div>
+                </div>
+
+                <!-- Q8: Berat Badan Gabungan -->
+                <div class="soal-item no-break">
+                    <p class="mb-2">
+                        8. Total berat beberapa karung beras adalah <strong>150 kg</strong>. 
+                        Jika rata-rata berat satu karung adalah <strong>50 kg</strong>, berapa banyak karung beras yang ada?
+                    </p>
+                    <div class="text-right text-xs font-bold">Jawab: <input type="text" class="input-line w-16"> karung</div>
+                </div>
+
+                <!-- Q9: Logic Concept -->
+                <div class="soal-item no-break">
+                    <p class="mb-2">
+                        9. Sebuah dadu dilempar beberapa kali. Total jumlah mata dadu yang keluar adalah <strong>24</strong>. Jika rata-rata mata dadu adalah <strong>4</strong>, berapa kali dadu dilempar?
+                    </p>
+                    <div class="choice-container">
+                        <label class="choice-label"><span class="font-bold">(A)</span> 4 kali</label>
+                        <label class="choice-label"><span class="font-bold">(B)</span> 6 kali</label>
+                        <label class="choice-label"><span class="font-bold">(C)</span> 24 kali</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SECTION D: Tantangan Konsep -->
+            <div class="instruction-text bg-purple-50 p-2 rounded border-l-4 border-purple-500 mb-4">
+                D. Tantangan Konsep
+            </div>
+
+            <!-- Q10 -->
+            <div class="soal-item no-break bg-blue-50 p-4 rounded border border-blue-200">
+                <p class="mb-2 font-semibold text-blue-900 text-sm">
+                    10. Dalam sebuah ujian, total poin yang dikumpulkan seluruh siswa adalah <strong>400</strong>.
+                    Jika nilai rata-rata kelas adalah <strong>80</strong>, berapa <strong>banyak siswa</strong> yang mengikuti ujian tersebut?
+                </p>
+                <div class="text-xs text-gray-600 mb-2 italic">Tips: Banyak Data = Total ÷ Rata-rata</div>
+                <div class="flex items-center gap-2 text-sm font-bold mt-3">
+                    Jawab: <input type="text" class="input-line w-20 text-center"> siswa
+                </div>
+            </div>
+
+            <!-- RANDOM ENCOURAGEMENT FOOTER -->
+            <div class="mt-8 text-center py-4 border-t border-gray-200">
+                <p class="text-lg font-bold text-blue-600 italic font-handwriting">
+                    "Hasil tidak pernah mengkhianati kerja keras."
+                </p>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
