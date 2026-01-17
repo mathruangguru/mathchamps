@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Exploration 3 (E3-S264)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MathJax untuk rumus matematika -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        svg: {
+          fontCache: 'global'
+        }
+      };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --primary-blue: #1e3a8a; /* blue-900 */
+        --secondary-blue: #dbeafe; /* blue-100 */
+        --accent-green: #16a34a; /* green-600 */
+        --alert-red: #dc2626;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.6cm 2cm; /* Margin atas/bawah sedikit dikurangi */
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px; /* Lebih rapat */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.6cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .fraction-model circle,
+        .fraction-model path {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- UTILITIES --- */
+      .input-box {
+        border: 2px solid #333;
+        min-width: 80px;
+        height: 32px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        padding: 0 5px;
+        border-radius: 4px;
+      }
+      
+      .instruction-text {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.8rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #1e3a8a;
+      }
+
+      /* Separator lebih tipis marginnya */
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.4cm 0; 
+      }
+
+      .soal-item {
+        margin-bottom: 0.5rem;
+      }
+
+      /* Choices */
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        margin-left: 1.5rem;
+        margin-top: 0.3rem;
+      }
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        background: white;
+        border-radius: 2px;
+      }
+
+      /* --- FRACTION VISUALS (SVG) --- */
+      .fraction-visual {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin: 5px 0 10px 0;
+      }
+      .fraction-visual svg {
+        width: 50px; /* Sedikit dikecilkan agar lebih proporsional */
+        height: 50px;
+      }
+      .fraction-part {
+        fill: #93c5fd; /* blue-300 */
+        stroke: #1e3a8a; /* blue-900 */
+        stroke-width: 1.5;
+      }
+      .fraction-empty {
+        fill: white;
+        stroke: #1e3a8a;
+        stroke-width: 1.5;
+      }
+      /* Garis pembagi di dalam lingkaran */
+      .divider-line {
+        stroke: #1e3a8a;
+        stroke-width: 1.5;
+        fill: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Panduan & Soal 1-3) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pecahan</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Mengubah Pecahan tak Sejati ke Pecahan Campuran
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : E3-S264</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- PANDUAN KONSEP -->
+            <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-3 mb-4">
+                <h3 class="font-bold text-blue-900 mb-2 text-sm">Panduan Konsep (Metode Visual)</h3>
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div class="text-sm">
+                        <p class="mb-1"><strong>Contoh:</strong> Ubahlah pecahan tak sejati $\frac{5}{3}$ menjadi pecahan campuran.</p>
+                        <p class="mb-1">Kita memiliki <strong>1 lingkaran penuh</strong> dan <strong>2 bagian</strong> dari 3 bagian lingkaran lainnya.</p>
+                        <p class="font-bold text-lg">Jadi, $\frac{5}{3} = 1 \frac{2}{3}$</p>
+                    </div>
+                    <!-- Visual 5/3 (FIXED) -->
+                    <div class="fraction-visual">
+                        <!-- Circle 1: Full (3/3) -->
+                        <svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" class="fraction-part" />
+                            <!-- Lines for thirds: 0, 120, 240 deg -->
+                            <path d="M50 50 L50 5" class="divider-line" />
+                            <path d="M50 50 L88.97 72.5" class="divider-line" /> <!-- 120 deg -->
+                            <path d="M50 50 L11.03 72.5" class="divider-line" /> <!-- 240 deg -->
+                        </svg>
+                         <!-- Circle 2: 2/3 filled -->
+                         <svg viewBox="0 0 100 100">
+                             <!-- Arc for 2/3 (0 to 240 deg) -->
+                             <path d="M50 50 L50 5 A45 45 0 1 1 11.03 72.5 Z" class="fraction-part" />
+                             <!-- Outline Circle -->
+                             <circle cx="50" cy="50" r="45" class="divider-line" />
+                             <!-- Lines -->
+                             <path d="M50 50 L50 5" class="divider-line" />
+                             <path d="M50 50 L88.97 72.5" class="divider-line" />
+                             <path d="M50 50 L11.03 72.5" class="divider-line" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="instruction-text">
+                Bagian A: Pilihan Ganda. Perhatikan gambar model pecahan di bawah ini. Pilihlah jawaban pecahan campuran yang paling tepat dan paling sederhana.
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">
+                        1. Gambar berikut menunjukkan pecahan $\frac{3}{2}$. Berapakah bentuk pecahan campurannya?
+                    </div>
+                    <!-- Visual 3/2 -->
+                    <div class="fraction-visual">
+                        <!-- 1 Full -->
+                        <svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" class="fraction-part" />
+                            <line x1="50" y1="5" x2="50" y2="95" class="divider-line"/>
+                        </svg>
+                        <!-- 1/2 -->
+                        <svg viewBox="0 0 100 100">
+                            <path d="M50 50 L50 5 A45 45 0 0 1 50 95 L50 50 Z" class="fraction-part" />
+                            <circle cx="50" cy="50" r="45" class="divider-line"/>
+                            <line x1="50" y1="5" x2="50" y2="95" class="divider-line"/>
+                        </svg>
+                    </div>
+                    <div class="choice-container text-sm">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. $1 \frac{1}{3}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. $1 \frac{1}{2}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. $2 \frac{1}{2}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. $3 \frac{1}{2}$</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">
+                        2. Gambar berikut menunjukkan pecahan $\frac{5}{4}$. Berapakah bentuk pecahan campurannya?
+                    </div>
+                    <!-- Visual 5/4 -->
+                    <div class="fraction-visual">
+                        <!-- 1 Full -->
+                        <svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" class="fraction-part" />
+                            <line x1="50" y1="5" x2="50" y2="95" class="divider-line"/>
+                            <line x1="5" y1="50" x2="95" y2="50" class="divider-line"/>
+                        </svg>
+                        <!-- 1/4 -->
+                        <svg viewBox="0 0 100 100">
+                            <path d="M50 50 L50 5 A45 45 0 0 1 95 50 L50 50 Z" class="fraction-part" />
+                            <circle cx="50" cy="50" r="45" class="divider-line"/>
+                            <line x1="50" y1="5" x2="50" y2="95" class="divider-line"/>
+                            <line x1="5" y1="50" x2="95" y2="50" class="divider-line"/>
+                        </svg>
+                    </div>
+                    <div class="choice-container text-sm">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. $1 \frac{1}{4}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. $1 \frac{3}{4}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. $2 \frac{1}{4}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. $1 \frac{2}{4}$</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">
+                        3. Perhatikan model berikut yang merepresentasikan $\frac{7}{3}$.
+                    </div>
+                    <!-- Visual 7/3 (FIXED) -->
+                    <div class="fraction-visual">
+                        <!-- Circle 1: Full -->
+                        <svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" class="fraction-part" />
+                            <path d="M50 50 L50 5" class="divider-line"/>
+                            <path d="M50 50 L88.97 72.5" class="divider-line"/>
+                            <path d="M50 50 L11.03 72.5" class="divider-line"/>
+                        </svg>
+                        <!-- Circle 2: Full -->
+                        <svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" class="fraction-part" />
+                            <path d="M50 50 L50 5" class="divider-line"/>
+                            <path d="M50 50 L88.97 72.5" class="divider-line"/>
+                            <path d="M50 50 L11.03 72.5" class="divider-line"/>
+                        </svg>
+                         <!-- Circle 3: 1/3 (0 to 120 deg) -->
+                         <svg viewBox="0 0 100 100">
+                            <path d="M50 50 L50 5 A45 45 0 0 1 88.97 72.5 Z" class="fraction-part"/>
+                            <circle cx="50" cy="50" r="45" class="divider-line"/>
+                            <path d="M50 50 L50 5" class="divider-line"/>
+                            <path d="M50 50 L88.97 72.5" class="divider-line"/>
+                            <path d="M50 50 L11.03 72.5" class="divider-line"/>
+                        </svg>
+                    </div>
+                    <div class="choice-container text-sm">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. $2 \frac{2}{3}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. $3 \frac{1}{3}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. $2 \frac{1}{3}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. $1 \frac{2}{3}$</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 4-7) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pecahan</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Mengubah Pecahan tak Sejati ke Pecahan Campuran
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : E3-S264</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid mb-6">
+                
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">
+                        4. Berapakah pecahan campuran untuk model $\frac{9}{5}$ di bawah ini?
+                    </div>
+                    <!-- Visual 9/5 (FIXED - Using precise coordinates for 72 degrees) -->
+                    <div class="fraction-visual">
+                        <!-- Circle 1: Full (5/5) -->
+                        <svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" class="fraction-part" />
+                            <!-- Lines: 0, 72, 144, 216, 288 -->
+                            <path d="M50 50 L50 5" class="divider-line"/>
+                            <path d="M50 50 L92.8 36.1" class="divider-line"/>
+                            <path d="M50 50 L76.4 86.4" class="divider-line"/>
+                            <path d="M50 50 L23.6 86.4" class="divider-line"/>
+                            <path d="M50 50 L7.2 36.1" class="divider-line"/>
+                        </svg>
+                        <!-- Circle 2: 4/5 (0 to 288 degrees) -->
+                        <svg viewBox="0 0 100 100">
+                             <!-- Arc for 4/5 filled -->
+                             <path d="M50 50 L50 5 A45 45 0 1 1 7.2 36.1 Z" class="fraction-part" />
+                             
+                             <!-- Outer Circle and Lines -->
+                            <circle cx="50" cy="50" r="45" class="divider-line"/>
+                            <path d="M50 50 L50 5" class="divider-line"/>
+                            <path d="M50 50 L92.8 36.1" class="divider-line"/>
+                            <path d="M50 50 L76.4 86.4" class="divider-line"/>
+                            <path d="M50 50 L23.6 86.4" class="divider-line"/>
+                            <path d="M50 50 L7.2 36.1" class="divider-line"/>
+                        </svg>
+                    </div>
+                    <div class="choice-container text-sm">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. $1 \frac{3}{5}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. $2 \frac{1}{5}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. $1 \frac{4}{5}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. $2 \frac{4}{5}$</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">
+                        5. Model di bawah menunjukkan $\frac{6}{4}$. Manakah bentuk pecahan campuran <strong>paling sederhana</strong>?
+                    </div>
+                    <!-- Visual 6/4 -->
+                    <div class="fraction-visual">
+                        <!-- Full -->
+                        <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="fraction-part" /><line x1="50" y1="5" x2="50" y2="95" class="divider-line"/><line x1="5" y1="50" x2="95" y2="50" class="divider-line"/></svg>
+                        <!-- 2/4 filled -->
+                        <svg viewBox="0 0 100 100">
+                            <!-- 2/4 filled (half) -->
+                            <path d="M50 50 L50 5 A45 45 0 0 1 50 95 L50 50 Z" class="fraction-part" />
+                            
+                            <circle cx="50" cy="50" r="45" class="divider-line"/>
+                            <line x1="50" y1="5" x2="50" y2="95" class="divider-line"/>
+                            <line x1="5" y1="50" x2="95" y2="50" class="divider-line"/>
+                        </svg>
+                    </div>
+                    <div class="choice-container text-sm">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. $1 \frac{2}{4}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. $1 \frac{1}{4}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. $2 \frac{1}{2}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. $1 \frac{1}{2}$</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <div class="instruction-text mt-4">
+                    Bagian B: Isian Singkat. Ubahlah pecahan tak sejati berikut menjadi pecahan campuran dalam bentuk paling sederhana.
+                </div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">
+                        6. Ubahlah $\frac{11}{4}$ menjadi pecahan campuran.
+                    </div>
+                    <!-- Drawing Box -->
+                    <div class="border-2 border-dashed border-gray-300 rounded bg-gray-50 h-20 flex items-center justify-center mb-2">
+                         <span class="text-gray-400 text-xs">Gambarlah model visualmu di sini (Opsional)</span>
+                    </div>
+                    <div class="ml-4 font-bold text-sm">
+                        Jawaban: <span class="input-box w-32"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">
+                        7. Ubahlah $\frac{13}{5}$ menjadi pecahan campuran.
+                    </div>
+                    <div class="ml-4 font-bold text-sm">
+                        Jawaban: <span class="input-box w-32"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 8-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pecahan</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Mengubah Pecahan tak Sejati ke Pecahan Campuran
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : E3-S264</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid mt-4">
+                
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">
+                        8. Tuliskan $\frac{9}{2}$ dalam bentuk bilangan campuran.
+                    </div>
+                    <div class="ml-4 font-bold text-sm">
+                        Jawaban: <span class="input-box w-32"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">
+                        9. Ubahlah $\frac{8}{6}$ menjadi pecahan campuran dalam <strong>bentuk paling sederhana</strong>.
+                    </div>
+                    <div class="ml-4 font-bold text-sm">
+                        Jawaban: <span class="input-box w-32"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">
+                        10. Ibu membeli pizza yang dipotong menjadi 8 bagian per loyang. Jika ada 19 potong pizza ($\frac{19}{8}$), berapa loyang pizza utuh yang didapat?
+                    </div>
+                    <p class="mb-2 text-xs text-gray-700">Tuliskan totalnya dalam bentuk pecahan campuran.</p>
+                    <div class="ml-4 font-bold text-sm">
+                        Jawaban: <span class="input-box w-32"></span>
+                    </div>
+                </div>
+
+                <!-- Kalimat Penyemangat -->
+                <div class="text-center italic text-sm font-semibold text-gray-600 mt-12 mb-4">
+                    "Matematika bukan tentang angka, persamaan, perhitungan, atau algoritma: ini tentang pemahaman."
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
