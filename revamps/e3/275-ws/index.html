@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Exploration 3 (E3-S275)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MathJax untuk penulisan matematika yang rapi -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['\\(', '\\)']],
+          displayMath: [['$$', '$$']],
+        },
+        chtml: {
+          scale: 1.1 
+        }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --primary-blue: #1e3a8a; /* blue-900 */
+        --secondary-blue: #dbeafe; /* blue-100 */
+        --accent-green: #16a34a; /* green-600 */
+        --alert-red: #dc2626;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.6cm 1.5cm;
+        margin-bottom: 0.8cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.6cm 1.5cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .bar-model,
+        .bar-segment,
+        .circle-group,
+        .circle-item {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-shaded { background-color: #d1d5db !important; }
+        .bg-red-dashed { border-color: red !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- UTILITIES --- */
+      .input-box {
+        border-bottom: 2px solid #333; /* Underline style usually preferred for worksheets */
+        min-width: 60px;
+        height: 28px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: bottom;
+        background: white;
+        padding: 0 5px;
+      }
+      
+      .instruction-text {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.8rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #1e3a8a;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.4cm 0;
+      }
+
+      /* Choices */
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        margin-left: 1.5rem;
+        font-size: 0.95rem;
+      }
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        background: white;
+        border-radius: 50%; /* Circle for choices */
+      }
+
+      /* --- BAR MODEL STYLES (Singapore Math) --- */
+      .bar-model-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 450px; 
+        margin: 0.5rem auto;
+      }
+
+      .bar-model {
+        display: flex;
+        width: 100%;
+        height: 40px;
+        border: 2px solid #333;
+        background-color: white;
+      }
+
+      .bar-segment {
+        flex: 1;
+        border-right: 1px solid #333;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        color: #666;
+      }
+      .bar-segment:last-child {
+        border-right: none;
+      }
+
+      .bg-shaded {
+        background-color: #d1d5db; /* gray-300 */
+        background-image: linear-gradient(45deg, #bbb 25%, transparent 25%, transparent 50%, #bbb 50%, #bbb 75%, transparent 75%, transparent);
+        background-size: 4px 4px;
+      }
+
+      /* Braces for Bar Models */
+      .brace-container-bottom {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        margin-top: 2px;
+      }
+      .brace-line {
+        width: 100%;
+        height: 8px;
+        border-left: 2px solid #333;
+        border-right: 2px solid #333;
+        border-bottom: 2px solid #333;
+        margin-bottom: 2px;
+      }
+      .brace-label {
+        font-size: 0.85rem;
+        font-weight: bold;
+      }
+
+      /* Top Brace (for partial segments) */
+      .brace-top-wrapper {
+        position: relative;
+        height: 15px;
+        width: 100%;
+        margin-bottom: 2px;
+      }
+      .brace-top {
+        position: absolute;
+        height: 8px;
+        border-left: 2px solid #333;
+        border-right: 2px solid #333;
+        border-top: 2px solid #333;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+      }
+      .brace-top span {
+        position: absolute;
+        top: -18px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        background: white;
+        padding: 0 4px;
+      }
+      
+      /* Circles for Q1 */
+      .circle-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin: 10px 0;
+      }
+      .group-box {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        padding: 5px;
+        align-items: center;
+      }
+      .circle-item {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background-color: #e5e7eb;
+        border: 1px solid #9ca3af;
+      }
+      .dashed-highlight {
+        border: 2px dashed #ef4444; /* Red dashed */
+        border-radius: 8px;
+        position: relative;
+      }
+      .highlight-label {
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #dc2626;
+        font-weight: bold;
+        font-size: 0.8rem;
+        white-space: nowrap;
+      }
+      
+      /* Helper untuk soal grid */
+      .soal-item {
+        margin-bottom: 0.5rem;
+      }
+      .font-soal {
+        font-weight: normal;
+        margin-bottom: 0.5rem;
+        display: block;
+        line-height: 1.5;
+        font-size: 1rem;
+      }
+      
+      /* MathJax Overrides */
+      mjx-container {
+        font-size: 110% !important;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pecahan</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Pecahan dari Suatu Bilangan
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : E3-S275</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <h2 class="font-bold text-lg mb-2 mt-2 text-blue-900">Bagian A: Konsep Dasar (Visual)</h2>
+            <div class="instruction-text">
+                Gunakan diagram gambar atau model batang (bar model) untuk membantumu. Ingat konsep: Bagi bilangan utuh dengan penyebut untuk menemukan nilai 1 unit.
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        1. <strong>Konsep Visual:</strong> Perhatikan gambar lingkaran di bawah ini. Ada 8 lingkaran dibagi menjadi 4 kelompok.
+                    </div>
+                    
+                    <div class="circle-group relative mt-6 mb-4">
+                        <!-- Group 1 (Highlighted) -->
+                        <div class="group-box dashed-highlight">
+                            <div class="highlight-label">\(\frac{1}{4}\) bagian</div>
+                            <div class="circle-item"></div>
+                            <div class="circle-item"></div>
+                        </div>
+                        <!-- Group 2 -->
+                        <div class="group-box">
+                            <div class="circle-item"></div>
+                            <div class="circle-item"></div>
+                        </div>
+                        <!-- Group 3 -->
+                        <div class="group-box">
+                            <div class="circle-item"></div>
+                            <div class="circle-item"></div>
+                        </div>
+                        <!-- Group 4 -->
+                        <div class="group-box">
+                            <div class="circle-item"></div>
+                            <div class="circle-item"></div>
+                        </div>
+                    </div>
+
+                    <p class="mb-2 ml-4">Berapakah \(\frac{1}{4}\) dari 8?</p>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. 2</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. 4</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. 6</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. 8</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        2. <strong>Model Batang Dasar:</strong> Tentukan \(\frac{1}{3}\) dari 15.
+                    </div>
+                    <p class="text-xs text-gray-500 mb-2 ml-4">
+                        Diagram di bawah menunjukkan angka 15 dibagi menjadi 3 bagian yang sama.
+                    </p>
+                    
+                    <div class="bar-model-container">
+                        <div class="bar-model">
+                            <div class="bar-segment font-bold text-lg text-blue-800">?</div>
+                            <div class="bar-segment">?</div>
+                            <div class="bar-segment">?</div>
+                        </div>
+                        <!-- Brace Total -->
+                        <div class="brace-container-bottom">
+                            <div class="brace-line"></div>
+                            <div class="brace-label">Total = 15</div>
+                        </div>
+                        
+                        <div class="text-center mt-2 text-sm italic">
+                            1 Unit = ...
+                        </div>
+                    </div>
+
+                    <div class="mt-2 ml-4 font-medium">
+                        Jawaban: <span class="input-box w-24"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        3. Hitunglah \(\frac{1}{5}\) dari 20.
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-md border border-gray-200 mb-2 ml-4 inline-block">
+                        <p class="text-sm text-gray-600 italic">Pikirkan: \(5 \times \dots = 20\)</p>
+                    </div>
+                    <div class="mt-2 ml-4 font-bold">
+                        Jawaban: <span class="input-box w-24"></span>
+                    </div>
+                </div>
+                
+                <!-- SOAL 4 DIPINDAHKAN KE HALAMAN 2 -->
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pecahan</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Pecahan dari Suatu Bilangan
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : E3-S275</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <h2 class="font-bold text-lg mb-2 mt-2 text-blue-900">Bagian B: Latihan & Soal Cerita</h2>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 4 (DIPINDAHKAN DARI HALAMAN 1) -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        4. <strong>Tingkat Lanjut:</strong> Berapakah \(\frac{2}{3}\) dari 18?
+                    </div>
+                    
+                    <div class="bar-model-container mt-6">
+                         <!-- Brace Top for 2/3 -->
+                         <div class="brace-top-wrapper" style="width: 66.6%;">
+                            <div class="brace-top" style="width: 100%;">
+                                <span>\(\frac{2}{3}\) = ?</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bar-model">
+                            <div class="bar-segment bg-shaded"></div>
+                            <div class="bar-segment bg-shaded"></div>
+                            <div class="bar-segment"></div>
+                        </div>
+                        <!-- Brace Total -->
+                        <div class="brace-container-bottom">
+                            <div class="brace-line"></div>
+                            <div class="brace-label">Total = 18</div>
+                        </div>
+                    </div>
+
+                    <div class="ml-4 mt-2 text-sm space-y-1">
+                        <div>Langkah 1: Cari nilai 1 bagian (\(18 \div 3 = \dots\))</div>
+                        <div>Langkah 2: Cari nilai 2 bagian (hasil langkah 1 dikali 2).</div>
+                    </div>
+                    
+                    <div class="choice-container mt-3">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. 6</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. 10</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. 12</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. 16</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        5. Hitunglah \(\frac{3}{4}\) dari 24.
+                    </div>
+                    <div class="ml-4 font-bold">
+                        Jawaban: <span class="input-box w-24"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        6. <strong>Soal Cerita:</strong> Ibu membeli 30 butir telur. \(\frac{1}{6}\) dari telur tersebut pecah saat perjalanan pulang. Berapa butir telur yang pecah?
+                    </div>
+                    <div class="ml-4 font-bold">
+                        Jawaban: <span class="input-box w-24"></span> butir
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        7. <strong>Aplikasi Bar Model:</strong> Di kelas 4 terdapat 40 siswa. Sebanyak \(\frac{3}{5}\) dari siswa tersebut adalah perempuan. Berapa jumlah siswa perempuan?
+                    </div>
+                    
+                    <div class="bar-model-container mt-6">
+                        <!-- Brace Top for 3/5 -->
+                        <div class="brace-top-wrapper" style="width: 60%;">
+                            <div class="brace-top" style="width: 100%;">
+                                <span>Perempuan (\(\frac{3}{5}\))</span>
+                            </div>
+                        </div>
+
+                        <div class="bar-model">
+                            <!-- 5 Parts total, 3 shaded -->
+                            <div class="bar-segment bg-shaded"></div>
+                            <div class="bar-segment bg-shaded"></div>
+                            <div class="bar-segment bg-shaded"></div>
+                            <div class="bar-segment"></div>
+                            <div class="bar-segment"></div>
+                        </div>
+                        <!-- Brace Total -->
+                        <div class="brace-container-bottom">
+                            <div class="brace-line"></div>
+                            <div class="brace-label">Total = 40 Siswa</div>
+                        </div>
+                    </div>
+                    
+                    <div class="choice-container mt-4">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. 8 siswa</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. 16 siswa</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. 24 siswa</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. 30 siswa</label>
+                    </div>
+                </div>
+                
+                <!-- SOAL 8 DIPINDAHKAN KE HALAMAN 3 -->
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Tantangan) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pecahan</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Pecahan dari Suatu Bilangan
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : E3-S275</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <h2 class="font-bold text-lg mb-2 mt-2 text-blue-900">Bagian C: Tantangan (Challenge)</h2>
+
+            <div class="soal-grid mt-4">
+                
+                <!-- SOAL 8 (DIPINDAHKAN DARI HALAMAN 2) -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        8. <strong>Pengukuran:</strong> Panjang sebuah pita adalah 100 cm. Siti memotong \(\frac{3}{10}\) bagian dari pita tersebut untuk menghias kado. Berapa cm panjang pita yang dipotong Siti?
+                    </div>
+                    <div class="ml-4 mt-2 font-bold">
+                        Jawaban: <span class="input-box w-24"></span> cm
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        9. <strong>Perbandingan:</strong> Manakah yang lebih besar?
+                    </div>
+                    
+                    <div class="flex gap-8 justify-center my-4">
+                        <div class="border p-4 rounded bg-gray-50 text-center w-48">
+                            <div class="font-bold text-lg mb-2">A</div>
+                            <div>\(\frac{1}{2}\) dari 20</div>
+                        </div>
+                        <div class="flex items-center font-bold">ATAU</div>
+                        <div class="border p-4 rounded bg-gray-50 text-center w-48">
+                            <div class="font-bold text-lg mb-2">B</div>
+                            <div>\(\frac{1}{3}\) dari 27</div>
+                        </div>
+                    </div>
+
+                    <div class="ml-4 font-bold">
+                        Jawaban yang lebih besar adalah: <span class="input-box w-32"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 (Challenge) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-red-700 text-lg">
+                        10. Tantangan Logika (Exploration)
+                    </div>
+                    <p class="mb-2 font-soal">
+                        Pak Budi memiliki 24 bola. \(\frac{1}{4}\) dari bola tersebut berwarna Merah. Sisanya berwarna Biru.
+                        Berapa banyak bola yang berwarna <strong>Biru</strong>?
+                    </p>
+                    
+                    <div class="bar-model-container mt-6">
+                         <!-- Brace Top for Blue (Remainder) -->
+                         <div class="flex w-full mb-1">
+                            <div style="width: 25%"></div> <!-- Spacer for Red -->
+                            <!-- Brace for Blue -->
+                            <div class="brace-top-wrapper" style="width: 75%;">
+                                <div class="brace-top" style="width: 100%;">
+                                    <span>Biru (Sisanya)</span>
+                                </div>
+                            </div>
+                         </div>
+                        
+                        <div class="bar-model">
+                            <div class="bar-segment bg-red-100 text-red-800 font-bold">Merah</div>
+                            <div class="bar-segment bg-blue-50"></div>
+                            <div class="bar-segment bg-blue-50"></div>
+                            <div class="bar-segment bg-blue-50"></div>
+                        </div>
+                        <!-- Brace Total -->
+                        <div class="brace-container-bottom">
+                            <div class="brace-line"></div>
+                            <div class="brace-label">Total = 24 Bola</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 ml-4">
+                        <span class="font-bold text-sm">Jawab:</span>
+                        <span class="input-box w-24"></span> bola biru
+                    </div>
+                </div>
+
+                <!-- Kalimat Penyemangat -->
+                <div class="text-center italic text-xs font-semibold text-gray-600 mt-12 mb-2">
+                    "Matematika itu menyenangkan jika kamu memahami polanya!"
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
