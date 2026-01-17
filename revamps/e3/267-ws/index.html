@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Exploration 3 (E3-S267)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MathJax untuk penulisan matematika yang rapi -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['\\(', '\\)']],
+          displayMath: [['$$', '$$']],
+        },
+        chtml: {
+          scale: 1.0 /* Scale dikurangi sedikit agar muat */
+        }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --primary-blue: #1e3a8a; /* blue-900 */
+        --secondary-blue: #dbeafe; /* blue-100 */
+        --accent-green: #16a34a; /* green-600 */
+        --alert-red: #dc2626;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 9.5pt; /* Font sedikit diperkecil */
+        line-height: 1.25;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.5cm 1.5cm; /* Padding atas/bawah dikurangi */
+        margin-bottom: 0.8cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 5px; /* Margin header dikurangi */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 2px;
+        margin-top: auto;
+        border-top: 1px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.5cm 1.5cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .bar-model,
+        .bar-segment {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-shaded { background-color: #d1d5db !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- UTILITIES --- */
+      .input-box {
+        border: 2px solid #333;
+        min-width: 50px;
+        height: 24px; /* Tinggi input box dikurangi */
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        padding: 0 4px;
+        border-radius: 4px;
+      }
+      
+      .instruction-text {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.4rem; /* Margin dikurangi */
+        background-color: #f3f4f6;
+        padding: 0.3rem 0.6rem; /* Padding dikurangi */
+        border-radius: 0.375rem;
+        font-size: 0.85rem;
+        border-left: 4px solid #1e3a8a;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.15cm 0; /* Margin separator dirapatkan signifikan */
+      }
+
+      /* Choices */
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem; /* Gap dikurangi */
+        margin-left: 1.5rem;
+        font-size: 0.9rem;
+      }
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        background: white;
+        border-radius: 2px;
+      }
+
+      /* --- BAR MODEL STYLES (Singapore Math) --- */
+      .bar-model-container {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        width: 100%;
+        max-width: 450px; 
+        margin: 0.2rem auto; /* Margin diperkecil */
+      }
+
+      .bar-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .bar-label {
+        font-weight: bold;
+        min-width: 60px;
+        text-align: right;
+        font-size: 0.85rem;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+      }
+
+      .bar-model {
+        display: flex;
+        width: 100%;
+        height: 28px; /* Tinggi bar dikurangi */
+        border: 2px solid #333;
+        background-color: white;
+      }
+      
+      .bar-model-mini {
+        display: flex;
+        width: 80px; /* Ukuran mini diperkecil */
+        height: 16px;
+        border: 1px solid #333;
+        background-color: white;
+        margin-bottom: 3px;
+      }
+
+      .bar-segment {
+        flex: 1;
+        border-right: 1px solid #333;
+        height: 100%;
+      }
+      .bar-segment:last-child {
+        border-right: none;
+      }
+
+      .bg-shaded {
+        background-color: #d1d5db; /* gray-300 */
+        background-image: linear-gradient(45deg, #bbb 25%, transparent 25%, transparent 50%, #bbb 50%, #bbb 75%, transparent 75%, transparent);
+        background-size: 4px 4px;
+      }
+
+      .soal-item {
+        margin-bottom: 0.1rem;
+      }
+      .font-soal {
+        font-weight: normal;
+        margin-bottom: 0.25rem; /* Margin soal ke konten diperkecil */
+        display: block;
+        line-height: 1.3;
+        font-size: 0.95rem;
+      }
+      
+      h2 {
+        font-size: 1rem !important; /* Ukuran heading diperkecil */
+        margin-top: 0.3rem !important;
+        margin-bottom: 0.3rem !important;
+      }
+
+      /* MathJax Overrides */
+      mjx-container {
+        font-size: 105% !important;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-5) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-8 md:h-10 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[9px] text-black font-semibold mt-0">Pecahan</div>
+                    <div class="text-[9px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Membandingkan dan Mengurutkan Pecahan
+                    </div>
+                    <div class="text-[9px] text-black font-medium mt-0">Kode : E3-S267</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+            
+
+        </header>
+
+        <div class="content-wrapper">
+            
+            <h2 class="font-bold text-blue-900">Bagian A: Pemahaman Visual (Pictorial)</h2>
+            <div class="instruction-text">
+                Perhatikan gambar model batang (bar models) yang disediakan. Gunakan logika visual untuk menjawab pertanyaan.
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        1. <strong>Analisis Visual:</strong> Perhatikan kedua model pecahan di bawah ini.
+                    </div>
+                    
+                    <div class="bar-model-container">
+                        <!-- A: 2/5 -->
+                        <div class="bar-row">
+                            <div class="bar-label">A (\(\frac{2}{5}\))</div>
+                            <div class="bar-model">
+                                <div class="bar-segment bg-shaded"></div>
+                                <div class="bar-segment bg-shaded"></div>
+                                <div class="bar-segment"></div>
+                                <div class="bar-segment"></div>
+                                <div class="bar-segment"></div>
+                            </div>
+                        </div>
+                        <!-- B: 4/5 -->
+                        <div class="bar-row">
+                            <div class="bar-label">B (\(\frac{4}{5}\))</div>
+                            <div class="bar-model">
+                                <div class="bar-segment bg-shaded"></div>
+                                <div class="bar-segment bg-shaded"></div>
+                                <div class="bar-segment bg-shaded"></div>
+                                <div class="bar-segment bg-shaded"></div>
+                                <div class="bar-segment"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="mb-1 text-xs mt-1">Pernyataan manakah yang benar berdasarkan gambar di atas?</p>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> a) Pecahan A lebih besar daripada pecahan B.</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> b) Pecahan A lebih kecil daripada pecahan B.</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> c) Kedua pecahan bernilai sama.</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        2. <strong>Membandingkan Potongan:</strong> Budi memotong kue menjadi 4 bagian sama besar. Siti memotong kue yang sama besarnya menjadi 8 bagian sama besar.
+                    </div>
+                    
+                    <div class="bar-model-container">
+                        <!-- Budi: 1/4 -->
+                        <div class="bar-row">
+                            <div class="bar-label">Budi</div>
+                            <div class="bar-model">
+                                <div class="bar-segment bg-shaded"></div>
+                                <div class="bar-segment"></div>
+                                <div class="bar-segment"></div>
+                                <div class="bar-segment"></div>
+                            </div>
+                        </div>
+                        <!-- Siti: 1/8 -->
+                        <div class="bar-row">
+                            <div class="bar-label">Siti</div>
+                            <div class="bar-model">
+                                <div class="bar-segment bg-shaded"></div>
+                                <div class="bar-segment"></div>
+                                <div class="bar-segment"></div>
+                                <div class="bar-segment"></div>
+                                <div class="bar-segment"></div>
+                                <div class="bar-segment"></div>
+                                <div class="bar-segment"></div>
+                                <div class="bar-segment"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-1 text-sm text-center font-bold">
+                        Tanda perbandingan yang tepat adalah: \(\frac{1}{4}\) <span class="input-box w-10"></span> \(\frac{1}{8}\)
+                    </div>
+                    
+                    <div class="choice-container flex-row justify-center gap-4 mt-1">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> a) \(>\)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> b) \(<\)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> c) \(=\)</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        3. <strong>Eksplorasi Pembilang:</strong> Tanpa menggambar, manakah yang lebih besar: \(\frac{3}{7}\) atau \(\frac{3}{10}\)? Jelaskan alasanmu secara singkat.
+                    </div>
+                    <div class="w-full h-12 border border-gray-300 rounded mt-1 p-1 bg-gray-50"></div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                 <!-- SOAL 4 -->
+                 <div class="soal-item">
+                    <div class="font-soal">
+                        4. <strong>Mengurutkan:</strong> Perhatikan gambar di bawah ini. Urutkan pecahan dari yang <strong>terkecil</strong> ke yang <strong>terbesar</strong>.
+                    </div>
+                    
+                    <div class="flex justify-around mb-1">
+                        <div class="text-center">
+                            <div class="bar-model-mini">
+                                <div class="bar-segment bg-shaded"></div><div class="bar-segment bg-shaded"></div><div class="bar-segment bg-shaded"></div><div class="bar-segment bg-shaded"></div><div class="bar-segment bg-shaded"></div><div class="bar-segment"></div>
+                            </div>
+                            <small>(i) \(\frac{5}{6}\)</small>
+                        </div>
+                        <div class="text-center">
+                            <div class="bar-model-mini">
+                                <div class="bar-segment bg-shaded"></div><div class="bar-segment"></div><div class="bar-segment"></div><div class="bar-segment"></div><div class="bar-segment"></div><div class="bar-segment"></div>
+                            </div>
+                            <small>(ii) \(\frac{1}{6}\)</small>
+                        </div>
+                        <div class="text-center">
+                            <div class="bar-model-mini">
+                                <div class="bar-segment bg-shaded"></div><div class="bar-segment bg-shaded"></div><div class="bar-segment bg-shaded"></div><div class="bar-segment"></div><div class="bar-segment"></div><div class="bar-segment"></div>
+                            </div>
+                            <small>(iii) \(\frac{3}{6}\)</small>
+                        </div>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> a) \(\frac{5}{6}, \frac{3}{6}, \frac{1}{6}\)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> b) \(\frac{1}{6}, \frac{5}{6}, \frac{3}{6}\)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> c) \(\frac{1}{6}, \frac{3}{6}, \frac{5}{6}\)</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <h2 class="font-bold text-blue-900 mt-2">Bagian B: Menalar (Reasoning)</h2>
+                <!-- SOAL 5 (Dipindah dari Halaman 2) -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        5. <strong>Pecahan Senilai:</strong> Hubungan antara \(\frac{1}{2}\) dan \(\frac{2}{4}\) adalah...
+                    </div>
+                    
+                    <div class="bar-model-container" style="max-width: 250px;">
+                        <div class="bar-row">
+                            <div class="bar-label">\(\frac{1}{2}\)</div>
+                            <div class="bar-model h-5">
+                                <div class="bar-segment bg-shaded"></div><div class="bar-segment"></div>
+                            </div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">\(\frac{2}{4}\)</div>
+                            <div class="bar-model h-5">
+                                <div class="bar-segment bg-shaded"></div><div class="bar-segment bg-shaded"></div><div class="bar-segment"></div><div class="bar-segment"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="choice-container flex-row gap-4 mt-1">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> a) \(>\)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> b) \(<\)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> c) \(=\)</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 6-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-8 md:h-10 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[9px] text-black font-semibold mt-0">Pecahan</div>
+                    <div class="text-[9px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Membandingkan dan Mengurutkan Pecahan
+                    </div>
+                    <div class="text-[9px] text-black font-medium mt-0">Kode : E3-S267</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text">
+                Lanjutan Bagian B: Gunakan konsep patokan (benchmark) untuk menjawab.
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        6. <strong>Patokan Setengah:</strong> Pecahan manakah di bawah ini yang nilainya <strong>lebih besar</strong> dari \(\frac{1}{2}\)? (Petunjuk: Setengah dari penyebutnya adalah batas tengah).
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> a) \(\frac{1}{3}\)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> b) \(\frac{2}{5}\)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> c) \(\frac{3}{8}\)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> d) \(\frac{4}{6}\)</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        7. <strong>Cerita Pecahan:</strong> Ibu membeli sebuah melon. Kakak memakan \(\frac{2}{8}\) bagian melon, sedangkan Adik memakan \(\frac{4}{8}\) bagian melon. Siapakah yang memakan bagian melon lebih banyak?
+                    </div>
+                    <div class="mt-1 font-bold text-base">
+                        Jawab: <span class="input-box w-40 text-left px-2 font-normal text-sm"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+                
+                <h2 class="font-bold text-blue-900 mt-2">Bagian C: Tantangan (Challenge)</h2>
+                
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        8. <strong>Tantangan Visual:</strong> Bandingkan pecahan berikut dengan memberi tanda \(>\) atau \(<\).
+                    </div>
+                    
+                    <div class="bar-model-container">
+                        <!-- 2/3 -->
+                        <div class="bar-row">
+                            <div class="bar-label">\(\frac{2}{3}\)</div>
+                            <div class="bar-model">
+                                <div class="bar-segment bg-shaded"></div>
+                                <div class="bar-segment bg-shaded"></div>
+                                <div class="bar-segment"></div>
+                            </div>
+                        </div>
+                        <!-- 3/4 -->
+                        <div class="bar-row">
+                            <div class="bar-label">\(\frac{3}{4}\)</div>
+                            <div class="bar-model">
+                                <div class="bar-segment bg-shaded"></div>
+                                <div class="bar-segment bg-shaded"></div>
+                                <div class="bar-segment bg-shaded"></div>
+                                <div class="bar-segment"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm text-center font-bold mt-1">
+                         \(\frac{2}{3}\) <span class="input-box w-10"></span> \(\frac{3}{4}\)
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 (Dipindah dari Halaman 3) -->
+                <div class="soal-item">
+                    <div class="font-soal">
+                        9. <strong>Analisis Urutan:</strong> Diberikan pecahan: \(\frac{1}{2}, \frac{1}{5}, \frac{1}{9}\). <br>
+                        Jika diurutkan dari yang <strong>terbesar</strong> ke yang <strong>terkecil</strong>, urutan yang benar adalah...
+                    </div>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> a) \(\frac{1}{9}, \frac{1}{5}, \frac{1}{2}\)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> b) \(\frac{1}{2}, \frac{1}{5}, \frac{1}{9}\)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> c) \(\frac{1}{5}, \frac{1}{2}, \frac{1}{9}\)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> d) \(\frac{1}{9}, \frac{1}{2}, \frac{1}{5}\)</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 (Dipindah dari Halaman 3) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-red-700 text-sm">
+                        10. Penerapan Konsep
+                    </div>
+                    <p class="mb-1 text-xs text-gray-800">
+                        Tuliskan satu pecahan yang nilainya berada tepat di tengah antara \(\frac{1}{4}\) dan \(\frac{3}{4}\).
+                    </p>
+                    <div class="mt-1 ml-4">
+                        <span class="font-bold text-xs">Jawab:</span>
+                        <div class="w-full h-10 border border-gray-300 rounded mt-1 p-1 bg-gray-50"></div>
+                    </div>
+                </div>
+
+                <!-- Kalimat Penyemangat -->
+                <div class="text-center italic text-[10px] font-semibold text-gray-600 mt-6 mb-1">
+                    "Selamat Mengerjakan! Gunakan gambar untuk membantumu berpikir."
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
