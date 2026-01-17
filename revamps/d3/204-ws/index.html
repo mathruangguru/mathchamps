@@ -1,548 +1,320 @@
 <!DOCTYPE html>
 <html lang="id">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Math Champs - Perkalian 10 (D3-S204)</title>
-    
-    <!-- Tailwind untuk utility classes -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Montserrat & Noto Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
     <style>
-      /* --- CSS UTAMA --- */
-      :root {
-        --primary-text: #333333;
-        --secondary-text: #555555;
-        --grey-text: #8d8e8d;
-      }
-
-      *, *::before, *::after {
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: "Montserrat", sans-serif;
-        font-size: 10pt;
-        line-height: 1.4;
-        color: var(--primary-text);
-        background-color: #525659;
-        margin: 0;
-        padding: 20px 0;
-      }
-
-      .page-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .page {
-        background: white;
-        width: 21cm; /* A4 Width */
-        min-height: 29.7cm; /* A4 Height */
-        padding: 0.8cm 2cm;
-        margin-bottom: 1cm;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        position: relative;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .page-header {
-        width: 100%;
-        margin-bottom: 8px;
-      }
-
-      .content-wrapper {
-        position: relative;
-        z-index: 1;
-        width: 100%;
-        flex-grow: 1;
-      }
-
-      /* --- FOOTER --- */
-      .page-footer {
-        text-align: left;
-        font-size: 6pt;
-        color: var(--grey-text);
-        padding-top: 4px;
-        margin-top: auto;
-        border-top: 2px solid var(--grey-text);
-        width: 100%;
-        display: flex;
-        gap: 5px;
-        align-items: center;
-      }
-
-      /* --- STYLE KHUSUS PRINT --- */
-      @media print {
-        @page {
-          size: A4;
-          margin: 0;
+        :root {
+            --primary-text: #333333;
+            --grey-text: #8d8e8d;
+            --tens-color: #4ade80; 
+            --tens-border: #15803d; 
+            --unit-size: 11px; /* Ukuran identik untuk presisi visual */
         }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        
         body {
-          background-color: white;
-          padding: 0;
+            font-family: "Noto Sans", sans-serif;
+            font-size: 10pt;
+            color: var(--primary-text);
+            background-color: #e0e0e0;
+            margin: 0; padding: 20px 0;
         }
+
         .page-container {
-          display: block;
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
         }
+
         .page {
-          width: 100%;
-          min-height: 29.7cm;
-          margin: 0;
-          box-shadow: none;
-          page-break-after: always;
-          padding: 0.8cm 2cm;
-          border: none;
+            background: white; width: 21cm; height: 29.7cm;
+            padding: 1.2cm 1.6cm;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            position: relative; display: flex; flex-direction: column;
         }
-        .page:last-child {
-          page-break-after: avoid;
+
+        .math-champs-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid #333; padding-bottom: 8px; margin-bottom: 15px;
+        }
+
+        .header-info { text-align: right; display: flex; flex-direction: column; gap: 1px; }
+        .header-level { font-family: "Montserrat"; font-size: 16px; font-weight: 900; text-transform: uppercase; }
+
+        .main-title-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .main-title {
+            font-family: "Montserrat";
+            font-size: 1.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #1f2937;
+            letter-spacing: 1px;
+        }
+
+        .section-title {
+            font-family: "Montserrat"; font-weight: 800; text-transform: uppercase;
+            font-size: 1rem; color: #4b5563; border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 3px; margin-bottom: 12px; margin-top: 10px;
+        }
+
+        .soal-grid { display: flex; flex-direction: column; gap: 1rem; }
+        
+        .soal-item {
+            break-inside: avoid; position: relative; width: 100%;
+        }
+
+        /* --- SISTEM KOTAK PRESISI --- */
+        .rod-container { display: flex; flex-direction: column-reverse; position: relative; }
+        .box-unit {
+            width: var(--unit-size); height: var(--unit-size);
+            border: 1px solid; flex-shrink: 0;
+        }
+        .box-unit.ten { background-color: var(--tens-color); border-color: var(--tens-border); margin-top: -1px; }
+
+        /* --- UI Components --- */
+        .input-box {
+            border: 1.5px solid #333; min-width: 60px; height: 24px;
+            display: inline-block; text-align: center; font-weight: bold;
+            color: #333; vertical-align: middle; background: white; border-radius: 4px; padding: 0 5px;
         }
         
-        .math-champs-header,
-        .choice-box,
-        .instruction-text,
-        .input-box,
-        .bar-model-box,
-        .tcolorbox,
-        .vertical-math-table td,
-        .svg-icon {
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-          color-adjust: exact !important;
+        .choice-container { display: flex; gap: 1.2rem; margin-top: 6px; font-weight: 600; font-size: 0.9rem; flex-wrap: wrap; margin-left: 1.5rem; }
+        .choice-box { width: 16px; height: 16px; border: 1px solid #333; display: inline-block; margin-right: 6px; vertical-align: middle; border-radius: 3px; }
+
+        .h-separator { width: 100%; height: 1px; background-color: #e5e7eb; margin: 0.5cm 0; }
+
+        .page-footer {
+            font-size: 6pt; color: var(--grey-text); border-top: 1.5px solid var(--grey-text);
+            padding-top: 4px; margin-top: auto; text-align: left;
         }
-        .bg-blue-50 { background-color: #eff6ff !important; }
-        .bg-blue-100 { background-color: #dbeafe !important; }
-        .bg-green-100 { background-color: #dcfce7 !important; }
-        .bg-gray-100 { background-color: #f3f4f6 !important; }
-      }
 
-      /* --- KOMPONEN HEADER --- */
-      .math-champs-header {
-        background-color: white;
-        padding: 0.1rem 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: black;
-      }
+        /* Number Line Specific */
+        .brace-label { font-family: 'Noto Sans', sans-serif; font-size: 10px; text-anchor: middle; fill: #555; }
+        .number-text { font-family: 'Montserrat', sans-serif; font-weight: bold; font-size: 14px; text-anchor: middle; dominant-baseline: central; }
 
-      /* --- LAYOUT SOAL --- */
-      .soal-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 0.6rem;
-       }
-      
-      .soal-item {
-        break-inside: avoid;
-        position: relative;
-        width: 100%;
-      }
-
-      /* Input & Choices */
-      .input-box {
-        border: 1.5px solid #333;
-        min-width: 60px;
-        height: 24px;
-        display: inline-block;
-        text-align: center;
-        font-weight: bold;
-        color: #333;
-        vertical-align: middle;
-        background: white;
-        border-radius: 4px;
-        padding: 0 5px;
-      }
-      
-      .choice-container {
-        display: flex;
-        justify-content: flex-start;
-        gap: 1.2rem;
-        margin-top: 4px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        flex-wrap: wrap;
-        margin-left: 1.5rem;
-      }
-
-      .choice-box {
-        width: 16px;
-        height: 16px;
-        border: 1px solid #333;
-        display: inline-block;
-        margin-right: 6px;
-        vertical-align: middle;
-        border-radius: 3px;
-      }
-      
-      .h-separator {
-        width: 100%;
-        height: 1px;
-        background-color: #e5e7eb;
-        margin: 0.15cm 0;
-      }
-
-      .instruction-text {
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 0.4rem;
-        background-color: #f3f4f6;
-        padding: 0.2rem 1rem;
-        border-radius: 0.375rem;
-        font-size: 0.9rem;
-        border-left: 4px solid #333;
-      }
-      
-      /* --- VISUAL MATH SPECIFICS --- */
-      .bar-label {
-        font-family: 'Noto Sans', sans-serif;
-        font-size: 11px;
-        font-weight: bold;
-        text-anchor: middle;
-        fill: #333;
-      }
-      .brace-label {
-        font-family: 'Noto Sans', sans-serif;
-        font-size: 10px;
-        text-anchor: middle;
-        fill: #555;
-      }
-      .group-circle {
-          fill: none;
-          stroke: #333;
-          stroke-width: 2px;
-      }
-      .number-text {
-          font-family: 'Montserrat', sans-serif;
-          font-weight: bold;
-          font-size: 14px;
-          text-anchor: middle;
-          dominant-baseline: central;
-      }
+        @media print {
+            body { background: white; padding: 0; }
+            .page { box-shadow: none; margin: 0; page-break-after: always; }
+            .rod-container, .box-unit, .math-champs-header, .input-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .page-footer { border-top: 1.5px solid var(--grey-text) !important; }
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="page-container">
-    
-      <!-- ================= HALAMAN 1 ================= -->
-      <section class="page">
-        <!-- HEADER -->
-        <header class="page-header">
-            <div class="math-champs-header">
-                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
-                <div class="text-right">
-                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
-                    <div class="text-[10px] text-black font-semibold mt-0.5">Perkalian 2, 5, dan 10</div>
-                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
-                        Perkalian 10
-                    </div>
-                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S204</div>
+        
+        <!-- ================= HALAMAN 1 ================= -->
+        <section class="page">
+            <header class="math-champs-header">
+                <img src="https://mathruangguru.github.io/mathchamps/revamps/logoMC-2026.png" alt="Math Champs" class="h-10">
+                <div class="header-info">
+                    <div class="header-level text-black">Discovery 3</div>
+                    <div class="text-[10px] font-bold text-black">Perkalian 2, 5, dan 10</div>
+                    <div class="text-[9px] font-medium text-black italic">Perkalian 10</div>
+                    <div class="text-[10px] font-bold text-black">Kode : D3-S204</div>
                 </div>
-            </div>
-            <div class="w-full h-0.5 bg-black mt-1"></div>
-        </header>
+            </header>
 
-        <div class="content-wrapper">
-            
-
-            <div class="text-center mb-4 mt-1">
-                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
-                    FAKTA PERKALIAN 10
-                </h1>
-            </div>
-
-            <div class="mb-4 text-sm text-gray-600 italic px-2 bg-yellow-50 border border-yellow-200 rounded p-2">
-                <strong>Petunjuk:</strong> Gunakan gambar dan model visual untuk membantu menemukan jawabannya.
-            </div>
-
-            <div class="soal-grid">
-                
-                <!-- SOAL 1 -->
-                <div class="soal-item">
-                    <div class="font-bold mb-2">
-                        1. Lihat gambar di bawah ini. Ada 3 kelompok. Setiap kelompok berisi 10. Berapa jumlah totalnya?
-                    </div>
-                    <div class="flex justify-center my-2">
-                        <svg width="250" height="70">
-                            <!-- Group 1 -->
-                            <circle cx="40" cy="35" r="25" class="group-circle"/>
-                            <text x="40" y="35" class="number-text">10</text>
-                            
-                            <!-- Group 2 -->
-                            <circle cx="125" cy="35" r="25" class="group-circle"/>
-                            <text x="125" y="35" class="number-text">10</text>
-
-                            <!-- Group 3 -->
-                            <circle cx="210" cy="35" r="25" class="group-circle"/>
-                            <text x="210" y="35" class="number-text">10</text>
-                        </svg>
-                    </div>
-                    <div class="ml-4 font-bold text-sm">
-                        Jawaban: 3 &times; 10 = <span class="input-box w-20"></span>
-                    </div>
+            <div class="content-wrapper">
+                <div class="main-title-section">
+                    <h1 class="main-title">PERKALIAN 10</h1>
+                    <p class="text-xs text-gray-500 font-semibold italic mt-1 text-center">Gunakan pola persepuluhan untuk menghitung lebih cepat!</p>
                 </div>
 
-                <div class="h-separator"></div>
+                <div class="soal-grid">
+                    <!-- SOAL 1 -->
+                    <div class="soal-item">
+                        <div class="font-bold mb-2">1. Lihat gambar di bawah ini. Ada 3 kelompok. Setiap kelompok berisi 10. Berapa jumlah totalnya?</div>
+                        <div class="flex justify-center my-4">
+                            <svg width="300" height="70">
+                                <circle cx="50" cy="35" r="30" fill="none" stroke="#333" stroke-width="2"/>
+                                <text x="50" y="35" class="number-text">10</text>
+                                <circle cx="150" cy="35" r="30" fill="none" stroke="#333" stroke-width="2"/>
+                                <text x="150" y="35" class="number-text">10</text>
+                                <circle cx="250" cy="35" r="30" fill="none" stroke="#333" stroke-width="2"/>
+                                <text x="250" y="35" class="number-text">10</text>
+                            </svg>
+                        </div>
+                        <div class="ml-4 font-bold text-sm">Jawaban: 3 &times; 10 = <span class="input-box w-20"></span></div>
+                    </div>
 
-                <!-- SOAL 2 -->
-                <div class="soal-item">
-                    <div class="font-bold">
-                        2. Manakah bentuk perkalian yang benar untuk penjumlahan berulang di bawah ini?
-                        <div class="my-2 text-center text-lg bg-gray-50 py-1 rounded">10 + 10 + 10 + 10 + 10</div>
-                    </div>
-                    <div class="choice-container">
-                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> A. 4 &times; 10</label>
-                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> B. 5 &times; 10</label>
-                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> C. 10 &times; 10</label>
-                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> D. 5 + 10</label>
-                    </div>
-                </div>
+                    <div class="h-separator"></div>
 
-                <div class="h-separator"></div>
-
-                <!-- SOAL 3 -->
-                <div class="soal-item">
-                    <div class="font-bold">
-                        3. Lengkapi garis bilangan berikut. Angka yang hilang pada tanda tanya (?) adalah...
-                    </div>
-                    <div class="flex justify-center my-4">
-                        <svg width="350" height="80">
-                            <!-- Axis -->
-                            <line x1="10" y1="50" x2="340" y2="50" stroke="black" stroke-width="2" marker-end="url(#arrow)" />
-                            <defs>
-                                <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
-                                <path d="M0,0 L0,6 L9,3 z" fill="#000" />
-                                </marker>
-                            </defs>
-                            
-                            <!-- Ticks & Labels -->
-                            <line x1="20" y1="45" x2="20" y2="55" stroke="black" stroke-width="2"/>
-                            <text x="20" y="70" class="bar-label">0</text>
-                            
-                            <line x1="70" y1="45" x2="70" y2="55" stroke="black" stroke-width="2"/>
-                            <text x="70" y="70" class="bar-label">10</text>
-                            
-                            <line x1="120" y1="45" x2="120" y2="55" stroke="black" stroke-width="2"/>
-                            <text x="120" y="70" class="bar-label">20</text>
-                            
-                            <line x1="170" y1="45" x2="170" y2="55" stroke="black" stroke-width="2"/>
-                            <text x="170" y="70" class="bar-label" fill="red" font-size="14">?</text>
-                            
-                            <line x1="220" y1="45" x2="220" y2="55" stroke="black" stroke-width="2"/>
-                            <text x="220" y="70" class="bar-label">40</text>
-                            
-                            <line x1="270" y1="45" x2="270" y2="55" stroke="black" stroke-width="2"/>
-                            <text x="270" y="70" class="bar-label">50</text>
-
-                            <!-- Jump Arcs -->
-                            <path d="M 20 40 Q 45 15 70 40" fill="none" stroke="#666" stroke-width="1.5" />
-                            <text x="45" y="20" class="brace-label">+10</text>
-                            
-                            <path d="M 70 40 Q 95 15 120 40" fill="none" stroke="#666" stroke-width="1.5" />
-                            <text x="95" y="20" class="brace-label">+10</text>
-                        </svg>
-                    </div>
-                    <div class="ml-4 font-bold text-sm">
-                        Jawab: <span class="input-box w-20"></span>
-                    </div>
-                </div>
-
-                <div class="h-separator"></div>
-
-                <!-- SOAL 4 -->
-                <div class="soal-item">
-                    <div class="font-bold">
-                        4. Model Batang (Bar Model). Ibu membeli 4 kotak krayon. Setiap kotak berisi 10 krayon. Berapa jumlah total krayon ibu?
-                    </div>
-                    <div class="flex justify-center my-4">
-                        <svg width="250" height="80">
-                            <!-- 4 boxes of 10 -->
-                            <rect x="25" y="10" width="50" height="30" fill="#dbeafe" stroke="#333" stroke-width="1.5"/>
-                            <text x="50" y="30" class="bar-label">10</text>
-                            
-                            <rect x="75" y="10" width="50" height="30" fill="#dbeafe" stroke="#333" stroke-width="1.5"/>
-                            <text x="100" y="30" class="bar-label">10</text>
-                            
-                            <rect x="125" y="10" width="50" height="30" fill="#dbeafe" stroke="#333" stroke-width="1.5"/>
-                            <text x="150" y="30" class="bar-label">10</text>
-                            
-                            <rect x="175" y="10" width="50" height="30" fill="#dbeafe" stroke="#333" stroke-width="1.5"/>
-                            <text x="200" y="30" class="bar-label">10</text>
-
-                            <!-- Brace -->
-                            <path d="M 25 50 L 25 55 L 225 55 L 225 50" fill="none" stroke="#333" stroke-width="1.5"/>
-                            <text x="125" y="70" class="bar-label">Total = ?</text>
-                        </svg>
-                    </div>
-                    <div class="ml-4 font-bold text-sm">
-                        Jawaban: <span class="input-box w-20"></span> krayon.
-                    </div>
-                </div>
-                
-                 <!-- SOAL 5 -->
-                 <div class="soal-item mt-4">
-                    <div class="font-bold">
-                        5. Adi menyusun balok puluhan. Dia memiliki 6 batang balok puluhan. Berapakah nilainya?
-                    </div>
-                    <div class="flex justify-start gap-4 my-3 ml-8">
-                        <!-- 6 Ten Blocks -->
-                        <div class="flex gap-2">
-                             <!-- Block 1 -->
-                             <svg width="15" height="60"><rect width="15" height="60" fill="#e5e7eb" stroke="#9ca3af" /><text x="7.5" y="55" font-size="8" text-anchor="middle">10</text><line x1="0" y1="10" x2="15" y2="10" stroke="#9ca3af"/><line x1="0" y1="20" x2="15" y2="20" stroke="#9ca3af"/><line x1="0" y1="30" x2="15" y2="30" stroke="#9ca3af"/><line x1="0" y1="40" x2="15" y2="40" stroke="#9ca3af"/><line x1="0" y1="50" x2="15" y2="50" stroke="#9ca3af"/></svg>
-                             <!-- Block 2 -->
-                             <svg width="15" height="60"><rect width="15" height="60" fill="#e5e7eb" stroke="#9ca3af" /><text x="7.5" y="55" font-size="8" text-anchor="middle">10</text><line x1="0" y1="10" x2="15" y2="10" stroke="#9ca3af"/><line x1="0" y1="20" x2="15" y2="20" stroke="#9ca3af"/><line x1="0" y1="30" x2="15" y2="30" stroke="#9ca3af"/><line x1="0" y1="40" x2="15" y2="40" stroke="#9ca3af"/><line x1="0" y1="50" x2="15" y2="50" stroke="#9ca3af"/></svg>
-                             <!-- Block 3 -->
-                             <svg width="15" height="60"><rect width="15" height="60" fill="#e5e7eb" stroke="#9ca3af" /><text x="7.5" y="55" font-size="8" text-anchor="middle">10</text><line x1="0" y1="10" x2="15" y2="10" stroke="#9ca3af"/><line x1="0" y1="20" x2="15" y2="20" stroke="#9ca3af"/><line x1="0" y1="30" x2="15" y2="30" stroke="#9ca3af"/><line x1="0" y1="40" x2="15" y2="40" stroke="#9ca3af"/><line x1="0" y1="50" x2="15" y2="50" stroke="#9ca3af"/></svg>
-                             <!-- Block 4 -->
-                             <svg width="15" height="60"><rect width="15" height="60" fill="#e5e7eb" stroke="#9ca3af" /><text x="7.5" y="55" font-size="8" text-anchor="middle">10</text><line x1="0" y1="10" x2="15" y2="10" stroke="#9ca3af"/><line x1="0" y1="20" x2="15" y2="20" stroke="#9ca3af"/><line x1="0" y1="30" x2="15" y2="30" stroke="#9ca3af"/><line x1="0" y1="40" x2="15" y2="40" stroke="#9ca3af"/><line x1="0" y1="50" x2="15" y2="50" stroke="#9ca3af"/></svg>
-                             <!-- Block 5 -->
-                             <svg width="15" height="60"><rect width="15" height="60" fill="#e5e7eb" stroke="#9ca3af" /><text x="7.5" y="55" font-size="8" text-anchor="middle">10</text><line x1="0" y1="10" x2="15" y2="10" stroke="#9ca3af"/><line x1="0" y1="20" x2="15" y2="20" stroke="#9ca3af"/><line x1="0" y1="30" x2="15" y2="30" stroke="#9ca3af"/><line x1="0" y1="40" x2="15" y2="40" stroke="#9ca3af"/><line x1="0" y1="50" x2="15" y2="50" stroke="#9ca3af"/></svg>
-                             <!-- Block 6 -->
-                             <svg width="15" height="60"><rect width="15" height="60" fill="#e5e7eb" stroke="#9ca3af" /><text x="7.5" y="55" font-size="8" text-anchor="middle">10</text><line x1="0" y1="10" x2="15" y2="10" stroke="#9ca3af"/><line x1="0" y1="20" x2="15" y2="20" stroke="#9ca3af"/><line x1="0" y1="30" x2="15" y2="30" stroke="#9ca3af"/><line x1="0" y1="40" x2="15" y2="40" stroke="#9ca3af"/><line x1="0" y1="50" x2="15" y2="50" stroke="#9ca3af"/></svg>
+                    <!-- SOAL 2 -->
+                    <div class="soal-item">
+                        <div class="font-bold">2. Manakah bentuk perkalian yang benar untuk penjumlahan berulang di bawah ini?</div>
+                        <div class="my-4 text-center text-xl font-bold bg-gray-50 py-2 rounded border border-gray-100 italic">10 + 10 + 10 + 10 + 10</div>
+                        <div class="choice-container">
+                            <label class="choice-item"><span class="choice-box"></span> A. 4 &times; 10</label>
+                            <label class="choice-item"><span class="choice-box"></span> B. 5 &times; 10</label>
+                            <label class="choice-item"><span class="choice-box"></span> C. 10 &times; 10</label>
                         </div>
                     </div>
-                    <div class="choice-container">
-                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> A. 6</label>
-                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> B. 16</label>
-                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> C. 60</label>
-                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> D. 106</label>
-                    </div>
-                </div>
 
-            </div>
-        </div>
+                    <div class="h-separator"></div>
 
-        <footer class="page-footer">
-            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
-            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
-        </footer>
-      </section>
-
-      <!-- ================= HALAMAN 2 ================= -->
-      <section class="page">
-        <!-- HEADER -->
-        <header class="page-header">
-            <div class="math-champs-header">
-                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
-                <div class="text-right">
-                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
-                    <div class="text-[10px] text-black font-semibold mt-0.5">Perkalian 2, 5, dan 10</div>
-                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
-                        Perkalian 10
-                    </div>
-                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S204</div>
-                </div>
-            </div>
-            <div class="w-full h-0.5 bg-black mt-1"></div>
-        </header>
-
-        <div class="content-wrapper">
-            <div class="soal-grid">
-                
-                <!-- SOAL 6 -->
-                <div class="soal-item">
-                    <div class="font-bold">
-                        6. Seekor kepiting memiliki 10 kaki. Jika ada 2 ekor kepiting, berapa jumlah semua kakinya?
-                    </div>
-                    <div class="choice-container">
-                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> A. 12 kaki</label>
-                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> B. 20 kaki</label>
-                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> C. 10 kaki</label>
-                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> D. 22 kaki</label>
-                    </div>
-                </div>
-
-                <div class="h-separator"></div>
-
-                <!-- SOAL 7 -->
-                <div class="soal-item">
-                    <div class="font-bold">
-                        7. Bandingkan kedua sisi. Isilah titik-titik dengan tanda <span class="bg-gray-200 px-1 rounded">&lt;</span>, <span class="bg-gray-200 px-1 rounded">&gt;</span>, atau <span class="bg-gray-200 px-1 rounded">=</span>.
-                    </div>
-                    <div class="flex items-center gap-3 mt-3 ml-4 text-lg font-bold">
-                        <span>8 &times; 10</span>
-                        <span class="input-box w-12"></span>
-                        <span>10 &times; 7</span>
-                    </div>
-                </div>
-
-                <div class="h-separator"></div>
-
-                <!-- SOAL 8 -->
-                <div class="soal-item">
-                    <div class="font-bold">
-                        8. Perhatikan pola di bawah ini:
-                        <div class="ml-4 mt-1 font-mono text-sm bg-gray-50 inline-block p-2 rounded border border-gray-200">
-                            1 &times; 10 = 10<br>
-                            2 &times; 10 = 20<br>
-                            3 &times; 10 = 30<br>
-                            ...<br>
-                            9 &times; 10 = ...
+                    <!-- SOAL 3 -->
+                    <div class="soal-item">
+                        <div class="font-bold">3. Lengkapi garis bilangan berikut. Angka yang hilang pada tanda (?) adalah...</div>
+                        <div class="flex justify-center my-6">
+                            <svg width="350" height="80">
+                                <line x1="10" y1="50" x2="340" y2="50" stroke="black" stroke-width="2" />
+                                <line x1="20" y1="45" x2="20" y2="55" stroke="black" stroke-width="2"/><text x="20" y="75" class="text-[10px] text-center" style="text-anchor:middle">0</text>
+                                <line x1="70" y1="45" x2="70" y2="55" stroke="black" stroke-width="2"/><text x="70" y="75" class="text-[10px] text-center" style="text-anchor:middle">10</text>
+                                <line x1="120" y1="45" x2="120" y2="55" stroke="black" stroke-width="2"/><text x="120" y="75" class="text-[10px] text-center" style="text-anchor:middle">20</text>
+                                <line x1="170" y1="45" x2="170" y2="55" stroke="black" stroke-width="2"/><text x="170" y="75" class="font-bold text-red-500" style="text-anchor:middle">?</text>
+                                <line x1="220" y1="45" x2="220" y2="55" stroke="black" stroke-width="2"/><text x="220" y="75" class="text-[10px] text-center" style="text-anchor:middle">40</text>
+                                <line x1="270" y1="45" x2="270" y2="55" stroke="black" stroke-width="2"/><text x="270" y="75" class="text-[10px] text-center" style="text-anchor:middle">50</text>
+                                <path d="M 20 40 Q 45 15 70 40" fill="none" stroke="#666" stroke-width="1" />
+                                <path d="M 70 40 Q 95 15 120 40" fill="none" stroke="#666" stroke-width="1" />
+                                <path d="M 120 40 Q 145 15 170 40" fill="none" stroke="#666" stroke-width="1" />
+                                <text x="45" y="25" class="brace-label">+10</text>
+                            </svg>
                         </div>
-                        <div class="mt-2">Berapakah hasil dari 9 &times; 10?</div>
+                        <div class="ml-4 font-bold text-sm">Jawab: <span class="input-box w-20"></span></div>
                     </div>
-                    <div class="choice-container">
-                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> A. 9</label>
-                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> B. 19</label>
-                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> C. 90</label>
-                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> D. 91</label>
-                    </div>
-                </div>
 
-                <div class="h-separator"></div>
+                    <div class="h-separator"></div>
 
-                <!-- SOAL 9 -->
-                <div class="soal-item">
-                    <div class="font-bold">
-                        9. Teka-teki Angka.
-                    </div>
-                    <div class="ml-4 mt-1">
-                        Saya adalah sebuah angka. Jika saya dikalikan dengan 10, hasilnya adalah 100.
-                        <div class="my-2 font-bold text-lg">
-                            <span class="input-box w-16"></span> &times; 10 = 100
+                    <!-- SOAL 4 -->
+                    <div class="soal-item">
+                        <div class="font-bold">4. Model Batang. Ibu membeli 4 kotak krayon. Setiap kotak berisi 10 krayon. Berapa jumlah total krayon ibu?</div>
+                        <div class="flex justify-center my-6">
+                            <div class="flex border-2 border-gray-800 rounded">
+                                <div class="w-16 h-10 border-r border-gray-800 bg-blue-50 flex items-center justify-center font-bold text-sm">10</div>
+                                <div class="w-16 h-10 border-r border-gray-800 bg-blue-50 flex items-center justify-center font-bold text-sm">10</div>
+                                <div class="w-16 h-10 border-r border-gray-800 bg-blue-50 flex items-center justify-center font-bold text-sm">10</div>
+                                <div class="w-16 h-10 bg-blue-50 flex items-center justify-center font-bold text-sm">10</div>
+                            </div>
                         </div>
-                        Angka berapakah saya?
+                        <div class="ml-4 font-bold text-sm text-center">4 &times; 10 = <span class="input-box w-20"></span> krayon.</div>
                     </div>
                 </div>
+            </div>
 
-                <div class="h-separator"></div>
+            <footer class="page-footer">
+                Copyright © 2025 - PT Ruang Raya Indonesia - All Rights Reserved. Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.
+            </footer>
+        </section>
 
-                <!-- SOAL 10 -->
-                <div class="soal-item">
-                    <div class="font-bold">
-                        10. Siti mempunyai 7 toples kue. Setiap toples berisi 10 kue nastar. Model matematika manakah yang cocok untuk cerita di atas?
+        <!-- ================= HALAMAN 2 ================= -->
+        <section class="page">
+            <header class="math-champs-header">
+                <img src="https://mathruangguru.github.io/mathchamps/revamps/logoMC-2026.png" alt="Math Champs" class="h-10">
+                <div class="header-info">
+                    <div class="header-level text-black">Discovery 3</div>
+                    <div class="text-[10px] font-bold text-black">Perkalian 2, 5, dan 10</div>
+                    <div class="text-[9px] font-medium text-black italic">Perkalian 10</div>
+                    <div class="text-[10px] font-bold text-black">Kode : D3-S204</div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="soal-grid">
+                    <!-- SOAL 5 (PINDAHAN) -->
+                    <div class="soal-item">
+                        <div class="font-bold mb-4">5. Adi menyusun balok puluhan. Dia memiliki 6 batang balok puluhan. Berapakah nilainya?</div>
+                        <div class="flex justify-center gap-6 my-6 bg-gray-50 p-6 rounded-xl border border-dashed border-gray-300">
+                            <!-- Proper Base-10 Blocks -->
+                            <div class="rod-container">
+                                <div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div>
+                            </div>
+                            <div class="rod-container">
+                                <div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div>
+                            </div>
+                            <div class="rod-container">
+                                <div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div>
+                            </div>
+                            <div class="rod-container">
+                                <div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div>
+                            </div>
+                            <div class="rod-container">
+                                <div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div>
+                            </div>
+                            <div class="rod-container">
+                                <div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div>
+                            </div>
+                        </div>
+                        <div class="choice-container justify-center">
+                            <label class="choice-item"><span class="choice-box"></span> A. 6</label>
+                            <label class="choice-item"><span class="choice-box"></span> B. 60</label>
+                            <label class="choice-item"><span class="choice-box"></span> C. 106</label>
+                        </div>
                     </div>
-                    <div class="choice-container">
-                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> A. 10 + 7</label>
-                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> B. 7 &times; 10</label>
-                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> C. 10 &divide; 7</label>
-                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> D. 7 - 10</label>
+
+                    <div class="h-separator"></div>
+
+                    <!-- SOAL 6 -->
+                    <div class="soal-item">
+                        <div class="font-bold">6. Seekor kepiting memiliki 10 kaki. Jika ada 2 ekor kepiting, berapa jumlah semua kakinya?</div>
+                        <div class="choice-container">
+                            <label class="choice-item"><span class="choice-box"></span> A. 12 kaki</label>
+                            <label class="choice-item"><span class="choice-circle"></span> B. 20 kaki</label>
+                            <label class="choice-item"><span class="choice-box"></span> C. 22 kaki</label>
+                        </div>
+                    </div>
+
+                    <div class="h-separator"></div>
+
+                    <!-- SOAL 7 -->
+                    <div class="soal-item">
+                        <div class="font-bold">7. Bandingkan kedua sisi. Isilah titik-titik dengan tanda <span class="bg-gray-100 px-1 border rounded">&lt;</span>, <span class="bg-gray-100 px-1 border rounded">&gt;</span>, atau <span class="bg-gray-100 px-1 border rounded">=</span>.</div>
+                        <div class="flex items-center justify-center gap-6 mt-4 text-xl font-black">
+                            <span>8 &times; 10</span>
+                            <span class="input-box w-16 h-10 flex items-center justify-center"></span>
+                            <span>10 &times; 7</span>
+                        </div>
+                    </div>
+
+                    <div class="h-separator"></div>
+
+                    <!-- SOAL 8 -->
+                    <div class="soal-item">
+                        <div class="font-bold">8. Berapakah hasil dari 9 &times; 10?</div>
+                        <div class="choice-container">
+                            <label class="choice-item"><span class="choice-box"></span> A. 19</label>
+                            <label class="choice-item"><span class="choice-box"></span> B. 90</label>
+                            <label class="choice-item"><span class="choice-box"></span> C. 91</label>
+                        </div>
+                    </div>
+
+                    <div class="h-separator"></div>
+
+                    <!-- SOAL 9 -->
+                    <div class="soal-item">
+                        <div class="font-bold">9. Teka-teki Angka: Saya dikalikan 10, hasilnya 100. Angka berapakah saya?</div>
+                        <div class="mt-4 text-center">
+                            <span class="input-box w-20 text-lg"></span> &times; 10 = 100
+                        </div>
+                    </div>
+
+                    <div class="h-separator"></div>
+
+                    <!-- SOAL 10 -->
+                    <div class="soal-item">
+                        <div class="font-bold">10. Siti mempunyai 7 toples kue. Setiap toples berisi 10 kue nastar. Model matematika manakah yang benar?</div>
+                        <div class="choice-container">
+                            <label class="choice-item"><span class="choice-box"></span> A. 10 + 7</label>
+                            <label class="choice-item"><span class="choice-box"></span> B. 7 &times; 10</label>
+                            <label class="choice-item"><span class="choice-box"></span> C. 10 &divide; 7</label>
+                        </div>
                     </div>
                 </div>
-
             </div>
 
-            <div class="text-center italic text-xs text-gray-400 mt-6">
-                "Matematika itu menyenangkan karena kita bisa melihat polanya!"
-            </div>
-        </div>
-
-        <footer class="page-footer">
-            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
-            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
-        </footer>
-      </section>
+            <footer class="page-footer">
+                Copyright © 2025 - PT Ruang Raya Indonesia - All Rights Reserved. Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.
+            </footer>
+        </section>
 
     </div>
-  </body>
+</body>
 </html>
