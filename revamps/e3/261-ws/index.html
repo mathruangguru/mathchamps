@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Exploration 3 (E3-S261)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MathJax untuk Rumus Matematika yang Rapi -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        svg: {
+          fontCache: 'global'
+        }
+      };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --primary-blue: #1e3a8a; /* blue-900 */
+        --secondary-blue: #dbeafe; /* blue-100 */
+        --accent-green: #16a34a; /* green-600 */
+        --alert-red: #dc2626;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px; /* Reduced from 12px */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .fraction-visual {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- UTILITIES --- */
+      .input-box {
+        border: 2px solid #333;
+        min-width: 60px;
+        height: 32px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        padding: 0 5px;
+        border-radius: 4px;
+      }
+      
+      .input-line {
+        border-bottom: 2px solid #333;
+        min-width: 80px;
+        display: inline-block;
+        margin: 0 5px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .instruction-text {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem; /* Reduced from 1rem */
+        background-color: #f3f4f6;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #1e3a8a;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.3cm 0; /* Reduced from 0.8cm to ~0.3cm for tighter layout */
+      }
+
+      /* Choices */
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem; /* Slightly tighter gap */
+        margin-left: 1.5rem;
+      }
+      .choice-box {
+        width: 20px;
+        height: 20px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        background: white;
+        border-radius: 2px;
+        flex-shrink: 0;
+      }
+      
+      /* Visual Container */
+      .visual-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin: 0.5rem 0; /* Reduced from 1rem to 0.5rem */
+        flex-wrap: wrap;
+        overflow: visible; /* Penting agar tidak kepotong */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-3) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pecahan</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Pecahan Tidak Sejati
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : E3-S261</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <h2 class="font-bold text-lg mb-3 mt-2 text-blue-900">Konsep Pecahan Tidak Sejati (Visual)</h2>
+
+            <div class="instruction-text">
+                Perhatikan gambar model (lingkaran atau batang) dengan teliti. Jawablah pertanyaan dengan memilih jawaban yang benar atau mengisi titik-titik.
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. Perhatikan gambar di bawah ini. Satu lingkaran penuh bernilai 1 utuh dan dibagi menjadi 4 bagian.
+                    </div>
+                    
+                    <div class="visual-container" id="visual-q1"></div>
+
+                    <p class="mb-1 text-sm">Berapakah pecahan tidak sejati yang ditunjukkan oleh daerah yang diarsir?</p>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box"></span> 
+                            <span>$\frac{5}{4}$</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box"></span> 
+                            <span>$\frac{4}{5}$</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box"></span> 
+                            <span>$\frac{5}{8}$</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box"></span> 
+                            <span>$\frac{1}{4}$</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. Lihatlah model visual berikut. Berapa total potong <i>sepertiga</i> ($\frac{1}{3}$) yang diarsir?
+                    </div>
+                    
+                    <div class="visual-container" id="visual-q2"></div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. 6 bagian</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. 7 bagian</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. 8 bagian</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. 3 bagian</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        3. Tuliskan pecahan tidak sejati untuk gambar berikut ini.
+                    </div>
+                    <p class="text-sm italic text-gray-500 mb-1">(Petunjuk: Hitunglah semua potongan kecil yang diarsir sebagai pembilang)</p>
+                    
+                    <div class="visual-container" id="visual-q3"></div>
+
+                    <div class="mt-2 ml-4 font-bold text-lg">
+                        Jawaban: <span class="input-line"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 4-7) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pecahan</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Pecahan Tidak Sejati
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : E3-S261</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        4. Perhatikan <i>Bar Model</i> (Diagram Batang) di bawah ini. Setiap batang panjang mewakili 1 satuan utuh yang dibagi menjadi 5 bagian.
+                    </div>
+                    
+                    <div class="visual-container" id="visual-q4"></div>
+
+                    <p class="mb-1 text-sm">Pecahan tidak sejati yang sesuai dengan gambar di atas adalah:</p>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box"></span> 
+                            <span>$\frac{7}{10}$</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box"></span> 
+                            <span>$\frac{5}{7}$</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box"></span> 
+                            <span>$\frac{7}{5}$</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box"></span> 
+                            <span>$\frac{12}{5}$</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        5. Jika satu kotak kecil di bawah ini bernilai $\frac{1}{2}$, berapakah nilai total pecahan yang ditunjukkan?
+                    </div>
+                    
+                    <div class="visual-container" id="visual-q5"></div>
+
+                    <div class="mt-2 ml-4 font-bold text-lg">
+                        Jawaban: <span class="input-line"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        6. Ibu membeli 3 pizza. Setiap pizza dipotong menjadi 8 bagian yang sama besar. Adik dan teman-temannya memakan total 17 potong pizza.
+                    </div>
+                    <p class="mb-1 text-sm">Bentuk pecahan tidak sejati dari pizza yang dimakan adalah...</p>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box"></span> 
+                            <span>$\frac{17}{3}$</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box"></span> 
+                            <span>$\frac{17}{8}$</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box"></span> 
+                            <span>$\frac{8}{17}$</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <span class="choice-box"></span> 
+                            <span>$\frac{3}{17}$</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        7. Untuk menunjukkan pecahan $\frac{9}{4}$ menggunakan gambar, kita membutuhkan...
+                    </div>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. 1 gambar utuh dan sisa $\frac{1}{4}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. 2 gambar utuh dan sisa $\frac{1}{4}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. 2 gambar utuh dan sisa $\frac{3}{4}$</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. 9 gambar utuh</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 8-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Pecahan</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Pecahan Tidak Sejati
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : E3-S261</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid mt-4">
+                
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Lengkapilah logika matematika berikut:
+                    </div>
+                    
+                    <div class="bg-gray-50 p-3 border border-gray-200 rounded-md font-medium text-center space-y-1">
+                        <div>1 Utuh = $\frac{5}{5}$</div>
+                        <div>2 Utuh = $\frac{10}{5}$</div>
+                        <div class="pt-1">Maka, $\frac{12}{5}$ = 2 Utuh + <span class="input-line"></span></div>
+                    </div>
+                    
+                    <p class="text-xs text-gray-500 mt-1 text-center">(Tuliskan pecahannya, contoh: 1/5)</p>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. Jika satu batang cokelat dibagi menjadi 3 bagian (setiap bagian bernilai $\frac{1}{3}$), berapa banyak potongan kecil yang kamu perlukan untuk membuat 4 batang cokelat utuh?
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. 4 potongan</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. 7 potongan</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. 12 potongan</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. 3 potongan</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 (Analysis) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-red-700">
+                        10. Analisis Gambar
+                    </div>
+                    <div class="visual-container" id="visual-q10"></div>
+                    
+                    <p class="mb-1 text-sm font-semibold">Pernyataan manakah yang BENAR?</p>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. Gambar menunjukkan pecahan $\frac{3}{2}$ karena ada 3 buah setengah lingkaran.</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. Gambar menunjukkan pecahan $\frac{3}{4}$ karena total ada 4 bagian tempat.</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. Gambar menunjukkan pecahan $\frac{2}{3}$ karena penyebutnya 3.</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. Gambar menunjukkan angka 3.</label>
+                    </div>
+                </div>
+
+                <!-- Quote -->
+                <div class="text-center italic text-sm font-semibold text-gray-600 mt-8 mb-4">
+                    "Matematika bukan tentang angka, persamaan, perhitungan, atau algoritma: ini tentang pemahaman."
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+
+    <!-- SCRIPT FOR GENERATING VISUALS (SVG) -->
+    <script>
+        // Fungsi untuk menggambar Pecahan Lingkaran
+        function drawFractionCircle(elementId, numerator, denominator, scale = 1) {
+            const container = document.getElementById(elementId);
+            if (!container) return;
+
+            const radius = 30 * scale;
+            const gap = 15; // Jarak antar lingkaran
+            const padding = 10; // Padding di sekitar SVG untuk mencegah kepotong
+            
+            const fullCircles = Math.floor(numerator / denominator);
+            const remainder = numerator % denominator;
+            const totalShapes = remainder > 0 ? fullCircles + 1 : fullCircles;
+            
+            let svgContent = '';
+            
+            // Draw Full Circles
+            for (let i = 0; i < fullCircles; i++) {
+                // Posisi X disesuaikan dengan padding dan gap
+                const posX = padding + radius + (i * (radius * 2 + gap));
+                const posY = padding + radius;
+                
+                svgContent += `
+                    <g transform="translate(${posX}, ${posY})">
+                        <circle cx="0" cy="0" r="${radius}" fill="#d1d5db" stroke="black" stroke-width="2" />
+                        ${generatePieLines(radius, denominator)}
+                        <text x="0" y="${radius + 15}" text-anchor="middle" font-size="10" font-weight="bold">1 Utuh</text>
+                    </g>
+                `;
+            }
+
+            // Draw Remainder Circle
+            if (remainder > 0) {
+                const posX = padding + radius + (fullCircles * (radius * 2 + gap));
+                const posY = padding + radius;
+                
+                svgContent += `
+                    <g transform="translate(${posX}, ${posY})">
+                        <circle cx="0" cy="0" r="${radius}" fill="white" stroke="black" stroke-width="2" />
+                        ${generatePieSlices(radius, denominator, remainder)}
+                        ${generatePieLines(radius, denominator)}
+                    </g>
+                `;
+            }
+
+            // Lebar total disesuaikan dengan padding
+            const width = (totalShapes * (radius * 2 + gap)) + (padding * 2) - gap; // -gap karena gap terakhir tidak perlu
+            const height = (radius * 2) + 25 + (padding * 2); // +25 untuk teks "1 Utuh"
+            
+            container.innerHTML = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${svgContent}</svg>`;
+        }
+
+        function generatePieLines(radius, segments) {
+            let lines = '';
+            for (let i = 0; i < segments; i++) {
+                const angle = (i * 360 / segments) * (Math.PI / 180);
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                lines += `<line x1="0" y1="0" x2="${x}" y2="${y}" stroke="black" stroke-width="1" />`;
+            }
+            return lines;
+        }
+
+        function generatePieSlices(radius, totalSegments, filledSegments) {
+            let path = '';
+            // Create a path for the filled area
+            // SVG Arc: A rx ry x-axis-rotation large-arc-flag sweep-flag x y
+            const startAngle = 0;
+            const endAngle = (filledSegments * 360 / totalSegments) * (Math.PI / 180);
+            
+            const x1 = radius; // Start at 0 degrees (right side)
+            const y1 = 0;
+            
+            // Adjust coordinates because SVG y goes down
+            const x2 = Math.cos(endAngle) * radius;
+            const y2 = Math.sin(endAngle) * radius; // Positive sin goes down in SVG
+
+            const largeArc = filledSegments > (totalSegments / 2) ? 1 : 0;
+            
+            if (filledSegments === totalSegments) {
+                return `<circle cx="0" cy="0" r="${radius}" fill="#d1d5db" />`;
+            }
+
+            return `<path d="M 0 0 L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z" fill="#d1d5db" />`;
+        }
+
+
+        // Fungsi untuk menggambar Bar Model
+        function drawBarModel(elementId, numerator, denominator) {
+            const container = document.getElementById(elementId);
+            if (!container) return;
+
+            const boxWidth = 30;
+            const boxHeight = 30;
+            const gap = 15; // Jarak antar baris
+            const padding = 10; // Padding agar stroke tidak kepotong
+            
+            const fullBars = Math.floor(numerator / denominator);
+            const remainder = numerator % denominator;
+            const totalRows = remainder > 0 ? fullBars + 1 : fullBars;
+
+            let svgContent = '';
+            
+            // Dimensi SVG
+            const width = (denominator * boxWidth) + (padding * 2);
+            const height = (totalRows * (boxHeight + gap)) - gap + (padding * 2);
+
+            // Draw Full Bars
+            for (let r = 0; r < fullBars; r++) {
+                const y = padding + (r * (boxHeight + gap));
+                const xStart = padding;
+                
+                for (let c = 0; c < denominator; c++) {
+                    const x = xStart + (c * boxWidth);
+                    svgContent += `<rect x="${x}" y="${y}" width="${boxWidth}" height="${boxHeight}" fill="#d1d5db" stroke="black" stroke-width="1.5" />`;
+                }
+            }
+
+            // Draw Remainder Bar
+            if (remainder > 0) {
+                const y = padding + (fullBars * (boxHeight + gap));
+                const xStart = padding;
+                
+                // Filled parts
+                for (let c = 0; c < remainder; c++) {
+                    const x = xStart + (c * boxWidth);
+                    svgContent += `<rect x="${x}" y="${y}" width="${boxWidth}" height="${boxHeight}" fill="#d1d5db" stroke="black" stroke-width="1.5" />`;
+                }
+                // Empty/Ghost parts
+                for (let c = remainder; c < denominator; c++) {
+                    const x = xStart + (c * boxWidth);
+                    svgContent += `<rect x="${x}" y="${y}" width="${boxWidth}" height="${boxHeight}" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4" />`;
+                }
+            }
+
+            container.innerHTML = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${svgContent}</svg>`;
+        }
+
+        // --- Render Visuals ---
+        document.addEventListener("DOMContentLoaded", () => {
+            // Soal 1: 5/4
+            drawFractionCircle('visual-q1', 5, 4, 1);
+            
+            // Soal 2: 7/3
+            drawFractionCircle('visual-q2', 7, 3, 1);
+            
+            // Soal 3: 13/6
+            drawFractionCircle('visual-q3', 13, 6, 0.9);
+            
+            // Soal 4: 7/5 (Bar)
+            drawBarModel('visual-q4', 7, 5);
+            
+            // Soal 5: 5/2 (Bar)
+            drawBarModel('visual-q5', 5, 2);
+            
+            // Soal 10: 3/2 (3 semicircles)
+            drawFractionCircle('visual-q10', 3, 2, 0.8);
+        });
+    </script>
+  </body>
+</html>
