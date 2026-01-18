@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - M4-S360</title>
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+      /* --- GLOBAL VARIABLES & RESET --- */
+      :root {
+        --primary-text: #1f2937;
+        --bg-page: #525659;
+        /* Pastel Palette */
+        --theme-blue: #bae6fd; --theme-blue-dark: #0369a1;
+        --theme-green: #bbf7d0; --theme-green-dark: #15803d;
+        --theme-orange: #fed7aa; --theme-orange-dark: #c2410c;
+        --theme-purple: #e9d5ff; --theme-purple-dark: #7e22ce;
+        --theme-red: #fecaca; --theme-red-dark: #b91c1c;
+      }
+
+      body {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 10pt;
+        background-color: var(--bg-page);
+        margin: 0; padding: 20px;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* --- PAGE LAYOUT SYSTEM --- */
+      #output-container { display: flex; flex-direction: column; align-items: center; gap: 30px; }
+      
+      .page {
+        background: white; width: 210mm; height: 297mm; /* A4 Fixed */
+        padding: 10mm 12mm; position: relative;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        display: flex; flex-direction: column;
+        overflow: hidden; box-sizing: border-box;
+      }
+
+      /* HEADER STYLE */
+      .page-header { width: 100%; border-bottom: 3px solid #000; padding-bottom: 8px; margin-bottom: 15px; flex-shrink: 0; }
+      .math-champs-header { display: flex; justify-content: space-between; align-items: center; }
+      .header-logo { height: 60px; object-fit: contain; }
+      .header-right { text-align: right; font-family: "Montserrat", sans-serif; }
+      .header-level { font-size: 14px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 0.5px; }
+      .header-topic { font-size: 10px; font-weight: 600; color: #000; margin-top: 2px; }
+      .header-skill { font-size: 10px; font-weight: 500; color: #000; }
+      .header-code { font-size: 10px; font-weight: 500; color: #000; margin-top: 2px; }
+
+      .page-footer {
+        width: 100%; border-top: 1px solid #ccc; padding-top: 5px; margin-top: auto; 
+        font-size: 8pt; color: #888; flex-shrink: 0;
+      }
+
+      .page-content { flex-grow: 1; display: flex; flex-direction: column; gap: 15px; width: 100%; }
+
+      /* --- CONTENT COMPONENT STYLES --- */
+      .content-block { break-inside: avoid; width: 100%; }
+
+      .section-label {
+        font-family: "Montserrat", sans-serif; font-size: 1rem; font-weight: 800; 
+        text-transform: uppercase; color: #1e3a8a; border-bottom: 2px solid #e5e7eb; 
+        padding-bottom: 2px; margin-bottom: 5px; margin-top: 5px;
+      }
+
+      .soal-item {
+        background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px;
+        display: flex; flex-direction: column; gap: 8px;
+      }
+
+      .visual-box {
+        background-color: white; border: 1px solid #e5e7eb; border-radius: 8px;
+        padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+        overflow: visible; position: relative;
+      }
+
+      .choice-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 5px; justify-content: center; }
+      .choice-item { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+      .choice-box { width: 16px; height: 16px; border: 2px solid #666; border-radius: 50%; display: inline-block; background: white; }
+
+      /* Input Box for Fill-in */
+      .input-box {
+          width: 80px; height: 36px; border: 2px dashed #9ca3af; border-radius: 6px;
+          background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;
+          font-weight: bold; color: #374151; font-size: 1rem;
+      }
+
+      /* Concept & Instruction Box */
+      .concept-box {
+        background-color: #eff6ff; border-left: 4px solid #3b82f6;
+        padding: 15px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem;
+      }
+      .instruction-box {
+          background-color: #fefce8; border: 2px solid #fde047; border-radius: 0.75rem;
+          padding: 1.5rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          margin-bottom: 1.5rem;
+      }
+
+      /* Layout Grids */
+      .grid-wrapper { display: flex; gap: 1.5rem; width: 100%; }
+      .grid-item { flex: 1; }
+
+      /* --- GEOMETRY SHAPES --- */
+      
+      /* Base Styles */
+      .style-blue { background-color: #bae6fd; border: 2px solid #0369a1; }
+      .style-orange { background-color: #fed7aa; border: 2px solid #c2410c; }
+      .style-green { background-color: #bbf7d0; border: 2px solid #15803d; }
+      .style-purple { background-color: #e9d5ff; border: 2px solid #7e22ce; }
+
+      /* Standard Shapes - ENLARGED */
+      .shape-circle {
+          border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative;
+      }
+      .shape-semicircle {
+          border-radius: 100px 100px 0 0; position: relative;
+      }
+      .shape-quadrant {
+          border-radius: 100px 0 0 0; position: relative;
+      }
+
+      /* Radius Marker */
+      .radius-line {
+          position: absolute; background-color: #374151; height: 2px; transform-origin: left center; z-index: 10;
+      }
+      .radius-dot {
+          position: absolute; width: 6px; height: 6px; background-color: #1f2937; border-radius: 50%; z-index: 11;
+      }
+      .radius-text {
+          position: absolute; font-size: 0.7rem; font-weight: bold; color: #1f2937; 
+          background: rgba(255,255,255,0.8); padding: 0 3px; border-radius: 2px;
+      }
+
+      /* UPDATED: Pizza (Whole with cuts) - ENLARGED */
+      .pizza-whole {
+          width: 100px; height: 100px; border-radius: 50%;
+          background-color: #fef08a; border: 2px solid #ca8a04;
+          position: relative; overflow: hidden;
+      }
+      .pizza-line-v { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: #ca8a04; transform: translateX(-50%); }
+      .pizza-line-h { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: #ca8a04; transform: translateY(-50%); }
+      .pep { width: 12px; height: 12px; background: #ef4444; border-radius: 50%; position: absolute; opacity: 0.8; }
+      .pizza-slice-highlight {
+          position: absolute; top: 0; right: 0; width: 50%; height: 50%;
+          background-color: #fed7aa; opacity: 0.5;
+      }
+
+      /* UPDATED: Fan (Kipas) - ENLARGED & ALIGNED */
+      .fan-shape {
+          width: 100px; height: 100px; 
+          border-radius: 100px 0 0 0; border: 2px solid #b91c1c; border-right: none; border-bottom: none;
+          position: relative;
+          background: repeating-conic-gradient(
+              from 0deg at 100% 100%, 
+              #fecaca 0deg 10deg, 
+              #fca5a5 10deg 20deg
+          );
+          box-shadow: -2px -2px 4px rgba(0,0,0,0.1);
+      }
+      .fan-container { position: relative; width: 100px; height: 100px; }
+      .fan-pivot {
+          position: absolute; bottom: -5px; right: -5px; width: 12px; height: 12px; 
+          background: #7f1d1d; border-radius: 50%; border: 2px solid white; z-index: 10;
+      }
+
+      /* UPDATED: Rug Texture */
+      .rug-texture {
+          background-color: #fed7aa;
+          background-image: 
+              repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(194, 65, 12, 0.1) 5px, rgba(194, 65, 12, 0.1) 10px),
+              repeating-linear-gradient(-45deg, transparent, transparent 5px, rgba(194, 65, 12, 0.1) 5px, rgba(194, 65, 12, 0.1) 10px);
+      }
+
+      /* Formulas Box */
+      .formula-pill {
+          display: inline-block; padding: 6px 12px; border-radius: 20px; font-weight: 800; font-size: 0.9rem;
+          margin-bottom: 4px; box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+      }
+
+      /* Print Config */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { margin: 0; padding: 0; background: white; }
+        #output-container { gap: 0; }
+        .page { margin: 0; page-break-after: always; box-shadow: none; break-after: page; }
+        .page:last-child { page-break-after: auto; break-after: auto; }
+        #raw-content { display: none !important; }
+        
+        /* Force Colors */
+        .style-blue { background-color: #bae6fd !important; border-color: #0369a1 !important; -webkit-print-color-adjust: exact; }
+        .style-orange { background-color: #fed7aa !important; border-color: #c2410c !important; -webkit-print-color-adjust: exact; }
+        .style-green { background-color: #bbf7d0 !important; border-color: #15803d !important; -webkit-print-color-adjust: exact; }
+        .style-purple { background-color: #e9d5ff !important; border-color: #7e22ce !important; -webkit-print-color-adjust: exact; }
+        
+        .fan-shape { 
+            background: repeating-conic-gradient(from 0deg at 100% 100%, #fecaca 0deg 10deg, #fca5a5 10deg 20deg) !important; 
+            -webkit-print-color-adjust: exact; 
+        }
+        .pizza-whole { background-color: #fef08a !important; -webkit-print-color-adjust: exact; }
+        .pizza-slice-highlight { background-color: #fed7aa !important; opacity: 0.5 !important; -webkit-print-color-adjust: exact; }
+        .rug-texture { background-color: #fed7aa !important; -webkit-print-color-adjust: exact; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- 1. SOURCE CONTENT -->
+    <div id="raw-content" style="display: none;">
+        
+        <!-- Instruction -->
+        <div class="content-block instruction-box">
+            <h1 class="text-xl font-bold uppercase tracking-wide text-gray-800 font-montserrat mb-2">
+                Luas Bagian Lingkaran
+            </h1>
+            <p class="text-sm text-gray-600 font-medium">
+                Gunakan jari-jari (r) untuk menghitung luas setengah lingkaran atau seperempat lingkaran (kuadran).<br>
+                <span class="text-xs text-gray-500 italic">Gunakan &pi; &approx; 3,14 atau 22/7 sesuai instruksi soal.</span>
+            </p>
+        </div>
+
+        <!-- Concept -->
+        <div class="content-block concept-box">
+            <h3 class="font-bold text-blue-700 mb-3 uppercase text-base border-b border-blue-200 pb-1">💡 Rumus Penting</h3>
+            <div class="flex flex-wrap justify-around items-start text-center gap-4">
+                
+                <!-- Full Circle -->
+                <div class="flex flex-col items-center gap-2 w-[30%]">
+                    <div class="shape-circle style-blue w-16 h-16 shadow-sm">
+                        <div class="radius-dot"></div>
+                        <div class="absolute w-[32px] h-[2px] bg-blue-900 right-[2px]"></div>
+                        <span class="text-[10px] font-bold text-blue-900 absolute top-3 right-3">r</span>
+                    </div>
+                    <div class="text-xs font-bold text-gray-600">Lingkaran Penuh</div>
+                    <div class="formula-pill bg-blue-100 text-blue-800 border border-blue-200">L = &pi; &times; r &times; r</div>
+                </div>
+
+                <!-- Semicircle -->
+                <div class="flex flex-col items-center gap-2 w-[30%]">
+                    <div class="shape-semicircle style-orange w-16 h-8 shadow-sm mt-4">
+                        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[2px] h-[2px] bg-orange-900 rounded-full"></div>
+                    </div>
+                    <div class="text-xs font-bold text-gray-600 mt-3">Setengah (1/2)</div>
+                    <div class="formula-pill bg-orange-100 text-orange-800 border border-orange-200">L = <sup>1</sup>&frasl;<sub>2</sub> &times; &pi; &times; r<sup>2</sup></div>
+                </div>
+
+                <!-- Quadrant -->
+                <div class="flex flex-col items-center gap-2 w-[30%]">
+                    <div class="shape-quadrant style-green w-8 h-8 shadow-sm mt-4">
+                        <div class="absolute bottom-0 right-0 w-[2px] h-[2px] bg-green-900 rounded-full"></div>
+                    </div>
+                    <div class="text-xs font-bold text-gray-600 mt-3">Kuadran (1/4)</div>
+                    <div class="formula-pill bg-green-100 text-green-800 border border-green-200">L = <sup>1</sup>&frasl;<sub>4</sub> &times; &pi; &times; r<sup>2</sup></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="content-block section-label">Bagian 1: Setengah Lingkaran (Semicircles)</div>
+
+        <!-- Q1 & Q2 -->
+        <div class="content-block grid-wrapper">
+            <!-- Q1: Basic Semicircle -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-sm">1. Luas Setengah Lingkaran</div>
+                <div class="text-xs text-gray-600 mb-2">Diketahui <b>r = 10 cm</b>. (&pi; = 3,14)</div>
+                
+                <div class="visual-box bg-white">
+                    <!-- ENLARGED Semicircle -->
+                    <div class="shape-semicircle style-blue w-40 h-20 relative overflow-hidden">
+                        <div class="absolute bottom-0 left-1/2 w-2 h-2 bg-blue-900 rounded-full transform -translate-x-1/2 translate-y-1/2 z-20"></div>
+                        <!-- Radius Line -->
+                        <div class="absolute bottom-[1px] left-1/2 w-20 h-[2px] bg-blue-900 z-10"></div>
+                        <div class="absolute bottom-2 left-[60%] text-xs font-bold text-blue-900 bg-white/80 px-1 rounded">10 cm</div>
+                    </div>
+                </div>
+                
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 157 cm²</label>
+                    <label class="choice-item"><div class="choice-box"></div> 314 cm²</label>
+                    <label class="choice-item"><div class="choice-box"></div> 78,5 cm²</label>
+                </div>
+            </div>
+            
+            <!-- Q2: 2 Semicircles = 1 Circle -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-sm">2. Gabungan 2 Bagian</div>
+                <div class="text-xs text-gray-600 mb-2">Diketahui <b>r = 7 cm</b>. (&pi; = 22/7)</div>
+                
+                <div class="visual-box bg-white">
+                    <div class="flex gap-2 items-end">
+                        <div class="shape-semicircle style-orange w-20 h-10 flex justify-center items-end pb-1 text-xs font-bold text-orange-900">A</div>
+                        <div class="text-xl text-gray-400 font-light">+</div>
+                        <div class="shape-semicircle style-orange w-20 h-10 flex justify-center items-end pb-1 text-xs font-bold text-orange-900">B</div>
+                    </div>
+                    <div class="text-[10px] text-gray-500 italic mt-1 text-center border-t border-gray-200 pt-1 w-full">Tips: 2 &times; Setengah = 1 Lingkaran</div>
+                </div>
+                
+                <div class="flex items-center gap-2 justify-center mt-2">
+                    <span class="text-sm font-bold text-gray-700">Luas Total:</span>
+                    <div class="input-box w-24 h-9 bg-white border-orange-300 text-sm"></div>
+                    <span class="text-xs font-bold text-gray-500">cm²</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-block section-label">Bagian 2: Kuadran (Quadrants)</div>
+
+        <!-- Q3 & Q4 -->
+        <div class="content-block grid-wrapper">
+            <!-- Q3: Basic Quadrant -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-sm">3. Luas Kuadran</div>
+                <div class="text-xs text-gray-600 mb-2">Diketahui <b>r = 20 cm</b>. (&pi; = 3,14)</div>
+                
+                <div class="visual-box">
+                    <!-- ENLARGED Quadrant -->
+                    <div class="shape-quadrant style-green w-28 h-28 relative">
+                        <!-- Radius Horizontal -->
+                        <div class="absolute bottom-0 left-0 w-28 h-[2px] bg-green-900"></div>
+                        <div class="absolute bottom-1 right-8 text-xs font-bold text-green-900 bg-white/80 px-1 rounded">20 cm</div>
+                        <!-- Radius Vertical -->
+                        <div class="absolute bottom-0 left-0 w-[2px] h-28 bg-green-900"></div>
+                        <!-- Center -->
+                        <div class="absolute bottom-[-3px] left-[-3px] w-2 h-2 bg-green-900 rounded-full"></div>
+                    </div>
+                </div>
+                
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 314 cm²</label>
+                    <label class="choice-item"><div class="choice-box"></div> 1256 cm²</label>
+                    <label class="choice-item"><div class="choice-box"></div> 628 cm²</label>
+                </div>
+            </div>
+            
+            <!-- Q4: Pacman Shape (3 Quadrants) - SVG Implementation -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-sm">4. Tiga Kuadran (3/4)</div>
+                <div class="text-xs text-gray-600 mb-2">Diketahui <b>r = 14 cm</b>. (&pi; = 22/7)</div>
+                
+                <div class="visual-box bg-white">
+                    <!-- SVG for Perfect Outline -->
+                    <svg width="100" height="100" viewBox="0 0 100 100">
+                        <!-- Path: Move to center (50,50) -> Line to top (50,0) -> Arc to right (100,50) -> Arc to bottom (50,100) -> Arc to left (0,50) -> Line back to center -->
+                        <!-- Actually easier: 3/4 circle starts top, goes clockwise to left -->
+                        <path d="M 50 50 L 50 0 A 50 50 0 1 1 0 50 Z" fill="#e9d5ff" stroke="#7e22ce" stroke-width="2" />
+                        <!-- Small circle for center -->
+                        <circle cx="50" cy="50" r="3" fill="#1f2937" />
+                    </svg>
+                    <div class="text-[10px] text-purple-700 italic mt-2">Luas = 3/4 &times; Luas Lingkaran</div>
+                </div>
+                
+                <div class="flex items-center gap-2 justify-center mt-2">
+                    <span class="text-sm font-bold text-gray-700">Luas:</span>
+                    <div class="input-box w-20 h-9 bg-white border-purple-300 text-sm"></div>
+                    <span class="text-xs font-bold text-gray-500">cm²</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-block force-break"></div>
+        <div class="content-block section-label">Bagian 3: Tantangan Soal Cerita (Aplikasi)</div>
+
+        <!-- Q5 & Q6 Row -->
+        <div class="content-block grid-wrapper">
+            <!-- Q5: Pizza Slice -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-sm">5. Potongan Pizza</div>
+                <div class="text-xs text-gray-600 mb-2">
+                    Sebuah pizza (r = 20 cm) dipotong menjadi 4 bagian sama besar. Berapa luas satu potong (1/4)? (&pi; = 3,14)
+                </div>
+                
+                <div class="visual-box bg-orange-50 border-orange-200">
+                    <div class="pizza-whole shadow-md">
+                        <div class="pizza-line-v"></div>
+                        <div class="pizza-line-h"></div>
+                        <!-- Highlight 1 Quadrant -->
+                        <div class="pizza-slice-highlight"></div>
+                        <!-- Toppings -->
+                        <div class="pep" style="top:20px; left:30px;"></div>
+                        <div class="pep" style="top:60px; left:60px;"></div>
+                        <div class="pep" style="top:25px; left:65px;"></div>
+                        <div class="pep" style="top:65px; left:25px;"></div>
+                    </div>
+                    <div class="text-[10px] text-orange-800 font-bold mt-1">Cari luas area yg diarsir</div>
+                </div>
+                
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 314 cm²</label>
+                    <label class="choice-item"><div class="choice-box"></div> 157 cm²</label>
+                    <label class="choice-item"><div class="choice-box"></div> 100 cm²</label>
+                </div>
+            </div>
+            
+            <!-- Q6: Fan / Kipas (FIXED POSITION & PIVOT) -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-sm">6. Kipas Tangan</div>
+                <div class="text-xs text-gray-600 mb-2">
+                    Kipas berbentuk kuadran memiliki jari-jari <b>21 cm</b>. Berapa luas kertas kipas tersebut? (&pi; = 22/7)
+                </div>
+                
+                <div class="visual-box bg-red-50 border-red-200">
+                    <!-- Relative container for positioning pivot -->
+                    <div class="fan-container">
+                        <div class="fan-shape"></div>
+                        <div class="fan-pivot"></div>
+                        <!-- Fixed Position Label at bottom straight edge -->
+                        <div class="absolute bottom-[-10px] right-0 w-[100px] h-4 flex items-center justify-end">
+                            <div class="w-full h-[2px] bg-red-800 absolute top-0"></div>
+                            <div class="w-[2px] h-[6px] bg-red-800 absolute top-[-2px] left-0"></div>
+                            <div class="w-[2px] h-[6px] bg-red-800 absolute top-[-2px] right-0"></div>
+                            <span class="text-xs font-bold text-red-900 bg-white/90 px-1 rounded relative top-3 left-[-20px]">r = 21 cm</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2 justify-center mt-6">
+                    <span class="text-sm font-bold text-gray-700">Luas:</span>
+                    <div class="input-box w-20 h-9 bg-white border-red-300 text-sm"></div>
+                    <span class="text-xs font-bold text-gray-500">cm²</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-block section-label">Bagian 4: Tantangan Tingkat Lanjut</div>
+
+        <!-- Q7 & Q8 Row (Composite Shapes) -->
+        <div class="content-block grid-wrapper">
+            <!-- Q7: 3 Semicircles -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-sm">7. Tiga Setengah Lingkaran</div>
+                <div class="text-xs text-gray-600 mb-2">
+                    Hitung total luas bangun di bawah ini. (r = 2 cm, &pi; = 3,14)
+                </div>
+                
+                <div class="visual-box bg-blue-50 border-blue-200">
+                    <div class="flex gap-1">
+                        <div class="shape-semicircle style-blue w-14 h-7"></div>
+                        <div class="shape-semicircle style-blue w-14 h-7"></div>
+                        <div class="shape-semicircle style-blue w-14 h-7"></div>
+                    </div>
+                    <div class="text-[10px] text-gray-500 italic">3 &times; Luas Setengah Lingkaran</div>
+                </div>
+                
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 18,84 cm²</label>
+                    <label class="choice-item"><div class="choice-box"></div> 12,56 cm²</label>
+                    <label class="choice-item"><div class="choice-box"></div> 37,68 cm²</label>
+                </div>
+            </div>
+
+            <!-- Q8: 4 Quadrants (Flower) -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-sm">8. Bunga Empat Kelopak</div>
+                <div class="text-xs text-gray-600 mb-2">
+                    Terdiri dari 4 kuadran identik. (r = 7 cm, &pi; = 22/7)
+                </div>
+                
+                <div class="visual-box bg-purple-50 border-purple-200">
+                    <div class="grid grid-cols-2 gap-1">
+                        <div class="shape-quadrant style-purple w-10 h-10 rounded-tl-full border-r-0 border-b-0"></div>
+                        <div class="shape-quadrant style-purple w-10 h-10 rounded-tr-full border-l-0 border-b-0 transform rotate-90"></div>
+                        <div class="shape-quadrant style-purple w-10 h-10 rounded-bl-full border-r-0 border-t-0 transform -rotate-90"></div>
+                        <div class="shape-quadrant style-purple w-10 h-10 rounded-br-full border-l-0 border-t-0 transform rotate-180"></div>
+                    </div>
+                    <div class="text-[10px] text-gray-500 italic">4 &times; Kuadran = 1 Lingkaran</div>
+                </div>
+                
+                <div class="flex items-center gap-2 justify-center mt-2">
+                    <span class="text-sm font-bold text-gray-700">Total Luas:</span>
+                    <div class="input-box w-20 h-9 bg-white border-purple-300 text-sm"></div>
+                    <span class="text-xs font-bold text-gray-500">cm²</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q9 & Q10 Row (Word Problems) -->
+        <div class="content-block grid-wrapper">
+            <!-- Q9: Rug Problem -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-sm">9. Karpet Ruang Tamu</div>
+                <div class="text-xs text-gray-600 mb-2">
+                    Sebuah karpet berbentuk <b>setengah lingkaran</b> dengan jari-jari <b>2 m</b>. Berapa luas karpet tersebut? (&pi; = 3,14)
+                </div>
+                
+                <div class="visual-box bg-orange-50 border-orange-200">
+                    <div class="shape-semicircle w-28 h-14 rug-texture border-2 border-orange-600 flex justify-center items-end pb-1 shadow-md">
+                        <span class="text-[10px] text-orange-900 font-bold bg-white/70 px-1 rounded">r = 2 m</span>
+                    </div>
+                </div>
+                
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 6,28 m²</label>
+                    <label class="choice-item"><div class="choice-box"></div> 12,56 m²</label>
+                    <label class="choice-item"><div class="choice-box"></div> 3,14 m²</label>
+                </div>
+            </div>
+
+            <!-- Q10: Window Problem (True Quadrant Shape) -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-sm">10. Kaca Jendela</div>
+                <div class="text-xs text-gray-600 mb-2">
+                    Jendela terdiri dari <b>2 kuadran</b> kaca dengan jari-jari <b>14 cm</b>. Berapa luas total kaca? (&pi; = 22/7)
+                </div>
+                
+                <div class="visual-box bg-blue-50 border-blue-200">
+                    <div class="flex gap-0 border-4 border-gray-700 bg-gray-700 p-1">
+                        <!-- True Quadrant: rounded-tl-full -->
+                        <div class="w-14 h-14 bg-blue-200 rounded-tl-full border-r border-gray-400"></div>
+                        <div class="w-14 h-14 bg-blue-200 rounded-tr-full"></div>
+                    </div>
+                    <div class="text-[10px] text-gray-500 italic">2 &times; Kuadran</div>
+                </div>
+                
+                <div class="flex items-center gap-2 justify-center mt-2">
+                    <span class="text-sm font-bold text-gray-700">Luas:</span>
+                    <div class="input-box w-20 h-9 bg-white border-blue-300 text-sm"></div>
+                    <span class="text-xs font-bold text-gray-500">cm²</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Encouragement -->
+        <div class="content-block text-center mt-8 mb-4">
+            <p class="font-montserrat font-bold text-gray-500 uppercase tracking-widest text-xs">
+                ✨ Kamu Pasti Bisa! Math is Fun! ✨
+            </p>
+        </div>
+
+    </div> 
+
+    <!-- 2. OUTPUT CONTAINER -->
+    <div id="output-container"></div>
+
+    <!-- 3. LOGIC SCRIPT -->
+    <script>
+      const SHEET_CONFIG = {
+        level: "Exploration 4",
+        topic: "High-ability - Circles",
+        skill: "Area of quadrants or semicircles",
+        code: "Kode: M4-S360"
+      };
+
+      document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(paginateContent, 100);
+      });
+
+      function paginateContent() {
+        const rawContent = document.getElementById('raw-content');
+        const items = Array.from(rawContent.children);
+        const output = document.getElementById('output-container');
+        
+        let currentPage = createNewPage();
+        let contentContainer = currentPage.querySelector('.page-content');
+
+        items.forEach((item, index) => {
+          const clone = item.cloneNode(true);
+          
+          if (clone.classList.contains('force-break')) {
+              if (contentContainer.children.length > 0) {
+                 currentPage = createNewPage();
+                 contentContainer = currentPage.querySelector('.page-content');
+              }
+              return; 
+          }
+
+          contentContainer.appendChild(clone);
+          
+          if (currentPage.scrollHeight > currentPage.clientHeight + 5) {
+             contentContainer.removeChild(clone);
+             currentPage = createNewPage();
+             contentContainer = currentPage.querySelector('.page-content');
+             contentContainer.appendChild(clone);
+          }
+        });
+
+        function createNewPage() {
+          const page = document.createElement('div');
+          page.className = 'page';
+          page.innerHTML = `
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="header-logo">
+                    <div class="header-right">
+                        <div class="header-level">${SHEET_CONFIG.level}</div>
+                        <div class="header-topic">${SHEET_CONFIG.topic}</div>
+                        <div class="header-skill">${SHEET_CONFIG.skill}</div>
+                        <div class="header-code">${SHEET_CONFIG.code}</div>
+                    </div>
+                </div>
+            </header>
+            <div class="page-content"></div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i class="block sm:inline">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+          `;
+          output.appendChild(page);
+          return page;
+        }
+      }
+    </script>
+  </body>
+</html>
