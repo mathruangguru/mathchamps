@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - E4-S349</title>
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <style>
+      /* --- GLOBAL VARIABLES & RESET --- */
+      :root {
+        --primary-text: #333333;
+        --bg-page: #525659;
+        /* Color Palette */
+        --theme-blue: #3b82f6; --theme-green: #22c55e;
+        --theme-orange: #f97316; --theme-purple: #a855f7;
+        --theme-red: #ef4444; --theme-gray: #e5e7eb;
+      }
+      body {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 10pt;
+        background-color: var(--bg-page);
+        margin: 0; padding: 20px;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* --- PAGE LAYOUT SYSTEM --- */
+      #output-container { display: flex; flex-direction: column; align-items: center; gap: 30px; }
+      
+      .page {
+        background: white; width: 210mm; height: 297mm; /* A4 Fixed */
+        padding: 10mm 12mm; position: relative;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        display: flex; flex-direction: column;
+        overflow: hidden; box-sizing: border-box;
+      }
+
+      /* HEADER STYLE */
+      .page-header { width: 100%; border-bottom: 3px solid #000; padding-bottom: 8px; margin-bottom: 15px; flex-shrink: 0; }
+      .math-champs-header { display: flex; justify-content: space-between; align-items: center; }
+      .header-logo { height: 60px; object-fit: contain; }
+      .header-right { text-align: right; font-family: "Montserrat", sans-serif; }
+      .header-level { font-size: 14px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 0.5px; }
+      .header-topic { font-size: 10px; font-weight: 600; color: #000; margin-top: 2px; }
+      .header-skill { font-size: 10px; font-weight: 500; color: #000; }
+      .header-code { font-size: 10px; font-weight: 500; color: #000; margin-top: 2px; }
+      
+      .page-footer {
+        width: 100%; border-top: 1px solid #ccc; padding-top: 5px; margin-top: auto;
+        font-size: 8pt; color: #888; flex-shrink: 0;
+      }
+      .page-content { flex-grow: 1; display: flex; flex-direction: column; gap: 15px; width: 100%; }
+
+      /* --- CONTENT COMPONENTS --- */
+      .content-block { break-inside: avoid; width: 100%; }
+      .section-label {
+        font-family: "Montserrat", sans-serif; font-size: 1rem; font-weight: 800;
+        text-transform: uppercase; color: #1e3a8a; border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 2px; margin-bottom: 5px; margin-top: 5px;
+      }
+      .soal-item {
+        background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px;
+        display: flex; flex-direction: column; gap: 8px;
+      }
+      .visual-box {
+        background-color: white; border: 1px solid #e5e7eb; border-radius: 8px;
+        padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+        overflow: visible;
+      }
+      
+      /* Answer Box for Fill in the Blank */
+      .answer-box-container {
+        display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px;
+      }
+      .answer-box {
+        width: 100px; height: 36px; border: 2px solid #9ca3af; border-radius: 6px; background-color: white;
+      }
+      .answer-label { font-weight: bold; color: #333; font-size: 0.9rem; }
+
+      /* Choice Container (Legacy for Q1-Q3) */
+      .choice-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 5px; justify-content: flex-start; }
+      .choice-item { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+      .choice-box { width: 16px; height: 16px; border: 2px solid #666; border-radius: 50%; display: inline-block; background: white; }
+      
+      /* Concept Box */
+      .concept-box {
+        background-color: #eff6ff; border-left: 4px solid #3b82f6;
+        padding: 15px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem;
+      }
+
+      /* Layout Grids */
+      .grid-wrapper { display: flex; gap: 1.5rem; width: 100%; }
+      .grid-item { flex: 1; }
+
+      /* --- MATH VISUALS --- */
+      /* Place Value Discs */
+      .pv-group {
+        display: flex; gap: 4px; padding: 4px; border: 2px dashed #cbd5e1; border-radius: 8px; background: #f8fafc;
+        align-items: center; justify-content: center; flex-wrap: wrap;
+      }
+      .pv-disc {
+        width: 30px; height: 30px; border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center;
+        font-size: 9px; font-weight: bold; border: 1px solid rgba(0,0,0,0.1);
+        box-shadow: 1px 1px 2px rgba(0,0,0,0.15);
+        letter-spacing: -0.5px;
+      }
+      .disc-1 { background-color: #60a5fa; color: white; } /* Ones - Blue */
+      .disc-01 { background-color: #fb923c; color: white; } /* Tenths - Orange */
+      
+      /* Division Algorithm (Porogapit Style) */
+      .porogapit-table { font-family: monospace; font-size: 1.4rem; font-weight: bold; color: #333; border-collapse: separate; border-spacing: 0; }
+      /* Fixed width columns for alignment */
+      .porogapit-table td { padding: 0; text-align: center; vertical-align: bottom; height: 32px; width: 30px; }
+      .porogapit-table td.op-col { width: auto; padding-left: 5px; } /* Column for minus sign */
+      
+      /* Borders for Long Division */
+      .div-top { border-top: 2px solid #333; }
+      .div-left { border-left: 2px solid #333; }
+      .div-bottom { border-bottom: 2px solid #333; }
+      
+      /* Minus Sign in Porogapit - Right Aligned, Long, Black */
+      .op-minus { 
+          text-align: left; 
+          font-weight: bold; color: black; 
+          font-family: sans-serif; font-size: 1.2rem;
+      }
+
+      /* Input Box for Answers */
+      .input-box {
+        width: 24px; height: 24px; border: 1px solid #9ca3af; background-color: #fff;
+        display: inline-block; vertical-align: middle; margin: 0;
+      }
+
+      /* Bar Models */
+      .bar-container {
+        display: flex; width: 100%; max-width: 300px; height: 35px;
+        border: 2px solid #333; border-radius: 4px; overflow: hidden; margin-bottom: 2px;
+      }
+      .bar-part {
+        height: 100%; display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 0.85rem; color: white; border-right: 1px solid white;
+      }
+      .bar-part:last-child { border-right: none; }
+      
+      .brace-label { width: 100%; max-width: 300px; position: relative; height: 20px; }
+      .brace-line {
+        width: 100%; height: 8px; border-bottom: 2px solid #333; border-left: 2px solid #333; border-right: 2px solid #333;
+        border-radius: 0 0 5px 5px; position: absolute; top: 0;
+      }
+      .brace-text { width: 100%; text-align: center; font-size: 0.8rem; font-weight: bold; position: absolute; top: 12px; }
+
+      /* Print Colors */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { margin: 0; padding: 0; background: white; }
+        .page { margin: 0; page-break-after: always; box-shadow: none; break-after: page; }
+        .disc-1 { background-color: #60a5fa !important; -webkit-print-color-adjust: exact; } 
+        .disc-01 { background-color: #fb923c !important; -webkit-print-color-adjust: exact; }
+        .bg-blue { background-color: #3b82f6 !important; -webkit-print-color-adjust: exact; }
+        .bg-green { background-color: #22c55e !important; -webkit-print-color-adjust: exact; }
+        .bg-orange { background-color: #f97316 !important; -webkit-print-color-adjust: exact; }
+        .bg-purple { background-color: #a855f7 !important; -webkit-print-color-adjust: exact; }
+        .bg-gray-200 { background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; }
+        #raw-content { display: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="raw-content" style="display: none;">
+        
+        <!-- Concept Block -->
+        <div class="content-block concept-box">
+            <h3 class="font-bold text-blue-700 mb-2 uppercase text-lg">💡 Konsep: Menukar Nilai (Regrouping)</h3>
+            <div class="flex gap-4 items-center">
+                <div class="flex-1 text-sm text-gray-700">
+                    <p class="mb-2">Saat membagi, jika ada sisa <b>Satuan</b>, tukarkan menjadi 10 <b>Persepuluhan</b>. Lalu gabungkan dengan persepuluhan yang sudah ada.</p>
+                    <div class="font-bold text-blue-800 bg-white p-2 rounded border inline-block">
+                        1 Satuan &rarr; 10 Persepuluhan (0,1)
+                    </div>
+                </div>
+                <div class="bg-white p-2 rounded border border-gray-300 flex items-center gap-2">
+                    <div class="pv-disc disc-1">1</div>
+                    <span class="font-bold text-gray-400">=</span>
+                    <div class="pv-group" style="width: 120px;">
+                        <div class="pv-disc disc-01">0,1</div><div class="pv-disc disc-01">0,1</div><div class="pv-disc disc-01">0,1</div>
+                        <div class="pv-disc disc-01">0,1</div><div class="pv-disc disc-01">0,1</div><div class="pv-disc disc-01">0,1</div>
+                        <div class="pv-disc disc-01">0,1</div><div class="pv-disc disc-01">0,1</div><div class="pv-disc disc-01">0,1</div><div class="pv-disc disc-01">0,1</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 1: Pictorial Division -->
+        <div class="content-block section-label">Bagian 1: Pembagian dengan Gambar</div>
+        
+        <!-- Q1: Basic Regrouping -->
+        <div class="soal-item full-width">
+            <div class="font-bold mb-1 text-base">1. Membagi 4,2 dengan 3</div>
+            <div class="text-sm text-gray-600 mb-2">
+                Bagilah 4 Satuan dan 2 Persepuluhan ke dalam 3 kelompok.
+            </div>
+            
+            <div class="visual-box bg-blue-50 py-4 flex flex-col items-center gap-4">
+                <!-- Step 1: 4 Ones -->
+                <div class="flex gap-8 w-full justify-center items-start">
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs font-bold mb-1">Awal: 4,2</span>
+                        <div class="flex gap-1">
+                            <div class="pv-disc disc-1">1</div><div class="pv-disc disc-1">1</div><div class="pv-disc disc-1">1</div><div class="pv-disc disc-1 opacity-50">1</div>
+                            <span class="mx-1 font-bold">,</span>
+                            <div class="pv-disc disc-01">0,1</div><div class="pv-disc disc-01">0,1</div>
+                        </div>
+                        <div class="text-[10px] text-red-500 mt-1 italic">Sisa 1 Satuan ditukar jadi 10 Persepuluhan</div>
+                    </div>
+                    <div class="text-2xl text-gray-400 mt-4">&rarr;</div>
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs font-bold mb-1">Hasil Bagi (Per Kelompok)</span>
+                        <div class="pv-group flex-col p-2 bg-white">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-gray-400 w-4">1</span>
+                                <div class="pv-disc disc-1">1</div>
+                                <span class="font-bold">,</span>
+                                <div class="pv-disc disc-01">0,1</div><div class="pv-disc disc-01">0,1</div><div class="pv-disc disc-01">0,1</div><div class="pv-disc disc-01">0,1</div>
+                            </div>
+                            <div class="w-full border-b border-gray-200 my-1"></div>
+                            <div class="flex items-center gap-2 opacity-50">
+                                <span class="text-xs text-gray-400 w-4">2</span>
+                                <div class="pv-disc disc-1">1</div>
+                                <span class="font-bold">,</span>
+                                <div class="pv-disc disc-01">...</div>
+                            </div>
+                            <div class="w-full border-b border-gray-200 my-1"></div>
+                            <div class="flex items-center gap-2 opacity-50">
+                                <span class="text-xs text-gray-400 w-4">3</span>
+                                <div class="pv-disc disc-1">1</div>
+                                <span class="font-bold">,</span>
+                                <div class="pv-disc disc-01">...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="choice-container justify-center mt-2">
+                <div class="text-sm font-bold mr-2">Hasil:</div>
+                <label class="choice-item"><div class="choice-box"></div> 1,3</label>
+                <label class="choice-item"><div class="choice-box"></div> 1,4</label>
+                <label class="choice-item"><div class="choice-box"></div> 1,2</label>
+            </div>
+        </div>
+
+        <!-- Q2: Row -->
+        <div class="content-block grid-wrapper">
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-base">2. Membagi 5,2 &div; 4</div>
+                <div class="text-sm text-gray-600 mb-2">Berapa hasil per kelompok?</div>
+                <div class="visual-box py-6 bg-orange-50">
+                    <div class="flex flex-col items-center">
+                        <div class="flex gap-1 mb-2">
+                            <div class="pv-disc disc-1">1</div>
+                            <span class="font-bold">,</span>
+                            <div class="pv-disc disc-01">0,1</div><div class="pv-disc disc-01">0,1</div><div class="pv-disc disc-01">0,1</div>
+                        </div>
+                        <div class="text-xs text-orange-800 font-bold">1 Satuan + 3 Persepuluhan</div>
+                    </div>
+                </div>
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 1,3</label>
+                    <label class="choice-item"><div class="choice-box"></div> 1,4</label>
+                </div>
+            </div>
+            
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-base">3. Konsep Nilai</div>
+                <div class="text-sm text-gray-600 mb-2">7,5 &div; 5 = ?</div>
+                <div class="visual-box py-4 bg-green-50 text-center">
+                    <p class="text-sm text-green-900 mb-1">
+                        <b>7</b> Satuan dibagi 5 &rarr; Dapat <b>1</b>, sisa <b>2</b> Satuan.<br>
+                        Tukar <b>2</b> Satuan jadi <b>20</b> Persepuluhan.<br>
+                        Total: 20 + 5 = <b>25</b> Persepuluhan.
+                    </p>
+                    <div class="mt-2 font-bold bg-white px-2 py-1 rounded inline-block border border-green-200">
+                        25 Persepuluhan &div; 5 = ?
+                    </div>
+                </div>
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 1,5</label>
+                    <label class="choice-item"><div class="choice-box"></div> 2,5</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Abstract (Long Division) -->
+        <div class="content-block section-label force-break">Bagian 2: Porogapit (Susun Bawah)</div>
+
+        <!-- Q4 & Q5 Row -->
+        <div class="content-block grid-wrapper">
+            <!-- Q4 -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-base">4. Lengkapi Tabel</div>
+                <div class="text-sm text-gray-600 mb-2">Hitung <b>5,6 &div; 4</b></div>
+                <div class="visual-box py-4">
+                    <table class="porogapit-table" style="margin: 0 auto;">
+                        <!-- Quotient Row -->
+                        <tr>
+                            <td></td> <!-- Col for divisor -->
+                            <td>1</td>
+                            <td>,</td>
+                            <td><div class="input-box"></div></td>
+                            <td class="op-col"></td> <!-- Col for minus -->
+                        </tr>
+                        <!-- Dividend Row -->
+                        <tr>
+                            <td style="padding-right: 4px;">4</td>
+                            <td class="div-left div-top">5</td>
+                            <td class="div-top">,</td>
+                            <td class="div-top">6</td>
+                            <td class="op-col"></td>
+                        </tr>
+                        <!-- Subtraction 1 -->
+                        <tr>
+                            <td></td>
+                            <td class="div-bottom">4</td>
+                            <td class="div-bottom"></td>
+                            <td class="div-bottom"></td>
+                            <td class="op-minus">&mdash;</td>
+                        </tr>
+                        <!-- Result 1 (Bring down) -->
+                        <tr>
+                            <td></td>
+                            <td>1</td>
+                            <td></td>
+                            <td>6</td>
+                            <td class="op-col"></td>
+                        </tr>
+                        <!-- Subtraction 2 -->
+                        <tr>
+                            <td></td>
+                            <td class="div-bottom">1</td>
+                            <td class="div-bottom"></td>
+                            <td class="div-bottom">6</td>
+                            <td class="op-minus">&mdash;</td>
+                        </tr>
+                        <!-- Final Result -->
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>0</td>
+                            <td class="op-col"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 4</label>
+                    <label class="choice-item"><div class="choice-box"></div> 6</label>
+                </div>
+            </div>
+
+            <!-- Q5 -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-base">5. Hitung 7,2 &div; 3</div>
+                <div class="text-sm text-gray-600 mb-2">Isi kotak yang kosong.</div>
+                <div class="visual-box py-4">
+                    <table class="porogapit-table" style="margin: 0 auto;">
+                        <!-- Quotient Row -->
+                        <tr>
+                            <td></td>
+                            <td>2</td>
+                            <td>,</td>
+                            <td>4</td>
+                            <td class="op-col"></td>
+                        </tr>
+                        <!-- Dividend Row -->
+                        <tr>
+                            <td style="padding-right: 4px;">3</td>
+                            <td class="div-left div-top">7</td>
+                            <td class="div-top">,</td>
+                            <td class="div-top">2</td>
+                            <td class="op-col"></td>
+                        </tr>
+                        <!-- Subtraction 1 -->
+                        <tr>
+                            <td></td>
+                            <td class="div-bottom"><div class="input-box"></div></td>
+                            <td class="div-bottom"></td>
+                            <td class="div-bottom"></td>
+                            <td class="op-minus">&mdash;</td>
+                        </tr>
+                        <!-- Result 1 -->
+                        <tr>
+                            <td></td>
+                            <td>1</td>
+                            <td></td>
+                            <td>2</td>
+                            <td class="op-col"></td>
+                        </tr>
+                        <!-- Subtraction 2 -->
+                        <tr>
+                            <td></td>
+                            <td class="div-bottom">1</td>
+                            <td class="div-bottom"></td>
+                            <td class="div-bottom">2</td>
+                            <td class="op-minus">&mdash;</td>
+                        </tr>
+                        <!-- Final Result -->
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>0</td>
+                            <td class="op-col"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 3</label>
+                    <label class="choice-item"><div class="choice-box"></div> 6</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Word Problems (Bar Model) -->
+        <div class="content-block section-label">Bagian 3: Soal Cerita</div>
+
+        <!-- Q6: Length -->
+        <div class="soal-item full-width bg-purple-50 border-purple-200">
+            <div class="font-bold mb-1 text-base text-purple-900">6. Memotong Tali</div>
+            <div class="text-sm text-purple-800 mb-2">
+                Tali sepanjang <b>6,5 meter</b> dipotong menjadi <b>5</b> bagian sama panjang.<br>
+                Berapa panjang setiap potongannya?
+            </div>
+            
+            <div class="visual-box py-6 bg-white/70">
+                <div class="flex flex-col items-center w-full max-w-xs">
+                    <!-- Brace Top -->
+                    <div class="w-full border-t-2 border-l-2 border-r-2 border-purple-800 h-2 relative mb-1 rounded-t-sm">
+                        <div class="absolute -top-5 left-1/2 -translate-x-1/2 text-xs font-bold text-purple-800">Total 6,5 m</div>
+                    </div>
+                    <!-- Bar -->
+                    <div class="bar-container w-full h-10 border-purple-800">
+                        <div class="bar-part bg-purple text-sm">?</div>
+                        <div class="bar-part bg-purple text-sm">?</div>
+                        <div class="bar-part bg-purple text-sm">?</div>
+                        <div class="bar-part bg-purple text-sm">?</div>
+                        <div class="bar-part bg-purple text-sm">?</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="choice-container justify-center gap-6">
+                <label class="choice-item"><div class="choice-box"></div> 1,3 m</label>
+                <label class="choice-item"><div class="choice-box"></div> 1,5 m</label>
+                <label class="choice-item"><div class="choice-box"></div> 1,1 m</label>
+            </div>
+        </div>
+
+        <!-- Q7 & Q8 -->
+        <div class="content-block grid-wrapper">
+            <!-- Q7 -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-base">7. Berbagi Uang</div>
+                <div class="text-sm text-gray-600 mb-2">
+                    Ayah membagi <b>$ 9,60</b> kepada <b>4</b> anak sama rata. Berapa yang diterima setiap anak?
+                </div>
+                <div class="visual-box">
+                    <div class="font-mono text-lg bg-gray-100 p-2 rounded">
+                        9,6 &div; 4 = <span class="text-blue-600">?</span>
+                    </div>
+                </div>
+                <!-- Updated to Fill in the Blank -->
+                <div class="answer-box-container">
+                    <span class="answer-label">Jawab: $</span>
+                    <div class="answer-box"></div>
+                </div>
+            </div>
+
+            <!-- Q8 -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-base">8. Berat Paket</div>
+                <div class="text-sm text-gray-600 mb-2">
+                    3 paket identik berat totalnya <b>4,5 kg</b>. Berapa berat 1 paket?
+                </div>
+                <div class="visual-box">
+                    <div class="font-mono text-lg bg-gray-100 p-2 rounded">
+                        4,5 &div; 3 = <span class="text-green-600">?</span>
+                    </div>
+                </div>
+                <!-- Updated to Fill in the Blank -->
+                <div class="answer-box-container">
+                    <span class="answer-label">Jawab:</span>
+                    <div class="answer-box"></div>
+                    <span class="answer-label">kg</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Logic & Puzzle -->
+        <div class="content-block section-label">Bagian 4: Tantangan Logika</div>
+
+        <!-- Q9 & Q10 -->
+        <div class="content-block grid-wrapper">
+            <div class="soal-item grid-item bg-yellow-50 border-yellow-200">
+                <div class="font-bold mb-1 text-base text-yellow-900">9. Mesin Angka</div>
+                <div class="text-sm text-yellow-900 mb-2">
+                    Masuk: <b>5,4</b> &rarr; [ &div; 2 ] &rarr; Keluar: <b>?</b>
+                </div>
+                <div class="visual-box bg-white/60">
+                    <div class="flex items-center gap-2 justify-center font-bold text-gray-600">
+                        <div class="p-2 border rounded bg-white">5,4</div>
+                        <div>&rarr;</div>
+                        <div class="p-2 rounded bg-blue-100 text-blue-800 text-xs">&div; 2</div>
+                        <div>&rarr;</div>
+                        <div class="p-2 border-2 border-dashed border-yellow-500 bg-white rounded">?</div>
+                    </div>
+                </div>
+                <!-- Updated to Fill in the Blank -->
+                <div class="answer-box-container">
+                    <span class="answer-label">Keluar:</span>
+                    <div class="answer-box"></div>
+                </div>
+            </div>
+
+            <div class="soal-item grid-item bg-purple-50 border-purple-200">
+                <div class="font-bold mb-1 text-base text-purple-900">10. Bilangan Misterius</div>
+                <div class="text-sm text-purple-900 mb-2">
+                    "Jika aku dibagi <b>6</b>, hasilnya <b>1,2</b>."<br>Siapakah aku?
+                </div>
+                <div class="visual-box bg-white/60">
+                    <div class="flex flex-col items-center">
+                        <div class="text-xs text-purple-600 mb-1">Operasi Kebalikan:</div>
+                        <div class="font-bold text-lg">1,2 &times; 6 = ?</div>
+                    </div>
+                </div>
+                <!-- Updated to Fill in the Blank -->
+                <div class="answer-box-container">
+                    <span class="answer-label">Aku adalah:</span>
+                    <div class="answer-box"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 2. OUTPUT CONTAINER -->
+    <div id="output-container"></div>
+
+    <!-- 3. LOGIC SCRIPT -->
+    <script>
+      const SHEET_CONFIG = {
+        level: "Exploration 4",
+        topic: "Empat Operasi Desimal",
+        skill: "Pembagian Desimal 1 Tempat dengan Bilangan Bulat 1 Angka (Menyimpan)",
+        code: "E4-S349"
+      };
+
+      document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(paginateContent, 100);
+      });
+
+      function paginateContent() {
+        const rawContent = document.getElementById('raw-content');
+        const items = Array.from(rawContent.children);
+        const output = document.getElementById('output-container');
+        
+        let currentPage = createNewPage();
+        let contentContainer = currentPage.querySelector('.page-content');
+
+        items.forEach((item, index) => {
+          const clone = item.cloneNode(true);
+          
+          if (clone.classList.contains('force-break') && contentContainer.children.length > 0) {
+              currentPage = createNewPage();
+              contentContainer = currentPage.querySelector('.page-content');
+          }
+
+          contentContainer.appendChild(clone);
+          
+          if (currentPage.scrollHeight > currentPage.clientHeight + 5) {
+             contentContainer.removeChild(clone);
+             currentPage = createNewPage();
+             contentContainer = currentPage.querySelector('.page-content');
+             contentContainer.appendChild(clone);
+          }
+        });
+
+        function createNewPage() {
+          const page = document.createElement('div');
+          page.className = 'page';
+          
+          page.innerHTML = `
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="header-logo">
+                    <div class="header-right">
+                        <div class="header-level">${SHEET_CONFIG.level}</div>
+                        <div class="header-topic">${SHEET_CONFIG.topic}</div>
+                        <div class="header-skill">${SHEET_CONFIG.skill}</div>
+                        <div class="header-code">Kode: ${SHEET_CONFIG.code}</div>
+                    </div>
+                </div>
+            </header>
+            <div class="page-content"></div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i class="block sm:inline">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+          `;
+          
+          output.appendChild(page);
+          return page;
+        }
+      }
+    </script>
+  </body>
+</html>
