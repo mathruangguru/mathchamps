@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - M4-S361</title>
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <style>
+      /* --- GLOBAL VARIABLES & RESET --- */
+      :root {
+        --primary-text: #333333;
+        --bg-page: #525659;
+      }
+      
+      /* Global Box Sizing Reset */
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 10pt;
+        background-color: var(--bg-page);
+        margin: 0; padding: 20px;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* --- PAGE LAYOUT SYSTEM --- */
+      #output-container { display: flex; flex-direction: column; align-items: center; gap: 30px; }
+      
+      .page {
+        background: white; 
+        /* Fixed Pixel Width for Screen Precision (A4 @ 96dpi approx) */
+        width: 794px; 
+        height: 1123px; 
+        padding: 40px 45px; 
+        position: relative;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        display: flex; flex-direction: column;
+        overflow: hidden; 
+      }
+
+      /* HEADER STYLE */
+      .page-header { width: 100%; border-bottom: 3px solid #000; padding-bottom: 8px; margin-bottom: 12px; flex-shrink: 0; }
+      .math-champs-header { display: flex; justify-content: space-between; align-items: center; }
+      .header-logo { height: 60px; object-fit: contain; }
+      .header-right { text-align: right; font-family: "Montserrat", sans-serif; }
+      .header-level { font-size: 14px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 0.5px; }
+      .header-topic { font-size: 10px; font-weight: 600; color: #000; margin-top: 2px; }
+      .header-skill { font-size: 10px; font-weight: 500; color: #000; }
+      .header-code { font-size: 10px; font-weight: 500; color: #000; margin-top: 2px; }
+      
+      .page-footer {
+        width: 100%; border-top: 1px solid #ccc; padding-top: 5px; margin-top: auto;
+        font-size: 8pt; color: #888; flex-shrink: 0;
+      }
+      
+      .page-content { flex-grow: 1; display: flex; flex-direction: column; gap: 12px; width: 100%; overflow: hidden; }
+
+      /* --- CONTENT COMPONENTS --- */
+      .content-block { break-inside: avoid; width: 100%; }
+      .section-label {
+        font-family: "Montserrat", sans-serif; font-size: 1rem; font-weight: 800;
+        text-transform: uppercase; color: #1e3a8a; border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 2px; margin-bottom: 4px; margin-top: 4px;
+      }
+      .soal-item {
+        background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px;
+        display: flex; flex-direction: column; gap: 6px;
+      }
+      .visual-box {
+        background-color: white; border: 1px solid #e5e7eb; border-radius: 8px;
+        padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+        overflow: visible;
+      }
+      
+      /* Answer Box */
+      .answer-container {
+        display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 4px; width: 100%;
+      }
+      .answer-box {
+        width: 80px; height: 30px; border: 2px solid #9ca3af; border-radius: 6px; background-color: white;
+      }
+      .answer-label { font-weight: bold; color: #333; font-size: 0.9rem; }
+
+      /* Choice Container */
+      .choice-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 5px; justify-content: flex-start; }
+      .choice-item { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+      .choice-box { width: 16px; height: 16px; border: 2px solid #666; border-radius: 50%; display: inline-block; background: white; }
+
+      /* Concept Box */
+      .concept-box {
+        background-color: #eff6ff; border-left: 4px solid #3b82f6;
+        padding: 12px 15px; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem;
+      }
+
+      /* Layout Grids */
+      .grid-wrapper { display: flex; gap: 1.2rem; width: 100%; }
+      .grid-item { flex: 1; }
+
+      /* --- SVG STYLES --- */
+      svg text { font-family: "Noto Sans", sans-serif; font-weight: bold; }
+      
+      .wheel-body { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2.5; }
+      .wheel-spoke { stroke: #93c5fd; stroke-width: 1.5; }
+      .wheel-marker { fill: #ef4444; } /* Red dot to track rotation */
+      
+      .path-line { stroke: #4b5563; stroke-width: 2; stroke-linecap: round; }
+      .path-dash { stroke: #9ca3af; stroke-width: 1.5; stroke-dasharray: 4,3; }
+      
+      .dim-arrow { stroke: #ef4444; stroke-width: 1.5; marker-end: url(#arrow); }
+      .dim-text { font-size: 10px; fill: #ef4444; text-anchor: middle; font-weight: bold; }
+
+      /* Print Configuration */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { margin: 0; padding: 0; background: white; }
+        .page { 
+            margin: 0; page-break-after: always; box-shadow: none; break-after: page; 
+            width: 210mm !important; height: 297mm !important;
+            padding: 10mm 12mm !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; -webkit-print-color-adjust: exact; }
+        .bg-orange-50 { background-color: #fff7ed !important; -webkit-print-color-adjust: exact; }
+        .bg-green-50 { background-color: #f0fdf4 !important; -webkit-print-color-adjust: exact; }
+        .bg-purple-50 { background-color: #faf5ff !important; -webkit-print-color-adjust: exact; }
+        .bg-yellow-50 { background-color: #fefce8 !important; -webkit-print-color-adjust: exact; }
+        
+        .wheel-body { stroke: #1d4ed8 !important; fill: #eff6ff !important; }
+        .wheel-marker { fill: #dc2626 !important; }
+        
+        .text-blue-900 { color: #1e3a8a !important; }
+        .text-orange-900 { color: #7c2d12 !important; }
+        .text-purple-900 { color: #581c87 !important; }
+        .text-yellow-900 { color: #713f12 !important; }
+        #raw-content { display: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- SOURCE CONTENT -->
+    <div id="raw-content" style="display: none;">
+        
+        <!-- Concept Block -->
+        <div class="content-block concept-box">
+            <h3 class="font-bold text-blue-700 mb-2 uppercase text-lg">💡 Konsep: Jarak Putaran Roda</h3>
+            <div class="flex gap-4 items-start text-sm text-gray-700">
+                <div class="flex-1">
+                    <p class="mb-2">Saat roda berputar <b>1 kali</b>, jarak yang ditempuh sama dengan <b>Keliling Lingkaran</b> tersebut.</p>
+                    <div class="bg-white p-3 rounded border border-blue-200 mt-2">
+                        <div class="font-bold text-blue-800 mb-1 text-center">Jarak Tempuh = Keliling &times; Jumlah Putaran</div>
+                        <div class="text-xs text-center text-gray-500 italic">Rumus Keliling: K = &pi; &times; d</div>
+                    </div>
+                </div>
+                <!-- Visual Concept: Unrolling (Upscaled) -->
+                <div class="visual-box bg-white border border-gray-300 p-2" style="width: 250px;">
+                    <!-- Increased viewBox width to 240 for breathing room -->
+                    <svg width="230" height="70" viewBox="0 0 240 70">
+                        <defs>
+                            <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
+                                <path d="M0,0 L0,6 L6,3 z" fill="#ef4444" />
+                            </marker>
+                        </defs>
+                        <!-- Ground -->
+                        <line x1="10" y1="55" x2="230" y2="55" class="path-line" />
+                        <!-- Start Wheel -->
+                        <circle cx="35" cy="35" r="20" class="wheel-body" />
+                        <line x1="35" y1="35" x2="35" y2="55" class="wheel-spoke" />
+                        <circle cx="35" cy="55" r="3" class="wheel-marker" />
+                        <!-- End Wheel (Ghost) -->
+                        <circle cx="195" cy="35" r="20" class="wheel-body" style="stroke-dasharray: 4,2; opacity: 0.6;" />
+                        <line x1="195" y1="35" x2="195" y2="55" class="wheel-spoke" style="opacity: 0.6;" />
+                        <circle cx="195" cy="55" r="3" class="wheel-marker" style="opacity: 0.6;" />
+                        <!-- Dimension Line -->
+                        <line x1="35" y1="60" x2="195" y2="60" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arrow)" />
+                        <text x="115" y="68" class="dim-text" font-size="11">1 Keliling (Putaran)</text>
+                        <!-- Path Trace -->
+                        <path d="M 35,55 Q 115,5 195,55" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3,3" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 1 -->
+        <div class="content-block section-label">Bagian 1: Memahami Hubungan</div>
+        
+        <!-- Q1 & Q2 -->
+        <div class="content-block grid-wrapper">
+            <!-- Q1: Improved Visual (Linear Distance) - Upscaled -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-base">1. Satu Putaran Penuh</div>
+                <div class="text-sm text-gray-600 mb-2">
+                    Jika roda sepeda berputar tepat 1 kali, maka panjang garis lintasan yang dilalui roda sama dengan...
+                </div>
+                <div class="visual-box py-4">
+                    <!-- Upscaled from 140x60 to 200x80 -->
+                    <svg width="200" height="80" viewBox="0 0 200 80">
+                        <defs>
+                            <marker id="arrow-q1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
+                                <path d="M0,0 L0,6 L6,3 z" fill="#ef4444" />
+                            </marker>
+                        </defs>
+                        <line x1="10" y1="65" x2="190" y2="65" class="path-line" />
+                        <circle cx="40" cy="45" r="20" class="wheel-body" />
+                        <line x1="40" y1="45" x2="40" y2="65" class="wheel-spoke" />
+                        <!-- Movement Arrow -->
+                        <line x1="40" y1="72" x2="160" y2="72" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow-q1)" />
+                        <text x="100" y="55" font-size="12" fill="#666" text-anchor="middle" font-weight="bold">Jarak?</text>
+                        <circle cx="165" cy="45" r="20" class="wheel-body" style="opacity:0.3; stroke-dasharray:2,2" />
+                    </svg>
+                </div>
+                <div class="choice-container flex-col gap-2">
+                    <label class="choice-item"><div class="choice-box"></div> Diameter lingkaran</label>
+                    <label class="choice-item"><div class="choice-box"></div> Keliling lingkaran</label>
+                </div>
+            </div>
+
+            <!-- Q2 - Upscaled -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-base">2. Dua Putaran</div>
+                <div class="text-sm text-gray-600 mb-2">
+                    Sebuah koin menggelinding sejauh <b>2 kali</b> kelilingnya. Berarti koin tersebut berputar sebanyak...
+                </div>
+                <div class="visual-box py-4">
+                    <!-- Upscaled from 140x60 to 200x80 -->
+                    <svg width="200" height="80" viewBox="0 0 200 80">
+                        <line x1="10" y1="65" x2="190" y2="65" class="path-line" />
+                        <circle cx="30" cy="50" r="15" class="wheel-body" />
+                        <circle cx="100" cy="50" r="15" class="wheel-body" style="opacity: 0.5; stroke-dasharray: 2,2;" />
+                        <circle cx="170" cy="50" r="15" class="wheel-body" />
+                        <!-- Arcs showing jumps -->
+                        <path d="M 30,65 Q 65,25 100,65" fill="none" stroke="#93c5fd" stroke-width="2" />
+                        <path d="M 100,65 Q 135,25 170,65" fill="none" stroke="#93c5fd" stroke-width="2" />
+                        <text x="65" y="35" font-size="10" fill="#666" font-weight="bold">1x</text>
+                        <text x="135" y="35" font-size="10" fill="#666" font-weight="bold">1x</text>
+                    </svg>
+                </div>
+                <div class="choice-container flex-col gap-2">
+                    <label class="choice-item"><div class="choice-box"></div> 2 putaran</label>
+                    <label class="choice-item"><div class="choice-box"></div> 1/2 putaran</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Guided Calculation -->
+        <div class="content-block section-label">Bagian 2: Hitung Jarak (Gunakan &pi; &approx; 22/7)</div>
+
+        <!-- Q3 - Cleaned Visual (No rotation arrow) -->
+        <div class="soal-item full-width bg-blue-50 border-blue-200">
+            <div class="flex gap-4 items-center">
+                <div class="flex-1">
+                    <div class="font-bold mb-1 text-base text-blue-900">3. Roda Mainan</div>
+                    <div class="text-sm text-blue-800 mb-2">
+                        Diameter roda = <b>14 cm</b>. Roda berputar sebanyak <b>10 kali</b>.
+                    </div>
+                    <div class="bg-white p-3 rounded border border-blue-100 text-sm shadow-sm">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="w-32">1. Keliling (&pi; &times; d)</span>
+                            <span>=</span>
+                            <div class="answer-box w-16 h-8 border-blue-300"></div>
+                            <span class="text-xs">cm</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-32 font-bold">2. Jarak Total</span>
+                            <span>=</span>
+                            <div class="answer-box w-20 h-8 border-blue-500 bg-blue-50"></div>
+                            <span class="font-bold">cm</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="visual-box bg-white border-blue-100">
+                    <!-- Cleaned Wheel Visual -->
+                    <svg width="150" height="120" viewBox="0 0 160 120">
+                        <circle cx="80" cy="60" r="40" class="wheel-body" />
+                        <line x1="80" y1="60" x2="120" y2="60" class="wheel-spoke" />
+                        <line x1="80" y1="60" x2="40" y2="60" class="wheel-spoke" />
+                        <text x="80" y="55" font-size="12" text-anchor="middle" fill="#ef4444" font-weight="bold">d = 14 cm</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q4 - Cleaned Visual (No rotation arrow) -->
+        <div class="soal-item full-width bg-orange-50 border-orange-200">
+            <div class="flex gap-4 items-center">
+                <div class="flex-1">
+                    <div class="font-bold mb-1 text-base text-orange-900">4. Roda Gerobak</div>
+                    <div class="text-sm text-orange-800 mb-2">
+                        Jari-jari roda = <b>35 cm</b>. Roda berputar sebanyak <b>5 kali</b>.
+                    </div>
+                    <div class="bg-white p-3 rounded border border-orange-100 text-sm shadow-sm">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="w-32">1. Keliling (2 &times; &pi; &times; r)</span>
+                            <span>=</span>
+                            <div class="answer-box w-16 h-8 border-orange-300"></div>
+                            <span class="text-xs">cm</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-32 font-bold">2. Jarak Total</span>
+                            <span>=</span>
+                            <div class="answer-box w-20 h-8 border-orange-500 bg-orange-50"></div>
+                            <span class="font-bold">cm</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="visual-box bg-white border-orange-100">
+                    <!-- Cleaned Wheel Visual -->
+                    <svg width="150" height="120" viewBox="0 0 160 120">
+                        <circle cx="80" cy="60" r="45" class="wheel-body" stroke="#f97316" />
+                        <line x1="80" y1="60" x2="125" y2="60" class="wheel-spoke" stroke="#fdba74" />
+                        <text x="100" y="55" font-size="12" text-anchor="middle" fill="#ef4444" font-weight="bold">r = 35</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Word Problems (Abstract) -->
+        <div class="content-block section-label force-break">Bagian 3: Soal Cerita</div>
+
+        <!-- Q5 & Q6 -->
+        <div class="content-block grid-wrapper">
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-base">5. Koin Menggelinding</div>
+                <div class="text-sm text-gray-600 mb-2">
+                    Diameter koin <b>2 cm</b>. Koin menggelinding <b>50 kali</b> putaran. Berapa jarak tempuhnya? <br>
+                    <span class="text-xs italic">(Gunakan &pi; &approx; 3,14)</span>
+                </div>
+                <div class="answer-container justify-center">
+                    <span class="answer-label">Jawab:</span>
+                    <div class="answer-box"></div>
+                    <span class="answer-label">cm</span>
+                </div>
+            </div>
+
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-1 text-base">6. Sepeda Balap</div>
+                <div class="text-sm text-gray-600 mb-2">
+                    Diameter ban sepeda <b>70 cm</b>. Ban berputar <b>100 kali</b>. Berapa meter jarak tempuhnya? <br>
+                    <span class="text-xs italic">(Gunakan &pi; &approx; 22/7)</span>
+                </div>
+                <div class="answer-container justify-center">
+                    <span class="answer-label">Jawab:</span>
+                    <div class="answer-box"></div>
+                    <span class="answer-label">m</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Challenge (Reverse) -->
+        <div class="content-block section-label">Bagian 4: Tantangan Berpikir Balik</div>
+
+        <!-- Q7 -->
+        <div class="soal-item full-width bg-purple-50 border-purple-200">
+            <div class="font-bold mb-1 text-base text-purple-900">7. Mencari Jumlah Putaran</div>
+            <div class="flex gap-4 items-center">
+                <div class="flex-1 text-sm text-purple-800">
+                    Sebuah roda dengan diameter <b>42 cm</b> telah menempuh jarak <b>1320 cm</b>.<br>
+                    Berapa kali roda tersebut berputar?<br>
+                    <span class="text-xs italic">(Tips: Cari keliling dulu, lalu Jarak &div; Keliling)</span>
+                </div>
+                <div class="visual-box bg-white border-purple-100 p-2">
+                    <div class="font-bold text-center text-purple-800 border-b border-purple-200 pb-1 mb-1">
+                        Total Jarak = 1320 cm
+                    </div>
+                    <div class="flex items-center justify-center gap-1">
+                        <div class="w-8 h-8 rounded-full border-2 border-purple-500"></div>
+                        <div class="w-8 h-8 rounded-full border-2 border-purple-500"></div>
+                        <span class="text-lg text-purple-400 font-bold mx-1">...</span>
+                        <div class="w-8 h-8 rounded-full border-2 border-purple-500"></div>
+                        <span class="text-sm font-bold text-purple-700 ml-2">? kali</span>
+                    </div>
+                </div>
+            </div>
+            <div class="answer-container justify-end pr-4 mt-2">
+                <span class="answer-label">Jawab:</span>
+                <div class="answer-box"></div>
+                <span class="answer-label">kali</span>
+            </div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="soal-item full-width bg-green-50 border-green-200">
+            <div class="font-bold mb-1 text-base text-green-900">8. Mencari Diameter Roda</div>
+            <div class="text-sm text-green-800 mb-2">
+                Roda sebuah mainan berputar <b>100 kali</b> dan menempuh jarak <b>157 meter</b>.<br>
+                Berapakah diameter roda mainan tersebut? <br>
+                <span class="text-xs italic">(Gunakan &pi; &approx; 3,14)</span>
+            </div>
+            <div class="answer-container justify-end pr-4 mt-2">
+                <span class="answer-label">Jawab:</span>
+                <div class="answer-box"></div>
+                <span class="answer-label">cm</span>
+            </div>
+        </div>
+
+        <!-- Section 5: Logic -->
+        <div class="content-block section-label force-break">Bagian 5: Logika & Analisis</div>
+
+        <!-- Q9 & Q10 Row -->
+        <div class="content-block grid-wrapper">
+            <!-- Q9: Comparison (Revised: Two Separate Tracks) -->
+            <div class="soal-item grid-item bg-yellow-50 border-yellow-200">
+                <div class="font-bold mb-1 text-base text-yellow-900">9. Balapan Roda</div>
+                <div class="text-sm text-yellow-800 mb-2">
+                    Roda A (diameter 10 cm) dan Roda B (diameter 20 cm) menggelinding di lintasan yang berbeda sejauh <b>1 meter</b>. Roda manakah yang berputar <b>lebih banyak</b>?
+                </div>
+                <div class="visual-box bg-white border-yellow-100 flex-col py-2">
+                    <svg width="250" height="120" viewBox="0 0 250 120">
+                        <!-- Track A -->
+                        <line x1="10" y1="50" x2="240" y2="50" stroke="#666" stroke-width="1.5" />
+                        <line x1="230" y1="40" x2="230" y2="60" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,2" />
+                        <text x="230" y="35" font-size="10" text-anchor="middle" fill="#ef4444" font-weight="bold">1 m</text>
+                        <circle cx="35" cy="35" r="15" fill="#fefce8" stroke="#ca8a04" stroke-width="2" />
+                        <text x="35" y="39" font-size="10" text-anchor="middle" fill="#ca8a04" font-weight="bold">A</text>
+                        
+                        <!-- Track B -->
+                        <line x1="10" y1="110" x2="240" y2="110" stroke="#666" stroke-width="1.5" />
+                        <line x1="230" y1="100" x2="230" y2="120" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,2" />
+                        <text x="230" y="95" font-size="10" text-anchor="middle" fill="#ef4444" font-weight="bold">1 m</text>
+                        <circle cx="45" cy="85" r="25" fill="#fefce8" stroke="#ca8a04" stroke-width="2" />
+                        <text x="45" y="89" font-size="14" text-anchor="middle" fill="#ca8a04" font-weight="bold">B</text>
+                    </svg>
+                </div>
+                <div class="answer-container justify-center">
+                    <span class="answer-label">Jawab: Roda</span>
+                    <div class="answer-box w-12"></div>
+                </div>
+            </div>
+
+            <!-- Q10: Logic Square (Revised: Center Path) -->
+            <div class="soal-item grid-item bg-gray-50 border-gray-200">
+                <div class="font-bold mb-1 text-base text-gray-900">10. Roda di Persegi</div>
+                <div class="text-sm text-gray-800 mb-2">
+                    Roda berdiameter <b>7 cm</b> menggelinding mengelilingi sisi luar persegi berukuran <b>22 cm x 22 cm</b>. Berapa kali roda berputar penuh untuk kembali ke titik awal? <br>
+                    <span class="text-xs italic">(Total jarak = Keliling Persegi)</span>
+                </div>
+                <div class="visual-box bg-white border-gray-200">
+                    <svg width="140" height="140" viewBox="0 0 140 140">
+                        <!-- Inner Square (The object) -->
+                        <rect x="45" y="45" width="50" height="50" fill="#e5e7eb" stroke="#333" stroke-width="2" />
+                        <!-- Wheel and Path -->
+                        <circle cx="45" cy="30" r="8" fill="#ef4444" />
+                        <!-- Path of the wheel's center (Outer Square with rounded corners) -->
+                        <path d="M 45,30 L 95,30 A 15,15 0 0,1 110,45 L 110,95 A 15,15 0 0,1 95,110 L 45,110 A 15,15 0 0,1 30,95 L 30,45 A 15,15 0 0,1 45,30 Z" 
+                              fill="none" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,3" />
+                        <text x="70" y="70" font-size="10" text-anchor="middle" fill="#666">22 cm</text>
+                    </svg>
+                </div>
+                <div class="answer-container justify-center">
+                    <span class="answer-label">Jawab:</span>
+                    <div class="answer-box w-16"></div>
+                    <span class="answer-label">kali</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Encouragement -->
+        <div class="content-block text-center mt-4 mb-4">
+            <p class="text-sm font-bold text-gray-500 italic">✨ Kamu Hebat! Teruslah Berlatih! ✨</p>
+        </div>
+
+    </div>
+
+    <!-- 2. OUTPUT CONTAINER -->
+    <div id="output-container"></div>
+
+    <!-- 3. LOGIC SCRIPT -->
+    <script>
+      const SHEET_CONFIG = {
+        level: "Mastery 4",
+        topic: "Lingkaran (High-ability)",
+        skill: "Jarak Tempuh Putaran Roda",
+        code: "M4-S361"
+      };
+
+      // Jalankan saat Window Load untuk memastikan fonts/styles siap
+      window.onload = function() {
+        setTimeout(paginateContent, 200);
+      };
+
+      function paginateContent() {
+        const rawContent = document.getElementById('raw-content');
+        const items = Array.from(rawContent.children);
+        const output = document.getElementById('output-container');
+        
+        let currentPage = createNewPage();
+        let contentContainer = currentPage.querySelector('.page-content');
+
+        items.forEach((item, index) => {
+          const clone = item.cloneNode(true);
+          
+          // 1. Force Break Logic
+          if (clone.classList.contains('force-break') && contentContainer.children.length > 0) {
+              currentPage = createNewPage();
+              contentContainer = currentPage.querySelector('.page-content');
+          }
+
+          // 2. Append & Check Overflow
+          contentContainer.appendChild(clone);
+          
+          // Deteksi overflow
+          if (contentContainer.scrollHeight > contentContainer.clientHeight + 2) {
+             if (contentContainer.children.length > 1) {
+                 contentContainer.removeChild(clone);
+                 currentPage = createNewPage();
+                 contentContainer = currentPage.querySelector('.page-content');
+                 contentContainer.appendChild(clone);
+             }
+          }
+        });
+
+        function createNewPage() {
+          const page = document.createElement('div');
+          page.className = 'page';
+          
+          page.innerHTML = `
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="header-logo">
+                    <div class="header-right">
+                        <div class="header-level">${SHEET_CONFIG.level}</div>
+                        <div class="header-topic">${SHEET_CONFIG.topic}</div>
+                        <div class="header-skill">${SHEET_CONFIG.skill}</div>
+                        <div class="header-code">Kode: ${SHEET_CONFIG.code}</div>
+                    </div>
+                </div>
+            </header>
+            <div class="page-content"></div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i class="block sm:inline">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+          `;
+          
+          output.appendChild(page);
+          return page;
+        }
+      }
+    </script>
+  </body>
+</html>
