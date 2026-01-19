@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Masalah Uang (M2-S151)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        
+        /* ATURAN TEGAS AGAR WARNA & GARIS TIDAK HILANG */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        /* Paksa background warna tetap muncul */
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+
+        /* FORCE SVG STROKES */
+        path, rect, line, circle, polygon {
+            stroke: #000 !important;
+            stroke-opacity: 1 !important;
+        }
+        rect[fill="#93c5fd"] { fill: #93c5fd !important; stroke: #000 !important; }
+        rect[fill="#bfdbfe"] { fill: #bfdbfe !important; stroke: #000 !important; }
+        rect[fill="#fca5a5"] { fill: #fca5a5 !important; stroke: #000 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 28px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 5px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      /* Menggunakan Border untuk garis pemisah */
+      .h-separator {
+        width: 100%;
+        height: 0;
+        border-top: 1px solid #e5e7eb;
+        margin: 0.1cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.6rem;
+        background-color: #f3f4f6;
+        padding: 0.3rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CONCEPT BOX --- */
+      .concept-box {
+        border: 2px solid #60a5fa;
+        background-color: #eff6ff;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+      }
+      
+      /* Visual Math Specifics */
+      .bracket-line {
+        stroke: #333;
+        stroke-width: 1.5;
+        fill: none;
+      }
+      
+      .label-text {
+        font-size: 11px;
+        font-weight: bold;
+        text-anchor: middle;
+        fill: #333;
+      }
+
+      /* --- QUOTE BOX --- */
+      .quote-box {
+        margin-top: 20px;
+        margin-bottom: 10px;
+        text-align: center;
+        padding: 10px;
+        font-style: italic;
+        color: #2563eb;
+        font-weight: 600;
+        border-top: 1px dashed #ccc;
+        border-bottom: 1px dashed #ccc;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-3) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Kemampuan Tinggi - Bilangan Cacah (Uang)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Menghitung Uang (Total & Selisih)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M2-S151
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam Header -->
+            <div class="w-full mt-1 border-t-2 border-black"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-4 mt-2">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: MASALAH UANG
+                </h1>
+            </div>
+
+            <!-- CONCEPT SECTION -->
+            <div class="concept-box">
+                <div class="font-bold text-blue-800 mb-1">Pendekatan Visual: Total & Selisih</div>
+                <div class="mb-2 text-gray-700 text-sm">
+                    Jika diketahui <b>Total Harga</b> beberapa barang dan <b>Selisih Harga</b> antar barang, kita bisa menyamakan unitnya terlebih dahulu dengan cara mengurangi Total dengan Selisih.
+                </div>
+                <div class="flex justify-center my-2">
+                    <!-- SVG Bar Model Unit Comparison (LAYOUT: SIDE-BY-SIDE WITH WIDE MARGINS) -->
+                    <!-- ViewBox lebar 700px untuk mengakomodasi layout kiri-kanan tanpa tabrakan -->
+                    <svg width="700" height="220" viewBox="0 0 700 220">
+                        
+                        <!-- 1. HEADER (Top) -->
+                        <!-- UPDATE: "Contoh" geser ke kanan (x=30), Deskripsi geser lagi ke kanan (x=150) -->
+                        <text x="30" y="25" class="label-text" text-anchor="start" font-weight="bold" fill="#333" font-size="12">Contoh:</text>
+                        <text x="150" y="25" class="label-text" text-anchor="start" fill="#333" font-size="12">1 Buku & 1 Pensil = Rp12.000</text>
+                        <text x="150" y="45" class="label-text" text-anchor="start" fill="#555" font-size="11">Buku Rp2.000 lebih mahal dari Pensil</text>
+
+                        <!-- 2. DIAGRAM BATANG (Left Side) -->
+                        <!-- Group digeser ke bawah (y=70) agar tidak menabrak header -->
+                        <g transform="translate(60, 70)">
+                            
+                            <!-- Group Buku -->
+                            <text x="-10" y="20" text-anchor="end" dominant-baseline="middle" font-weight="bold" font-size="12" fill="#333">Buku</text>
+                            
+                            <!-- Bar Unit (100px) -->
+                            <rect x="0" y="0" width="100" height="40" fill="#93c5fd" stroke="#2563eb" stroke-width="2"/>
+                            <!-- Bar Selisih (40px) - Proporsional -->
+                            <rect x="100" y="0" width="40" height="40" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+                            
+                            <!-- Label Selisih -->
+                            <text x="120" y="-10" text-anchor="middle" fill="#1e40af" font-size="10" font-weight="bold">2.000</text>
+                            <line x1="120" y1="-5" x2="120" y2="0" stroke="#1e40af" stroke-width="1"/>
+
+                            <!-- Group Pensil -->
+                            <text x="-10" y="80" text-anchor="end" dominant-baseline="middle" font-weight="bold" font-size="12" fill="#333">Pensil</text>
+                            <rect x="0" y="60" width="100" height="40" fill="#fca5a5" stroke="#dc2626" stroke-width="2"/>
+
+                            <!-- Garis Putus-putus Pembatas -->
+                            <line x1="100" y1="40" x2="100" y2="60" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4"/>
+
+                            <!-- Bracket Total -->
+                            <path d="M 150 0 L 160 0 L 160 100 L 150 100" class="bracket-line" />
+                            <path d="M 160 50 L 170 50" class="bracket-line" />
+                            
+                            <text x="175" y="45" text-anchor="start" font-weight="bold" font-size="13" fill="#333">Total</text>
+                            <text x="175" y="65" text-anchor="start" font-weight="bold" font-size="13" fill="#333">Rp12.000</text>
+                        </g>
+
+                        <!-- 3. LOGIKA PENGERJAAN (Right Side) -->
+                        <!-- Diposisikan di x=420 (Jarak ~100px dari elemen diagram terakhir) -->
+                        <g transform="translate(420, 75)">
+                            <!-- Panah Penghubung -->
+                            <path d="M -40 20 L -10 20" stroke="#ef4444" stroke-width="2" marker-end="url(#arrowhead-red)"/>
+
+                            <text x="0" y="0" font-size="11" fill="#333">
+                                 <tspan x="0" dy="5" font-weight="bold" fill="#ef4444" text-decoration="underline" font-size="12">Langkah Pengerjaan:</tspan>
+                                 
+                                 <tspan x="0" dy="25" font-weight="bold">1. Buang selisihnya:</tspan>
+                                 <tspan x="15" dy="18" font-family="monospace" fill="#555" font-size="12">12.000 - 2.000 = 10.000</tspan>
+                                 
+                                 <tspan x="0" dy="25" font-weight="bold">2. Bagi sisa dengan 2 unit:</tspan>
+                                 <tspan x="15" dy="18" font-family="monospace" fill="#555" font-size="12">10.000 &#247; 2 = 5.000</tspan>
+                                 <tspan x="15" dy="15" font-style="italic" fill="#555" font-size="11">(Harga Pensil)</tspan>
+                            </text>
+                        </g>
+
+                        <!-- Marker Defs -->
+                        <defs>
+                             <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-4 py-1.5 text-sm">
+                Bagian A: Isian Singkat (Selesaikan masalah berikut)
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="text-base mb-1">
+                        <b>1.</b> Andi membeli <b>1 Burger</b> dan <b>1 Minuman</b> dengan total harga <b>Rp45.000</b>. Harga Burger <b>Rp5.000</b> lebih mahal daripada Minuman.
+                    </div>
+                    <div class="ml-4 mt-2 text-sm text-gray-700">
+                        a) Jika selisih harga (Rp5.000) dikurangkan dari total, berapakah sisanya? <span class="input-box" style="width: 80px"></span><br>
+                        b) Berapakah harga 1 Minuman? <span class="input-box" style="width: 80px"></span>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="text-base mb-1">
+                        <b>2.</b> Jumlah tabungan Budi dan Susi adalah <b>Rp150.000</b>. Tabungan Budi <b>Rp10.000</b> lebih sedikit daripada Susi.
+                    </div>
+                    <div class="ml-4 mt-2 text-sm text-gray-700">
+                         Berapakah besar tabungan Budi?
+                    </div>
+                    <div class="ml-4 mt-2">
+                         Jawaban: Rp<span class="input-box" style="width: 100px"></span>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                     <div class="text-base mb-1">
+                        <b>3.</b> Pak Hasan membeli <b>2 Kaos</b> dan <b>1 Celana</b> seharga <b>Rp200.000</b>. Harga Celana sama dengan harga Kaos.
+                    </div>
+                     <div class="ml-4 mt-2 text-sm text-gray-700">
+                        (Petunjuk: Karena harganya sama, anggap ada 3 barang yang harganya sama).<br>
+                        Berapakah harga 1 Kaos?
+                    </div>
+                    <div class="ml-4 mt-2">
+                         Jawaban: Rp<span class="input-box" style="width: 100px"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 4-7) ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Kemampuan Tinggi - Bilangan Cacah (Uang)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Menghitung Uang (Total & Selisih)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M2-S151
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam Header -->
+            <div class="w-full mt-1 border-t-2 border-black"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+             <!-- Lanjutan Bagian A -->
+             <div class="soal-grid mb-4">
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="text-base mb-1">
+                        <b>4.</b> Bu Rina membeli <b>3 kotak susu</b> dan <b>2 bungkus roti</b>. Total harganya <b>Rp34.000</b>. Harga satu kotak susu <b>Rp2.000</b> lebih mahal daripada satu bungkus roti.
+                    </div>
+                    <div class="ml-4 mt-2 text-sm text-gray-700">
+                        Berapakah harga satu bungkus roti?
+                    </div>
+                    <div class="ml-4 mt-2">
+                         Jawaban: Rp<span class="input-box" style="width: 100px"></span>
+                    </div>
+                </div>
+                 <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="text-base mb-1">
+                        <b>5.</b> Total uang Aldo, Beni, dan Caca adalah <b>Rp90.000</b>. Uang Aldo sama dengan uang Beni. Uang Caca <b>Rp10.000</b> lebih banyak dari uang Aldo.
+                    </div>
+                    <div class="ml-4 mt-2 text-sm text-gray-700">
+                         Berapakah besar uang Aldo?
+                    </div>
+                    <div class="ml-4 mt-2">
+                         Jawaban: Rp<span class="input-box" style="width: 100px"></span>
+                    </div>
+                </div>
+             </div>
+
+             <!-- INSTRUCTION B -->
+             <div class="instruction-text mb-4 py-1.5 text-sm">
+                Bagian B: Pilihan Ganda (Pilihlah jawaban yang paling tepat)
+            </div>
+
+             <div class="soal-grid mb-4">
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <b>6.</b> Harga <b>1 Buku Tulis</b> dan <b>1 Pulpen</b> adalah <b>Rp8.000</b>. Harga Buku Tulis <b>Rp2.000</b> lebih mahal dari Pulpen. Berapakah harga 2 Pulpen?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Rp3.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Rp5.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Rp6.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Rp10.000</label>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <b>7.</b> Total harga <b>4 Mangga</b> dan <b>3 Apel</b> adalah <b>Rp33.000</b>. Harga satu Mangga sama dengan harga satu Apel. Berapakah harga satu Mangga?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Rp3.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Rp4.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Rp4.700</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Rp5.000</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 8-10) ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Kemampuan Tinggi - Bilangan Cacah (Uang)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Menghitung Uang (Total & Selisih)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M2-S151
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam Header -->
+            <div class="w-full mt-1 border-t-2 border-black"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+             <div class="soal-grid mb-4">
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <b>8.</b> Rani memiliki uang kertas Rp50.000 dan Rp20.000. Total uangnya Rp70.000. Ia ingin menukar semua uangnya menjadi pecahan Rp5.000. Berapa lembar uang Rp5.000 yang ia dapatkan?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) 10 lembar</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) 12 lembar</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) 14 lembar</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) 16 lembar</label>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <b>9.</b> Ayah membeli <b>2 Tiket Dewasa</b> dan <b>2 Tiket Anak</b> dengan total harga <b>Rp100.000</b>. Harga tiket Dewasa adalah <b>dua kali</b> harga tiket Anak. Berapakah harga satu tiket Anak?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Rp10.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Rp12.500</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Rp16.600</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Rp25.000</label>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <b>10.</b> Tiga orang bersaudara (A, B, C) mengumpulkan uang. Totalnya <b>Rp120.000</b>. Uang A = Uang B. Uang C adalah setengah dari uang A. Berapakah uang C?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Rp20.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Rp24.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Rp30.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Rp48.000</label>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Motivational Quote -->
+            <div class="quote-box">
+                Berani mencoba, makin bisa.
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
