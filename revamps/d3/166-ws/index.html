@@ -1,14 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Math Champs - D3.S166 Mengurutkan Bilangan</title>
-    
     <!-- Tailwind untuk komponen internal -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -16,13 +13,27 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
-
     <style>
       /* --- CSS UTAMA (Gaya Math Champs) --- */
       :root {
         --primary-text: #333333;
         --secondary-text: #555555;
         --grey-text: #8d8e8d;
+
+        /* --- VARIABEL BLOK PROPORSIONAL --- */
+        --unit-size: 7px; /* Ukuran dasar 1 unit disesuaikan agar muat */
+        
+        /* Warna Satuan (Yellow) */
+        --ones-bg: #facc15; 
+        --ones-border: #a16207;
+        
+        /* Warna Puluhan (Green) */
+        --tens-bg: #4ade80;
+        --tens-border: #15803d;
+
+        /* Warna Ratusan (Blue) */
+        --hundreds-bg: #60a5fa;
+        --hundreds-border: #1e3a8a;
       }
 
       *, *::before, *::after {
@@ -128,7 +139,7 @@
         }
         
         /* Force Colors */
-        .math-champs-header, .flat, .rod, .unit, .choice-box, .digit-card {
+        .math-champs-header, .flat, .rod, .unit, .unit-seg, .choice-box, .digit-card {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
@@ -172,14 +183,14 @@
         outline: none;
         font-family: inherit;
       }
-      
+
       .choice-item {
         display: flex;
         align-items: center;
         gap: 6px;
         cursor: pointer;
       }
-      
+
       .choice-box {
         width: 20px;
         height: 20px;
@@ -193,62 +204,60 @@
         font-size: 11px;
       }
 
-      /* --- BASE-10 BLOCKS & CARDS --- */
+      /* --- BASE-10 BLOCKS PROPORSIONAL --- */
       .blocks-container {
         display: flex;
         align-items: flex-end;
-        gap: 4px;
-        padding: 2px;
-        justify-content: flex-start;
-        flex-wrap: wrap;
+        gap: 6px;
+        padding: 6px;
+        justify-content: center;
+        background: #ffffff;
+        border: 1px solid #f3f4f6;
+        border-radius: 6px;
+        min-height: 85px; /* Menjaga konsistensi tinggi */
       }
       
+      .hundreds-group, .tens-group { display: flex; gap: 3px; align-items: flex-end; }
+      .ones-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; align-self: flex-end; }
+
       .flat {
-        width: 36px;
-        height: 36px;
-        background-color: #dbeafe;
-        border: 1px solid #1e3a8a;
-        position: relative;
+        width: calc(var(--unit-size) * 10);
+        height: calc(var(--unit-size) * 10);
+        background-color: var(--hundreds-bg);
+        border: 1px solid var(--hundreds-border);
+        /* Grid pattern */
+        background-image: 
+            linear-gradient(var(--hundreds-border) 1px, transparent 1px),
+            linear-gradient(90deg, var(--hundreds-border) 1px, transparent 1px);
+        background-size: var(--unit-size) var(--unit-size);
+        background-position: -1px -1px; /* Align grid lines inside border */
         flex-shrink: 0;
-        display: grid;
-        grid-template-columns: repeat(10, 1fr);
-        gap: 0;
       }
-      .flat::after {
-        content: "";
-        position: absolute;
-        top:0; left:0; right:0; bottom:0;
-        background-image: linear-gradient(#93c5fd 1px, transparent 1px), linear-gradient(90deg, #93c5fd 1px, transparent 1px);
-        background-size: 3.6px 3.6px;
-        opacity: 0.5;
-      }
-      
+
       .rod {
         display: flex;
-        flex-direction: column;
-        border: 1px solid #14532d;
-        background-color: #dcfce7;
-        width: 7px;
-        height: 36px;
+        flex-direction: column-reverse; /* Stack units bottom-up */
+        width: var(--unit-size);
         flex-shrink: 0;
       }
+
+      /* Unit segmen untuk batang puluhan */
       .rod .unit-seg {
-        width: 100%;
-        height: 10%;
-        border-bottom: 1px solid #86efac;
+        width: var(--unit-size);
+        height: var(--unit-size);
+        background-color: var(--tens-bg);
+        border: 1px solid var(--tens-border);
+        border-bottom: none;
       }
-      .rod .unit-seg:last-child { border-bottom: none; }
-      
+      .rod .unit-seg:first-child { border-bottom: 1px solid var(--tens-border); }
+
       .unit {
-        width: 7px;
-        height: 7px;
-        border: 1px solid #7f1d1d;
-        background-color: #fee2e2;
+        width: var(--unit-size);
+        height: var(--unit-size);
+        border: 1px solid var(--ones-border);
+        background-color: var(--ones-bg);
         flex-shrink: 0;
       }
-      
-      .tens-group { display: flex; gap: 2px; }
-      .ones-group { display: flex; gap: 2px; align-self: flex-end; flex-wrap: wrap; max-width: 40px; }
 
       .digit-card {
         width: 35px;
@@ -339,29 +348,39 @@
                 
                 <div class="grid grid-cols-2 gap-4 my-2">
                     <!-- Set A: 221 -->
+                    <!-- Proporsional Blocks Implementation -->
                     <div class="bg-white p-3 rounded border border-gray-300 flex flex-col items-center">
                         <div class="font-bold text-blue-700 mb-2 text-xs">Kumpulan A</div>
                         <div class="blocks-container">
-                            <div class="flat"></div><div class="flat"></div>
+                            <div class="hundreds-group">
+                                <div class="flat"></div><div class="flat"></div>
+                            </div>
                             <div class="tens-group ml-1">
+                                <!-- 2 Puluhan -->
                                 <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
                                 <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
                             </div>
                             <div class="ones-group ml-1">
+                                <!-- 1 Satuan -->
                                 <div class="unit"></div>
                             </div>
                         </div>
+                        <div class="text-[10px] text-gray-400 mt-1 font-mono">221</div>
                     </div>
                     
                     <!-- Set B: 302 -->
                     <div class="bg-white p-3 rounded border border-gray-300 flex flex-col items-center">
                         <div class="font-bold text-blue-700 mb-2 text-xs">Kumpulan B</div>
                         <div class="blocks-container">
-                            <div class="flat"></div><div class="flat"></div><div class="flat"></div>
+                            <div class="hundreds-group">
+                                <div class="flat"></div><div class="flat"></div><div class="flat"></div>
+                            </div>
                             <div class="ones-group ml-1">
+                                <!-- 2 Satuan -->
                                 <div class="unit"></div><div class="unit"></div>
                             </div>
                         </div>
+                        <div class="text-[10px] text-gray-400 mt-1 font-mono">302</div>
                     </div>
                 </div>
 
@@ -674,7 +693,6 @@
             <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
         </footer>
       </section>
-
     </div>
 
     <!-- SCRIPT UNTUK KALIMAT RANDOM -->
@@ -721,6 +739,5 @@
             }
         });
     </script>
-
   </body>
 </html>
