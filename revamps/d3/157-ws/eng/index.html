@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Math Champs - Numbers up to 1000 (D3-S157)</title>
+    <title>Math Champs - Numbers to 1000</title>
     
     <!-- Tailwind untuk komponen internal -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,6 +23,21 @@
         --primary-text: #333333;
         --secondary-text: #555555;
         --grey-text: #8d8e8d;
+
+        /* --- VARIABEL BLOK PROPORSIONAL (Dari Code 2) --- */
+        --unit-size: 9px; /* Ukuran dasar untuk 1 kotak kecil (satuan) */
+        
+        /* Warna Satuan (Code 2: Yellow) */
+        --ones-bg: #facc15; 
+        --ones-border: #a16207;
+        
+        /* Warna Puluhan (Code 2: Green) */
+        --tens-bg: #4ade80;
+        --tens-border: #15803d;
+
+        /* Warna Ratusan (Blue) */
+        --hundreds-bg: #60a5fa;
+        --hundreds-border: #1e3a8a;
       }
 
       *, *::before, *::after {
@@ -55,13 +70,13 @@
         position: relative;
         display: flex;
         flex-direction: column;
-        overflow: hidden; /* Mencegah konten meluber keluar di tampilan web */
+        overflow: hidden;
       }
 
       .page-header {
         width: 100%;
         margin-bottom: 20px;
-        flex-shrink: 0; /* Header tidak boleh mengecil */
+        flex-shrink: 0;
       }
 
       .content-wrapper {
@@ -79,20 +94,20 @@
         font-size: 6pt;
         color: var(--grey-text);
         padding-top: 4px;
-        margin-top: auto; /* Push ke paling bawah */
+        margin-top: auto;
         border-top: 2px solid var(--grey-text);
         width: 100%;
         display: flex;
         gap: 5px;
         align-items: center;
-        flex-shrink: 0; /* Footer tidak boleh mengecil/hilang */
+        flex-shrink: 0;
       }
 
       /* --- STYLE KHUSUS PRINT --- */
       @media print {
         @page {
           size: A4;
-          margin: 0; /* Hilangkan margin default browser */
+          margin: 0;
         }
         body {
           background-color: white;
@@ -104,65 +119,32 @@
         }
         .page {
           width: 21cm;
-          /* Kurangi sedikit dari 29.7cm untuk mencegah spillover ke halaman baru */
           height: 29.6cm; 
           margin: 0;
           box-shadow: none;
           page-break-after: always;
           page-break-inside: avoid;
-          /* Padding dikurangi agar konten lebih leluasa */
-          padding: 0.5cm 1.5cm; 
+          padding: 0.5cm 1.5cm;
           border: none;
         }
         .page:last-child {
           page-break-after: avoid;
         }
         
-        /* Penyesuaian Spasi Saat Print agar Muat */
-        .page-header {
-            margin-bottom: 5px !important;
-        }
-        .text-3xl {
-            font-size: 1.4rem !important; /* Perkecil judul besar */
-            margin-bottom: 0.2rem !important;
-            margin-top: 0 !important;
-        }
-        .soal-grid {
-            gap: 0.2cm 1cm !important; /* Rapatkan grid soal */
-            margin-bottom: 2px !important;
-        }
-        .h-separator {
-            margin: 0.2cm 0 !important; /* Rapatkan garis pemisah */
-        }
-        .instruction-text {
-            margin-bottom: 0.1rem !important;
-            font-size: 0.9rem !important;
-        }
+        .page-header { margin-bottom: 5px !important; }
+        .text-3xl { font-size: 1.4rem !important; margin-bottom: 0.2rem !important; }
+        .soal-grid { gap: 0.2cm 1cm !important; margin-bottom: 2px !important; }
+        .h-separator { margin: 0.2cm 0 !important; }
+        .instruction-text { margin-bottom: 0.1rem !important; font-size: 0.9rem !important; }
         
-        /* Perkecil Gambar Blok Saat Print agar muat */
-        .flat { width: 35px !important; height: 35px !important; background-size: 3.5px 3.5px !important; }
-        .rod { width: 7px !important; }
-        .unit { width: 7px !important; height: 7px !important; }
-        .rod .unit-seg { height: 3.5px !important; }
-        .blocks-wrapper { gap: 4px !important; padding: 2px 0 !important; }
-        
-        /* Override Utility Classes saat Print */
-        .mb-5 { margin-bottom: 0.3rem !important; }
-        .mb-8 { margin-bottom: 0.3rem !important; }
-        .mt-4 { margin-top: 0.2rem !important; }
-        .p-4 { padding: 0.5rem !important; } /* Perkecil padding box soal */
-        .p-6 { padding: 0.8rem !important; }
-        
-        /* Font size adjustment */
-        .choice-container { font-size: 0.8rem !important; margin-top: 4px !important; }
-        
-        /* Memaksa warna tercetak */
-        .math-champs-header, .flat, .rod, .unit, .bond-circle, .pv-table th {
+        /* Print colors */
+        .math-champs-header, .flat, .rod, .unit, .unit-seg, .pv-table th, .arrow-shape {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
         .bg-blue-50 { background-color: #eff6ff !important; }
         .bg-yellow-50 { background-color: #fefce8 !important; }
+        .bg-gray-50 { background-color: #f9fafb !important; }
       }
 
       /* --- KOMPONEN HEADER --- */
@@ -179,10 +161,15 @@
       .soal-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 0.8cm 2cm; /* Sedikit dikecilkan untuk tampilan web juga */
+        gap: 0.8cm 2cm;
         align-items: start;
       }
       
+      .soal-full {
+        width: 100%;
+        margin-bottom: 1rem;
+      }
+
       .soal-item {
         break-inside: avoid;
         position: relative;
@@ -190,7 +177,6 @@
 
       .input-line {
         border: 1px solid #333;
-        width: 60px;
         height: 30px;
         display: inline-block;
         text-align: center;
@@ -200,6 +186,10 @@
         font-family: inherit;
         font-size: 1rem;
         background: transparent;
+      }
+      .input-line.noborder {
+        border: none;
+        border-bottom: 1.5px solid #333;
       }
 
       .choice-container {
@@ -215,88 +205,99 @@
         width: 100%;
         height: 1px;
         background-color: #ccc;
-        margin: 0.6cm 0; /* Sedikit dikecilkan defaultnya */
+        margin: 0.6cm 0;
       }
 
       .instruction-text {
         font-weight: 700;
         color: #1f2937;
         margin-bottom: 0.5rem;
+        font-size: 1.1em;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 4px;
       }
 
-      .no-break {
-        page-break-inside: avoid;
+      .section-title {
+        font-size: 1.1rem; 
+        font-weight: 800; 
+        text-transform: uppercase; 
+        color: #374151; 
+        margin-bottom: 1rem;
+        border-bottom: 2px solid #374151;
+        padding-bottom: 0.25rem;
       }
 
-      /* --- CSS BASE TEN BLOCKS (Disesuaikan untuk Layout Baru) --- */
+      /* --- BLOCKS CSS (UPDATED PROPORSIONAL) --- */
       .blocks-wrapper {
         display: flex;
         align-items: flex-end;
         justify-content: flex-start;
-        gap: 8px;
+        gap: 6px;
         padding: 5px 0;
         flex-wrap: wrap;
       }
 
-      /* Hundred Block */
+      /* 1. Hundred Block (Flat) */
       .flat {
-        width: 50px; 
-        height: 50px;
-        background-color: #dbeafe; /* blue-100 */
-        border: 1px solid #1e3a8a; /* blue-900 */
-        display: grid;
-        grid-template-columns: repeat(10, 1fr);
-        grid-template-rows: repeat(10, 1fr);
-        gap: 0;
-        position: relative;
+        width: calc(var(--unit-size) * 10);
+        height: calc(var(--unit-size) * 10);
+        background-color: var(--hundreds-bg);
+        border: 1px solid var(--hundreds-border);
+        /* Grid internal */
+        background-image: 
+          linear-gradient(var(--hundreds-border) 1px, transparent 1px),
+          linear-gradient(90deg, var(--hundreds-border) 1px, transparent 1px);
+        background-size: var(--unit-size) var(--unit-size);
+        background-position: -1px -1px;
         flex-shrink: 0;
-      }
-      /* Grid lines inside flat */
-      .flat::after {
-          content: "";
-          position: absolute;
-          top:0; left:0; right:0; bottom:0;
-          background-image: 
-            linear-gradient(#93c5fd 1px, transparent 1px),
-            linear-gradient(90deg, #93c5fd 1px, transparent 1px);
-          background-size: 5px 5px; 
-          opacity: 0.6;
+        box-shadow: 1px 1px 0px rgba(0,0,0,0.1);
       }
 
-      /* Ten Block */
+      /* 2. Ten Block (Rod) */
       .rod {
         display: flex;
-        flex-direction: column;
-        border: 1px solid #14532d; /* green-900 */
-        background-color: #dcfce7; /* green-100 */
-        width: 8px;
+        flex-direction: column-reverse; /* Stack dari bawah ke atas */
+        width: var(--unit-size);
         flex-shrink: 0;
+        gap: 0; 
       }
-      .rod .unit-seg {
-        width: 100%;
-        height: 5px;
-        border-bottom: 1px solid #86efac;
-      }
-      .rod .unit-seg:last-child { border-bottom: none; }
 
-      /* One Block */
+      /* Bagian dalam Rod */
+      .rod .unit-seg {
+        width: var(--unit-size);
+        height: var(--unit-size);
+        background-color: var(--tens-bg);
+        border: 1px solid var(--tens-border);
+        box-sizing: border-box;
+        border-bottom: none;
+      }
+      .rod .unit-seg:first-child { 
+        border-bottom: 1px solid var(--tens-border); 
+      }
+
+      /* 3. One Block (Unit) */
       .unit {
-        width: 8px; 
-        height: 8px;
-        border: 1px solid #7f1d1d; /* red-900 */
-        background-color: #fee2e2; /* red-100 */
+        width: var(--unit-size);
+        height: var(--unit-size);
+        background-color: var(--ones-bg);
+        border: 1px solid var(--ones-border);
         flex-shrink: 0;
+        box-sizing: border-box;
       }
       
-      .hundreds-group { display: flex; gap: 3px; }
-      .tens-group { display: flex; gap: 3px; }
+      /* Helper Classes for Layout */
+      .hundreds-group { display: flex; gap: 4px; align-items: flex-end; }
+      .tens-group { display: flex; gap: 4px; align-items: flex-end; }
       .ones-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; align-self: flex-end; }
+      .ones-group-col { display: flex; gap: 4px; align-items: flex-end; }
+      .col-stack { display: flex; flex-direction: column; gap: 1px; }
 
-      /* --- Place Value Table Style --- */
+      /* --- TABLES --- */
       .pv-table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 5px;
+        background: white;
       }
       .pv-table th, .pv-table td {
         border: 2px solid #333;
@@ -336,7 +337,7 @@
   <body>
     <div class="page-container">
       
-      <!-- ================= HALAMAN 1 ================= -->
+      <!-- ================= HALAMAN 1 (Questions 1-4) ================= -->
       <section class="page">
         <!-- HEADER -->
         <header class="page-header">
@@ -347,13 +348,13 @@
                 <div class="text-right">
                     <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
                     <div class="text-[11px] text-black font-semibold mt-1">
-                        Numbers up to 1000
+                        Numbers to 1000
                     </div>
                     <div class="text-[10px] text-black font-medium max-w-[200px] ml-auto leading-tight mt-1">
-                        Using base ten blocks to read and write numbers up to 1000
+                        Use base ten blocks to read and write numbers to 1000
                     </div>
                     <div class="text-[11px] text-black font-medium mt-1">
-                        Code : D3.S157
+                        Code : D3-S157
                     </div>
                 </div>
             </div>
@@ -463,12 +464,38 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="h-separator"></div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
 
-            <!-- Question 5 - Place Value -->
+      <!-- ================= HALAMAN 2 (Questions 5-7) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 1000
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Code : D3-S157
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- Question 5 - Place Value (Moved from Page 1) -->
             <div class="instruction-text">
-                5. Fill in the Place Value chart for the blocks below.
+                5. Fill in the place value table for the blocks below.
             </div>
             <div class="flex flex-col md:flex-row gap-6 items-center bg-blue-50 p-4 rounded-xl border border-blue-200 no-break">
                 <!-- Visual Blocks -->
@@ -514,35 +541,8 @@
                 </div>
             </div>
 
-        </div>
+            <div class="h-separator"></div>
 
-        <footer class="page-footer">
-            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
-            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
-        </footer>
-      </section>
-
-      <!-- ================= HALAMAN 2 ================= -->
-      <section class="page">
-        <!-- HEADER -->
-        <header class="page-header">
-            <div class="math-champs-header">
-                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
-                <div class="text-right">
-                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
-                    <div class="text-[11px] text-black font-semibold mt-1">
-                        Numbers up to 1000
-                    </div>
-                    <div class="text-[11px] text-black font-medium mt-1">
-                        Code : D3.S157
-                    </div>
-                </div>
-            </div>
-            <div class="w-full h-0.5 bg-black mt-2"></div>
-        </header>
-
-        <div class="content-wrapper">
-            
             <div class="soal-grid mb-5">
                 <!-- Question 6 -->
                 <div class="soal-item">
@@ -561,7 +561,7 @@
 
                 <!-- Question 7 - Number Bond -->
                 <div class="soal-item">
-                    <div class="font-bold mb-2">7. Complete the Number Bonds below.</div>
+                    <div class="font-bold mb-2">7. Complete the number bond below.</div>
                     
                     <div class="bond-container">
                         <!-- SVG Lines -->
@@ -581,10 +581,37 @@
                     </div>
                 </div>
             </div>
+            
+        </div>
 
-            <div class="h-separator"></div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
 
-            <!-- Question 8 -->
+      <!-- ================= HALAMAN 3 (Questions 8-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 1000
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Code : D3-S157
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <!-- Question 8 (Moved from Page 2) -->
             <div class="instruction-text">
                 8. Choose the correct expanded form for the blocks below.
             </div>
@@ -613,46 +640,20 @@
 
             <div class="h-separator"></div>
 
-            <!-- Question 9 -->
+            <!-- Question 9 (Moved from Page 2) -->
             <div class="instruction-text">
                 9. True or False?
             </div>
             <div class="text-center py-6 bg-yellow-50 rounded-xl border border-yellow-200 mb-5 no-break">
-                <h1 class="text-xl font-bold text-gray-800 tracking-wide mb-2">"15 tens is the same as 150"</h1>
+                <h1 class="text-xl font-bold text-gray-800 tracking-wide mb-2">"15 tens is equal to 150"</h1>
                 <div class="choice-container flex-row justify-center mt-4 text-lg gap-8">
                     <span>( ) True</span>
                     <span>( ) False</span>
                 </div>
             </div>
-            
-        </div>
 
-        <footer class="page-footer">
-            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
-            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
-        </footer>
-      </section>
+            <div class="h-separator"></div>
 
-      <!-- ================= HALAMAN 3 (Challenge) ================= -->
-      <section class="page">
-        <!-- HEADER -->
-        <header class="page-header">
-            <div class="math-champs-header">
-                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
-                <div class="text-right">
-                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
-                    <div class="text-[11px] text-black font-semibold mt-1">
-                        Numbers up to 1000
-                    </div>
-                    <div class="text-[11px] text-black font-medium mt-1">
-                        Code : D3.S157
-                    </div>
-                </div>
-            </div>
-            <div class="w-full h-0.5 bg-black mt-2"></div>
-        </header>
-
-        <div class="content-wrapper">
              <!-- Question 10 - Challenge -->
             <div class="instruction-text flex items-center gap-2">
                 <span class="text-lg">★</span> 10. Challenge Question!
@@ -664,7 +665,7 @@
                 </div>
 
                 <div class="bg-gray-50 p-4 border-2 border-dashed border-gray-300 rounded relative mb-4 min-h-[150px]">
-                     <span class="absolute top-2 left-2 text-[10px] text-gray-400 font-bold uppercase tracking-wide">Working:</span>
+                     <span class="absolute top-2 left-2 text-[10px] text-gray-400 font-bold uppercase tracking-wide">Workings:</span>
                 </div>
                 
                 <div class="flex justify-center items-center gap-4">
@@ -673,9 +674,7 @@
                 </div>
             </div>
 
-            <div class="mt-12 text-center text-gray-500 italic">
-                "Strong finish! Take a moment to review your answers."
-            </div>
+            <div id="random-quote" class="mt-12 text-center text-gray-500 italic"></div>
 
         </div>
 
@@ -686,5 +685,46 @@
       </section>
 
     </div>
+
+    <!-- Script for Random Encouragement -->
+    <script>
+        const quotes = [
+            "Nice work finishing the set—seriously well done.",
+            "Great effort today. Quick check-through and you’re good.",
+            "Strong finish! Take a moment to review your answers.",
+            "Awesome job. If anything feels off, trust your gut and recheck it.",
+            "You’re getting sharper with every problem.",
+            "Well done—your focus really showed.",
+            "Before you close it, do one last scan for silly mistakes.",
+            "That was solid. Clean work and clear thinking.",
+            "Mistakes are part of the process—what matters is you keep going.",
+            "Great job. Try checking the trickiest question one more time.",
+            "Proud of your effort. Consistency wins.",
+            "Strong work—your math muscles are growing.",
+            "Nice! Now make sure every question has an answer.",
+            "Great progress today—keep that momentum.",
+            "You worked hard. Take a breath, then double-check.",
+            "Excellent! Try verifying one problem using a different method.",
+            "You did it—finish with a confident final check.",
+            "Little by little, a little becomes a lot.",
+            "Practice makes progress.",
+            "Steady hands win the race.",
+            "Small steps beat no steps.",
+            "Check your work, trust your growth.",
+            "A calm mind catches quiet mistakes.",
+            "Consistency is a superpower.",
+            "Progress, not perfection.",
+            "One more look saves one big oops.",
+            "Patience pays in points.",
+            "Accuracy beats speed—every time.",
+            "Strong roots, strong results.",
+            "Today’s effort is tomorrow’s confidence.",
+            "The best learners review."
+        ];
+
+        // Pick random quote
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        document.getElementById('random-quote').innerText = randomQuote;
+    </script>
   </body>
 </html>
