@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Discovery 2 (D2-S097)</title>
+    
+    <!-- Tailwind untuk komponen internal --> 
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659; /* Background luar abu-abu gelap */
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        height: 29.7cm; /* Fixed A4 Height */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; 
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+        flex-shrink: 0; 
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; 
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-shrink: 0; 
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0; 
+        }
+        body {
+          background-color: white;
+          padding: 0;
+          margin: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 21cm;
+          height: 29.6cm; 
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          page-break-inside: avoid;
+          padding: 0.5cm 1.5cm; 
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        /* Penyesuaian Spasi Saat Print */
+        .page-header { margin-bottom: 10px !important; }
+        .soal-grid { gap: 0.5cm 1cm !important; margin-bottom: 10px !important; }
+        .h-separator { margin: 0.3cm 0 !important; }
+        
+        /* Memaksa warna tercetak */
+        .math-champs-header, .flat, .rod, .unit, .bg-blue-50, .bg-yellow-50 {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8cm 2cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+      }
+
+      .input-line {
+        border: 1px solid #333;
+        min-width: 40px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        vertical-align: middle;
+        font-family: inherit;
+        font-size: 1rem;
+        background: transparent;
+        padding: 0 5px;
+      }
+      
+      .input-line.border-none {
+        border: none;
+        border-bottom: 2px solid #333;
+      }
+
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.6cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+      }
+
+      /* --- CSS BASE TEN BLOCKS --- */
+      .blocks-wrapper {
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-start;
+        gap: 6px;
+        padding: 5px 0;
+        flex-wrap: wrap;
+      }
+
+      /* Ten Block (Rod) - Green */
+      .rod {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #14532d; /* green-900 */
+        background-color: #dcfce7; /* green-100 */
+        width: 10px;
+        flex-shrink: 0;
+      }
+      .rod .unit-seg {
+        width: 100%;
+        height: 8px; /* Disesuaikan agar proporsional */
+        border-bottom: 1px solid #86efac;
+      }
+      .rod .unit-seg:last-child { border-bottom: none; }
+
+      /* One Block (Unit) - Red */
+      .unit {
+        width: 10px; 
+        height: 10px; 
+        border: 1px solid #7f1d1d; /* red-900 */
+        background-color: #fee2e2; /* red-100 */
+        flex-shrink: 0;
+      }
+      
+      .tens-group { display: flex; gap: 3px; }
+      .ones-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; align-self: flex-end; }
+      
+      .check-box {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #333;
+        border-radius: 50%;
+        display: inline-block;
+        vertical-align: middle;
+        background: white;
+      }
+
+      /* --- NUMBER LINE SVG --- */
+      .number-line-svg {
+        width: 100%;
+        height: 80px;
+        overflow: visible;
+      }
+      .tick-label {
+        font-size: 12px;
+        text-anchor: middle;
+        font-family: 'Noto Sans', sans-serif;
+      }
+      .tick-line {
+        stroke: black;
+        stroke-width: 2;
+      }
+      .highlight-tick {
+        stroke: #ef4444; /* red-500 */
+        stroke-width: 3;
+      }
+      .highlight-label {
+        fill: #ef4444;
+        font-weight: bold;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[200px] ml-auto leading-tight mt-1">
+                        Just before / just after
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Code : D2-S097
+                    </div>
+                </div>
+            </div>
+            <!-- Garis pemisah header -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mb-1">
+                Part A: Using Number Lines
+            </div>
+            <p class="text-xs text-gray-600 italic mb-6">
+                Look at the number lines below to help you find the answers.
+            </p>
+
+            <!-- QUESTION 1 -->
+            <div class="soal-item mb-6 p-4 border rounded-xl bg-gray-50">
+                <div class="font-bold mb-2 text-sm">
+                    1. Look at the number line below. What number comes <u>just after</u> 24?
+                </div>
+                
+                <div class="w-full px-4 py-2 mt-2">
+                    <svg class="number-line-svg" viewBox="0 0 400 60">
+                        <defs>
+                            <marker id="arrow1" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#000" /></marker>
+                            <marker id="arrow1-start" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M9,0 L9,6 L0,3 z" fill="#000" /></marker>
+                        </defs>
+                        <!-- Main Line (20 to 30) -->
+                        <line x1="20" y1="40" x2="380" y2="40" stroke="black" stroke-width="2" marker-end="url(#arrow1)" marker-start="url(#arrow1-start)" />
+                        
+                        <!-- Ticks & Labels Loop manually -->
+                        <!-- 20 --> <line x1="20" y1="35" x2="20" y2="45" class="tick-line"/> <text x="20" y="60" class="tick-label">20</text>
+                        <!-- 21 --> <line x1="56" y1="35" x2="56" y2="45" class="tick-line"/> <text x="56" y="60" class="tick-label">21</text>
+                        <!-- 22 --> <line x1="92" y1="35" x2="92" y2="45" class="tick-line"/> <text x="92" y="60" class="tick-label">22</text>
+                        <!-- 23 --> <line x1="128" y1="35" x2="128" y2="45" class="tick-line"/> <text x="128" y="60" class="tick-label">23</text>
+                        <!-- 24 Highlighted --> 
+                         <line x1="164" y1="35" x2="164" y2="45" class="tick-line highlight-tick"/> 
+                         <text x="164" y="60" class="tick-label highlight-label">24</text>
+                        <text x="164" y="25" fill="#ef4444" font-size="10" text-anchor="middle" font-weight="bold">Start</text>
+                        
+                        <!-- 25 --> <line x1="200" y1="35" x2="200" y2="45" class="tick-line"/> <text x="200" y="60" class="tick-label">25</text>
+                        <!-- 26 --> <line x1="236" y1="35" x2="236" y2="45" class="tick-line"/> <text x="236" y="60" class="tick-label">26</text>
+                        <!-- 27 --> <line x1="272" y1="35" x2="272" y2="45" class="tick-line"/> <text x="272" y="60" class="tick-label">27</text>
+                        <!-- 28 --> <line x1="308" y1="35" x2="308" y2="45" class="tick-line"/> <text x="308" y="60" class="tick-label">28</text>
+                        <!-- 29 --> <line x1="344" y1="35" x2="344" y2="45" class="tick-line"/> <text x="344" y="60" class="tick-label">29</text>
+                        <!-- 30 --> <line x1="380" y1="35" x2="380" y2="45" class="tick-line"/> <text x="380" y="60" class="tick-label">30</text>
+                    </svg>
+                </div>
+                
+                <div class="mt-4 font-bold text-center">
+                    Answer: <input type="text" class="input-line w-24">
+                </div>
+            </div>
+
+            <!-- QUESTION 2 -->
+            <div class="soal-item mb-6 p-4 border rounded-xl bg-gray-50">
+                <div class="font-bold mb-2 text-sm">
+                    2. Look at the number line below. What number comes <u>just before</u> 60?
+                </div>
+                
+                <div class="w-full px-4 py-2 mt-2">
+                    <svg class="number-line-svg" viewBox="0 0 400 60">
+                        <!-- Main Line (55 to 65) -->
+                        <line x1="20" y1="40" x2="380" y2="40" stroke="black" stroke-width="2" marker-end="url(#arrow1)" marker-start="url(#arrow1-start)" />
+                        
+                        <!-- Ticks & Labels 55-65 -->
+                        <!-- 55 --> <line x1="20" y1="35" x2="20" y2="45" class="tick-line"/> <text x="20" y="60" class="tick-label">55</text>
+                        <!-- 56 --> <line x1="56" y1="35" x2="56" y2="45" class="tick-line"/> <text x="56" y="60" class="tick-label">56</text>
+                        <!-- 57 --> <line x1="92" y1="35" x2="92" y2="45" class="tick-line"/> <text x="92" y="60" class="tick-label">57</text>
+                        <!-- 58 --> <line x1="128" y1="35" x2="128" y2="45" class="tick-line"/> <text x="128" y="60" class="tick-label">58</text>
+                        <!-- 59 --> <line x1="164" y1="35" x2="164" y2="45" class="tick-line"/> <text x="164" y="60" class="tick-label">59</text>
+                        
+                        <!-- 60 Highlighted --> 
+                         <line x1="200" y1="35" x2="200" y2="45" class="tick-line highlight-tick"/> 
+                         <text x="200" y="60" class="tick-label highlight-label">60</text>
+                        <text x="200" y="25" fill="#ef4444" font-size="10" text-anchor="middle" font-weight="bold">Start</text>
+
+                        <!-- 61 --> <line x1="236" y1="35" x2="236" y2="45" class="tick-line"/> <text x="236" y="60" class="tick-label">61</text>
+                        <!-- 62 --> <line x1="272" y1="35" x2="272" y2="45" class="tick-line"/> <text x="272" y="60" class="tick-label">62</text>
+                        <!-- 63 --> <line x1="308" y1="35" x2="308" y2="45" class="tick-line"/> <text x="308" y="60" class="tick-label">63</text>
+                        <!-- 64 --> <line x1="344" y1="35" x2="344" y2="45" class="tick-line"/> <text x="344" y="60" class="tick-label">64</text>
+                        <!-- 65 --> <line x1="380" y1="35" x2="380" y2="45" class="tick-line"/> <text x="380" y="60" class="tick-label">65</text>
+                    </svg>
+                </div>
+                
+                <div class="mt-4 font-bold text-center">
+                    Answer: <input type="text" class="input-line w-24">
+                </div>
+            </div>
+
+            <!-- QUESTION 3 -->
+            <div class="soal-item mb-6 p-4 border rounded-xl bg-gray-50">
+                <div class="font-bold mb-2 text-sm">
+                    3. Fill in the missing number on the number line.
+                </div>
+                
+                <div class="w-full px-4 py-2 mt-2">
+                    <svg class="number-line-svg" viewBox="0 0 400 60">
+                         <!-- Main Line -->
+                         <line x1="50" y1="40" x2="350" y2="40" stroke="black" stroke-width="2" marker-end="url(#arrow1)" marker-start="url(#arrow1-start)" />
+                         
+                         <!-- 41 --> <line x1="80" y1="35" x2="80" y2="45" class="tick-line"/> <text x="80" y="60" class="tick-label">41</text>
+                         <!-- 42 --> <line x1="140" y1="35" x2="140" y2="45" class="tick-line"/> <text x="140" y="60" class="tick-label">42</text>
+                         <!-- 43 --> <line x1="200" y1="35" x2="200" y2="45" class="tick-line"/> <text x="200" y="60" class="tick-label">43</text>
+                         
+                         <!-- Missing Circle -->
+                          <circle cx="260" cy="40" r="10" stroke="black" stroke-width="2" fill="white" />
+                         <text x="260" y="60" class="tick-label font-bold text-blue-600">?</text>
+
+                         <!-- 45 --> <line x1="320" y1="35" x2="320" y2="45" class="tick-line"/> <text x="320" y="60" class="tick-label">45</text>
+                    </svg>
+                </div>
+
+                <div class="mt-4 text-sm font-semibold ml-4">The missing number is:</div>
+                <div class="choice-container !justify-start ml-4 mt-2">
+                    <label class="flex items-center gap-2 cursor-pointer mr-6">
+                        <div class="check-box"></div> <span>40</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer mr-6">
+                        <div class="check-box"></div> <span>44</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer mr-6">
+                        <div class="check-box"></div> <span>46</span>
+                    </label>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[200px] ml-auto leading-tight mt-1">
+                        Just before/just after
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Code : D2-S097
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mb-1">
+                Part B: Using Pictures
+            </div>
+            <p class="text-xs text-gray-600 italic mb-6">
+                Count the number of squares. Think about adding or subtracting 1 square.
+            </p>
+
+            <div class="soal-grid mb-6">
+                <!-- QUESTION 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">
+                        4. What number is <u>1 more than</u> the picture?
+                    </div>
+                    
+                    <div class="flex-grow flex items-center justify-center my-4">
+                         <div class="blocks-wrapper">
+                             <!-- 3 Tens (Using Math Champs Green Rods) -->
+                             <div class="tens-group">
+                                 <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                 <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                 <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                             </div>
+                             <!-- 4 Ones (Using Math Champs Red Units) -->
+                             <div class="ones-group">
+                                 <div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div>
+                             </div>
+                         </div>
+                    </div>
+
+                    <div class="text-sm text-center">
+                        <p class="mb-2">The picture shows <b>34</b>.</p>
+                        <p>1 more than 34 is: <input type="text" class="input-line w-16"></p>
+                    </div>
+                </div>
+
+                <!-- QUESTION 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">
+                        5. What number is <u>1 less than</u> the picture?
+                    </div>
+                    
+                    <div class="flex-grow flex items-center justify-center my-4">
+                         <div class="blocks-wrapper">
+                             <!-- 2 Tens -->
+                             <div class="tens-group">
+                                 <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                 <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                             </div>
+                             <!-- 1 One -->
+                             <div class="ones-group">
+                                 <div class="unit"></div>
+                             </div>
+                         </div>
+                    </div>
+
+                    <div class="text-sm text-center">
+                        <p class="mb-2">The picture shows <b>21</b>.</p>
+                        <p>1 less than 21 is: <input type="text" class="input-line w-16"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="instruction-text mb-4 mt-4">
+                Part C: Mixed Problems
+            </div>
+
+            <div class="soal-grid mb-5">
+                <!-- QUESTION 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">
+                        6. What number is <u>1 less than</u> 50?
+                    </div>
+                    <div class="choice-container mt-4">
+                        <label class="flex items-center gap-2 cursor-pointer w-full">
+                            <div class="check-box"></div> <span>51</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer w-full">
+                            <div class="check-box"></div> <span>40</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer w-full">
+                            <div class="check-box"></div> <span>49</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- QUESTION 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">
+                        7. What number is <u>1 more than</u> 79?
+                    </div>
+                    <div class="choice-container mt-4">
+                        <label class="flex items-center gap-2 cursor-pointer w-full">
+                            <div class="check-box"></div> <span>78</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer w-full">
+                            <div class="check-box"></div> <span>80</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer w-full">
+                            <div class="check-box"></div> <span>90</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[200px] ml-auto leading-tight mt-1">
+                        Just before/just after
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Code : D2-S097
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mb-4">
+                Part C: Mixed Problems (Continued)
+            </div>
+
+            <!-- QUESTION 8 -->
+            <div class="soal-item mb-6 p-6 rounded-xl border border-gray-300">
+                <div class="font-bold mb-4 text-sm">
+                    8. Fill in the blanks to complete the pattern.
+                </div>
+                
+                <div class="w-full text-center py-6">
+                    <span class="text-3xl font-bold tracking-widest text-gray-800 flex justify-center items-center gap-4">
+                        88, 89, <input type="text" class="input-line w-24 h-12 text-center text-3xl font-bold">, 91
+                    </span>
+                </div>
+            </div>
+
+            <!-- QUESTION 9 -->
+            <div class="soal-item mb-6 p-6 rounded-xl border border-blue-200 bg-blue-50">
+                <div class="font-bold mb-2 text-sm text-blue-900">
+                    9. Puzzle Time!
+                </div>
+                
+                <div class="p-4 bg-white border border-blue-100 rounded-lg mb-4 text-center shadow-sm">
+                    <p class="text-lg italic font-medium text-gray-700 leading-relaxed">
+                        "I am a number.<br>
+                        I come <u>just before 100</u>.<br>
+                        What number am I?"
+                    </p>
+                </div>
+
+                <div class="text-center mt-2 font-bold">
+                    Answer: <input type="text" class="input-line w-32">
+                </div>
+            </div>
+
+            <!-- QUESTION 10 -->
+            <div class="soal-item mb-6 p-6 rounded-xl border border-red-200 bg-red-50">
+                <div class="font-bold mb-2 text-sm text-red-900 flex items-center gap-2">
+                    <span class="text-xl">★</span> 10. Challenge Question!
+                </div>
+                
+                <div class="text-base mt-2 px-4 py-2 leading-relaxed bg-white rounded-lg border border-red-100 shadow-sm">
+                    <p class="mb-2">Siti has <b>15</b> stickers.</p>
+                    <p class="mb-2">Ben has <b>1 fewer sticker</b> than Siti.</p>
+                    <p>How many stickers does Ben have?</p>
+                </div>
+
+                <div class="mt-6 mb-2 px-4 text-center font-bold">
+                    Answer: <input type="text" class="input-line w-20"> stickers.
+                </div>
+            </div>
+
+            <!-- RANDOM ENCOURAGEMENT SECTION -->
+            <div id="random-quote" class="mt-12 text-center text-gray-500 italic font-medium text-sm px-8">
+                <!-- Text will be inserted here by JS -->
+            </div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+
+    <!-- SCRIPT FOR RANDOM QUOTE -->
+    <script>
+        const quotes = [
+            "Nice work finishing the set—seriously well done.",
+            "Great effort today. Quick check-through and you’re good.",
+            "Strong finish! Take a moment to review your answers.",
+            "Awesome job. If anything feels off, trust your gut and recheck it.",
+            "You’re getting sharper with every problem.",
+            "Well done—your focus really showed.",
+            "Before you close it, do one last scan for silly mistakes.",
+            "That was solid. Clean work and clear thinking.",
+            "Mistakes are part of the process—what matters is you keep going.",
+            "Great job. Try checking the trickiest question one more time.",
+            "Proud of your effort. Consistency wins.",
+            "Strong work—your math muscles are growing.",
+            "Nice! Now make sure every question has an answer.",
+            "Great progress today—keep that momentum.",
+            "You worked hard. Take a breath, then double-check.",
+            "Excellent! Try verifying one problem using a different method.",
+            "You did it—finish with a confident final check.",
+            "Little by little, a little becomes a lot.",
+            "Practice makes progress.",
+            "Steady hands win the race.",
+            "Small steps beat no steps.",
+            "Check your work, trust your growth.",
+            "A calm mind catches quiet mistakes.",
+            "Consistency is a superpower.",
+            "Progress, not perfection.",
+            "One more look saves one big oops.",
+            "Patience pays in points.",
+            "Accuracy beats speed—every time.",
+            "Strong roots, strong results.",
+            "Today’s effort is tomorrow’s confidence.",
+            "The best learners review."
+        ];
+
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        document.getElementById("random-quote").innerText = randomQuote;
+    </script>
+  </body>
+</html>
