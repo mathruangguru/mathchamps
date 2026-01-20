@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Division (D2-S140)</title>
+
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .svg-group,
+        .svg-dot,
+        .bg-blue-50 {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+      }
+
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 2px solid #333;
+        width: 60px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: transparent;
+        margin: 0 5px;
+        border-radius: 4px;
+      }
+
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 4px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 0.5rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+        position: relative;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- VISUAL MATH STYLES --- */
+      .item-apple {
+        fill: #ffb3b3;
+        stroke: #cc0000;
+        stroke-width: 1.5;
+      }
+      .item-cookie {
+        fill: #d2b48c;
+        stroke: #8b4513;
+        stroke-width: 1.5;
+      }
+      .item-star {
+        fill: #fffacd;
+        stroke: #ffd700;
+        stroke-width: 1.5;
+      }
+      .item-marble {
+        fill: #add8e6;
+        stroke: #00008b;
+        stroke-width: 1.5;
+      }
+      .item-candy {
+        fill: #90ee90;
+        stroke: #006400;
+        stroke-width: 1.5;
+      }
+      .item-donut {
+        fill: none;
+        stroke: #ff8c00;
+        stroke-width: 3;
+      }
+      .item-flower {
+        fill: #ffc0cb;
+        stroke: #ff1493;
+        stroke-width: 1.5;
+      }
+      .item-orange {
+        fill: #ffd700;
+        stroke: #ff8c00;
+        stroke-width: 1.5;
+      }
+      .item-pencil {
+        fill: #d3d3d3;
+        stroke: #696969;
+        stroke-width: 1.5;
+      }
+      .item-student {
+        fill: #ffffe0;
+        stroke: #daa520;
+        stroke-width: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+          <div class="math-champs-header">
+            <img
+              src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png"
+              alt="Math Champs"
+              class="h-10 md:h-12 w-auto object-contain"
+            />
+            <div class="text-right">
+              <div
+                class="text-base font-extrabold text-black uppercase tracking-wide"
+              >
+                DISCOVERY 2
+              </div>
+              <div class="text-[10px] text-black font-semibold mt-0.5">
+                Division
+              </div>
+              <div
+                class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto"
+              >
+                Word Problems
+              </div>
+              <div class="text-[10px] text-black font-medium mt-0.5">
+                Code : D2-S140
+              </div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <div
+            class="h-separator"
+            style="margin-top: 0; margin-bottom: 0.2cm"
+          ></div>
+
+          <h2 class="font-bold text-lg mb-2">Let's Learn! (Division Concept)</h2>
+          <div class="instruction-text mb-4">
+            Division is <b>grouping</b> objects into equal parts or
+            <b>sharing</b> equally.
+          </div>
+
+          <div class="soal-grid">
+            <h3 class="font-bold text-md border-b pb-1">
+              Part A: Multiple Choice
+            </h3>
+
+            <!-- SOAL 1 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">
+                1. There are 6 apples. Mother wants to share them into 2 plates
+                equally.
+              </div>
+              <div class="flex justify-start items-center gap-4 my-2 pl-4">
+                <svg width="240" height="50">
+                  <!-- 6 Apples -->
+                  <circle cx="20" cy="25" r="15" class="item-apple" />
+                  <circle cx="60" cy="25" r="15" class="item-apple" />
+                  <circle cx="100" cy="25" r="15" class="item-apple" />
+                  <circle cx="140" cy="25" r="15" class="item-apple" />
+                  <circle cx="180" cy="25" r="15" class="item-apple" />
+                  <circle cx="220" cy="25" r="15" class="item-apple" />
+                </svg>
+              </div>
+              <div class="mb-2 text-sm italic text-gray-600">
+                How many apples are on each plate?
+              </div>
+              <div class="choice-container">
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> a. 2 apples
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> b. 3 apples
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> c. 4 apples
+                </label>
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SOAL 2 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">
+                2. There are 8 cookies. Budi groups them into 2 cookies per
+                group.
+              </div>
+              <div class="flex justify-start items-center gap-4 my-2 pl-4">
+                <svg width="260" height="40">
+                  <!-- 8 Cookies -->
+                  <circle cx="20" cy="20" r="12" class="item-cookie" />
+                  <circle cx="50" cy="20" r="12" class="item-cookie" />
+                  <circle cx="80" cy="20" r="12" class="item-cookie" />
+                  <circle cx="110" cy="20" r="12" class="item-cookie" />
+                  <circle cx="140" cy="20" r="12" class="item-cookie" />
+                  <circle cx="170" cy="20" r="12" class="item-cookie" />
+                  <circle cx="200" cy="20" r="12" class="item-cookie" />
+                  <circle cx="230" cy="20" r="12" class="item-cookie" />
+                </svg>
+              </div>
+              <div class="mb-2 text-sm italic text-gray-600">
+                How many groups are formed?
+              </div>
+              <div class="choice-container">
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> a. 2 groups
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> b. 3 groups
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> c. 4 groups
+                </label>
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SOAL 3 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">
+                3. Siti has 10 star stickers. She sticks 5 stars on each book.
+              </div>
+              <div class="flex justify-start items-center gap-4 my-2 pl-4">
+                <svg width="300" height="40">
+                  <!-- 10 Stars (Simulated by polygons) -->
+                  <polygon
+                    points="15,5 19,15 29,15 21,21 24,31 15,25 6,31 9,21 1,15 11,15"
+                    class="item-star"
+                    transform="translate(0,0)"
+                  />
+                  <polygon
+                    points="15,5 19,15 29,15 21,21 24,31 15,25 6,31 9,21 1,15 11,15"
+                    class="item-star"
+                    transform="translate(30,0)"
+                  />
+                  <polygon
+                    points="15,5 19,15 29,15 21,21 24,31 15,25 6,31 9,21 1,15 11,15"
+                    class="item-star"
+                    transform="translate(60,0)"
+                  />
+                  <polygon
+                    points="15,5 19,15 29,15 21,21 24,31 15,25 6,31 9,21 1,15 11,15"
+                    class="item-star"
+                    transform="translate(90,0)"
+                  />
+                  <polygon
+                    points="15,5 19,15 29,15 21,21 24,31 15,25 6,31 9,21 1,15 11,15"
+                    class="item-star"
+                    transform="translate(120,0)"
+                  />
+                  <polygon
+                    points="15,5 19,15 29,15 21,21 24,31 15,25 6,31 9,21 1,15 11,15"
+                    class="item-star"
+                    transform="translate(150,0)"
+                  />
+                  <polygon
+                    points="15,5 19,15 29,15 21,21 24,31 15,25 6,31 9,21 1,15 11,15"
+                    class="item-star"
+                    transform="translate(180,0)"
+                  />
+                  <polygon
+                    points="15,5 19,15 29,15 21,21 24,31 15,25 6,31 9,21 1,15 11,15"
+                    class="item-star"
+                    transform="translate(210,0)"
+                  />
+                  <polygon
+                    points="15,5 19,15 29,15 21,21 24,31 15,25 6,31 9,21 1,15 11,15"
+                    class="item-star"
+                    transform="translate(240,0)"
+                  />
+                  <polygon
+                    points="15,5 19,15 29,15 21,21 24,31 15,25 6,31 9,21 1,15 11,15"
+                    class="item-star"
+                    transform="translate(270,0)"
+                  />
+                </svg>
+              </div>
+              <div class="mb-2 text-sm italic text-gray-600">
+                How many books have stickers?
+              </div>
+              <div class="choice-container">
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> a. 2 books
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> b. 5 books
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> c. 10 books
+                </label>
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SOAL 4 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">
+                4. There are 12 marbles. Shared equally among 3 children.
+              </div>
+              <div class="flex justify-start items-center gap-4 my-2 pl-4">
+                <svg width="320" height="40">
+                  <!-- 12 Marbles -->
+                  <g id="marbles">
+                    <circle cx="15" cy="20" r="10" class="item-marble" />
+                    <circle cx="40" cy="20" r="10" class="item-marble" />
+                    <circle cx="65" cy="20" r="10" class="item-marble" />
+                    <circle cx="90" cy="20" r="10" class="item-marble" />
+                    <circle cx="115" cy="20" r="10" class="item-marble" />
+                    <circle cx="140" cy="20" r="10" class="item-marble" />
+                    <circle cx="165" cy="20" r="10" class="item-marble" />
+                    <circle cx="190" cy="20" r="10" class="item-marble" />
+                    <circle cx="215" cy="20" r="10" class="item-marble" />
+                    <circle cx="240" cy="20" r="10" class="item-marble" />
+                    <circle cx="265" cy="20" r="10" class="item-marble" />
+                    <circle cx="290" cy="20" r="10" class="item-marble" />
+                  </g>
+                </svg>
+              </div>
+              <div class="mb-2 text-sm italic text-gray-600">
+                Each child gets ... marbles.
+              </div>
+              <div class="choice-container">
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> a. 3
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> b. 4
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> c. 6
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i
+            >Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya
+            Indonesia.</i
+          >
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+          <div class="math-champs-header">
+            <img
+              src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png"
+              alt="Math Champs"
+              class="h-10 md:h-12 w-auto object-contain"
+            />
+            <div class="text-right">
+              <div
+                class="text-base font-extrabold text-black uppercase tracking-wide"
+              >
+                DISCOVERY 2
+              </div>
+              <div class="text-[10px] text-black font-semibold mt-0.5">
+                Division
+              </div>
+              <div
+                class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto"
+              >
+                Word Problems
+              </div>
+              <div class="text-[10px] text-black font-medium mt-0.5">
+                Code : D2-S140
+              </div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <div class="soal-grid">
+            <!-- SOAL 5 (From Part A) -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">
+                5. 15 candies are divided into groups of 5 candies.
+              </div>
+              <div class="flex justify-start items-center gap-4 my-2 pl-4">
+                <svg width="300" height="60">
+                  <!-- 15 Candies (2 rows) -->
+                  <circle cx="20" cy="15" r="10" class="item-candy" />
+                  <circle cx="45" cy="15" r="10" class="item-candy" />
+                  <circle cx="70" cy="15" r="10" class="item-candy" />
+                  <circle cx="95" cy="15" r="10" class="item-candy" />
+                  <circle cx="120" cy="15" r="10" class="item-candy" />
+                  <circle cx="145" cy="15" r="10" class="item-candy" />
+                  <circle cx="170" cy="15" r="10" class="item-candy" />
+                  <circle cx="195" cy="15" r="10" class="item-candy" />
+
+                  <circle cx="20" cy="40" r="10" class="item-candy" />
+                  <circle cx="45" cy="40" r="10" class="item-candy" />
+                  <circle cx="70" cy="40" r="10" class="item-candy" />
+                  <circle cx="95" cy="40" r="10" class="item-candy" />
+                  <circle cx="120" cy="40" r="10" class="item-candy" />
+                  <circle cx="145" cy="40" r="10" class="item-candy" />
+                  <circle cx="170" cy="40" r="10" class="item-candy" />
+                </svg>
+              </div>
+              <div class="mb-2 text-sm italic text-gray-600">
+                How many groups are there?
+              </div>
+              <div class="choice-container">
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> a. 3 groups
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> b. 5 groups
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> c. 15 groups
+                </label>
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+            <h3 class="font-bold text-md border-b pb-1">Part B: Short Answer</h3>
+            <div class="text-sm italic text-gray-600 mb-2">
+              Count the pictures to help you fill in the answer box.
+            </div>
+
+            <!-- SOAL 6 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">
+                6. There are 14 donuts. We divide them into 2 boxes equally.
+              </div>
+              <div class="flex justify-start items-center gap-4 my-2 pl-4">
+                <svg width="250" height="60">
+                  <!-- 7 + 7 Donuts -->
+                  <g transform="translate(0,0)">
+                    <circle cx="15" cy="15" r="10" class="item-donut" />
+                    <circle cx="40" cy="15" r="10" class="item-donut" />
+                    <circle cx="65" cy="15" r="10" class="item-donut" />
+                    <circle cx="90" cy="15" r="10" class="item-donut" />
+                    <circle cx="115" cy="15" r="10" class="item-donut" />
+                    <circle cx="140" cy="15" r="10" class="item-donut" />
+                    <circle cx="165" cy="15" r="10" class="item-donut" />
+                  </g>
+                  <g transform="translate(0,30)">
+                    <circle cx="15" cy="15" r="10" class="item-donut" />
+                    <circle cx="40" cy="15" r="10" class="item-donut" />
+                    <circle cx="65" cy="15" r="10" class="item-donut" />
+                    <circle cx="90" cy="15" r="10" class="item-donut" />
+                    <circle cx="115" cy="15" r="10" class="item-donut" />
+                    <circle cx="140" cy="15" r="10" class="item-donut" />
+                    <circle cx="165" cy="15" r="10" class="item-donut" />
+                  </g>
+                </svg>
+              </div>
+              <div class="mt-2 text-lg font-bold">
+                14 ÷ 2 = <input type="text" class="input-box" />
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SOAL 7 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">
+                7. There are 9 flowers. Mother makes bunches, each bunch has 3
+                flowers.
+              </div>
+              <div class="flex justify-start items-center gap-8 my-2 pl-4">
+                <svg width="250" height="40">
+                  <!-- 3 bunches of 3 flowers -->
+                  <g transform="translate(0,0)">
+                    <circle cx="10" cy="20" r="8" class="item-flower" />
+                    <circle cx="25" cy="20" r="8" class="item-flower" />
+                    <circle cx="40" cy="20" r="8" class="item-flower" />
+                    <line
+                      x1="55"
+                      y1="5"
+                      x2="55"
+                      y2="35"
+                      stroke="#ccc"
+                      stroke-dasharray="4"
+                    />
+                  </g>
+                  <g transform="translate(60,0)">
+                    <circle cx="10" cy="20" r="8" class="item-flower" />
+                    <circle cx="25" cy="20" r="8" class="item-flower" />
+                    <circle cx="40" cy="20" r="8" class="item-flower" />
+                    <line
+                      x1="55"
+                      y1="5"
+                      x2="55"
+                      y2="35"
+                      stroke="#ccc"
+                      stroke-dasharray="4"
+                    />
+                  </g>
+                  <g transform="translate(120,0)">
+                    <circle cx="10" cy="20" r="8" class="item-flower" />
+                    <circle cx="25" cy="20" r="8" class="item-flower" />
+                    <circle cx="40" cy="20" r="8" class="item-flower" />
+                  </g>
+                </svg>
+              </div>
+              <div class="mt-2 text-lg font-bold">
+                9 ÷ 3 = <input type="text" class="input-box" />
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SOAL 8 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">
+                8. A father has 16 oranges. He divides them equally among his
+                four children.
+              </div>
+              <div class="flex justify-start items-center gap-8 my-2 pl-4">
+                <svg width="350" height="40">
+                  <!-- 16 Oranges -->
+                  <g id="oranges">
+                    <circle cx="15" cy="20" r="10" class="item-orange" />
+                    <circle cx="35" cy="20" r="10" class="item-orange" />
+                    <circle cx="55" cy="20" r="10" class="item-orange" />
+                    <circle cx="75" cy="20" r="10" class="item-orange" />
+                    <circle cx="95" cy="20" r="10" class="item-orange" />
+                    <circle cx="115" cy="20" r="10" class="item-orange" />
+                    <circle cx="135" cy="20" r="10" class="item-orange" />
+                    <circle cx="155" cy="20" r="10" class="item-orange" />
+                    <circle cx="175" cy="20" r="10" class="item-orange" />
+                    <circle cx="195" cy="20" r="10" class="item-orange" />
+                    <circle cx="215" cy="20" r="10" class="item-orange" />
+                    <circle cx="235" cy="20" r="10" class="item-orange" />
+                    <circle cx="255" cy="20" r="10" class="item-orange" />
+                    <circle cx="275" cy="20" r="10" class="item-orange" />
+                    <circle cx="295" cy="20" r="10" class="item-orange" />
+                    <circle cx="315" cy="20" r="10" class="item-orange" />
+                  </g>
+                </svg>
+              </div>
+              <div class="mb-2 text-sm italic text-gray-600">
+                (Circle every 4 oranges or divide into 4 places)
+              </div>
+              <div class="mt-2 text-lg font-bold">
+                16 ÷ 4 = <input type="text" class="input-box" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i
+            >Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya
+            Indonesia.</i
+          >
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+          <div class="math-champs-header">
+            <img
+              src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png"
+              alt="Math Champs"
+              class="h-10 md:h-12 w-auto object-contain"
+            />
+            <div class="text-right">
+              <div
+                class="text-base font-extrabold text-black uppercase tracking-wide"
+              >
+                DISCOVERY 2
+              </div>
+              <div class="text-[10px] text-black font-semibold mt-0.5">
+                Division
+              </div>
+              <div
+                class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto"
+              >
+                Word Problems
+              </div>
+              <div class="text-[10px] text-black font-medium mt-0.5">
+                Code : D2-S140
+              </div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <div class="soal-grid">
+            <!-- SOAL 9 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">
+                9. There are 18 pencils. Put into boxes, each box holds 2
+                pencils.
+              </div>
+              <div class="flex justify-start items-center gap-8 my-2 pl-4">
+                <svg width="340" height="40">
+                  <!-- 18 Pencils (Rectangles) -->
+                  <g id="pencils">
+                    <!-- Simple loop equivalent -->
+                    <rect
+                      x="0"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="15"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="30"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="45"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="60"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="75"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="90"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="105"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="120"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="135"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="150"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="165"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="180"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="195"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="210"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="225"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="240"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                    <rect
+                      x="255"
+                      y="5"
+                      width="10"
+                      height="30"
+                      class="item-pencil"
+                    />
+                  </g>
+                </svg>
+              </div>
+              <div class="mb-2 text-sm italic text-gray-600">
+                How many boxes are needed?
+              </div>
+              <div class="mt-2 text-lg font-bold">
+                18 ÷ 2 = <input type="text" class="input-box" />
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SOAL 10 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">
+                10. There are 20 students. The teacher divides them into 5 study
+                groups.
+              </div>
+              <div class="flex justify-start items-center gap-8 my-2 pl-4">
+                <svg width="300" height="60">
+                  <!-- 20 Students (2 rows of 10) -->
+                  <g transform="translate(0,0)">
+                    <circle cx="15" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M10,15 Q15,20 20,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+                    <circle cx="12" cy="12" r="1" fill="#daa520" />
+                    <circle cx="18" cy="12" r="1" fill="#daa520" />
+
+                    <circle cx="40" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M35,15 Q40,20 45,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+
+                    <circle cx="65" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M60,15 Q65,20 70,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+
+                    <circle cx="90" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M85,15 Q90,20 95,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+
+                    <circle cx="115" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M110,15 Q115,20 120,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+
+                    <circle cx="140" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M135,15 Q140,20 145,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+
+                    <circle cx="165" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M160,15 Q165,20 170,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+
+                    <circle cx="190" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M185,15 Q190,20 195,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+
+                    <circle cx="215" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M210,15 Q215,20 220,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+
+                    <circle cx="240" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M235,15 Q240,20 245,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+                  </g>
+                  <g transform="translate(0,30)">
+                    <circle cx="15" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M10,15 Q15,20 20,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+                    <circle cx="40" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M35,15 Q40,20 45,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+                    <circle cx="65" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M60,15 Q65,20 70,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+                    <circle cx="90" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M85,15 Q90,20 95,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+                    <circle cx="115" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M110,15 Q115,20 120,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+                    <circle cx="140" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M135,15 Q140,20 145,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+                    <circle cx="165" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M160,15 Q165,20 170,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+                    <circle cx="190" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M185,15 Q190,20 195,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+                    <circle cx="215" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M210,15 Q215,20 220,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+                    <circle cx="240" cy="15" r="10" class="item-student" />
+                    <path
+                      d="M235,15 Q240,20 245,15"
+                      stroke="#daa520"
+                      fill="none"
+                      stroke-width="1.5"
+                    />
+                  </g>
+                </svg>
+              </div>
+              <div class="mb-2 text-sm italic text-gray-600">
+                How many students are in each group?
+              </div>
+              <div class="mt-2 text-lg font-bold">
+                20 ÷ 5 = <input type="text" class="input-box" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Motivation -->
+          <div
+            class="text-center italic text-xs text-gray-500 mt-12 p-4 bg-gray-100 rounded-lg"
+          >
+            "Practice makes progress."
+          </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i
+            >Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya
+            Indonesia.</i
+          >
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
