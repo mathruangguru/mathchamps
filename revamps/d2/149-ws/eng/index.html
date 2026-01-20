@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Finding Coin Groups (D2-S149)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .svg-group {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border-bottom: 2px solid #333;
+        min-width: 60px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: bottom;
+        background: transparent;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 2rem;
+        margin-top: 4px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 0.5rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+        position: relative;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.25cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CUSTOM MONEY SVG STYLES --- */
+      .coin-silver { fill: #e5e7eb; stroke: #9ca3af; stroke-width: 2; }
+      .coin-gold { fill: #facc15; stroke: #ca8a04; stroke-width: 2; }
+      .coin-text-val { font-family: 'Noto Sans', sans-serif; font-weight: 800; text-anchor: middle; fill: #374151; }
+      .coin-text-sm { font-family: 'Noto Sans', sans-serif; font-weight: 600; text-anchor: middle; fill: #4b5563; font-size: 7px; }
+
+      /* Number Bond Styles */
+      .bond-circle { fill: white; stroke: #333; stroke-width: 2; }
+      .bond-line { stroke: #333; stroke-width: 2.5; }
+
+    </style>
+  </head>
+  <body>
+    
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-3) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Money</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Finding Coin Groups of Equal Value
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D2-S149</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <h2 class="font-bold text-lg mb-2">Section A: Multiple Choice</h2>
+            <div class="instruction-text">
+                Instruction: Choose the answer (a, b, or c) that has the <b>SAME</b> value as the coin on the left.
+            </div>
+            
+            <div class="soal-grid mt-4">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        1. Which one has the same value as one Rp200 coin?
+                    </div>
+                    <div class="flex items-center gap-8 mb-2">
+                        <!-- Soal: 200 -->
+                        <div class="w-24 flex justify-center">
+                            <svg width="60" height="60" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                <text x="50" y="35" class="coin-text-sm">Rp</text>
+                                <text x="50" y="60" class="coin-text-val" font-size="24">200</text>
+                            </svg>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-400">➜</div>
+                        <!-- Pilihan -->
+                        <div class="flex flex-col gap-2">
+                            <!-- A -->
+                            <label class="flex items-center cursor-pointer gap-4">
+                                <span class="choice-box mt-2"></span>
+                                <div class="flex items-center gap-1">
+                                    <span class="mr-2 font-bold text-sm">a.</span>
+                                    <svg width="40" height="40" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">100</text>
+                                    </svg>
+                                </div>
+                            </label>
+                            <!-- B -->
+                            <label class="flex items-center cursor-pointer gap-4">
+                                <span class="choice-box mt-2"></span>
+                                <div class="flex items-center gap-1">
+                                    <span class="mr-2 font-bold text-sm">b.</span>
+                                    <svg width="40" height="40" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">100</text>
+                                    </svg>
+                                    <svg width="40" height="40" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">100</text>
+                                    </svg>
+                                </div>
+                            </label>
+                            <!-- C -->
+                            <label class="flex items-center cursor-pointer gap-4">
+                                <span class="choice-box mt-2"></span>
+                                <div class="flex items-center gap-1">
+                                    <span class="mr-2 font-bold text-sm">c.</span>
+                                    <svg width="40" height="40" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">100</text>
+                                    </svg>
+                                    <svg width="40" height="40" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">100</text>
+                                    </svg>
+                                    <svg width="40" height="40" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">100</text>
+                                    </svg>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        2. Which one has the same value as one Rp500 coin?
+                    </div>
+                    <div class="flex items-center gap-8 mb-2">
+                        <!-- Soal: 500 -->
+                        <div class="w-24 flex justify-center">
+                            <svg width="70" height="70" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" class="coin-gold" />
+                                <text x="50" y="35" class="coin-text-sm">Rp</text>
+                                <text x="50" y="60" class="coin-text-val" font-size="24">500</text>
+                            </svg>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-400">➜</div>
+                        <!-- Pilihan -->
+                        <div class="flex flex-col gap-2">
+                            <!-- A -->
+                            <label class="flex items-center cursor-pointer gap-4">
+                                <span class="choice-box mt-2"></span>
+                                <div class="flex items-center gap-1">
+                                    <span class="mr-2 font-bold text-sm">a.</span>
+                                    <svg width="50" height="50" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">200</text>
+                                    </svg>
+                                    <svg width="50" height="50" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">200</text>
+                                    </svg>
+                                </div>
+                            </label>
+                            <!-- B -->
+                            <label class="flex items-center cursor-pointer gap-4">
+                                <span class="choice-box mt-2"></span>
+                                <div class="flex items-center gap-1">
+                                    <span class="mr-2 font-bold text-sm">b.</span>
+                                    <svg width="50" height="50" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">200</text>
+                                    </svg>
+                                    <svg width="50" height="50" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">200</text>
+                                    </svg>
+                                    <svg width="40" height="40" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">100</text>
+                                    </svg>
+                                </div>
+                            </label>
+                            <!-- C -->
+                            <label class="flex items-center cursor-pointer gap-4">
+                                <span class="choice-box mt-2"></span>
+                                <div class="flex items-center gap-1">
+                                    <span class="mr-2 font-bold text-sm">c.</span>
+                                    <svg width="40" height="40" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">100</text>
+                                    </svg>
+                                    <svg width="40" height="40" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">100</text>
+                                    </svg>
+                                    <svg width="40" height="40" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                        <text x="50" y="60" class="coin-text-val" font-size="22">100</text>
+                                    </svg>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        3. Which group of coins has a value of Rp500?
+                    </div>
+                    <div class="choice-container flex-col gap-2">
+                        <!-- A -->
+                        <label class="flex items-center cursor-pointer gap-4">
+                            <span class="choice-box mt-2"></span>
+                            <div class="flex items-center flex-wrap gap-1">
+                                <span class="mr-2 font-bold text-sm">a.</span>
+                                <!-- 4x 100 -->
+                                <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">100</text></svg>
+                            </div>
+                        </label>
+                        <!-- B -->
+                        <label class="flex items-center cursor-pointer gap-4">
+                            <span class="choice-box mt-2"></span>
+                            <div class="flex items-center flex-wrap gap-1">
+                                <span class="mr-2 font-bold text-sm">b.</span>
+                                <!-- 5x 100 -->
+                                <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">100</text></svg>
+                            </div>
+                        </label>
+                        <!-- C -->
+                        <label class="flex items-center cursor-pointer gap-4">
+                            <span class="choice-box mt-2"></span>
+                            <div class="flex items-center flex-wrap gap-1">
+                                <span class="mr-2 font-bold text-sm">c.</span>
+                                <!-- 200 + 100 -->
+                                <svg width="50" height="50" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">200</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">100</text></svg>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 4-6) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Money</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Finding Coin Groups of Equal Value
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D2-S149</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mt-4">
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        4. Which one has the same value as one Rp1.000 coin?
+                    </div>
+                    <div class="flex items-center gap-8 mb-2">
+                        <!-- Soal: 1.000 -->
+                        <div class="w-24 flex justify-center">
+                            <svg width="75" height="75" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" class="coin-silver" />
+                                <text x="50" y="35" class="coin-text-sm">Rp</text>
+                                <text x="50" y="60" class="coin-text-val" font-size="22">1.000</text>
+                            </svg>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-400">➜</div>
+                        <!-- Pilihan -->
+                        <div class="flex flex-col gap-2">
+                            <!-- A -->
+                            <label class="flex items-center cursor-pointer gap-4">
+                                <span class="choice-box mt-2"></span>
+                                <div class="flex items-center gap-1">
+                                    <span class="mr-2 font-bold text-sm">a.</span>
+                                    <svg width="60" height="60" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-gold"/><text x="50" y="60" class="coin-text-val" font-size="24">500</text></svg>
+                                    <svg width="60" height="60" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-gold"/><text x="50" y="60" class="coin-text-val" font-size="24">500</text></svg>
+                                </div>
+                            </label>
+                            <!-- B -->
+                            <label class="flex items-center cursor-pointer gap-4">
+                                <span class="choice-box mt-2"></span>
+                                <div class="flex items-center gap-1">
+                                    <span class="mr-2 font-bold text-sm">b.</span>
+                                    <svg width="60" height="60" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-gold"/><text x="50" y="60" class="coin-text-val" font-size="24">500</text></svg>
+                                    <svg width="50" height="50" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">200</text></svg>
+                                </div>
+                            </label>
+                            <!-- C -->
+                            <label class="flex items-center cursor-pointer gap-4">
+                                <span class="choice-box mt-2"></span>
+                                <div class="flex items-center gap-1">
+                                    <span class="mr-2 font-bold text-sm">c.</span>
+                                    <svg width="50" height="50" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">200</text></svg>
+                                    <svg width="50" height="50" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">200</text></svg>
+                                    <svg width="50" height="50" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">200</text></svg>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. Mom wants to exchange Rp1.000. Which group of coins is correct?
+                    </div>
+                    <div class="choice-container flex-col gap-2">
+                         <!-- A: 500+500+500 = 1500 -->
+                         <label class="flex items-center cursor-pointer gap-4">
+                            <span class="choice-box mt-2"></span>
+                            <div class="flex items-center gap-1">
+                                <span class="mr-2 font-bold text-sm">a.</span>
+                                <svg width="45" height="45" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-gold"/><text x="50" y="60" class="coin-text-val" font-size="24">500</text></svg>
+                                <svg width="45" height="45" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-gold"/><text x="50" y="60" class="coin-text-val" font-size="24">500</text></svg>
+                                <svg width="45" height="45" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-gold"/><text x="50" y="60" class="coin-text-val" font-size="24">500</text></svg>
+                            </div>
+                        </label>
+                        <!-- B: 500+200+100 = 800 -->
+                        <label class="flex items-center cursor-pointer gap-4">
+                            <span class="choice-box mt-2"></span>
+                            <div class="flex items-center gap-1">
+                                <span class="mr-2 font-bold text-sm">b.</span>
+                                <svg width="45" height="45" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-gold"/><text x="50" y="60" class="coin-text-val" font-size="24">500</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">200</text></svg>
+                                <svg width="35" height="35" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">100</text></svg>
+                            </div>
+                        </label>
+                        <!-- C: 500+200+200+100 = 1.000 -->
+                        <label class="flex items-center cursor-pointer gap-4">
+                            <span class="choice-box mt-2"></span>
+                            <div class="flex items-center gap-1">
+                                <span class="mr-2 font-bold text-sm">c.</span>
+                                <svg width="45" height="45" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-gold"/><text x="50" y="60" class="coin-text-val" font-size="24">500</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">200</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">200</text></svg>
+                                <svg width="35" height="35" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-silver"/><text x="50" y="60" class="coin-text-val" font-size="22">100</text></svg>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <h2 class="font-bold text-lg mb-2">Section B: Short Answer</h2>
+                <div class="instruction-text">
+                    Complete the Number Bond or the blanks below.
+                </div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item flex flex-col items-start gap-4">
+                    <div class="font-bold">
+                        6. One Rp200 coin has the same value as ............ Rp100 coins.
+                    </div>
+                    <!-- Number Bond Fixed: Lines behind circles, center to center -->
+                    <div class="ml-8 relative w-48 h-40">
+                         <!-- Lines (Background) - Z-Index 0 -->
+                         <svg class="absolute inset-0 w-full h-full" style="z-index: 0;">
+                            <!-- Top center (50%, 15%) to Bottom Left (10%, 85%) -->
+                            <line x1="50%" y1="18%" x2="10%" y2="82%" class="bond-line"/>
+                            <!-- Top center to Bottom Right (90%, 85%) -->
+                            <line x1="50%" y1="18%" x2="90%" y2="82%" class="bond-line"/>
+                        </svg>
+
+                        <!-- Whole (Top) - Z-Index 10 -->
+                        <div class="absolute left-1/2 -translate-x-1/2 top-0 text-center z-10">
+                            <svg width="60" height="60" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" class="bond-circle"/><text x="50" y="55" class="coin-text-val" font-size="24">200</text></svg>
+                        </div>
+                        
+                        <!-- Parts (Bottom) - Z-Index 10 -->
+                        <div class="absolute left-0 bottom-0 text-center z-10">
+                            <svg width="50" height="50" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" class="bond-circle"/><text x="50" y="55" class="coin-text-val" font-size="24">100</text></svg>
+                        </div>
+                        <div class="absolute right-0 bottom-0 text-center z-10">
+                            <div class="w-[50px] h-[50px] rounded-full border-2 border-dashed border-gray-800 flex items-center justify-center font-bold bg-white z-10 relative">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2 ml-4">
+                        Answer: <span class="input-box" style="min-width: 80px;"></span> coins
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 7-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Money</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Finding Coin Groups of Equal Value
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D2-S149</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mt-4">
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. Brother has one Rp500 coin. He exchanges it for Rp100 coins.
+                    </div>
+                    <div class="mb-2 pl-4">
+                        How many Rp100 coins did Brother get?
+                    </div>
+                    <div class="ml-4">
+                        Answer: <span class="input-box" style="min-width: 80px;"></span> coins
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Two Rp500 coins have the same value as one Rp.... coin.
+                    </div>
+                    <div class="flex items-center gap-4 ml-8 my-2">
+                        <svg width="60" height="60" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-gold"/><text x="50" y="60" class="coin-text-val" font-size="22">500</text></svg>
+                        <span class="text-2xl font-bold">+</span>
+                        <svg width="60" height="60" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="coin-gold"/><text x="50" y="60" class="coin-text-val" font-size="22">500</text></svg>
+                        <span class="text-2xl font-bold">=</span>
+                        <div class="w-[60px] h-[60px] rounded-full border-2 border-dashed border-gray-800 flex items-center justify-center font-bold bg-white text-2xl">?</div>
+                    </div>
+                    <div class="ml-4 mt-2">
+                        Answer: Rp<span class="input-box" style="min-width: 100px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. One Rp1.000 coin has the same value as .......... Rp200 coins.
+                    </div>
+                    <div class="ml-4">
+                        Answer: <span class="input-box" style="min-width: 80px;"></span> coins
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                 <!-- SOAL 10 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. Complete the money Number Bond below:
+                    </div>
+                      <!-- Number Bond Fixed: Lines behind circles -->
+                      <div class="ml-8 relative w-64 h-48 mx-auto">
+                        <!-- Lines (Background) -->
+                        <svg class="absolute inset-0 w-full h-full" style="z-index: 0;">
+                            <!-- Top to Left -->
+                            <line x1="50%" y1="18%" x2="10%" y2="82%" class="bond-line"/>
+                            <!-- Top to Center -->
+                            <line x1="50%" y1="18%" x2="50%" y2="82%" class="bond-line"/>
+                            <!-- Top to Right -->
+                            <line x1="50%" y1="18%" x2="90%" y2="82%" class="bond-line"/>
+                        </svg>
+
+                        <!-- Whole (Top) -->
+                        <div class="absolute left-1/2 -translate-x-1/2 top-0 text-center z-10">
+                            <svg width="70" height="70" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" class="bond-circle"/><text x="50" y="55" class="coin-text-val" font-size="24">500</text></svg>
+                        </div>
+                        
+                        <!-- Parts (Bottom) -->
+                        <div class="absolute left-0 bottom-0 text-center z-10">
+                            <svg width="55" height="55" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" class="bond-circle"/><text x="50" y="55" class="coin-text-val" font-size="24">200</text></svg>
+                        </div>
+                        <div class="absolute left-1/2 -translate-x-1/2 bottom-0 text-center z-10">
+                            <svg width="55" height="55" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" class="bond-circle"/><text x="50" y="55" class="coin-text-val" font-size="24">200</text></svg>
+                        </div>
+                        <div class="absolute right-0 bottom-0 text-center z-10">
+                            <div class="w-[55px] h-[55px] rounded-full border-2 border-dashed border-gray-800 flex items-center justify-center font-bold bg-white z-10 relative text-xl">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-center">
+                        The missing coin is a Rp<span class="input-box" style="min-width: 100px;"></span> coin
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
