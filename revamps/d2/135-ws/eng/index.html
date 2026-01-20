@@ -1,0 +1,589 @@
+<!DOCTYPE html> 
+<html lang="en">  
+  <head>    
+    <meta charset="UTF-8" />    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />    
+    <title>Math Champs - Multiplication (D2-S135)</title>        
+    <!-- Tailwind untuk utility classes -->    
+    <script src="https://cdn.tailwindcss.com"></script>        
+    <!-- Font Montserrat & Noto Sans -->    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />    
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />    
+    <link      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"      rel="stylesheet"    />
+    <style>      
+      /* --- CSS UTAMA --- */      
+      :root {        
+        --primary-text: #333333;        
+        --secondary-text: #555555;        
+        --grey-text: #8d8e8d;      
+      }
+      *, *::before, *::after {        
+        box-sizing: border-box;      
+      }
+      body {        
+        font-family: "Montserrat", sans-serif;        
+        font-size: 10pt;        
+        line-height: 1.4;        
+        color: var(--primary-text);        
+        background-color: #525659;        
+        margin: 0;        
+        padding: 20px 0;      
+      }
+      .page-container {        
+        display: flex;        
+        flex-direction: column;        
+        align-items: center;      
+      }
+      .page {        
+        background: white;        
+        width: 21cm; /* A4 Width */        
+        min-height: 29.7cm; /* A4 Height */        
+        padding: 0.8cm 2cm;        
+        margin-bottom: 1cm;        
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);        
+        position: relative;        
+        display: flex;        
+        flex-direction: column;      
+      }
+      .page-header {        
+        width: 100%;        
+        margin-bottom: 8px;      
+      }
+      .content-wrapper {        
+        position: relative;        
+        z-index: 1;        
+        width: 100%;        
+        flex-grow: 1;      
+      }
+      /* --- FOOTER --- */      
+      .page-footer {        
+        text-align: left;        
+        font-size: 6pt;        
+        color: var(--grey-text);        
+        padding-top: 4px;        
+        margin-top: auto;        
+        border-top: 2px solid var(--grey-text);        
+        width: 100%;        
+        display: flex;        
+        gap: 5px;        
+        align-items: center;      
+      }
+      /* --- STYLE KHUSUS PRINT --- */      
+      @media print {        
+        @page {          
+          size: A4;          
+          margin: 0;        
+        }        
+        body {          
+          background-color: white;          
+          padding: 0;        
+        }        
+        .page-container {          
+          display: block;        
+        }        
+        .page {          
+          width: 100%;          
+          min-height: 29.7cm;          
+          margin: 0;          
+          box-shadow: none;          
+          page-break-after: always;          
+          padding: 0.8cm 2cm;          
+          border: none;        
+        }        
+        .page:last-child {          
+          page-break-after: avoid;        
+        }                
+        .math-champs-header,        
+        .choice-box,        
+        .instruction-text,        
+        .input-box,        
+        .svg-group,        
+        .svg-dot {          
+          -webkit-print-color-adjust: exact !important;          
+          print-color-adjust: exact !important;          
+          color-adjust: exact !important;        
+        }      
+      }
+      /* --- KOMPONEN HEADER --- */      
+      .math-champs-header {        
+        background-color: white;        
+        padding: 0.1rem 0;        
+        display: flex;        
+        justify-content: space-between;        
+        align-items: center;        
+        color: black;      
+      }
+      /* --- LAYOUT SOAL --- */      
+      .soal-grid {        
+        display: flex;        
+        flex-direction: column;        
+        gap: 0.8rem;      
+      }            
+      .soal-item {        
+        break-inside: avoid;        
+        position: relative;        
+        width: 100%;      
+      }
+      /* Input & Choices */      
+      .input-box {        
+        border-bottom: 2px solid #333;        
+        min-width: 60px;        
+        height: 24px;        
+        display: inline-block;        
+        text-align: center;        
+        font-weight: bold;        
+        color: #333;        
+        vertical-align: bottom;        
+        background: transparent;        
+        padding: 0 5px;      
+      }            
+      .choice-container {        
+        display: flex;        
+        justify-content: flex-start;        
+        gap: 1.5rem;        
+        margin-top: 4px;        
+        font-weight: 600;        
+        font-size: 0.95rem;        
+        flex-wrap: wrap;        
+        margin-left: 0.5rem;      
+      }
+      .choice-box {        
+        width: 18px;        
+        height: 18px;        
+        border: 1px solid #333;        
+        display: inline-block;        
+        margin-right: 6px;        
+        vertical-align: middle;        
+        border-radius: 3px;        
+        position: relative;      
+      }            
+      .h-separator {        
+        width: 100%;        
+        height: 1px;        
+        background-color: #e5e7eb;        
+        margin: 0.2cm 0;      
+      }
+      .instruction-text {        
+        font-weight: 700;        
+        color: #1f2937;        
+        margin-bottom: 0.5rem;        
+        background-color: #f3f4f6;        
+        padding: 0.4rem 1rem;        
+        border-radius: 0.375rem;        
+        font-size: 0.9rem;        
+        border-left: 4px solid #333;      
+      }
+      /* --- VISUAL MATH (Circles & Dots) --- */      
+      .group-circle {        
+        fill: none;        
+        stroke: #333;        
+        stroke-width: 2;      
+      }      
+      .item-dot {        
+        fill: #333;      
+      }    
+    </style>  
+  </head>  
+  <body>        
+    <div class="page-container">            
+      <!-- ================= HALAMAN 1 ================= -->      
+      <section class="page">        
+        <!-- HEADER -->        
+        <header class="page-header">            
+          <div class="math-champs-header">                
+            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">                
+            <div class="text-right">                    
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>                    
+              <div class="text-[10px] text-black font-semibold mt-0.5">Multiplication</div>                    
+              <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">                        
+                Grouping                    
+              </div>                    
+              <div class="text-[10px] text-black font-medium mt-0.5">Code : D2-S135</div>                
+            </div>            
+          </div>            
+          <div class="w-full h-0.5 bg-black mt-1"></div>        
+        </header>
+        <div class="content-wrapper">            
+          <div class="h-separator" style="margin-top: 0; margin-bottom: 0.2cm;"></div>
+          <h2 class="font-bold text-lg mb-2">Let's Learn! (Grouping Concept)</h2>            
+          <div class="instruction-text">                
+            Multiplication is <b>repeated addition</b>. We see it as <b>Groups</b> and <b>Items</b>.<br>                
+            <b>Formula:</b> Number of Groups &times; Items per Group = Total.            
+          </div>                        
+          <!-- CONTOH -->            
+          <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-4">                
+            <div class="font-bold mb-2">Example: 3 Groups of 2</div>                
+            <div class="flex flex-col md:flex-row items-center gap-8">                    
+              <!-- Visual Model -->                    
+              <svg width="200" height="70" viewBox="0 0 200 70">                        
+                <!-- Group 1 -->                        
+                <circle cx="35" cy="35" r="25" class="group-circle"/>                        
+                <circle cx="35" cy="25" r="4" class="item-dot"/>                        
+                <circle cx="35" cy="45" r="4" class="item-dot"/>                                                
+                <!-- Group 2 -->                        
+                <circle cx="100" cy="35" r="25" class="group-circle"/>                        
+                <circle cx="100" cy="25" r="4" class="item-dot"/>                        
+                <circle cx="100" cy="45" r="4" class="item-dot"/>
+                <!-- Group 3 -->                        
+                <circle cx="165" cy="35" r="25" class="group-circle"/>                        
+                <circle cx="165" cy="25" r="4" class="item-dot"/>                        
+                <circle cx="165" cy="45" r="4" class="item-dot"/>                    
+              </svg>                                        
+              <!-- Calculation -->                    
+              <div class="text-sm">                        
+                <b>It means:</b><br>                        
+                There are <b>3</b> circles (groups).<br>                        
+                Each circle contains <b>2</b> dots.<br>                        
+                2 + 2 + 2 = 6 or 3 &times; 2 = 6.                    
+              </div>                
+            </div>            
+          </div>
+          <div class="soal-grid">                                
+            <!-- SOAL 1 -->                
+            <div class="soal-item">                    
+              <div class="font-bold mb-2">                        
+                1. Look at the picture below. How many <span class="text-blue-600">groups</span> (big circles) are there?                    
+              </div>                    
+              <div class="flex justify-start items-center gap-8 my-1">                        
+                <svg width="200" height="70" viewBox="0 0 200 70">                            
+                  <!-- 3 Groups of 2 -->                            
+                  <circle cx="35" cy="35" r="25" class="group-circle"/>                            
+                  <circle cx="35" cy="25" r="4" class="item-dot"/>                            
+                  <circle cx="35" cy="45" r="4" class="item-dot"/>                                                        
+                  <circle cx="100" cy="35" r="25" class="group-circle"/>                            
+                  <circle cx="100" cy="25" r="4" class="item-dot"/>                            
+                  <circle cx="100" cy="45" r="4" class="item-dot"/>
+                  <circle cx="165" cy="35" r="25" class="group-circle"/>                            
+                  <circle cx="165" cy="25" r="4" class="item-dot"/>                            
+                  <circle cx="165" cy="45" r="4" class="item-dot"/>                        
+                </svg>                    
+              </div>                    
+              <div class="choice-container">                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 2 groups</label>                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 3 groups</label>                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 6 groups</label>                    
+              </div>                
+            </div>
+            <div class="h-separator"></div>
+            <!-- SOAL 2 -->                
+            <div class="soal-item">                    
+              <div class="font-bold mb-2">                        
+                2. Look at the picture below. How many dots are in <span class="text-red-600">each</span> group?                    
+              </div>                    
+              <div class="flex justify-start items-center gap-8 my-1">                        
+                <svg width="150" height="70" viewBox="0 0 150 70">                            
+                  <!-- 2 Groups of 4 -->                            
+                  <circle cx="35" cy="35" r="28" class="group-circle"/>                            
+                  <!-- 4 dots (square) -->                            
+                  <circle cx="25" cy="25" r="4" class="item-dot"/>                            
+                  <circle cx="45" cy="25" r="4" class="item-dot"/>                            
+                  <circle cx="25" cy="45" r="4" class="item-dot"/>                            
+                  <circle cx="45" cy="45" r="4" class="item-dot"/>
+                  <circle cx="100" cy="35" r="28" class="group-circle"/>                            
+                  <circle cx="90" cy="25" r="4" class="item-dot"/>                            
+                  <circle cx="110" cy="25" r="4" class="item-dot"/>                            
+                  <circle cx="90" cy="45" r="4" class="item-dot"/>                            
+                  <circle cx="110" cy="45" r="4" class="item-dot"/>                        
+                </svg>                    
+              </div>                    
+              <div class="choice-container">                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 2 dots</label>                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 4 dots</label>                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 8 dots</label>                    
+              </div>                
+            </div>
+            <!-- SOAL 3 moved to Page 2 -->
+          </div>        
+        </div>
+        <footer class="page-footer">          
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>          
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>        
+        </footer>      
+      </section>
+      <!-- ================= HALAMAN 2 ================= -->      
+      <section class="page">        
+        <!-- HEADER -->        
+        <header class="page-header">            
+          <div class="math-champs-header">                
+            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">                
+            <div class="text-right">                    
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>                    
+              <div class="text-[10px] text-black font-semibold mt-0.5">Multiplication</div>                    
+              <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">                        
+                Grouping                    
+              </div>                    
+              <div class="text-[10px] text-black font-medium mt-0.5">Code : D2-S135</div>                
+            </div>            
+          </div>            
+          <div class="w-full h-0.5 bg-black mt-1"></div>        
+        </header>
+        <div class="content-wrapper">            
+          <div class="soal-grid">                                
+            <!-- SOAL 3 (Moved From Page 1) -->                
+            <div class="soal-item">                    
+              <div class="font-bold mb-2">                        
+                3. Which picture shows <span class="underline">2 groups of 3</span>?                    
+              </div>                    
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">                        
+                <!-- Option A: 2 of 3 -->                        
+                <div class="flex flex-col items-center">                            
+                  <span class="font-bold mb-1">a.</span>                            
+                  <svg width="130" height="60" viewBox="0 0 130 60">                                
+                    <circle cx="30" cy="30" r="22" class="group-circle"/>                                
+                    <circle cx="30" cy="20" r="3" class="item-dot"/>                                
+                    <circle cx="22" cy="36" r="3" class="item-dot"/>                                
+                    <circle cx="38" cy="36" r="3" class="item-dot"/>
+                    <circle cx="80" cy="30" r="22" class="group-circle"/>                                
+                    <circle cx="80" cy="20" r="3" class="item-dot"/>                                
+                    <circle cx="72" cy="36" r="3" class="item-dot"/>                                
+                    <circle cx="88" cy="36" r="3" class="item-dot"/>                            
+                  </svg>                            
+                  <span class="choice-box mt-2"></span>                        
+                </div>                        
+                <!-- Option B: 3 of 2 -->                        
+                <div class="flex flex-col items-center">                            
+                  <span class="font-bold mb-1">b.</span>                            
+                  <svg width="150" height="60" viewBox="0 0 150 60">                                
+                    <circle cx="25" cy="30" r="20" class="group-circle"/>                                
+                    <circle cx="25" cy="24" r="3" class="item-dot"/>                                
+                    <circle cx="25" cy="36" r="3" class="item-dot"/>
+                    <circle cx="70" cy="30" r="20" class="group-circle"/>                                
+                    <circle cx="70" cy="24" r="3" class="item-dot"/>                                
+                    <circle cx="70" cy="36" r="3" class="item-dot"/>                                                                
+                    <circle cx="115" cy="30" r="20" class="group-circle"/>                                
+                    <circle cx="115" cy="24" r="3" class="item-dot"/>                                
+                    <circle cx="115" cy="36" r="3" class="item-dot"/>                            
+                  </svg>                            
+                  <span class="choice-box mt-2"></span>                        
+                </div>                        
+                <!-- Option C: 2 of 1 -->                        
+                <div class="flex flex-col items-center">                            
+                  <span class="font-bold mb-1">c.</span>                            
+                  <svg width="130" height="60" viewBox="0 0 130 60">                                
+                    <circle cx="30" cy="30" r="22" class="group-circle"/>                                
+                    <circle cx="30" cy="30" r="3" class="item-dot"/>                                
+                    <circle cx="80" cy="30" r="22" class="group-circle"/>                                
+                    <circle cx="80" cy="30" r="3" class="item-dot"/>                            
+                  </svg>                            
+                  <span class="choice-box mt-2"></span>                        
+                </div>                    
+              </div>                
+            </div>                                
+            <div class="h-separator"></div>
+            <!-- SOAL 4 -->                
+            <div class="soal-item">                    
+              <div class="font-bold mb-2">                        
+                4. Look at the following picture. The correct addition sentence is...                    
+              </div>                    
+              <div class="flex justify-start items-center gap-8 my-1">                        
+                <svg width="250" height="60" viewBox="0 0 250 60">                            
+                  <!-- 4 Groups of 2 -->                            
+                  <g transform="translate(0,0)">                                
+                    <circle cx="30" cy="30" r="22" class="group-circle"/>                                
+                    <circle cx="30" cy="22" r="4" class="item-dot"/>                                
+                    <circle cx="30" cy="38" r="4" class="item-dot"/>                            
+                  </g>                            
+                  <g transform="translate(60,0)">                                
+                    <circle cx="30" cy="30" r="22" class="group-circle"/>                                
+                    <circle cx="30" cy="22" r="4" class="item-dot"/>                                
+                    <circle cx="30" cy="38" r="4" class="item-dot"/>                            
+                  </g>                            
+                  <g transform="translate(120,0)">                                
+                    <circle cx="30" cy="30" r="22" class="group-circle"/>                                
+                    <circle cx="30" cy="22" r="4" class="item-dot"/>                                
+                    <circle cx="30" cy="38" r="4" class="item-dot"/>                            
+                  </g>                            
+                  <g transform="translate(180,0)">                                
+                    <circle cx="30" cy="30" r="22" class="group-circle"/>                                
+                    <circle cx="30" cy="22" r="4" class="item-dot"/>                                
+                    <circle cx="30" cy="38" r="4" class="item-dot"/>                            
+                  </g>                        
+                </svg>                    
+              </div>                    
+              <div class="choice-container">                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 2 + 2 + 2 + 2</label>                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 4 + 4</label>                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 2 + 4</label>                    
+              </div>                
+            </div>
+            <div class="h-separator"></div>
+            <!-- SOAL 5 -->                
+            <div class="soal-item">                    
+              <div class="font-bold mb-2">                        
+                5. There are 3 plates. Each plate contains 5 apples. The math sentence is...                    
+              </div>                    
+              <div class="choice-container">                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 3 + 5</label>                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 5 &times; 3</label>                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 3 &times; 5</label>                    
+              </div>                
+            </div>
+            <div class="h-separator"></div>
+            <!-- SOAL 6 -->                
+            <div class="soal-item">                    
+              <div class="font-bold mb-2">                        
+                6. What is the <span class="text-blue-600">total number of dots</span> in the picture below?                    
+              </div>                    
+              <div class="flex justify-start items-center gap-8 my-1">                        
+                <svg width="200" height="60" viewBox="0 0 200 60">                            
+                  <!-- 3 Groups of 3 -->                            
+                  <g transform="translate(0,0)">                                
+                    <circle cx="30" cy="30" r="22" class="group-circle"/>                                
+                    <circle cx="30" cy="20" r="4" class="item-dot"/>                                
+                    <circle cx="22" cy="36" r="4" class="item-dot"/>                                
+                    <circle cx="38" cy="36" r="4" class="item-dot"/>                            
+                  </g>                            
+                  <g transform="translate(60,0)">                                
+                    <circle cx="30" cy="30" r="22" class="group-circle"/>                                
+                    <circle cx="30" cy="20" r="4" class="item-dot"/>                                
+                    <circle cx="22" cy="36" r="4" class="item-dot"/>                                
+                    <circle cx="38" cy="36" r="4" class="item-dot"/>                            
+                  </g>                            
+                  <g transform="translate(120,0)">                                
+                    <circle cx="30" cy="30" r="22" class="group-circle"/>                                
+                    <circle cx="30" cy="20" r="4" class="item-dot"/>                                
+                    <circle cx="22" cy="36" r="4" class="item-dot"/>                                
+                    <circle cx="38" cy="36" r="4" class="item-dot"/>                            
+                  </g>                        
+                </svg>                    
+              </div>                    
+              <div class="mt-2">                        
+                <b>Answer:</b> <span class="input-box"></span> dots.                    
+              </div>                
+            </div>
+          </div>        
+        </div>
+        <footer class="page-footer">          
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>          
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>        
+        </footer>      
+      </section>
+      <!-- ================= HALAMAN 3 ================= -->       
+      <section class="page">        
+        <!-- HEADER -->        
+        <header class="page-header">            
+          <div class="math-champs-header">                
+            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">                
+            <div class="text-right">                    
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>                    
+              <div class="text-[10px] text-black font-semibold mt-0.5">Multiplication</div>                    
+              <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">                        
+                Grouping                    
+              </div>                    
+              <div class="text-[10px] text-black font-medium mt-0.5">Code : D2-S135</div>                
+            </div>            
+          </div>            
+          <div class="w-full h-0.5 bg-black mt-1"></div>        
+        </header>
+        <div class="content-wrapper">            
+          <div class="soal-grid">                                
+            <!-- SOAL 7 (Moved from Page 2) -->                
+            <div class="soal-item">                    
+              <div class="font-bold mb-2">                        
+                7. If the teacher says <span class="underline">"4 groups of 1"</span>, which picture is correct?                    
+              </div>                    
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">                         
+                <!-- Option A: 1 group of 4 -->                         
+                <div class="flex flex-col items-center">                            
+                  <span class="font-bold mb-1">a.</span>                            
+                  <svg width="60" height="60" viewBox="0 0 60 60">                                
+                    <circle cx="30" cy="30" r="25" class="group-circle"/>                                
+                    <circle cx="22" cy="22" r="3" class="item-dot"/>                                
+                    <circle cx="38" cy="22" r="3" class="item-dot"/>                                
+                    <circle cx="22" cy="38" r="3" class="item-dot"/>                                
+                    <circle cx="38" cy="38" r="3" class="item-dot"/>                            
+                  </svg>                            
+                  <span class="choice-box mt-2"></span>                        
+                </div>                        
+                <!-- Option B: 4 groups of 1 (Correct) -->                        
+                <div class="flex flex-col items-center">                            
+                  <span class="font-bold mb-1">b.</span>                            
+                  <svg width="200" height="60" viewBox="0 0 200 60">                                
+                    <g transform="translate(0,0)"><circle cx="20" cy="30" r="15" class="group-circle"/><circle cx="20" cy="30" r="3" class="item-dot"/></g>                                
+                    <g transform="translate(45,0)"><circle cx="20" cy="30" r="15" class="group-circle"/><circle cx="20" cy="30" r="3" class="item-dot"/></g>                                
+                    <g transform="translate(90,0)"><circle cx="20" cy="30" r="15" class="group-circle"/><circle cx="20" cy="30" r="3" class="item-dot"/></g>                                
+                    <g transform="translate(135,0)"><circle cx="20" cy="30" r="15" class="group-circle"/><circle cx="20" cy="30" r="3" class="item-dot"/></g>                            
+                  </svg>                            
+                  <span class="choice-box mt-2"></span>                        
+                </div>                        
+                <!-- Option C: 2 groups of 2 -->                        
+                <div class="flex flex-col items-center">                            
+                  <span class="font-bold mb-1">c.</span>                            
+                  <svg width="100" height="60" viewBox="0 0 100 60">                                
+                    <g transform="translate(0,0)"><circle cx="25" cy="30" r="20" class="group-circle"/><circle cx="25" cy="24" r="3" class="item-dot"/><circle cx="25" cy="36" r="3" class="item-dot"/></g>                                
+                    <g transform="translate(50,0)"><circle cx="25" cy="30" r="20" class="group-circle"/><circle cx="25" cy="24" r="3" class="item-dot"/><circle cx="25" cy="36" r="3" class="item-dot"/></g>                            
+                  </svg>                            
+                  <span class="choice-box mt-2"></span>                        
+                </div>                    
+              </div>                
+            </div>
+            <div class="h-separator"></div>
+            <!-- SOAL 8 (Moved from Page 2) -->                
+            <div class="soal-item">                    
+              <div class="font-bold mb-2">                        
+                8. Complete the sentence based on the following picture.                    
+              </div>                    
+              <div class="flex justify-start items-center gap-8 my-1">                        
+                <svg width="150" height="60" viewBox="0 0 150 60">                            
+                  <!-- 2 Groups of 5 -->                            
+                  <g transform="translate(0,0)">                                
+                    <circle cx="30" cy="30" r="25" class="group-circle"/>                                
+                    <circle cx="22" cy="22" r="3" class="item-dot"/>                                
+                    <circle cx="38" cy="22" r="3" class="item-dot"/>                                
+                    <circle cx="22" cy="38" r="3" class="item-dot"/>                                
+                    <circle cx="38" cy="38" r="3" class="item-dot"/>                                
+                    <circle cx="30" cy="30" r="3" class="item-dot"/>                            
+                  </g>                            
+                  <g transform="translate(70,0)">                                
+                    <circle cx="30" cy="30" r="25" class="group-circle"/>                                
+                    <circle cx="22" cy="22" r="3" class="item-dot"/>                                
+                    <circle cx="38" cy="22" r="3" class="item-dot"/>                                
+                    <circle cx="22" cy="38" r="3" class="item-dot"/>                                
+                    <circle cx="38" cy="38" r="3" class="item-dot"/>                                
+                    <circle cx="30" cy="30" r="3" class="item-dot"/>                            
+                  </g>                        
+                </svg>                    
+              </div>                    
+              <div class="mt-2 text-lg">                        
+                "There are <span class="input-box"></span> groups. Each group contains <span class="input-box"></span> dots."                    
+              </div>                
+            </div>
+            <div class="h-separator"></div>
+            <!-- SOAL 9 -->                
+            <div class="soal-item">                    
+              <div class="font-bold mb-2">                        
+                9. Budi has 2 boxes of toys. Each box contains 3 toy cars.<br>                        
+                What is the total number of Budi's cars? (2 &times; 3 = ...)                    
+              </div>                    
+              <div class="choice-container">                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 5 cars</label>                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 6 cars</label>                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 8 cars</label>                    
+              </div>                
+            </div>
+            <div class="h-separator"></div>
+            <!-- SOAL 10 -->                
+            <div class="soal-item">                    
+              <div class="font-bold mb-2">                        
+                10. The meaning of 5 &times; 2 is equal to...                    
+              </div>                    
+              <div class="choice-container">                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 5 groups of 2</label>                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 2 groups of 5</label>                        
+                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 5 plus 2</label>                    
+              </div>                
+            </div>
+          </div>
+          <!-- Motivation -->             
+          <div class="text-center italic text-xs text-gray-500 mt-12 p-4 bg-gray-100 rounded-lg">                
+            "Nice work finishing the set—seriously well done."             
+          </div>        
+        </div>
+        <footer class="page-footer">          
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>          
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>        
+        </footer>      
+      </section>
+    </div>  
+  </body>
+</html>
