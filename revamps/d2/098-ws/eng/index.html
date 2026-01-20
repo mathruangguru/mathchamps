@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Greatest & Smallest (D2-S098)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-text: #333333;
+            --grey-text: #8d8e8d;
+            --unit-size: 11px; /* Ukuran presisi untuk perbandingan */
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Montserrat", sans-serif;
+            font-size: 10pt;
+            color: var(--primary-text);
+            background-color: #525659;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .page {
+            background: white;
+            width: 21cm;
+            height: 29.7cm;
+            padding: 1.2cm 1.8cm;
+            margin-bottom: 1cm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .math-champs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header-info {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .section-title {
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+            color: #4b5563;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 4px;
+            margin-bottom: 15px;
+            margin-top: 10px;
+        }
+
+        /* --- SISTEM KOTAK PRESISI --- */
+        .blocks-display {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 15px;
+            min-height: 125px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .box-unit {
+            width: var(--unit-size);
+            height: var(--unit-size);
+            border: 1px solid;
+            flex-shrink: 0;
+        }
+
+        .rod-container {
+            display: flex;
+            flex-direction: column-reverse;
+        }
+        .box-unit.ten {
+            background-color: #dcfce7;
+            border-color: #166534;
+            margin-top: -1px;
+        }
+
+        .box-unit.one {
+            background-color: #fee2e2;
+            border-color: #991b1b;
+        }
+
+        .tens-group { display: flex; gap: 4px; align-items: flex-end; }
+        .ones-group { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 3px; 
+        }
+
+        /* --- UI Tambahan --- */
+        .choice-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .choice-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+        .choice-box {
+            width: 18px;
+            height: 18px;
+            border: 1.5px solid #333;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            font-size: 9px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        .comparison-table th, .comparison-table td {
+            border: 2px solid #333;
+            padding: 8px;
+            text-align: center;
+            vertical-align: bottom;
+        }
+        .comparison-table th { background-color: #f3f4f6; font-size: 0.9rem; }
+
+        .number-box {
+            display: inline-block;
+            padding: 6px 14px;
+            border: 2px solid #333;
+            margin: 0 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .input-line {
+            border-bottom: 2px solid #333;
+            width: 80px;
+            text-align: center;
+            font-weight: bold;
+            color: #2563eb;
+            outline: none;
+            display: inline-block;
+        }
+
+        .page-footer {
+            font-size: 6pt;
+            color: var(--grey-text);
+            border-top: 1px solid #ccc;
+            padding-top: 5px;
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .page { box-shadow: none; margin: 0; page-break-after: always; padding: 1cm 1.5cm; }
+            .rod-container, .box-unit, .pv-table th, .bg-yellow-50, .bg-gray-50 { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        
+        <!-- ================= HALAMAN 1 ================= -->
+        <section class="page">
+            <header class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-16">
+                <div class="header-info">
+                    <div class="text-xl font-black uppercase leading-none">Discovery 2</div>
+                    <div class="text-[11px] font-bold text-black">Numbers to 100</div>
+                    <div class="text-[10px] font-medium text-black italic">Greatest/Smallest Numbers</div>
+                    <div class="text-[11px] font-bold text-black">Code : D2-S098</div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="section-title">Section A: Picture Comparison</div>
+                
+                <!-- QUESTION 1 -->
+                <div class="soal-item mb-6">
+                    <div class="font-bold mb-3 text-sm">
+                        1. Compare the two sets below. Choose the greater number.
+                    </div>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th width="50%">
+                                    <div class="flex items-center justify-center gap-2">
+                                        Set A <div class="choice-box"></div>
+                                    </div>
+                                </th>
+                                <th width="50%">
+                                    <div class="flex items-center justify-center gap-2">
+                                        Set B <div class="choice-box"></div>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <!-- SET A: 34 -->
+                                <td>
+                                    <div class="blocks-display">
+                                        <div class="tens-group">
+                                            <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                            <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                            <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                        </div>
+                                        <div class="ones-group">
+                                            <div class="box-unit one"></div><div class="box-unit one"></div>
+                                            <div class="box-unit one"></div><div class="box-unit one"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 text-sm font-semibold">Number: <span class="input-line w-12"></span></div>
+                                </td>
+                                <!-- SET B: 28 -->
+                                <td>
+                                    <div class="blocks-display">
+                                        <div class="tens-group">
+                                            <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                            <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                        </div>
+                                        <div class="ones-group" style="grid-template-columns: repeat(3, 1fr);">
+                                            <div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div>
+                                            <div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div>
+                                            <div class="box-unit one"></div><div class="box-unit one"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 text-sm font-semibold">Number: <span class="input-line w-12"></span></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- QUESTION 2 -->
+                <div class="soal-item mb-6">
+                    <div class="font-bold mb-3 text-sm">
+                        2. Compare the two sets below. Choose the greater number.
+                    </div>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th width="50%">
+                                    <div class="flex items-center justify-center gap-2">
+                                        Set A <div class="choice-box"></div>
+                                    </div>
+                                </th>
+                                <th width="50%">
+                                    <div class="flex items-center justify-center gap-2">
+                                        Set B <div class="choice-box"></div>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <!-- SET A: 42 -->
+                                <td>
+                                    <div class="blocks-display">
+                                        <div class="tens-group">
+                                            <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                            <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                            <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                            <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                        </div>
+                                        <div class="ones-group">
+                                            <div class="box-unit one"></div><div class="box-unit one"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 text-sm font-semibold">Number: <span class="input-line w-12"></span></div>
+                                </td>
+                                <!-- SET B: 46 -->
+                                <td>
+                                    <div class="blocks-display">
+                                        <div class="tens-group">
+                                            <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                            <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                            <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                            <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                        </div>
+                                        <div class="ones-group" style="grid-template-columns: repeat(3, 1fr);">
+                                            <div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div>
+                                            <div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 text-sm font-semibold">Number: <span class="input-line w-12"></span></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- ================= HALAMAN 2 ================= -->
+        <section class="page">
+            <header class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-16">
+                <div class="header-info">
+                    <div class="text-xl font-black uppercase leading-none">Discovery 2</div>
+                    <div class="text-[11px] font-bold text-black">Numbers to 100</div>
+                    <div class="text-[10px] font-medium text-black italic">Greatest/Smallest Numbers</div>
+                    <div class="text-[11px] font-bold text-black">Code : D2-S098</div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="section-title">Section B: Comparing 4 Numbers</div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- QUESTION 3 -->
+                    <div class="soal-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="font-bold mb-3 text-sm">
+                            3. Choose the <b class="text-blue-700 uppercase">greatest</b> number out of the 4 numbers below.
+                        </div>
+                        <div class="flex justify-around items-center py-4">
+                            <div class="bg-white p-4 rounded border-2 border-gray-300 shadow-sm flex gap-6 text-2xl font-black">
+                                <span>65</span> <span class="text-gray-300">|</span> <span>56</span>
+                            </div>
+                            <div class="bg-white p-4 rounded border-2 border-gray-300 shadow-sm flex gap-6 text-2xl font-black">
+                                <span>89</span> <span class="text-gray-300">|</span> <span>98</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QUESTION 4 -->
+                    <div class="soal-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="font-bold mb-3 text-sm">
+                            4. Choose the <b class="text-red-600 uppercase">smallest</b> number out of the 4 numbers below.
+                        </div>
+                        <div class="flex justify-around items-center py-4">
+                            <div class="text-center">
+                                <span class="text-[10px] font-bold text-gray-400 block mb-1">(a)</span>
+                                <div class="bg-white p-4 rounded border-2 border-gray-300 shadow-sm flex gap-6 text-2xl font-black">
+                                    <span>42</span> <span class="text-gray-300">|</span> <span>24</span>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <span class="text-[10px] font-bold text-gray-400 block mb-1">(b)</span>
+                                <div class="bg-white p-4 rounded border-2 border-gray-300 shadow-sm flex gap-6 text-2xl font-black">
+                                    <span>70</span> <span class="text-gray-300">|</span> <span>17</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">Section C: Multiple Choice</div>
+                <div class="grid grid-cols-1 gap-6">
+                    <!-- Q5 -->
+                    <div class="soal-item">
+                        <div class="font-bold text-sm">5. Which number is greater than 45 but smaller than 50?</div>
+                        <div class="flex gap-6 mt-3 ml-2 text-xs font-semibold">
+                            <label class="choice-item"><div class="choice-box">A</div> 42</label>
+                            <label class="choice-item"><div class="choice-box">B</div> 48</label>
+                            <label class="choice-item"><div class="choice-box">C</div> 52</label>
+                        </div>
+                    </div>
+
+                    <!-- Q6 -->
+                    <div class="soal-item">
+                        <div class="font-bold text-sm mb-2">6. Look at the numbers below:</div>
+                        <div class="flex justify-center gap-4 my-3">
+                            <div class="number-box">32</div><div class="number-box">81</div>
+                            <div class="number-box">18</div><div class="number-box">23</div>
+                        </div>
+                        <div class="flex items-center gap-4 mt-3">
+                            <div class="font-bold text-sm">Which number is the <b class="text-blue-700">greatest</b>?</div>
+                            <div class="flex gap-4 ml-2 text-xs font-semibold">
+                                <label class="choice-item"><div class="choice-box">A</div> 81</label>
+                                <label class="choice-item"><div class="choice-box">B</div> 32</label>
+                                <label class="choice-item"><div class="choice-box">C</div> 18</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Q7 -->
+                    <div class="soal-item">
+                        <div class="font-bold text-sm mb-2">7. Look at the numbers below:</div>
+                        <div class="flex justify-center gap-4 my-3">
+                            <div class="number-box">67</div><div class="number-box">76</div>
+                            <div class="number-box">60</div><div class="number-box">70</div>
+                        </div>
+                        <div class="flex items-center gap-4 mt-3">
+                            <div class="font-bold text-sm">Which number is the <b class="text-red-600">smallest</b>?</div>
+                            <div class="flex gap-4 ml-2 text-xs font-semibold">
+                                <label class="choice-item"><div class="choice-box">A</div> 67</label>
+                                <label class="choice-item"><div class="choice-box">B</div> 60</label>
+                                <label class="choice-item"><div class="choice-box">C</div> 70</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- ================= HALAMAN 3 ================= -->
+        <section class="page">
+            <header class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-16">
+                <div class="header-info">
+                    <div class="text-xl font-black uppercase leading-none">Discovery 2</div>
+                    <div class="text-[11px] font-bold text-black">Numbers to 100</div>
+                    <div class="text-[10px] font-medium text-black italic">Greatest/Smallest Numbers</div>
+                    <div class="text-[11px] font-bold text-black">Code : D2-S098</div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="section-title">Section D: Challenge Questions</div>
+                
+                <!-- Q8 -->
+                <div class="soal-item mb-10">
+                    <div class="font-bold text-sm mb-4">8. Arrange these numbers, starting from the <b>smallest</b>.</div>
+                    <div class="flex justify-center gap-8 mb-6">
+                        <span class="text-3xl font-black text-gray-700">29</span>
+                        <span class="text-3xl font-black text-gray-700">92</span>
+                        <span class="text-3xl font-black text-gray-700">35</span>
+                        <span class="text-3xl font-black text-gray-700">53</span>
+                    </div>
+                    <div class="flex justify-center gap-3 items-center">
+                        <span class="font-bold text-sm mr-2">Answer:</span>
+                        <span class="input-line w-16"></span> , <span class="input-line w-16"></span> ,
+                        <span class="input-line w-16"></span> , <span class="input-line w-16"></span>
+                    </div>
+                </div>
+
+                <!-- Q9 -->
+                <div class="soal-item bg-yellow-50 border border-yellow-200 rounded-2xl p-6 mb-10 shadow-sm">
+                    <div class="font-bold mb-3 text-yellow-800 flex items-center gap-2">
+                        <span>★</span> 9. Number Puzzle
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-yellow-100 text-sm mb-4 leading-relaxed">
+                        "I am a number.<br>
+                        My tens digit is <b>7</b>.<br>
+                        My ones digit is <b>smaller than 2</b>.<br>
+                        I am an <b>odd number</b>."
+                    </div>
+                    <div class="font-bold text-sm text-center">
+                        What number am I? <br>
+                        <span class="input-line w-24 mt-3 text-lg"></span>
+                    </div>
+                </div>
+
+                <!-- Q10 -->
+                <div class="soal-item mb-10">
+                    <div class="font-bold text-sm mb-4">10. Compare the numbers in the place value charts below.</div>
+                    <div class="flex justify-center gap-10 mb-6">
+                        <div class="flex flex-col items-center">
+                            <span class="font-bold mb-1 text-[10px] text-gray-400">NUMBER A</span>
+                            <div class="border-2 border-black">
+                                <div class="flex border-b-2 border-black bg-gray-100 font-bold text-[10px] text-center">
+                                    <div class="w-16 p-1 border-r-2 border-black">Tens</div><div class="w-16 p-1">Ones</div>
+                                </div>
+                                <div class="flex text-2xl font-black text-center">
+                                    <div class="w-16 p-3 border-r-2 border-black">8</div><div class="w-16 p-3">2</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="font-bold mb-1 text-[10px] text-gray-400">NUMBER B</span>
+                            <div class="border-2 border-black">
+                                <div class="flex border-b-2 border-black bg-gray-100 font-bold text-[10px] text-center">
+                                    <div class="w-16 p-1 border-r-2 border-black">Tens</div><div class="w-16 p-1">Ones</div>
+                                </div>
+                                <div class="flex text-2xl font-black text-center">
+                                    <div class="w-16 p-3 border-r-2 border-black">6</div><div class="w-16 p-3">9</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="font-bold text-sm mb-3 text-center uppercase tracking-wider">Which statement is true?</div>
+                        <div class="grid grid-cols-1 gap-3 max-w-md mx-auto">
+                            <label class="choice-item p-3 border border-gray-200 rounded-lg hover:bg-gray-50 items-start">
+                                <div class="choice-box mt-1"></div>
+                                <div class="text-xs">Number A is smaller because it has fewer ones.</div>
+                            </label>
+                            <label class="choice-item p-3 border border-gray-200 rounded-lg hover:bg-gray-50 items-start">
+                                <div class="choice-box mt-1"></div>
+                                <div class="text-xs font-bold">Number A is greater because it has more tens.</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="encouragement-text" class="mt-auto py-6 text-center text-gray-400 italic font-medium text-xs"></div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+    </div>
+
+    <script>
+        const quotes = [
+            "Nice work finishing the set—seriously well done.",
+            "Great effort today. Quick check-through and you’re good.",
+            "Strong finish! Take a moment to review your answers.",
+            "Awesome job. If anything feels off, trust your gut and recheck it.",
+            "You’re getting sharper with every problem.",
+            "Well done—your focus really showed.",
+            "Before you close it, do one last scan for silly mistakes.",
+            "That was solid. Clean work and clear thinking.",
+            "Mistakes are part of the process—what matters is you keep going.",
+            "Great job. Try checking the trickiest question one more time.",
+            "Proud of your effort. Consistency wins.",
+            "Strong work—your math muscles are growing.",
+            "Nice! Now make sure every question has an answer.",
+            "Great progress today—keep that momentum.",
+            "You worked hard. Take a breath, then double-check.",
+            "Excellent! Try verifying one problem using a different method.",
+            "You did it—finish with a confident final check.",
+            "Little by little, a little becomes a lot.",
+            "Practice makes progress.",
+            "Steady hands win the race.",
+            "Small steps beat no steps.",
+            "Check your work, trust your growth.",
+            "A calm mind catches quiet mistakes.",
+            "Consistency is a superpower.",
+            "Progress, not perfection.",
+            "One more look saves one big oops.",
+            "Patience pays in points.",
+            "Accuracy beats speed—every time.",
+            "Strong roots, strong results.",
+            "Today’s effort is tomorrow’s confidence.",
+            "The best learners review."
+        ];
+        document.getElementById('encouragement-text').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+    </script>
+</body>
+</html>
