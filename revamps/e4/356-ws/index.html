@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Identifikasi Garis Simetri (E4-S356)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff; /* bg-blue-50 equivalent */
+        --visual-stroke: #000;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.6cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; /* Mendorong footer ke bawah */
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.6cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .concept-box,
+        .input-box,
+        .visual-shape {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 26px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 24px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 5px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.4rem;
+        background-color: #f3f4f6;
+        padding: 0.2rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CONCEPT BOX --- */
+      .concept-box {
+        border: 2px solid #60a5fa;
+        background-color: #eff6ff;
+        border-radius: 10px;
+        padding: 8px;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+      }
+      
+      /* SVG Styles for Visual Math */
+      .visual-svg {
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .shape-fill { fill: #eff6ff; stroke: #333; stroke-width: 2; }
+      .shape-line-dashed { stroke: #ef4444; stroke-width: 2; stroke-dasharray: 4, 3; }
+      .shape-grid { stroke: #e5e7eb; stroke-width: 1; }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Simetri
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Identifikasi Garis Simetri
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : E4-S356
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-3 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: SIMETRI LIPAT
+                </h1>
+            </div>
+
+            <!-- CONCEPT SECTION -->
+            <div class="concept-box">
+                <div class="font-bold text-blue-800 mb-1">Konsep Simetri</div>
+                <div class="mb-2 text-gray-700">
+                    <b>Garis Simetri</b> adalah garis lipatan yang membagi bangun datar menjadi dua bagian yang <b>sama persis</b> (kongruen) dan saling menutupi ketika dilipat.
+                </div>
+                <div class="flex justify-center gap-8 items-center">
+                    <div class="text-center">
+                        <svg width="60" height="60" viewBox="0 0 60 60" class="visual-svg">
+                            <rect x="10" y="10" width="40" height="40" class="shape-fill" />
+                            <line x1="30" y1="5" x2="30" y2="55" class="shape-line-dashed" />
+                        </svg>
+                        <div class="text-[9px] mt-1 font-bold text-green-600">YA, Simetris</div>
+                    </div>
+                    <div class="text-center">
+                        <svg width="60" height="60" viewBox="0 0 60 60" class="visual-svg">
+                            <rect x="10" y="10" width="40" height="40" class="shape-fill" />
+                            <line x1="10" y1="10" x2="50" y2="30" class="shape-line-dashed" style="stroke: #999;" />
+                        </svg>
+                        <div class="text-[9px] mt-1 font-bold text-red-600">TIDAK Simetris</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-2 py-1 text-sm">
+                Bagian A: Pilihan Ganda (Visual)
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="mb-2">
+                         <span class="font-bold">1.</span> Perhatikan persegi panjang di bawah ini. Garis putus-putus manakah yang merupakan garis simetri yang <b>benar</b>?
+                    </div>
+                    <div class="flex gap-8 ml-4 mb-2 overflow-x-auto">
+                        <div class="text-center">
+                            <svg width="80" height="60" viewBox="0 0 80 60" class="visual-svg border border-transparent">
+                                <rect x="10" y="10" width="60" height="40" class="shape-fill" />
+                                <line x1="10" y1="10" x2="70" y2="50" class="shape-line-dashed" />
+                            </svg>
+                            <div class="font-bold text-sm">(A)</div>
+                        </div>
+                        <div class="text-center">
+                            <svg width="80" height="60" viewBox="0 0 80 60" class="visual-svg border border-transparent">
+                                <rect x="10" y="10" width="60" height="40" class="shape-fill" />
+                                <line x1="40" y1="5" x2="40" y2="55" class="shape-line-dashed" />
+                            </svg>
+                            <div class="font-bold text-sm">(B)</div>
+                        </div>
+                        <div class="text-center">
+                            <svg width="80" height="60" viewBox="0 0 80 60" class="visual-svg border border-transparent">
+                                <rect x="10" y="10" width="60" height="40" class="shape-fill" />
+                                <line x1="25" y1="5" x2="25" y2="55" class="shape-line-dashed" />
+                            </svg>
+                            <div class="font-bold text-sm">(C)</div>
+                        </div>
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> Bangun di bawah ini adalah <b>Segitiga Sama Kaki</b>. Berapa banyak garis simetri yang dimilikinya?
+                    </div>
+                    <div class="flex items-center gap-6 ml-4">
+                        <svg width="80" height="80" viewBox="0 0 80 80" class="visual-svg">
+                            <polygon points="10,70 70,70 40,10" class="shape-fill" />
+                            <!-- Tanda sama kaki -->
+                            <line x1="22" y1="38" x2="28" y2="42" stroke="black" stroke-width="2" />
+                            <line x1="52" y1="42" x2="58" y2="38" stroke="black" stroke-width="2" />
+                        </svg>
+                        <div class="choice-container flex-col gap-1">
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) 0 (Tidak ada)</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) 1</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) 2</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) 3</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                     <div class="mb-1">
+                        <span class="font-bold">3.</span> Manakah dari huruf berikut yang memiliki <b>lebih dari satu</b> garis simetri?
+                    </div>
+                    <div class="flex gap-6 ml-4 mb-2 items-center">
+                        <div class="text-center w-12 p-2 bg-gray-50 rounded border border-gray-200 font-black text-2xl font-mono">A</div>
+                        <div class="text-center w-12 p-2 bg-gray-50 rounded border border-gray-200 font-black text-2xl font-mono">M</div>
+                        <div class="text-center w-12 p-2 bg-gray-50 rounded border border-gray-200 font-black text-2xl font-mono">H</div>
+                        <div class="text-center w-12 p-2 bg-gray-50 rounded border border-gray-200 font-black text-2xl font-mono">P</div>
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-16"><span class="choice-box"></span> A</label>
+                        <label class="flex items-center cursor-pointer w-16"><span class="choice-box"></span> M</label>
+                        <label class="flex items-center cursor-pointer w-16"><span class="choice-box"></span> H</label>
+                        <label class="flex items-center cursor-pointer w-16"><span class="choice-box"></span> P</label>
+                    </div>
+                </div>
+                
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                     <div class="mb-1">
+                        <span class="font-bold">4.</span> Perhatikan Jajar Genjang di bawah ini. Apakah garis putus-putus (diagonal) tersebut merupakan garis simetri?
+                    </div>
+                    <div class="flex items-center gap-6 ml-4">
+                        <svg width="100" height="60" viewBox="0 0 100 60" class="visual-svg">
+                            <polygon points="20,50 90,50 80,10 10,10" class="shape-fill" />
+                            <line x1="10" y1="10" x2="90" y2="50" class="shape-line-dashed" />
+                        </svg>
+                        <div class="choice-container flex-col gap-2">
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Ya</label>
+                            <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Tidak</label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Simetri
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Identifikasi Garis Simetri
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : E4-S356
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+                 
+                 <!-- SOAL 5 (Dipindahkan dari Halaman 1) -->
+                 <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">5.</span> Berapakah jumlah garis simetri lipat pada bangun Bintang beraturan di bawah ini?
+                    </div>
+                    <div class="flex items-center gap-6 ml-4">
+                        <svg width="70" height="70" viewBox="0 0 100 100" class="visual-svg">
+                             <polygon points="50,5 61,35 95,35 68,55 79,85 50,65 21,85 32,55 5,35 39,35" class="shape-fill" style="fill:#fff7ed; stroke:#f97316;" />
+                        </svg>
+                        <div class="choice-container">
+                             <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a) 3</label>
+                             <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b) 5</label>
+                             <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c) 10</label>
+                             <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d) 1</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                 <!-- SOAL 6 -->
+                 <div class="soal-item mb-4">
+                    <div class="mb-2">
+                        <span class="font-bold">6.</span> Jika garis putus-putus adalah cermin, manakah bentuk yang benar untuk melengkapi sisi kanan?
+                    </div>
+                    <div class="flex items-start gap-8 ml-4">
+                        <!-- Soal -->
+                        <div class="text-center">
+                            <div class="text-xs font-bold mb-1">SOAL</div>
+                            <svg width="100" height="60" viewBox="0 0 100 60" class="visual-svg bg-gray-50 border border-gray-200">
+                                <line x1="50" y1="0" x2="50" y2="60" class="shape-line-dashed" />
+                                <!-- Left Shape -->
+                                <polygon points="50,30 20,30 20,10 50,10" class="shape-fill" style="fill:#e9d5ff; stroke: #6b21a8;" />
+                                <text x="25" y="50" font-size="8">Kiri</text>
+                                <text x="60" y="50" font-size="8" fill="red">Kanan?</text>
+                            </svg>
+                        </div>
+                        
+                        <!-- Pilihan -->
+                        <div class="choice-container flex-col gap-2 mt-0">
+                            <!-- Opsi A Diubah menjadi Lingkaran -->
+                            <label class="flex items-center cursor-pointer text-sm">
+                                <span class="choice-box"></span> 
+                                A. Lingkaran
+                                <svg width="20" height="20" class="ml-2 align-middle inline-block"><circle cx="10" cy="10" r="8" fill="#e9d5ff" stroke="black"/></svg>
+                            </label>
+                            
+                            <!-- Opsi B -->
+                            <label class="flex items-center cursor-pointer text-sm">
+                                <span class="choice-box"></span> 
+                                B. Bentuk sama terbalik
+                                <svg width="30" height="20" class="ml-2 align-middle inline-block border"><polygon points="0,15 30,15 30,5 0,5" fill="#e9d5ff" stroke="black"/></svg>
+                            </label>
+                            
+                            <!-- Opsi C -->
+                            <label class="flex items-center cursor-pointer text-sm">
+                                <span class="choice-box"></span> 
+                                C. Segitiga
+                                <svg width="20" height="20" class="ml-2 align-middle inline-block border"><polygon points="0,20 20,10 0,0" fill="#e9d5ff" stroke="black"/></svg>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">7.</span> Bangun manakah di bawah ini yang <b>TIDAK</b> memiliki garis simetri sama sekali?
+                    </div>
+                    <div class="flex gap-4 ml-4 overflow-x-auto items-end pb-2">
+                        <div class="text-center">
+                            <svg width="60" height="60" viewBox="0 0 60 60" class="visual-svg">
+                                <circle cx="30" cy="30" r="25" class="shape-fill" />
+                            </svg>
+                            <div class="font-bold text-sm mt-1">(A) Lingkaran</div>
+                        </div>
+                        <div class="text-center">
+                            <svg width="60" height="60" viewBox="0 0 60 60" class="visual-svg">
+                                <polygon points="30,5 50,25 30,55 10,25" class="shape-fill" />
+                            </svg>
+                            <div class="font-bold text-sm mt-1">(B) Layang-layang</div>
+                        </div>
+                        <div class="text-center">
+                            <svg width="60" height="60" viewBox="0 0 60 60" class="visual-svg">
+                                <polygon points="10,10 50,5 40,50 5,40" class="shape-fill" />
+                            </svg>
+                            <div class="font-bold text-sm mt-1">(C) Sembarang</div>
+                        </div>
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C</label>
+                    </div>
+                </div>
+
+                 <div class="h-separator"></div>
+
+                 <!-- INSTRUCTION B -->
+                 <div class="instruction-text mb-2 py-1 text-sm">
+                    Bagian B: Isian Singkat
+                </div>
+                
+                <!-- SOAL 8 -->
+                <div class="soal-item mb-3">
+                     <div class="mb-1">
+                        <span class="font-bold">8.</span> Sebuah persegi (bujur sangkar) dilipat secara diagonal, vertikal, dan horizontal. Berapa <b>total</b> garis simetri yang dimilikinya?
+                    </div>
+                    <div class="flex items-center gap-4 ml-4">
+                         <svg width="60" height="60" viewBox="0 0 60 60" class="visual-svg">
+                            <rect x="5" y="5" width="50" height="50" class="shape-fill" />
+                            <line x1="30" y1="0" x2="30" y2="60" stroke="#93c5fd" stroke-dasharray="2,2" />
+                            <line x1="0" y1="30" x2="60" y2="30" stroke="#93c5fd" stroke-dasharray="2,2" />
+                        </svg>
+                        <div class="flex items-center gap-2">
+                            Jawaban: <span class="input-box" style="width: 60px"></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1 & 2) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Simetri
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Identifikasi Garis Simetri
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : E4-S356
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+                
+                <!-- SOAL 9 -->
+                <div class="soal-item mb-3">
+                    <div class="mb-1">
+                        <span class="font-bold">9.</span> Perhatikan bangun panah di bawah ini. Berapa banyak garis simetri yang dimiliki bangun tersebut?
+                    </div>
+                    <div class="flex items-center gap-4 ml-4">
+                        <svg width="80" height="60" viewBox="0 0 80 60" class="visual-svg">
+                            <!-- Grid background -->
+                            <defs>
+                                <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+                                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="gray" stroke-width="0.5" opacity="0.2"/>
+                                </pattern>
+                            </defs>
+                            <rect width="80" height="60" fill="url(#smallGrid)" />
+                            <polygon points="10,20 40,20 40,5 70,30 40,55 40,40 10,40" class="shape-fill" style="fill:#cffafe; stroke: #0891b2;" />
+                        </svg>
+                        <div class="flex items-center gap-2">
+                            Jawaban: <span class="input-box" style="width: 60px"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">10. Analisis Konsep:</span>
+                    </div>
+                    <div class="ml-4 mb-2 text-sm">
+                        Andi berkata lingkaran memiliki 10 garis simetri. Budi berkata lingkaran memiliki garis simetri yang <b>tak terhingga</b> banyaknya. Siapakah yang benar?
+                    </div>
+                    <div class="ml-4 flex items-center gap-2">
+                        Jawaban: <span class="input-box" style="width: 150px; text-align: left; padding-left: 5px;"></span>
+                    </div>
+                </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
