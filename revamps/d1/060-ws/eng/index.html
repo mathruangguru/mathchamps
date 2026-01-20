@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Numbers up to 20 (D1-S060)</title>
+
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .disc-fill,
+        .pv-table th,
+        .pv-table td,
+        .digit-card,
+        .shape-fill {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .bg-gray-200 { background-color: #e5e7eb !important; }
+        .bg-black { background-color: #000000 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 80px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+
+      .underline-input {
+        display: inline-block;
+        border-bottom: 2px solid #333;
+        min-width: 100px;
+        text-align: center;
+        margin: 0 5px;
+      }
+
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 4px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 1.5rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.5cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem;
+        background-color: #f3f4f6;
+        padding: 0.25rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      /* Visual Math Singapore Specifics */
+      .svg-block {
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .shape-fill {
+        fill: #e5e7eb; /* gray-200 */
+        stroke: #000;
+        stroke-width: 1.5;
+      }
+      .shape-fill-dark {
+        fill: #d1d5db; /* gray-300 */
+        stroke: #000;
+        stroke-width: 1.5;
+      }
+      .comparison-card {
+        border: 1px solid #333;
+        padding: 10px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 160px;
+      }
+      .check-box-large {
+        width: 30px;
+        height: 30px;
+        border: 2px solid #333;
+        border-radius: 4px;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: transparent; /* Invisible checkmark until filled */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+       
+      <!-- ================= HALAMAN 1 (Bagian A: Soal 1-3) ================= -->
+      <section class="page">
+        
+        <!-- HEADER -->
+        <header class="page-header">
+          <div class="math-champs-header">
+            <img
+              src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png"
+              alt="Math Champs"
+              class="h-10 md:h-12 w-auto object-contain"
+            />
+            <div class="text-right">
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                Discovery 1
+              </div>
+              <div class="text-[10px] text-black font-semibold mt-0.5">
+                Numbers up to 20
+              </div>
+              <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                Visual Concept of "Fewer Than"
+              </div>
+              <div class="text-[10px] text-black font-medium mt-0.5">Code : D1-S060</div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <div class="text-center mb-6 mt-0">
+            <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+              CONCEPT OF "FEWER THAN"
+            </h1>
+          </div>
+
+          <!-- INSTRUCTION A -->
+          <div class="instruction-text py-1.5 text-sm">
+            Section A: Choose the box that has 
+            <b>fewer</b> items.
+          </div>
+
+          <div class="soal-grid">
+            
+            <!-- SOAL 1 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">1. Compare the number of circles and squares.</div>
+              <div class="flex justify-center gap-8">
+                
+                <!-- Kiri: 3 Lingkaran -->
+                <div class="comparison-card">
+                  <svg width="100" height="50" viewBox="0 0 100 50">
+                    <!-- Row 1 -->
+                    <circle cx="10" cy="10" r="8" class="shape-fill" />
+                    <circle cx="30" cy="10" r="8" class="shape-fill" />
+                    <circle cx="50" cy="10" r="8" class="shape-fill" />
+                  </svg>
+                  <div class="text-sm font-semibold mt-1 mb-1">Box A</div>
+                  <div class="check-box-large"></div>
+                </div>
+
+                <!-- Kanan: 5 Persegi -->
+                <div class="comparison-card">
+                  <svg width="100" height="50" viewBox="0 0 100 50">
+                    <!-- Row 1 -->
+                    <rect x="2" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    <rect x="22" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    <rect x="42" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    <rect x="62" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    <rect x="82" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                  </svg>
+                  <div class="text-sm font-semibold mt-1 mb-1">Box B</div>
+                  <div class="check-box-large"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SOAL 2 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">2. Compare the number of triangles and circles.</div>
+              <div class="flex justify-center gap-8">
+                
+                <!-- Kiri: 8 Segitiga -->
+                <div class="comparison-card">
+                  <svg width="100" height="50" viewBox="0 0 100 50">
+                    <!-- Row 1 (5 items) -->
+                    <polygon points="10,2 18,18 2,18" transform="translate(0,0)" class="shape-fill-dark" />
+                    <polygon points="10,2 18,18 2,18" transform="translate(20,0)" class="shape-fill-dark" />
+                    <polygon points="10,2 18,18 2,18" transform="translate(40,0)" class="shape-fill-dark" />
+                    <polygon points="10,2 18,18 2,18" transform="translate(60,0)" class="shape-fill-dark" />
+                    <polygon points="10,2 18,18 2,18" transform="translate(80,0)" class="shape-fill-dark" />
+                    <!-- Row 2 (3 items) -->
+                    <polygon points="10,2 18,18 2,18" transform="translate(0,25)" class="shape-fill-dark" />
+                    <polygon points="10,2 18,18 2,18" transform="translate(20,25)" class="shape-fill-dark" />
+                    <polygon points="10,2 18,18 2,18" transform="translate(40,25)" class="shape-fill-dark" />
+                  </svg>
+                  <div class="text-sm font-semibold mt-1 mb-1">Box A</div>
+                  <div class="check-box-large"></div>
+                </div>
+
+                <!-- Kanan: 6 Lingkaran -->
+                <div class="comparison-card">
+                  <svg width="100" height="50" viewBox="0 0 100 50">
+                    <!-- Row 1 (5 items) -->
+                    <circle cx="10" cy="10" r="8" class="shape-fill" />
+                    <circle cx="30" cy="10" r="8" class="shape-fill" />
+                    <circle cx="50" cy="10" r="8" class="shape-fill" />
+                    <circle cx="70" cy="10" r="8" class="shape-fill" />
+                    <circle cx="90" cy="10" r="8" class="shape-fill" />
+                    <!-- Row 2 (1 item) -->
+                    <circle cx="10" cy="35" r="8" class="shape-fill" />
+                  </svg>
+                  <div class="text-sm font-semibold mt-1 mb-1">Box B</div>
+                  <div class="check-box-large"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SOAL 3 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">3. Compare the number of squares and circles.</div>
+              <div class="flex justify-center gap-8">
+                
+                <!-- Kiri: 12 Persegi -->
+                <div class="comparison-card">
+                  <svg width="100" height="75" viewBox="0 0 100 75">
+                    <!-- Row 1 (5) -->
+                    <g>
+                      <rect x="2" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="22" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="42" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="62" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="82" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    </g>
+                    <!-- Row 2 (5) -->
+                    <g transform="translate(0, 25)">
+                      <rect x="2" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="22" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="42" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="62" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="82" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    </g>
+                    <!-- Row 3 (2) -->
+                    <g transform="translate(0, 50)">
+                      <rect x="2" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="22" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    </g>
+                  </svg>
+                  <div class="text-sm font-semibold mt-1 mb-1">Box A</div>
+                  <div class="check-box-large"></div>
+                </div>
+
+                <!-- Kanan: 15 Lingkaran -->
+                <div class="comparison-card">
+                  <svg width="100" height="75" viewBox="0 0 100 75">
+                    <!-- Row 1 (5) -->
+                    <g>
+                      <circle cx="10" cy="10" r="8" class="shape-fill" />
+                      <circle cx="30" cy="10" r="8" class="shape-fill" />
+                      <circle cx="50" cy="10" r="8" class="shape-fill" />
+                      <circle cx="70" cy="10" r="8" class="shape-fill" />
+                      <circle cx="90" cy="10" r="8" class="shape-fill" />
+                    </g>
+                    <!-- Row 2 (5) -->
+                    <g transform="translate(0, 25)">
+                      <circle cx="10" cy="10" r="8" class="shape-fill" />
+                      <circle cx="30" cy="10" r="8" class="shape-fill" />
+                      <circle cx="50" cy="10" r="8" class="shape-fill" />
+                      <circle cx="70" cy="10" r="8" class="shape-fill" />
+                      <circle cx="90" cy="10" r="8" class="shape-fill" />
+                    </g>
+                    <!-- Row 3 (5) -->
+                    <g transform="translate(0, 50)">
+                      <circle cx="10" cy="10" r="8" class="shape-fill" />
+                      <circle cx="30" cy="10" r="8" class="shape-fill" />
+                      <circle cx="50" cy="10" r="8" class="shape-fill" />
+                      <circle cx="70" cy="10" r="8" class="shape-fill" />
+                      <circle cx="90" cy="10" r="8" class="shape-fill" />
+                    </g>
+                  </svg>
+                  <div class="text-sm font-semibold mt-1 mb-1">Box B</div>
+                  <div class="check-box-large"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Bagian B: Soal 4-6 & Bagian C: 7) ================= -->
+      <section class="page">
+        
+        <!-- HEADER -->
+        <header class="page-header">
+          <div class="math-champs-header">
+            <img
+              src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png"
+              alt="Math Champs"
+              class="h-10 md:h-12 w-auto object-contain"
+            />
+            <div class="text-right">
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                Discovery 1
+              </div>
+              <div class="text-[10px] text-black font-semibold mt-0.5">
+                Numbers up to 20
+              </div>
+              <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                Visual Concept of "Fewer Than"
+              </div>
+              <div class="text-[10px] text-black font-medium mt-0.5">Code : D1-S060</div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <!-- INSTRUCTION B -->
+          <div class="instruction-text py-1.5 text-sm">
+            Section B: Choose the correct answer.
+          </div>
+
+          <!-- MODIFIED: Reduced gap and margin for tighter spacing -->
+          <div class="soal-grid mb-6" style="gap: 0.5rem">
+            
+            <!-- SOAL 4 -->
+            <div class="soal-item">
+              <div class="font-bold mb-1">
+                4. Which number is
+                <span class="text-blue-700">smaller</span> than 8?
+              </div>
+              <div class="choice-container flex-col gap-1 ml-4">
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> a. 10
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> b. 9
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> c. 5
+                </label>
+              </div>
+            </div>
+            
+            <div class="h-separator" style="margin: 0.15cm 0"></div>
+
+            <!-- SOAL 5 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">5. Look at the pictures below.</div>
+
+              <div class="flex justify-center gap-8 mb-2">
+                
+                <div class="text-center">
+                  <span class="block text-sm font-bold mb-1">Group A</span>
+                  <svg width="80" height="20" viewBox="0 0 80 20">
+                    <circle cx="10" cy="10" r="8" class="shape-fill" />
+                    <circle cx="30" cy="10" r="8" class="shape-fill" />
+                    <circle cx="50" cy="10" r="8" class="shape-fill" />
+                    <circle cx="70" cy="10" r="8" class="shape-fill" />
+                  </svg>
+                  <div class="text-xs font-semibold">(4)</div>
+                </div>
+                
+                <div class="text-center">
+                  <span class="block text-sm font-bold mb-1">Group B</span>
+                  <svg width="80" height="40" viewBox="0 0 80 40">
+                    <!-- Row 1 -->
+                    <rect x="2" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    <rect x="22" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    <rect x="42" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    <rect x="62" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    <!-- Row 2 -->
+                    <rect x="2" y="22" width="16" height="16" class="shape-fill" style="fill: white" />
+                    <rect x="22" y="22" width="16" height="16" class="shape-fill" style="fill: white" />
+                    <rect x="42" y="22" width="16" height="16" class="shape-fill" style="fill: white" />
+                  </svg>
+                  <div class="text-xs font-semibold">(7)</div>
+                </div>
+              </div>
+              
+              <div class="font-medium mb-1 ml-4 text-sm">
+                The correct mathematical sentence is...
+              </div>
+              <div class="choice-container flex-col gap-1 ml-8">
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> a. Group A has fewer than Group B
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> b. Group B has fewer than Group A
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span> c. Group A has the same number as Group B
+                </label>
+              </div>
+            </div>
+            
+            <div class="h-separator" style="margin: 0.15cm 0"></div>
+
+            <!-- SOAL 6 (REVISED) -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">
+                6. Which group of items has a number
+                <span class="text-blue-700">less than 10</span>?
+              </div>
+
+              <div class="choice-container flex-col gap-3 ml-4">
+                
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span>
+                  <span class="mr-2">a.</span>
+                  <!-- 12 Squares (Persegi) - Ukuran Diperbesar -->
+                  <svg width="260" height="55" viewBox="0 0 260 55" class="border p-1 rounded bg-white">
+                    <!-- Row 1: 6 Squares -->
+                    <rect x="5" y="5" width="14" height="14" fill="white" stroke="black" stroke-width="1.5" />
+                    <rect x="24" y="5" width="14" height="14" fill="white" stroke="black" stroke-width="1.5" />
+                    <rect x="43" y="5" width="14" height="14" fill="white" stroke="black" stroke-width="1.5" />
+                    <rect x="62" y="5" width="14" height="14" fill="white" stroke="black" stroke-width="1.5" />
+                    <rect x="81" y="5" width="14" height="14" fill="white" stroke="black" stroke-width="1.5" />
+                    <rect x="100" y="5" width="14" height="14" fill="white" stroke="black" stroke-width="1.5" />
+                    <!-- Row 2: 6 Squares -->
+                    <rect x="5" y="24" width="14" height="14" fill="white" stroke="black" stroke-width="1.5" />
+                    <rect x="24" y="24" width="14" height="14" fill="white" stroke="black" stroke-width="1.5" />
+                    <rect x="43" y="24" width="14" height="14" fill="white" stroke="black" stroke-width="1.5" />
+                    <rect x="62" y="24" width="14" height="14" fill="white" stroke="black" stroke-width="1.5" />
+                    <rect x="81" y="24" width="14" height="14" fill="white" stroke="black" stroke-width="1.5" />
+                    <rect x="100" y="24" width="14" height="14" fill="white" stroke="black" stroke-width="1.5" />
+                    <!-- Text -->
+                    <text x="135" y="34" font-size="16" font-weight="bold" fill="#333">12 Squares</text>
+                  </svg>
+                </label>
+
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span>
+                  <span class="mr-2">b.</span>
+                  <!-- 8 Circles (Lingkaran) - Ukuran Diperbesar -->
+                  <svg width="260" height="55" viewBox="0 0 260 55" class="border p-1 rounded bg-white">
+                    <!-- Row 1: 4 Circles -->
+                    <circle cx="12" cy="12" r="8" fill="lightgray" stroke="black" stroke-width="1.5" />
+                    <circle cx="31" cy="12" r="8" fill="lightgray" stroke="black" stroke-width="1.5" />
+                    <circle cx="50" cy="12" r="8" fill="lightgray" stroke="black" stroke-width="1.5" />
+                    <circle cx="69" cy="12" r="8" fill="lightgray" stroke="black" stroke-width="1.5" />
+                    <!-- Row 2: 4 Circles -->
+                    <circle cx="12" cy="33" r="8" fill="lightgray" stroke="black" stroke-width="1.5" />
+                    <circle cx="31" cy="33" r="8" fill="lightgray" stroke="black" stroke-width="1.5" />
+                    <circle cx="50" cy="33" r="8" fill="lightgray" stroke="black" stroke-width="1.5" />
+                    <circle cx="69" cy="33" r="8" fill="lightgray" stroke="black" stroke-width="1.5" />
+                    <!-- Text -->
+                    <text x="135" y="34" font-size="16" font-weight="bold" fill="#333">8 Circles</text>
+                  </svg>
+                </label>
+
+                <label class="flex items-center cursor-pointer">
+                  <span class="choice-box"></span>
+                  <span class="mr-2">c.</span>
+                  <!-- 11 Triangles (Segitiga) - Ukuran Diperbesar -->
+                  <svg width="260" height="55" viewBox="0 0 260 55" class="border p-1 rounded bg-white">
+                    <!-- Row 1: 6 Triangles -->
+                    <g transform="translate(0,0)">
+                      <polygon points="12,4 20,20 4,20" fill="gray" stroke="black" stroke-width="1.5" />
+                      <polygon points="12,4 20,20 4,20" transform="translate(19,0)" fill="gray" stroke="black" stroke-width="1.5" />
+                      <polygon points="12,4 20,20 4,20" transform="translate(38,0)" fill="gray" stroke="black" stroke-width="1.5" />
+                      <polygon points="12,4 20,20 4,20" transform="translate(57,0)" fill="gray" stroke="black" stroke-width="1.5" />
+                      <polygon points="12,4 20,20 4,20" transform="translate(76,0)" fill="gray" stroke="black" stroke-width="1.5" />
+                      <polygon points="12,4 20,20 4,20" transform="translate(95,0)" fill="gray" stroke="black" stroke-width="1.5" />
+                    </g>
+                    <!-- Row 2: 5 Triangles -->
+                    <g transform="translate(0,21)">
+                      <polygon points="12,4 20,20 4,20" fill="gray" stroke="black" stroke-width="1.5" />
+                      <polygon points="12,4 20,20 4,20" transform="translate(19,0)" fill="gray" stroke="black" stroke-width="1.5" />
+                      <polygon points="12,4 20,20 4,20" transform="translate(38,0)" fill="gray" stroke="black" stroke-width="1.5" />
+                      <polygon points="12,4 20,20 4,20" transform="translate(57,0)" fill="gray" stroke="black" stroke-width="1.5" />
+                      <polygon points="12,4 20,20 4,20" transform="translate(76,0)" fill="gray" stroke="black" stroke-width="1.5" />
+                    </g>
+                    <!-- Text -->
+                    <text x="135" y="34" font-size="16" font-weight="bold" fill="#333">11 Triangles</text>
+                  </svg>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- INSTRUCTION C -->
+          <div class="instruction-text py-1.5 text-sm mt-6">
+            Section C: Fill in the blanks below with the correct answer.
+          </div>
+
+          <div class="soal-grid">
+            
+            <!-- SOAL 7 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">7. Count the items below.</div>
+
+              <div class="flex justify-center gap-12 mb-4">
+                
+                <div class="text-center">
+                  <div class="font-bold text-sm">Triangles</div>
+                  <!-- 14 Triangles -->
+                  <svg width="100" height="75" viewBox="0 0 100 75">
+                    <!-- Row 1 (5) -->
+                    <g>
+                      <polygon points="10,2 18,18 2,18" transform="translate(0,0)" class="shape-fill-dark" />
+                      <polygon points="10,2 18,18 2,18" transform="translate(20,0)" class="shape-fill-dark" />
+                      <polygon points="10,2 18,18 2,18" transform="translate(40,0)" class="shape-fill-dark" />
+                      <polygon points="10,2 18,18 2,18" transform="translate(60,0)" class="shape-fill-dark" />
+                      <polygon points="10,2 18,18 2,18" transform="translate(80,0)" class="shape-fill-dark" />
+                    </g>
+                    <!-- Row 2 (5) -->
+                    <g transform="translate(0, 25)">
+                      <polygon points="10,2 18,18 2,18" transform="translate(0,0)" class="shape-fill-dark" />
+                      <polygon points="10,2 18,18 2,18" transform="translate(20,0)" class="shape-fill-dark" />
+                      <polygon points="10,2 18,18 2,18" transform="translate(40,0)" class="shape-fill-dark" />
+                      <polygon points="10,2 18,18 2,18" transform="translate(60,0)" class="shape-fill-dark" />
+                      <polygon points="10,2 18,18 2,18" transform="translate(80,0)" class="shape-fill-dark" />
+                    </g>
+                    <!-- Row 3 (4) -->
+                    <g transform="translate(0, 50)">
+                      <polygon points="10,2 18,18 2,18" transform="translate(0,0)" class="shape-fill-dark" />
+                      <polygon points="10,2 18,18 2,18" transform="translate(20,0)" class="shape-fill-dark" />
+                      <polygon points="10,2 18,18 2,18" transform="translate(40,0)" class="shape-fill-dark" />
+                      <polygon points="10,2 18,18 2,18" transform="translate(60,0)" class="shape-fill-dark" />
+                    </g>
+                  </svg>
+                </div>
+
+                <div class="text-center">
+                  <div class="font-bold text-sm">Squares</div>
+                  <!-- 11 Squares -->
+                  <svg width="100" height="75" viewBox="0 0 100 75">
+                    <!-- Row 1 (5) -->
+                    <g>
+                      <rect x="2" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="22" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="42" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="62" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="82" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    </g>
+                    <!-- Row 2 (5) -->
+                    <g transform="translate(0, 25)">
+                      <rect x="2" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="22" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="42" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="62" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                      <rect x="82" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    </g>
+                    <!-- Row 3 (1) -->
+                    <g transform="translate(0, 50)">
+                      <rect x="2" y="2" width="16" height="16" class="shape-fill" style="fill: white" />
+                    </g>
+                  </svg>
+                </div>
+              </div>
+              
+              <div class="flex flex-col gap-2 ml-4">
+                <div>The number of squares is <span class="input-box"></span>.</div>
+                <div>The number of triangles is <span class="input-box"></span>.</div>
+                <div>
+                  The item that is fewer is
+                  <span class="input-box" style="width: 150px"></span>.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Bagian C: Soal 8-10) ================= -->
+      <section class="page">
+        
+        <!-- HEADER -->
+        <header class="page-header">
+          <div class="math-champs-header">
+            <img
+              src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png"
+              alt="Math Champs"
+              class="h-10 md:h-12 w-auto object-contain"
+            />
+            <div class="text-right">
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                Discovery 1
+              </div>
+              <div class="text-[10px] text-black font-semibold mt-0.5">
+                Numbers up to 20
+              </div>
+              <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                Visual Concept of "Fewer Than"
+              </div>
+              <div class="text-[10px] text-black font-medium mt-0.5">Code : D1-S060</div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <div class="soal-grid mb-4">
+            
+            <!-- SOAL 8 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">
+                8. Write all numbers that are smaller than 15 but greater than 10.
+              </div>
+              <div class="flex items-center gap-2 ml-4 mt-2">
+                <span class="font-bold">Answer: </span>
+                <span class="input-box" style="width: 100px"></span>
+              </div>
+            </div>
+            
+            <div class="h-separator"></div>
+
+            <!-- SOAL 9 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">9. Look at these two numbers:</div>
+
+              <div class="flex justify-center gap-12 my-6">
+                <div class="text-5xl font-black text-gray-800 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                  18
+                </div>
+                <div class="text-5xl font-black text-gray-800 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                  13
+                </div>
+              </div>
+              <div class="ml-4 mb-2 text-sm font-medium text-center">
+                Circle the number that is <b>smaller</b>.
+              </div>
+            </div>
+            
+            <div class="h-separator"></div>
+
+            <!-- SOAL 10 -->
+            <div class="soal-item">
+              <div class="font-bold mb-2">10. Draw circles (⚪) in the box so the number is <b>fewer</b> than 5 and more than 3.
+              </div>
+
+              <div class="border-2 border-black rounded-lg h-32 mx-4 relative bg-white">
+                <div class="absolute inset-0 flex items-center justify-center text-gray-300 italic pointer-events-none">
+                  (Draw here)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center italic text-xs text-gray-500 mt-12">
+            "Progress, not perfection."
+          </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+       
+    </div>
+  </body>
+</html>
