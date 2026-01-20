@@ -1,0 +1,752 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Odd and Even</title>
+    
+    <!-- Tailwind for responsive layout and utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659; /* Background luar abu-abu gelap agar kertas terlihat */
+        margin: 0;
+        padding: 20px 0;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 210mm; /* A4 Width exact */
+        height: 297mm; /* A4 Height exact */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Ensure content doesn't break layout */
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+        flex-shrink: 0; /* Header jangan mengecil */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; /* Push ke paling bawah jika flex */
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-shrink: 0; /* Footer jangan mengecil */
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0; /* Nol margin di @page, kita atur padding manual di .page */
+        }
+        
+        body {
+          background-color: white;
+          padding: 0;
+          margin: 0;
+          width: 210mm;
+          height: 100%;
+        }
+
+        .page-container {
+          display: block;
+          width: 210mm;
+        }
+
+        .page {
+          margin: 0;
+          padding: 1.5cm 2cm 1cm 2cm; /* Sedikit kurangi padding bawah agar footer aman */
+          border: none;
+          box-shadow: none;
+          width: 210mm;
+          height: 296mm; /* Sedikit kurang dari 297mm untuk mencegah blank page */
+          page-break-after: always;
+          break-after: page;
+          position: relative;
+          overflow: hidden;
+          display: flex; /* Tetap flex agar footer di bawah */
+          flex-direction: column;
+        }
+
+        /* Halaman terakhir tidak perlu break */
+        .page:last-child {
+          page-break-after: avoid;
+          break-after: avoid;
+          height: auto; /* Biarkan auto untuk halaman terakhir */
+          min-height: 296mm;
+        }
+        
+        /* Memaksa background color tercetak (Chrome/Safari) */
+        .math-champs-header,
+        .concept-box,
+        .concept-title,
+        .bg-gray-100,
+        .bg-yellow-50,
+        .bg-blue-50,
+        .page,
+        body {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        
+        .no-break {
+            break-inside: avoid;
+        }
+
+        /* Paksa layout baris saat print */
+        .concept-content {
+            display: flex !important;
+            flex-direction: row !important;
+        }
+      }
+
+      /* --- KOMPONEN LAINNYA --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+      }
+
+      .soal-number {
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        font-size: 1.1em;
+      }
+
+      .object-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 4px;
+        align-items: center;
+      }
+
+      .input-line {
+        border: none;
+        border-bottom: 2px solid #333;
+        width: 80px;
+        height: 25px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        background: transparent;
+        font-family: inherit;
+        font-size: 1rem;
+      }
+
+      .input-box {
+        border: 2px solid #333;
+        width: 60px;
+        height: 40px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        vertical-align: middle;
+      }
+      
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 10px;
+        font-weight: 500;
+      }
+
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+      }
+
+      .radio-circle {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #333;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.8cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        font-size: 1.1em;
+      }
+
+      .concept-box {
+        border: 2px solid #000;
+        background-color: #f3f4f6; 
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+      }
+      .concept-title {
+        background-color: #e5e7eb; 
+        padding: 8px;
+        font-weight: 800;
+        text-align: center;
+        border-bottom: 2px solid #000;
+        font-size: 1em;
+      }
+      .concept-content {
+        display: flex;
+        flex-direction: row; /* FORCE ROW DISPLAY */
+      }
+      
+      .concept-col {
+        flex: 1;
+        padding: 10px; /* Reduced padding */
+        text-align: center;
+        border-right: 1px solid #ccc;
+        font-size: 0.85rem; /* Font size reduced */
+      }
+      
+      .concept-col:last-child {
+        border-right: none;
+      }
+
+      .dot-pair-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 10px 0;
+      }
+      .dot-column {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .dot {
+        width: 12px; /* Slightly smaller dots */
+        height: 12px;
+        background-color: black;
+        border-radius: 50%;
+      }
+      .pairing-loop {
+        border: 2px solid #666;
+        border-radius: 20px;
+        padding: 2px 4px;
+        margin: -4px;
+        display: flex;
+        gap: 4px;
+      }
+
+      .no-break {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .section-title {
+        font-size: 1.2rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        color: #111;
+        border-bottom: 2px solid #111;
+        display: inline-block;
+        padding-bottom: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 1000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Identifying Odd and Even Numbers
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : D3-S170
+                    </div>
+                </div>
+            </div>
+            <!-- Garis pemisah header -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-6 mt-2">
+                <h1 class="text-2xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                    ODD AND EVEN
+                </h1>
+            </div>
+
+            <!-- KONSEP SECTION -->
+            <div class="concept-box no-break">
+                <div class="concept-title">Concept: Pairing Numbers</div>
+                <div class="concept-content">
+                    <!-- Bilangan GENAP -->
+                    <div class="concept-col">
+                        <div class="font-bold text-base mb-1">EVEN Numbers</div>
+                        <p class="mb-2 leading-tight">Can be paired, no leftovers.</p>
+                        
+                        <div class="flex justify-center my-3">
+                            <!-- Visual representation of 4 paired -->
+                            <div class="flex flex-col gap-2">
+                                <div class="pairing-loop"><div class="dot"></div><div class="dot"></div></div>
+                                <div class="pairing-loop"><div class="dot"></div><div class="dot"></div></div>
+                            </div>
+                        </div>
+
+                        <p class="font-semibold text-xs">Example: 4 is Even.</p>
+                        <p class="mt-1">Ones Digit: <br><span class="font-bold text-base">0, 2, 4, 6, 8</span></p>
+                    </div>
+
+                    <!-- Bilangan GANJIL -->
+                    <div class="concept-col">
+                        <div class="font-bold text-base mb-1">ODD Numbers</div>
+                        <p class="mb-2 leading-tight">There is one leftover when paired.</p>
+                        
+                        <div class="flex justify-center my-3">
+                            <!-- Visual representation of 5 (2 pairs + 1 leftover) -->
+                            <div class="flex flex-col gap-2">
+                                <div class="pairing-loop"><div class="dot"></div><div class="dot"></div></div>
+                                <div class="pairing-loop"><div class="dot"></div><div class="dot"></div></div>
+                                <div class="flex gap-2 px-1"><div class="dot"></div></div> <!-- Sisa -->
+                            </div>
+                        </div>
+
+                        <p class="font-semibold text-xs">Example: 5 is Odd.</p>
+                        <p class="mt-1">Ones Digit: <br><span class="font-bold text-base">1, 3, 5, 7, 9</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="instruction-text mb-6">
+                Instruction: Answer the questions below. Look at the ones digit for large numbers!
+            </div>
+
+            <!-- BAGIAN A -->
+            <div class="mb-2"><span class="section-title">Section A: Basic Concepts and Visuals</span></div>
+
+            <div class="soal-grid mb-5">
+                <!-- No 1 -->
+                <div class="soal-item no-break">
+                    <div class="soal-number">1. Seeing Patterns</div>
+                    <p class="mb-2">Look at the squares below. Pair up the squares.</p>
+                    
+                    <div class="flex gap-1 my-3 justify-start">
+                        <!-- 7 squares visualization -->
+                        <div class="w-8 h-8 border-2 border-black bg-white"></div>
+                        <div class="w-8 h-8 border-2 border-black bg-white"></div>
+                        <div class="w-8 h-8 border-2 border-black bg-white"></div>
+                        <div class="w-8 h-8 border-2 border-black bg-white"></div>
+                        <div class="w-8 h-8 border-2 border-black bg-white"></div>
+                        <div class="w-8 h-8 border-2 border-black bg-white"></div>
+                        <div class="w-8 h-8 border-2 border-black bg-gray-300"></div> <!-- Last one shaded differently to imply remainder visually if wanted, or plain -->
+                    </div>
+                    
+                    <p class="mb-2">There are 7 squares. Is 7 an odd or even number?</p>
+                    <div class="choice-container">
+                        <label class="choice-item">
+                            <span class="radio-circle"></span> Odd (Has a leftover)
+                        </label>
+                        <label class="choice-item">
+                            <span class="radio-circle"></span> Even (All paired up)
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 1000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Identifying Odd and Even Numbers
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : D3-S170
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+
+            <!-- Lanjutan Bagian A (Nomor 2 & 3) -->
+            <div class="soal-grid mb-8">
+                <!-- No 2 -->
+                <div class="soal-item no-break">
+                    <div class="soal-number">2. Analyzing Ones Digit</div>
+                    <p class="mb-2">Look at the last digit (ones digit) of the number <span class="font-black text-xl">48</span>.</p>
+                    <p class="mb-2">Can the number 8 be paired up without leftovers?</p>
+                    
+                    <div class="mt-2">
+                        Answer (Yes/No): <input type="text" class="input-line">
+                    </div>
+                    <div class="mt-2">
+                        So, 48 is an <input type="text" class="input-line" style="width: 150px;"> number.
+                    </div>
+                </div>
+
+                <!-- No 3 -->
+                <div class="soal-item no-break">
+                    <div class="soal-number">3. Grouping</div>
+                    <p class="mb-3">Group the following numbers into the correct boxes:</p>
+                    <div class="flex justify-center gap-4 mb-4 text-lg font-bold">
+                        <span class="bg-gray-200 px-3 py-1 rounded">15</span>
+                        <span class="bg-gray-200 px-3 py-1 rounded">22</span>
+                        <span class="bg-gray-200 px-3 py-1 rounded">108</span>
+                        <span class="bg-gray-200 px-3 py-1 rounded">337</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 border-2 border-black">
+                        <!-- Header Table -->
+                        <div class="border-r-2 border-b-2 border-black p-2 text-center bg-gray-100">
+                            <div class="font-bold">Odd Numbers</div>
+                            <div class="text-xs">(Ones digit 1, 3, 5, 7, 9)</div>
+                        </div>
+                        <div class="border-b-2 border-black p-2 text-center bg-gray-100">
+                            <div class="font-bold">Even Numbers</div>
+                            <div class="text-xs">(Ones digit 0, 2, 4, 6, 8)</div>
+                        </div>
+                        <!-- Content Table -->
+                        <div class="border-r-2 border-black p-2 h-24"></div>
+                        <div class="p-2 h-24"></div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 1000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Identifying Odd and Even Numbers
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : D3-S170
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- BAGIAN B -->
+            <div class="mb-4"><span class="section-title">Section B: Numbers to 1000 (Multiple Choice)</span></div>
+
+            <div class="grid grid-cols-2 gap-x-8 gap-y-6 mb-8">
+                <!-- No 4 -->
+                <div class="soal-item no-break flex gap-2">
+                    <div class="soal-number whitespace-nowrap mb-0">4.</div>
+                    <div class="w-full">
+                        <p class="mb-2 leading-tight">Which of the following numbers is an <span class="font-bold">ODD</span> number?</p>
+                        <div class="choice-container">
+                            <label class="choice-item"><span class="radio-circle"></span> (a) 456</label>
+                            <label class="choice-item"><span class="radio-circle"></span> (b) 890</label>
+                            <label class="choice-item"><span class="radio-circle"></span> (c) 121</label>
+                            <label class="choice-item"><span class="radio-circle"></span> (d) 668</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No 5 -->
+                <div class="soal-item no-break flex gap-2">
+                    <div class="soal-number whitespace-nowrap mb-0">5.</div>
+                    <div class="w-full">
+                        <p class="mb-2 leading-tight">Which of the following numbers is an <span class="font-bold">EVEN</span> number?</p>
+                        <div class="choice-container">
+                            <label class="choice-item"><span class="radio-circle"></span> (a) 333</label>
+                            <label class="choice-item"><span class="radio-circle"></span> (b) 507</label>
+                            <label class="choice-item"><span class="radio-circle"></span> (c) 99</label>
+                            <label class="choice-item"><span class="radio-circle"></span> (d) 1000</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No 6 -->
+                <div class="soal-item no-break col-span-2">
+                    <div class="soal-number">6. Word Problem</div>
+                    <p class="mb-2">Teacher has <span class="font-bold">245</span> sheets of paper. She wants to distribute them to students in pairs. Since the ones digit is 5, then:</p>
+                    <div class="choice-container">
+                        <label class="choice-item">
+                            <span class="radio-circle"></span> (a) The number of papers is Even (can be paired up completely)
+                        </label>
+                        <label class="choice-item">
+                            <span class="radio-circle"></span> (b) The number of papers is Odd (will have 1 sheet leftover)
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- BAGIAN C (Nomor 7-8) -->
+            <div class="mb-4"><span class="section-title">Section C: Patterns and Logic (Discovery)</span></div>
+
+            <div class="flex flex-col gap-6">
+                <!-- No 7 -->
+                <div class="soal-item no-break p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div class="soal-number">7. Completing Patterns</div>
+                    <p class="mb-2">Look at the sequence of even numbers below. Fill in the blanks with the next number.</p>
+                    <div class="text-2xl font-bold tracking-widest text-center mt-4">
+                        214, 216, 218, <input type="text" class="input-line" style="width: 100px; font-size: 1.5rem;">
+                    </div>
+                </div>
+
+                <!-- No 8 -->
+                <div class="soal-item no-break">
+                    <div class="soal-number">8. Addition Logic</div>
+                    <p class="mb-2">Calculate: <span class="font-bold font-mono">10 + 3 = 13</span></p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>10 is an Even number.</li>
+                        <li>3 is an Odd number.</li>
+                        <li>The result (13) is an <input type="text" class="input-line" style="width: 120px;"> number.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 4 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 1000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Identifying Odd and Even Numbers
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : D3-S170
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- Lanjutan BAGIAN C (Nomor 9-10) -->
+            <div class="mb-4"><span class="section-title">Section C: Continued</span></div>
+
+            <div class="flex flex-col gap-6">
+                <!-- No 9 -->
+                <div class="soal-item no-break p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="soal-number">9. Number Puzzle</div>
+                    <div class="flex flex-col md:flex-row gap-4 items-center">
+                        <div class="flex-1">
+                            <ul class="list-none space-y-2">
+                                <li>🔍 I am greater than 300 but smaller than 310.</li>
+                                <li>🔍 I am an Odd number.</li>
+                                <li>🔍 My ones digit is 5.</li>
+                            </ul>
+                        </div>
+                        <div class="flex-none bg-white p-3 rounded shadow-sm border border-blue-100 text-center">
+                            <div class="text-xs text-gray-500 mb-1">Who am I?</div>
+                            <input type="text" class="input-box" style="width: 80px; height: 50px; font-size: 1.5rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No 10 -->
+                <div class="soal-item no-break">
+                    <div class="soal-number">10. Exploration</div>
+                    <p class="mb-2">If you add two Odd numbers (example: 3 + 5), will the result always be Odd or Even?</p>
+                    <div class="choice-container flex-row gap-8">
+                        <label class="choice-item"><span class="radio-circle"></span> (a) Always Odd</label>
+                        <label class="choice-item"><span class="radio-circle"></span> (b) Always Even</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center italic text-gray-500 font-medium" id="random-quote">
+                <!-- Text will be replaced by JS -->
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+
+    <script>
+        const quotes = [
+            "Nice work finishing the set—seriously well done.",
+            "Great effort today. Quick check-through and you’re good.",
+            "Strong finish! Take a moment to review your answers.",
+            "Awesome job. If anything feels off, trust your gut and recheck it.",
+            "You’re getting sharper with every problem.",
+            "Well done—your focus really showed.",
+            "Before you close it, do one last scan for silly mistakes.",
+            "That was solid. Clean work and clear thinking.",
+            "Mistakes are part of the process—what matters is you keep going.",
+            "Great job. Try checking the trickiest question one more time.",
+            "Proud of your effort. Consistency wins.",
+            "Strong work—your math muscles are growing.",
+            "Nice! Now make sure every question has an answer.",
+            "Great progress today—keep that momentum.",
+            "You worked hard. Take a breath, then double-check.",
+            "Excellent! Try verifying one problem using a different method.",
+            "You did it—finish with a confident final check.",
+            "Little by little, a little becomes a lot.",
+            "Practice makes progress.",
+            "Steady hands win the race.",
+            "Small steps beat no steps.",
+            "Check your work, trust your growth.",
+            "A calm mind catches quiet mistakes.",
+            "Consistency is a superpower.",
+            "Progress, not perfection.",
+            "One more look saves one big oops.",
+            "Patience pays in points.",
+            "Accuracy beats speed—every time.",
+            "Strong roots, strong results.",
+            "Today’s effort is tomorrow’s confidence.",
+            "The best learners review."
+        ];
+
+        // Pick random quote
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        const quoteEl = document.getElementById('random-quote');
+        if(quoteEl) quoteEl.innerText = randomQuote;
+    </script>
+  </body>
+</html>
