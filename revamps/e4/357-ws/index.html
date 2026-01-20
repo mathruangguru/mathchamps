@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Simetri (E4-S357)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.6cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.6cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .concept-box,
+        .input-box,
+        .svg-shape,
+        .grid-line {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border-bottom: 1.5px solid #333;
+        min-width: 45px;
+        height: 20px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: bottom;
+        background: transparent;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.2rem;
+        margin-top: 3px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.4rem;
+        background-color: #f3f4f6;
+        padding: 0.2rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CONCEPT BOX --- */
+      .concept-box {
+        border: 2px solid #60a5fa;
+        background-color: #eff6ff;
+        border-radius: 10px;
+        padding: 8px;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+      }
+      
+      /* --- SVG GRIDS --- */
+      .grid-svg {
+        display: block;
+        margin: 5px 0;
+      }
+      .grid-line {
+        stroke: #e5e7eb;
+        stroke-width: 1;
+      }
+      .axis-line {
+        stroke: #ef4444; /* Red-500 */
+        stroke-width: 2;
+        stroke-dasharray: 4, 2;
+      }
+      .object-fill {
+        stroke: none;
+      }
+      .object-stroke {
+        fill: none;
+        stroke: #333;
+        stroke-width: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Simetri
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Simetri Lipat, Pencerminan, dan Jarak
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode: E4-S357
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-3 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: KONSEP SIMETRI
+                </h1>
+            </div>
+
+            <!-- CONCEPT SECTION -->
+            <div class="concept-box">
+                <div class="font-bold text-blue-800 mb-1">Ingat Sifat Cermin!</div>
+                <div class="mb-2 text-gray-700">
+                    <ul class="list-disc ml-5 space-y-1">
+                        <li>Garis putus-putus merah adalah <b>Sumbu Simetri</b> (Cermin).</li>
+                        <li><b>Jarak benda ke cermin</b> sama dengan <b>jarak bayangan ke cermin</b>.</li>
+                        <li>Gunakan kotak-kotak (grid) untuk membantumu menghitung jarak.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-2 py-1 text-sm">
+                Bagian A: Pemahaman Konsep (Pilihan Ganda)
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                         <span class="font-bold">1.</span> Manakah dari gambar di bawah ini yang menunjukkan garis simetri (garis putus-putus) yang <b>benar</b>?
+                    </div>
+                    <div class="flex gap-4 ml-4 mb-2 flex-wrap">
+                        <!-- Option A -->
+                        <div class="text-center">
+                            <div class="text-xs font-bold mb-1">A</div>
+                            <svg width="60" height="40" class="grid-svg border border-gray-300">
+                                <defs>
+                                    <pattern id="grid1" width="20" height="20" patternUnits="userSpaceOnUse">
+                                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+                                    </pattern>
+                                </defs>
+                                <rect width="60" height="40" fill="url(#grid1)" />
+                                <!-- Wrong: Diagonal line -->
+                                <rect x="20" y="10" width="20" height="20" fill="#60a5fa" opacity="0.4" />
+                                <rect x="20" y="10" width="20" height="20" fill="none" stroke="#333" stroke-width="1.5" />
+                                <line x1="0" y1="0" x2="60" y2="40" class="axis-line" />
+                            </svg>
+                        </div>
+                        <!-- Option B -->
+                        <div class="text-center">
+                            <div class="text-xs font-bold mb-1">B</div>
+                            <svg width="60" height="40" class="grid-svg border border-gray-300">
+                                <rect width="60" height="40" fill="url(#grid1)" />
+                                <!-- Correct: Vertical Split -->
+                                <rect x="20" y="10" width="20" height="20" fill="#60a5fa" opacity="0.4" />
+                                <rect x="20" y="10" width="20" height="20" fill="none" stroke="#333" stroke-width="1.5" />
+                                <line x1="30" y1="0" x2="30" y2="40" class="axis-line" />
+                            </svg>
+                        </div>
+                        <!-- Option C -->
+                        <div class="text-center">
+                            <div class="text-xs font-bold mb-1">C</div>
+                            <svg width="60" height="40" class="grid-svg border border-gray-300">
+                                <rect width="60" height="40" fill="url(#grid1)" />
+                                <!-- Wrong: Line far left -->
+                                <rect x="20" y="10" width="20" height="20" fill="#60a5fa" opacity="0.4" />
+                                <rect x="20" y="10" width="20" height="20" fill="none" stroke="#333" stroke-width="1.5" />
+                                <line x1="10" y1="0" x2="10" y2="40" class="axis-line" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-1">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Gambar A</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Gambar B</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Gambar C</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> Jika sebuah kotak berwarna biru berada <b>3 langkah di sebelah kiri</b> cermin, di manakah letak bayangannya?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-1">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) 1 langkah di kanan cermin.</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) 3 langkah di kanan cermin.</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Tepat pada garis cermin.</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) 3 langkah di kiri cermin.</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                     <div class="mb-1">
+                        <span class="font-bold">3.</span> Perhatikan pola di bawah ini. Garis merah adalah cermin.
+                    </div>
+                    <div class="flex gap-4 items-start ml-4">
+                        <svg width="80" height="80" class="grid-svg border border-gray-300">
+                             <defs>
+                                <pattern id="grid2" width="20" height="20" patternUnits="userSpaceOnUse">
+                                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+                                </pattern>
+                            </defs>
+                            <rect width="80" height="80" fill="url(#grid2)" />
+                            <line x1="40" y1="0" x2="40" y2="80" class="axis-line" />
+                            <!-- Objects Left -->
+                            <rect x="0" y="0" width="20" height="20" fill="#fb923c" /> <!-- Top Left (0,0) -->
+                            <rect x="20" y="20" width="20" height="20" fill="#fb923c" /> <!-- Near center (1,1) visual from top -->
+                            <!-- Question Mark Right -->
+                            <text x="55" y="45" font-size="20" fill="#999">?</text>
+                        </svg>
+                        <div class="text-sm mt-2 max-w-md">
+                            Agar gambar menjadi simetris, kotak manakah yang harus diwarnai di sebelah kanan?
+                            <div class="choice-container flex-col gap-1 mt-2">
+                                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Kotak di pojok kanan bawah.</label>
+                                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Kotak di pojok kanan atas dan tengah kanan.</label>
+                                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Kotak di sembarang tempat.</label>
+                                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Kotak yang menempel pada garis merah saja.</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                     <div class="mb-1">
+                        <span class="font-bold">4.</span> Sebuah bangun datar simetris memiliki luas total <b>12 kotak satuan</b>. Berapakah luas <b>setengah</b> bagiannya?
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> a) 4 kotak</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> b) 6 kotak</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> c) 8 kotak</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> d) 12 kotak</label>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Simetri
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Simetri Lipat, Pencerminan, dan Jarak
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode: E4-S357
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+
+                 <div class="soal-grid mb-3">
+                     <!-- SOAL 5 (Moved from Page 1) -->
+                    <div class="soal-item">
+                        <div class="mb-1">
+                            <span class="font-bold">5.</span> Perhatikan gambar di bawah ini! Apakah gambar tersebut simetris?
+                        </div>
+                        <div class="ml-4 flex gap-4 items-center">
+                            <svg width="80" height="80" class="grid-svg border border-gray-300">
+                                <rect width="80" height="80" fill="url(#grid2)" />
+                                <line x1="40" y1="0" x2="40" y2="80" class="axis-line" />
+                                <!-- Left Side -->
+                                <rect x="0" y="40" width="20" height="20" fill="#a855f7" />
+                                <rect x="0" y="60" width="20" height="20" fill="#a855f7" />
+                                <rect x="20" y="40" width="20" height="20" fill="#a855f7" />
+                                <!-- Right Side (Asymmetric) -->
+                                <rect x="40" y="40" width="20" height="20" fill="#a855f7" />
+                                <rect x="60" y="40" width="20" height="20" fill="#a855f7" />
+                                <rect x="60" y="60" width="20" height="20" fill="#a855f7" />
+                                <rect x="60" y="20" width="20" height="20" fill="#a855f7" /> <!-- Extra block on top -->
+                            </svg>
+                            <div class="choice-container flex-col gap-1 text-sm">
+                                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Ya, karena kiri dan kanan sama persis.</label>
+                                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Ya, karena sama-sama warna ungu.</label>
+                                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Tidak, karena sisi kanan lebih tinggi.</label>
+                                <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Tidak, karena garis merahnya putus-putus.</label>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+
+                 <div class="h-separator"></div>
+                 
+                 <!-- INSTRUCTION B -->
+                 <div class="instruction-text mb-4 py-1 text-sm mt-3">
+                    Bagian B: Isian Singkat
+                </div>
+                
+                <div class="soal-grid">
+                    
+                    <div class="flex flex-row w-full gap-8">
+                        
+                        <!-- SOAL 6 -->
+                        <div class="soal-item w-1/2">
+                            <div class="mb-1">
+                                 <span class="font-bold">6. Menghitung Jumlah</span><br>
+                                 Di sebelah kiri garis ada 4 kotak biru.
+                            </div>
+                            <div class="ml-4 mb-2">
+                                <svg width="80" height="80" class="grid-svg border border-gray-300">
+                                    <rect width="80" height="80" fill="url(#grid2)" />
+                                    <line x1="40" y1="0" x2="40" y2="80" class="axis-line" />
+                                    <rect x="0" y="40" width="20" height="20" fill="#3b82f6" opacity="0.6" />
+                                    <rect x="0" y="60" width="20" height="20" fill="#3b82f6" opacity="0.6" />
+                                    <rect x="20" y="40" width="20" height="20" fill="#3b82f6" opacity="0.6" />
+                                    <rect x="20" y="60" width="20" height="20" fill="#3b82f6" opacity="0.6" />
+                                    <rect x="0" y="0" width="80" height="80" fill="none" stroke="#333" stroke-width="2" />
+                                </svg>
+                            </div>
+                            <div class="text-sm">
+                                Agar simetris, kita harus mewarnai <span class="input-box" style="width: 40px"></span> kotak di sebelah kanan.
+                            </div>
+                        </div>
+
+                        <!-- SOAL 7 -->
+                        <div class="soal-item w-1/2">
+                            <div class="mb-1">
+                                <span class="font-bold">7. Total Luas</span><br>
+                                Pola hijau ini akan dicerminkan ke bawah.
+                            </div>
+                            <div class="ml-4 mb-2">
+                                <svg width="80" height="80" class="grid-svg border border-gray-300">
+                                    <rect width="80" height="80" fill="url(#grid2)" />
+                                    <line x1="0" y1="40" x2="80" y2="40" class="axis-line" /> <!-- Horizontal at y=40 -->
+                                    <rect x="0" y="20" width="20" height="20" fill="#22c55e" opacity="0.6" />
+                                    <rect x="20" y="20" width="20" height="20" fill="#22c55e" opacity="0.6" />
+                                    <rect x="20" y="0" width="20" height="20" fill="#22c55e" opacity="0.6" />
+                                    <rect x="0" y="0" width="80" height="80" fill="none" stroke="#333" stroke-width="2" />
+                                </svg>
+                            </div>
+                            <div class="text-sm">
+                                Ada 3 kotak hijau di atas. Setelah dicerminkan, total seluruh kotak (atas + bawah) adalah <span class="input-box" style="width: 40px"></span>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="h-separator"></div>
+
+                    <div class="flex flex-row w-full gap-8">
+                        <!-- SOAL 8 -->
+                        <div class="soal-item w-1/2">
+                             <div class="mb-1">
+                                <span class="font-bold">8. Menebak Huruf</span><br>
+                                Jika separuh bagian ini dicerminkan ke kanan, akan terbentuk huruf kapital.
+                            </div>
+                            <div class="ml-4 mb-2">
+                                <svg width="80" height="80" class="grid-svg border border-gray-300">
+                                    <rect width="80" height="80" fill="url(#grid2)" />
+                                    <line x1="40" y1="0" x2="40" y2="80" class="axis-line" />
+                                    <!-- T Shape Half -->
+                                    <rect x="0" y="0" width="20" height="20" fill="#a855f7" opacity="0.6" />
+                                    <rect x="20" y="0" width="20" height="20" fill="#a855f7" opacity="0.6" />
+                                    <rect x="20" y="20" width="20" height="20" fill="#a855f7" opacity="0.6" />
+                                    <rect x="20" y="40" width="20" height="20" fill="#a855f7" opacity="0.6" />
+                                    <rect x="20" y="60" width="20" height="20" fill="#a855f7" opacity="0.6" />
+                                    <rect x="0" y="0" width="80" height="80" fill="none" stroke="#333" stroke-width="2" />
+                                </svg>
+                            </div>
+                            <div class="text-sm">
+                                Huruf apakah yang terbentuk? <span class="input-box" style="width: 40px"></span>
+                            </div>
+                        </div>
+
+                        <!-- SOAL 9 -->
+                        <div class="soal-item w-1/2">
+                            <div class="mb-1">
+                                <span class="font-bold">9. Jarak Bayangan</span><br>
+                                Kotak oranye berjarak <b>1 kotak</b> dari cermin.
+                            </div>
+                            <div class="ml-4 mb-2">
+                                <svg width="120" height="40" class="grid-svg border border-gray-300">
+                                    <rect width="120" height="40" fill="url(#grid2)" />
+                                    <line x1="60" y1="0" x2="60" y2="40" class="axis-line" /> <!-- Center at 60 -->
+                                    <!-- Box at x=20 (visual index 1 if 0 is 0-20, 1 is 20-40. Distance to 60 is 20. 1 box gap.) -->
+                                    <rect x="20" y="20" width="20" height="20" fill="#f97316" opacity="0.7" />
+                                    <text x="25" y="35" font-size="10" fill="white">A</text>
+                                    <rect x="0" y="0" width="120" height="40" fill="none" stroke="#333" stroke-width="2" />
+                                </svg>
+                            </div>
+                            <div class="text-sm">
+                                Bayangannya di sebelah kanan juga harus berjarak <span class="input-box" style="width: 40px"></span> kotak dari cermin.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="h-separator"></div>
+
+                    <!-- SOAL 10: TANTANGAN -->
+                    <div class="instruction-text mb-2 py-1 text-sm bg-yellow-50 border-yellow-500">
+                        Bagian C: Tantangan (Analisis Posisi)
+                    </div>
+
+                    <div class="soal-item">
+                        <div class="mb-1">
+                            <span class="font-bold">10. Di mana Bayanganku?</span>
+                        </div>
+                        <div class="ml-4 mb-2 text-sm">
+                            Bayangkan garis merah adalah cermin. Setiap kotak memiliki nomor atau huruf.
+                        </div>
+                        <div class="flex justify-center my-4">
+                            <svg width="240" height="40" class="grid-svg border border-gray-300">
+                                <rect width="240" height="40" fill="url(#grid2)" />
+                                <line x1="120" y1="0" x2="120" y2="40" class="axis-line" />
+                                
+                                <!-- Object Far Left (Pos 1) -->
+                                <rect x="0" y="20" width="20" height="20" fill="#ef4444" opacity="0.8" />
+                                
+                                <!-- Labels Left -->
+                                <text x="6" y="34" font-size="10" font-weight="bold" fill="white">1</text>
+                                <text x="26" y="34" font-size="10" fill="#333">2</text>
+                                <text x="46" y="34" font-size="10" fill="#333">3</text>
+                                <text x="66" y="34" font-size="10" fill="#333">4</text>
+                                <text x="86" y="34" font-size="10" fill="#333">5</text>
+                                <text x="106" y="34" font-size="10" fill="#333">6</text>
+                                
+                                <!-- Labels Right -->
+                                <text x="126" y="34" font-size="10" fill="#333">A</text>
+                                <text x="146" y="34" font-size="10" fill="#333">B</text>
+                                <text x="166" y="34" font-size="10" fill="#333">C</text>
+                                <text x="186" y="34" font-size="10" fill="#333">D</text>
+                                <text x="206" y="34" font-size="10" fill="#333">E</text>
+                                <text x="226" y="34" font-size="10" fill="#333" font-weight="bold">F</text>
+                                
+                                <rect x="0" y="0" width="240" height="40" fill="none" stroke="#333" stroke-width="2" />
+                            </svg>
+                        </div>
+                        <div class="ml-4 mb-2 text-sm">
+                            Kotak merah berada di posisi nomor <b>1</b> (paling ujung kiri). <br>
+                            Jika dicerminkan ke sisi kanan, kotak bayangan akan jatuh tepat di posisi huruf <span class="input-box" style="width: 40px"></span>.
+                        </div>
+                    </div>
+
+                </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
