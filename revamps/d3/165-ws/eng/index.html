@@ -1,0 +1,524 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - D3.S165 Comparing Numbers</title>
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-text: #333333;
+            --secondary-text: #555555;
+            --grey-text: #8d8e8d;
+            
+            /* --- VARIABEL BLOK PROPORSIONAL --- */
+            --unit-size: 8px; /* Ukuran dasar 1 unit */
+            
+            /* Warna Satuan (Yellow) */
+            --ones-bg: #facc15; 
+            --ones-border: #a16207;
+            
+            /* Warna Puluhan (Green) */
+            --tens-bg: #4ade80;
+            --tens-border: #15803d;
+
+            /* Warna Ratusan (Blue) */
+            --hundreds-bg: #60a5fa;
+            --hundreds-border: #1e3a8a;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: "Montserrat", sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: var(--primary-text);
+            background-color: #525659;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .page {
+            background: white;
+            width: 21cm;
+            height: 29.7cm;
+            padding: 1.2cm 1.5cm;
+            margin-bottom: 1cm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .page-header { width: 100%; margin-bottom: 10px; flex-shrink: 0; }
+        .content-wrapper { position: relative; z-index: 1; width: 100%; flex-grow: 1; display: flex; flex-direction: column; gap: 0.8rem; }
+
+        .page-footer {
+            text-align: left; font-size: 6pt; color: var(--grey-text);
+            padding-top: 4px; margin-top: auto; border-top: 2px solid var(--grey-text);
+            width: 100%; display: flex; gap: 5px; align-items: center; flex-shrink: 0;
+        }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background-color: white; padding: 0; margin: 0; }
+            .page { width: 21cm; height: 29.6cm; margin: 0; box-shadow: none; page-break-after: always; padding: 1cm; border: none; }
+            .math-champs-header, .flat, .rod, .unit, .unit-seg { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+
+        .math-champs-header { background-color: white; padding: 0.5rem 0; display: flex; justify-content: space-between; align-items: center; }
+
+        /* --- BLOCKS STYLING --- */
+        .blocks-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            padding: 8px;
+            background: #ffffff;
+            border: 1px solid #f3f4f6;
+            border-radius: 6px;
+            min-height: 100px;
+        }
+
+        .flat {
+            width: calc(var(--unit-size) * 10);
+            height: calc(var(--unit-size) * 10);
+            background-color: var(--hundreds-bg);
+            border: 1px solid var(--hundreds-border);
+            background-image: 
+                linear-gradient(var(--hundreds-border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--hundreds-border) 1px, transparent 1px);
+            background-size: var(--unit-size) var(--unit-size);
+            background-position: -1px -1px;
+            flex-shrink: 0;
+        }
+
+        .rod {
+            display: flex;
+            flex-direction: column-reverse;
+            width: var(--unit-size);
+            flex-shrink: 0;
+        }
+
+        .rod .unit-seg {
+            width: var(--unit-size);
+            height: var(--unit-size);
+            background-color: var(--tens-bg);
+            border: 1px solid var(--tens-border);
+            border-bottom: none;
+        }
+        .rod .unit-seg:first-child { border-bottom: 1px solid var(--tens-border); }
+
+        .unit {
+            width: var(--unit-size);
+            height: var(--unit-size);
+            background-color: var(--ones-bg);
+            border: 1px solid var(--ones-border);
+            flex-shrink: 0;
+        }
+
+        .hundreds-group, .tens-group { display: flex; gap: 3px; align-items: flex-end; }
+        .ones-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; align-self: flex-end; }
+
+        /* UI Components */
+        .section-label { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; color: #000; border-bottom: 2px solid #000; padding-bottom: 4px; margin-top: 10px; }
+        .soal-item { border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.8rem; background-color: #f9fafb; break-inside: avoid; }
+        .choice-box { width: 20px; height: 20px; border: 1.5px solid #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; background: white; font-size: 11px; }
+        .choice-item { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        .input-line { border: none; border-bottom: 1.5px solid #333; text-align: center; font-weight: bold; color: #2563eb; background: transparent; outline: none; }
+        .pattern-circle { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #333; display: flex; align-items: center; justify-content: center; font-weight: bold; background: white; }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- ================= HALAMAN 1 ================= -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Numbers up to 1000</div>
+                        <div class="text-[10px] text-black font-medium max-w-[200px] ml-auto leading-tight mt-1">Comparing numbers up to 1000</div>
+                        <div class="text-[11px] text-black font-medium mt-1">Kode : D3-S165</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="section-label">Section A: Visual Comparison (Concrete & Pictorial)</div>
+
+                <!-- Soal 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-3 text-sm">1. Look at the base 10 blocks below. Which number is <b>greater</b>?</div>
+                    
+                    <div class="grid grid-cols-2 gap-4 border-2 border-gray-200 rounded-lg p-3 bg-white">
+                        <!-- Set A: 231 -->
+                        <div class="flex flex-col items-center border-r border-dashed border-gray-300 pr-2">
+                            <div class="font-bold text-blue-700 mb-2 text-xs">Set A</div>
+                            <div class="blocks-container">
+                                <div class="hundreds-group">
+                                    <div class="flat"></div><div class="flat"></div>
+                                </div>
+                                <div class="tens-group">
+                                    <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                    <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                    <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                </div>
+                                <div class="ones-group">
+                                    <div class="unit"></div>
+                                </div>
+                            </div>
+                            <div class="text-[9px] text-gray-500 font-bold mt-2">2 Hundreds, 3 Tens, 1 One</div>
+                        </div>
+
+                        <!-- Set B: 142 -->
+                        <div class="flex flex-col items-center pl-2">
+                            <div class="font-bold text-blue-700 mb-2 text-xs">Set B</div>
+                            <div class="blocks-container">
+                                <div class="hundreds-group">
+                                    <div class="flat"></div>
+                                </div>
+                                <div class="tens-group">
+                                    <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                    <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                    <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                    <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                </div>
+                                <div class="ones-group">
+                                    <div class="unit"></div><div class="unit"></div>
+                                </div>
+                            </div>
+                            <div class="text-[9px] text-gray-500 font-bold mt-2">1 Hundred, 4 Tens, 2 Ones</div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-around gap-2 mt-3 text-xs font-semibold">
+                        <label class="choice-item bg-white px-3 py-2 border rounded shadow-sm hover:bg-blue-50">
+                            <div class="choice-box">A</div> Set A is greater
+                        </label>
+                        <label class="choice-item bg-white px-3 py-2 border rounded shadow-sm hover:bg-blue-50">
+                            <div class="choice-box">B</div> Set B is greater
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Soal 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-3 text-sm">2. Compare the two numbers. Write the sign <span class="text-blue-600">&gt;</span> or <span class="text-blue-600">&lt;</span> in the box.</div>
+                    
+                    <div class="flex items-center justify-around bg-white p-4 rounded border border-gray-200 shadow-inner">
+                        <!-- 310 -->
+                        <div class="flex flex-col items-center">
+                            <div class="blocks-container">
+                                <div class="hundreds-group">
+                                    <div class="flat"></div><div class="flat"></div><div class="flat"></div>
+                                </div>
+                                <div class="tens-group">
+                                    <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                </div>
+                            </div>
+                            <div class="font-bold mt-2 text-base">310</div>
+                        </div>
+
+                        <!-- Box -->
+                        <input type="text" class="w-12 h-12 border-2 border-black text-center text-2xl font-bold rounded shadow-sm" placeholder="?">
+
+                        <!-- 305 -->
+                        <div class="flex flex-col items-center">
+                            <div class="blocks-container">
+                                <div class="hundreds-group">
+                                    <div class="flat"></div><div class="flat"></div><div class="flat"></div>
+                                </div>
+                                <div class="ones-group">
+                                    <div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div><div class="unit"></div>
+                                </div>
+                            </div>
+                            <div class="font-bold mt-2 text-base">305</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal 3 -->
+                <div class="soal-item bg-white">
+                    <div class="font-bold mb-2 text-sm">3. Look at the Place Value Table. Compare <b>452</b> and <b>482</b>.</div>
+                    <div class="flex justify-center my-2">
+                        <table class="border-collapse text-center w-full max-w-xs text-sm border-2 border-black">
+                            <thead>
+                                <tr class="bg-gray-800 text-white font-bold">
+                                    <th class="border-2 border-black p-1">Hundreds</th>
+                                    <th class="border-2 border-black p-1">Tens</th>
+                                    <th class="border-2 border-black p-1">Ones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border-2 border-black p-2 font-bold">4</td>
+                                    <td class="border-2 border-black p-2 font-bold bg-yellow-100 text-blue-600">5</td>
+                                    <td class="border-2 border-black p-2 font-bold">2</td>
+                                </tr>
+                                <tr>
+                                    <td class="border-2 border-black p-2 font-bold">4</td>
+                                    <td class="border-2 border-black p-2 font-bold bg-yellow-100 text-blue-600">8</td>
+                                    <td class="border-2 border-black p-2 font-bold">2</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-xs font-semibold mb-2">Which place value helps you determine this comparison?</div>
+                    <div class="flex flex-col gap-1.5 text-xs">
+                        <label class="choice-item"><div class="choice-box">A</div> Hundreds (because the digits are the same)</label>
+                        <label class="choice-item"><div class="choice-box">B</div> Tens (because 5 tens < 8 tens)</label>
+                        <label class="choice-item"><div class="choice-box">C</div> Ones (because the digits are the same)</label>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- ================= HALAMAN 2 ================= -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Numbers up to 1000</div>
+                        <div class="text-[10px] text-black font-medium mt-1">Kode : D3-S165</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- Question 4: Garis Bilangan -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-sm">4. Look at the number line below. Is point A greater or smaller than 550?</div>
+                    <div class="bg-white p-3 rounded border border-gray-200 text-center">
+                        <svg viewBox="0 0 400 60" preserveAspectRatio="xMidYMid meet" style="width: 100%; max-width: 500px; margin: auto;">
+                            <defs>
+                                <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                                    <path d="M0,0 L10,5 L0,10 Z" fill="black" />
+                                </marker>
+                            </defs>
+                            <line x1="10" y1="35" x2="390" y2="35" stroke="black" stroke-width="2" marker-end="url(#arrow)" />
+                            
+                            <line x1="50" y1="30" x2="50" y2="40" stroke="black" stroke-width="2"/>
+                            <text x="50" y="52" font-family="Montserrat" font-size="10" text-anchor="middle">500</text>
+                            
+                            <line x1="150" y1="30" x2="150" y2="40" stroke="black" stroke-width="2"/>
+                            <text x="150" y="52" font-family="Montserrat" font-size="10" text-anchor="middle">550</text>
+                            
+                            <line x1="250" y1="30" x2="250" y2="40" stroke="black" stroke-width="2"/>
+                            <text x="250" y="52" font-family="Montserrat" font-size="10" text-anchor="middle">600</text>
+                            
+                            <line x1="350" y1="30" x2="350" y2="40" stroke="black" stroke-width="2"/>
+                            <text x="350" y="52" font-family="Montserrat" font-size="10" text-anchor="middle">650</text>
+
+                            <!-- Point A ~ 520 -->
+                            <circle cx="90" cy="35" r="5" fill="#dc2626" />
+                            <text x="90" y="20" font-family="Montserrat" font-size="12" font-weight="bold" fill="#dc2626" text-anchor="middle">A</text>
+                        </svg>
+                    </div>
+                    <div class="mt-4 font-bold text-center text-sm">
+                        Answer: Point A is <input type="text" class="input-line w-24 text-center" placeholder="......."> than 550.
+                    </div>
+                </div>
+
+                <div class="section-label">Section B: Abstract Comparison</div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="soal-item">
+                        <div class="font-bold text-sm">5. Which number is <b>smaller</b>?</div>
+                        <div class="flex items-center justify-center gap-4 mt-3 mb-2 text-lg font-bold">
+                            <span class="bg-gray-100 px-2 rounded">713</span>
+                            <span class="text-xs text-gray-400">vs</span>
+                            <span class="bg-gray-100 px-2 rounded">731</span>
+                        </div>
+                        <div class="text-center">Answer: <input type="text" class="input-line w-16 text-center"></div>
+                    </div>
+
+                    <div class="soal-item">
+                        <div class="font-bold text-sm">6. Write the correct symbol (>, <, =).</div>
+                        <div class="text-[10px] mt-2 text-center font-medium">6 hundreds + 4 tens + 2 ones</div>
+                        <div class="flex justify-center my-1">
+                            <div class="w-10 h-8 border-b-2 border-black flex items-center justify-center font-bold text-blue-600">?</div>
+                        </div>
+                        <div class="text-center font-bold">624</div>
+                    </div>
+
+                    <div class="soal-item col-span-2 bg-blue-50">
+                        <div class="font-bold text-sm mb-2">7. Order the numbers from <b>smallest to greatest</b>.</div>
+                        <div class="flex justify-center gap-3 mb-3">
+                            <div class="bg-white border p-1 px-3 font-bold rounded shadow-sm">890</div>
+                            <div class="bg-white border p-1 px-3 font-bold rounded shadow-sm">809</div>
+                            <div class="bg-white border p-1 px-3 font-bold rounded shadow-sm">908</div>
+                            <div class="bg-white border p-1 px-3 font-bold rounded shadow-sm">819</div>
+                        </div>
+                        <div class="flex justify-center items-center gap-2 text-sm font-bold">
+                            <input type="text" class="input-line w-12"> , <input type="text" class="input-line w-12"> , <input type="text" class="input-line w-12"> , <input type="text" class="input-line w-12">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="soal-item">
+                        <div class="font-bold text-[11px] mb-1">8. Guess the Number:</div>
+                        <ul class="text-[10px] list-disc ml-4 space-y-0.5">
+                            <li>More than 300 & Less than 400</li>
+                            <li>Digit 5 in the tens place</li>
+                            <li>Greater than 358</li>
+                        </ul>
+                        <div class="grid grid-cols-2 gap-1 mt-2">
+                             <label class="choice-item text-[10px] border p-1 rounded bg-white"><div class="choice-box" style="width:14px; height:14px;">A</div> 259</label>
+                             <label class="choice-item text-[10px] border p-1 rounded bg-white"><div class="choice-box" style="width:14px; height:14px;">B</div> 349</label>
+                             <label class="choice-item text-[10px] border p-1 rounded bg-white"><div class="choice-box" style="width:14px; height:14px;">C</div> 359</label>
+                             <label class="choice-item text-[10px] border p-1 rounded bg-white"><div class="choice-box" style="width:14px; height:14px;">D</div> 459</label>
+                        </div>
+                    </div>
+
+                    <div class="soal-item">
+                        <div class="font-bold text-[11px] mb-1">9. Fill in the digit to make it true:</div>
+                        <div class="text-center font-bold text-lg my-2">5 <span class="text-blue-600 underline">?</span> 9 &nbsp; < &nbsp; 540</div>
+                        <div class="grid grid-cols-2 gap-1">
+                             <label class="choice-item text-[10px] border p-1 rounded bg-white"><div class="choice-box" style="width:14px; height:14px;">A</div> 3</label>
+                             <label class="choice-item text-[10px] border p-1 rounded bg-white"><div class="choice-box" style="width:14px; height:14px;">B</div> 4</label>
+                             <label class="choice-item text-[10px] border p-1 rounded bg-white"><div class="choice-box" style="width:14px; height:14px;">C</div> 5</label>
+                             <label class="choice-item text-[10px] border p-1 rounded bg-white"><div class="choice-box" style="width:14px; height:14px;">D</div> 6</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- ================= HALAMAN 3 ================= -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Numbers up to 1000</div>
+                        <div class="text-[11px] text-black font-medium mt-1">Kode : D3-S165</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="section-label">Section B: Abstract Comparison (Continued)</div>
+                
+                <!-- Q10 -->
+                <div class="soal-item bg-yellow-50 border border-yellow-200 mt-4">
+                    <div class="font-bold mb-2 text-sm text-yellow-900">
+                        10. Look at the pattern. Comparing numbers helps us find the next number.
+                    </div>
+                    
+                    <div class="flex items-center justify-center gap-3 my-10">
+                        <div class="pattern-circle shadow-sm">210</div>
+                        <div class="text-gray-400 font-bold">→</div>
+                        <div class="pattern-circle shadow-sm">220</div>
+                        <div class="text-gray-400 font-bold">→</div>
+                        <div class="pattern-circle shadow-sm">230</div>
+                        <div class="text-gray-400 font-bold">→</div>
+                        <div class="pattern-circle border-dashed border-blue-500 text-blue-600 shadow-md">?</div>
+                    </div>
+
+                    <div class="font-semibold text-sm mb-4 text-center">The next number is greater than 230 by:</div>
+                    <div class="flex justify-center gap-4 text-sm max-w-md mx-auto">
+                        <label class="choice-item bg-white py-3 px-6 border rounded shadow-sm w-full justify-center hover:bg-yellow-100">
+                            <div class="choice-box">A</div> 1
+                        </label>
+                        <label class="choice-item bg-white py-3 px-6 border rounded shadow-sm w-full justify-center hover:bg-yellow-100">
+                            <div class="choice-box">B</div> 10
+                        </label>
+                        <label class="choice-item bg-white py-3 px-6 border rounded shadow-sm w-full justify-center hover:bg-yellow-100">
+                            <div class="choice-box">C</div> 100
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Footer area motivasi -->
+                <div class="mt-auto mb-4 text-center">
+                    <div id="random-quote" class="text-base font-extrabold text-gray-500 italic px-8 py-4 border-t border-b border-gray-100">
+                        <!-- Kalimat motivasi -->
+                        Comparing numbers is key to understanding place value!
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const quotes = [
+                "Nice work finishing the set—seriously well done.",
+                "Great effort today. Quick check-through and you’re good.",
+                "Strong finish! Take a moment to review your answers.",
+                "Awesome job. If anything feels off, trust your gut and recheck it.",
+                "You’re getting sharper with every problem.",
+                "Well done—your focus really showed.",
+                "Before you close it, do one last scan for silly mistakes.",
+                "That was solid. Clean work and clear thinking.",
+                "Mistakes are part of the process—what matters is you keep going.",
+                "Great job. Try checking the trickiest question one more time.",
+                "Proud of your effort. Consistency wins.",
+                "Strong work—your math muscles are growing.",
+                "Nice! Now make sure every question has an answer.",
+                "Great progress today—keep that momentum.",
+                "You worked hard. Take a breath, then double-check.",
+                "Excellent! Try verifying one problem using a different method.",
+                "You did it—finish with a confident final check.",
+                "Little by little, a little becomes a lot.",
+                "Practice makes progress.",
+                "Steady hands win the race.",
+                "Small steps beat no steps.",
+                "Check your work, trust your growth.",
+                "A calm mind catches quiet mistakes.",
+                "Consistency is a superpower.",
+                "Progress, not perfection.",
+                "One more look saves one big oops.",
+                "Patience pays in points.",
+                "Accuracy beats speed—every time.",
+                "Strong roots, strong results.",
+                "Today’s effort is tomorrow’s confidence.",
+                "The best learners review."
+            ];
+            const quoteElement = document.getElementById('random-quote');
+            if (quoteElement) {
+                const randomIndex = Math.floor(Math.random() * quotes.length);
+                quoteElement.textContent = quotes[randomIndex];
+            }
+        });
+    </script>
+</body>
+</html>
