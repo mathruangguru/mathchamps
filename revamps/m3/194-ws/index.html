@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Desimal Tingkat Lanjut (M3-S194)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff;
+        --path-color: #d1d5db;
+        --bar-blue: #6495ED; /* Cornflower Blue */
+        --bar-red: #DC143C;  /* Crimson */
+        --pv-bg: #e0f2fe;    /* Place Value Background */
+        --pv-header: #0ea5e9; /* Place Value Header */
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm 2cm; 
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px; 
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 5px;
+        margin-top: auto; 
+        border-top: 2.5px solid var(--grey-text);
+        width: 100%;
+        display: block; 
+      }
+      .page-footer b {
+          display: block;
+          margin-bottom: 2px;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .instruction-text, .concept-box, .identity-box, .choice-box, .worked-example {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem; 
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+
+      /* Pilihan Ganda Styles */
+      .choice-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        margin-left: 1rem;
+        font-size: 0.9rem;
+      }
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 3px;
+        background: white;
+      }
+
+      /* Input boxes */
+      .input-box {
+        border-bottom: 1.5px solid #333;
+        min-width: 100px;
+        display: inline-block;
+        vertical-align: bottom;
+        margin-left: 5px;
+      }
+      
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem; 
+        background-color: #f3f4f6;
+        padding: 0.4rem 0.8rem; 
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- SVG Styles --- */
+      .bar-svg-container {
+        display: block;
+        margin: 10px auto;
+        overflow: visible;
+      }
+      .pv-rect {
+        fill: white;
+        stroke: #333;
+        stroke-width: 1;
+      }
+      .pv-header-rect {
+        fill: #e5e7eb;
+        stroke: #333;
+        stroke-width: 1;
+      }
+      .bar-text {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        fill: #000;
+      }
+      
+      /* Worked Example Box */
+      .worked-example {
+        background-color: #f9fafb;
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+      }
+
+    </style>
+  </head>
+  <body>
+    
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1: CONTOH ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Bilangan Desimal Tingkat Lanjut
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Nilai Tempat
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M3-S194
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-5 mt-4"> 
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: EKSPLORASI DESIMAL
+                </h1>
+            </div>
+
+            <!-- CONTOH SOAL -->
+            <div class="worked-example">
+                <div class="font-bold text-lg mb-2 border-b border-gray-300 pb-1">Contoh Pengerjaan (Pengelompokan Ulang)</div>
+                <p class="text-sm mb-2">
+                    <strong>Masalah:</strong> Ubahlah <strong>4 Satuan</strong> dan <strong>13 Persepuluhan</strong> menjadi bentuk desimal standar.
+                </p>
+                
+                <!-- Visual Model: Place Value Regrouping - FIXED SPACING -->
+                <div class="w-full flex justify-center my-4">
+                    <!-- Increased height to 180 to provide space for the arrow between rows -->
+                    <svg width="400" height="180" viewBox="0 0 400 180" class="bar-svg-container">
+                        <!-- Chart Headers -->
+                        <rect x="50" y="10" width="100" height="30" class="pv-header-rect" />
+                        <text x="100" y="25" class="bar-text">Satuan (1)</text>
+                        
+                        <rect x="150" y="10" width="150" height="30" class="pv-header-rect" />
+                        <text x="225" y="25" class="bar-text">Persepuluhan (0,1)</text>
+
+                        <!-- Row 1: Initial State (Moved down slightly) -->
+                        <rect x="50" y="40" width="100" height="40" class="pv-rect" />
+                        <text x="100" y="60" class="bar-text" font-size="14">4</text>
+                        
+                        <rect x="150" y="40" width="150" height="40" class="pv-rect" />
+                        <text x="225" y="60" class="bar-text" font-size="14">13</text>
+                        
+                        <!-- Arrow for Regrouping (Moved below the first row to avoid text overlap) -->
+                        <!-- Path curves from bottom of '13' box to bottom of '4' box -->
+                        <path d="M225,80 Q225,120 100,80" stroke="#DC143C" stroke-width="2" marker-end="url(#arrow)" fill="none" opacity="0.6"/>
+                        
+                        <!-- Text placed in the clear space created by the curve -->
+                        <text x="230" y="110" font-size="9" fill="#DC143C" font-weight="bold" text-anchor="middle">10 Persepuluh = 1 Satuan</text>
+
+                        <!-- Row 2: Final State (Moved down to accommodate arrow) -->
+                        <rect x="50" y="130" width="100" height="40" class="pv-rect" style="fill: #ecfccb;" />
+                        <text x="100" y="150" class="bar-text" font-size="14" font-weight="bold">5</text>
+                        
+                        <rect x="150" y="130" width="150" height="40" class="pv-rect" style="fill: #ecfccb;" />
+                        <text x="225" y="150" class="bar-text" font-size="14" font-weight="bold">3</text>
+
+                        <!-- Result Text -->
+                        <text x="340" y="150" class="bar-text" font-size="16" font-weight="bold">= 5,3</text>
+
+                        <defs>
+                            <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+                              <path d="M0,0 L0,6 L9,3 z" fill="#DC143C" />
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+                
+                <div class="grid grid-cols-1 gap-4 text-sm bg-white p-3 rounded border border-gray-200">
+                    <div>
+                        <strong>Langkah Berpikir:</strong><br>
+                        1. Kita memiliki 13 persepuluhan. Ingat bahwa 10 persepuluhan nilainya sama dengan 1 Satuan.<br>
+                        2. Kelompokkan ulang: Ambil 10 dari 13 persepuluhan untuk dijadikan 1 Satuan.<br>
+                        3. Sisa persepuluhan: 13 - 10 = <strong>3</strong>.<br>
+                        4. Total Satuan baru: 4 (awal) + 1 (dari pengelompokan) = <strong>5</strong>.<br>
+                        5. Hasil akhirnya adalah <strong>5,3</strong>.
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-center font-medium text-yellow-800">
+                Instruksi: Gunakan tabel nilai tempat untuk membantu memvisualisasikan posisi angka dan pengelompokan ulang.
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2: PILIHAN GANDA ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Bilangan Desimal Tingkat Lanjut</div>
+                    <div class="text-[10px] text-black font-medium">Nilai Tempat</div>
+                    <div class="text-[10px] text-black font-medium">Kode : M3-S194</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mb-4">Bagian A: Pilihan Ganda</div>
+            <p class="text-xs text-gray-500 mb-4 italic">Pilihlah jawaban yang paling tepat. Perhatikan pengelompokan ulang nilai tempat.</p>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                         <span class="font-bold">1.</span> Angka yang terbentuk dari <strong>5 Ribuan</strong>, <strong>4 Puluhan</strong>, dan <strong>7 Perseribuan</strong> adalah ...
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 5.400,007</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 5.040,007</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 5.040,070</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 5.400,07</label>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-2"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> Hitunglah nilai dari: <strong>12 Puluhan</strong> + <strong>5 Satuan</strong> + <strong>14 Perseratusan</strong>.
+                    </div>
+                    
+                    <!-- Visual Hint for Q2 - FIXED CUTOFF -->
+                    <div class="w-full flex justify-start ml-4 my-2">
+                         <!-- Increased viewBox width to 300 and shifted rect x to 5 -->
+                         <svg width="300" height="40" viewBox="0 0 300 40">
+                             <rect x="5" y="0" width="90" height="25" fill="#e0f2fe" stroke="#0ea5e9" rx="4"/>
+                             <text x="50" y="17" class="bar-text" font-size="10">12 Puluhan</text>
+                             <text x="110" y="17" class="bar-text" font-size="12">=</text>
+                             <text x="140" y="17" class="bar-text" font-size="11" font-weight="bold">120</text>
+                         </svg>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 125,14</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 125,014</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 12,514</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 125,41</label>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-2"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">3.</span> Bilangan <strong>340,15</strong> sama nilainya dengan ...
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 34 puluhan + 1 persepuluhan + 5 perseratusan</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 3 ratusan + 40 puluhan + 15 perseratusan</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 34 puluhan + 15 persepuluhan</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 3 ratusan + 4 puluhan + 15 persepuluhan</label>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-2"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">4.</span> Jika <strong>7.025,48</strong> = 7 Ribuan + 2 Puluhan + 5 Satuan + <strong>y</strong> Perseratusan, maka nilai <strong>y</strong> adalah ...
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 48</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 4,8</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 0,48</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 480</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3: ISIAN SINGKAT ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Bilangan Desimal Tingkat Lanjut</div>
+                    <div class="text-[10px] text-black font-medium">Nilai Tempat</div>
+                    <div class="text-[10px] text-black font-medium">Kode : M3-S194</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mt-2 mb-4">Bagian B: Isian Singkat</div>
+
+            <div class="soal-grid">
+                
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">5.</span> Tuliskan bilangan berikut dalam bentuk angka: <br>
+                        <em>"Empat ratus dua puluh, tiga persepuluh, dan dua puluh lima perseribu."</em>
+                    </div>
+                    <div class="mt-2 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Jawaban:</span>
+                        <div class="border-b-2 border-black w-40 h-6"></div>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">6.</span> Lengkapi persamaan berikut: <br>
+                        <strong>600 + 40 + ......... + 0,009 = 640,309</strong>
+                    </div>
+                    <div class="mt-4 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Jawaban:</span>
+                        <div class="border-b-2 border-black w-40 h-6"></div>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+
+                <!-- SOAL 7 (Riddle) -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">7.</span> <strong>Teka-teki Bilangan:</strong> Aku adalah sebuah bilangan desimal.
+                        <ul class="list-disc ml-6 mt-1 text-sm text-gray-700">
+                            <li>Digit di tempat <em>perseratusan</em>-ku adalah bilangan genap terbesar satu digit.</li>
+                            <li>Digit di tempat <em>puluhan</em>-ku adalah setengah dari digit perseratusan.</li>
+                            <li>Digit di tempat <em>persepuluh</em>-ku adalah jumlah dari digit puluhan dan 2.</li>
+                            <li>Digit di tempat <em>satuan</em>-ku adalah nol.</li>
+                            <li>Nilai total-ku kurang dari 50 tapi lebih dari 40.</li>
+                        </ul>
+                        <div class="mt-2">Siapakah aku?</div>
+                    </div>
+                    
+                    <!-- Grid Hint -->
+                    <div class="flex justify-center my-3 gap-1">
+                        <div class="w-8 h-10 border border-gray-400 rounded flex items-center justify-center bg-gray-50 text-xs text-gray-400">Pul</div>
+                        <div class="w-8 h-10 border border-gray-400 rounded flex items-center justify-center bg-gray-50 text-xs text-gray-400">Sat</div>
+                        <div class="flex items-end pb-1 font-bold text-xl">,</div>
+                        <div class="w-8 h-10 border border-gray-400 rounded flex items-center justify-center bg-gray-50 text-xs text-gray-400">t</div>
+                        <div class="w-8 h-10 border border-gray-400 rounded flex items-center justify-center bg-gray-50 text-xs text-gray-400">h</div>
+                    </div>
+
+                    <div class="mt-2 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Jawaban:</span>
+                        <div class="border-b-2 border-black w-40 h-6"></div>
+                    </div>
+                </div>
+
+                 <div class="w-full h-px bg-gray-200 my-1"></div>
+
+                 <!-- SOAL 8 -->
+                 <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">8.</span> Berapakah <strong>jumlah</strong> dari nilai angka 5 pada bilangan <strong>5.123,45</strong>? <br>
+                        <span class="text-xs italic text-gray-500">(Petunjuk: Jumlahkan 5 Ribuan dan 5 Perseratusan)</span>
+                    </div>
+                    <div class="mt-4 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Jawaban:</span>
+                        <div class="border-b-2 border-black w-40 h-6"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 4: HOTS & TANTANGAN ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Bilangan Desimal Tingkat Lanjut</div>
+                    <div class="text-[10px] text-black font-medium">Nilai Tempat</div>
+                    <div class="text-[10px] text-black font-medium">Kode : M3-S194</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid" style="gap: 1.5rem;">
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                     <div class="instruction-text mb-2 py-0.5 text-xs bg-blue-50 border-blue-800 text-blue-900">
+                        Konversi & Penjumlahan
+                    </div>
+                    <div class="mb-1">
+                        <span class="font-bold">9.</span> Ubahlah <strong>32 persepuluhan</strong> ditambah <strong>405 perseribuan</strong> menjadi bentuk desimal standar.
+                    </div>
+                    
+                    <div class="mt-4 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Jawaban:</span>
+                        <div class="border-b-2 border-black w-48 h-6"></div>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+
+                <!-- SOAL 10 (HOTS - Analysis) -->
+                <div class="soal-item">
+                     <div class="instruction-text mb-2 py-0.5 text-xs bg-red-50 border-red-600 text-red-900">
+                        Analisis Perbandingan (HOTS)
+                    </div>
+                    <div class="mb-1">
+                        <span class="font-bold">10.</span> Manakah yang lebih besar? Jelaskan alasanmu secara singkat menggunakan konsep nilai tempat.
+                    </div>
+                    
+                    <div class="flex justify-center gap-8 my-4 font-bold text-lg">
+                        <div class="p-2 border border-dashed border-gray-400 rounded bg-gray-50">
+                            A: 4 puluhan dan 32 perseratusan
+                        </div>
+                        <div class="self-center">ATAU</div>
+                        <div class="p-2 border border-dashed border-gray-400 rounded bg-gray-50">
+                            B: 403 persepuluhan
+                        </div>
+                    </div>
+                    
+                    <!-- SVG Visual Hint for Comparison - REPLACED BROKEN SVG WITH TABLE -->
+                    <div class="w-full flex justify-center my-3">
+                         <svg width="300" height="90" viewBox="0 0 300 90">
+                            <!-- Headers -->
+                            <rect x="50" y="0" width="50" height="25" fill="#e5e7eb" stroke="#999" />
+                            <text x="75" y="17" font-size="9" text-anchor="middle">Puluhan</text>
+                            
+                            <rect x="100" y="0" width="50" height="25" fill="#e5e7eb" stroke="#999" />
+                            <text x="125" y="17" font-size="9" text-anchor="middle">Satuan</text>
+                            
+                            <rect x="150" y="0" width="10" height="85" fill="none" />
+                            <text x="155" y="50" font-size="20" text-anchor="middle" font-weight="bold">,</text>
+
+                            <rect x="160" y="0" width="60" height="25" fill="#e5e7eb" stroke="#999" />
+                            <text x="190" y="17" font-size="9" text-anchor="middle">Persepuluh</text>
+                            
+                            <rect x="220" y="0" width="60" height="25" fill="#e5e7eb" stroke="#999" />
+                            <text x="250" y="17" font-size="9" text-anchor="middle">Perseratus</text>
+
+                            <!-- Row A -->
+                            <text x="30" y="47" font-size="12" font-weight="bold">A</text>
+                            <rect x="50" y="30" width="50" height="25" fill="white" stroke="#ccc" />
+                            <text x="75" y="47" font-size="12" text-anchor="middle">4</text>
+                            <rect x="100" y="30" width="50" height="25" fill="white" stroke="#ccc" />
+                            <text x="125" y="47" font-size="12" text-anchor="middle">0</text>
+                            
+                            <rect x="160" y="30" width="60" height="25" fill="white" stroke="#ccc" />
+                            <text x="190" y="47" font-size="12" text-anchor="middle">3</text>
+                            <rect x="220" y="30" width="60" height="25" fill="white" stroke="#ccc" />
+                            <text x="250" y="47" font-size="12" text-anchor="middle" font-weight="bold">2</text>
+
+                            <!-- Row B -->
+                            <text x="30" y="77" font-size="12" font-weight="bold">B</text>
+                            <rect x="50" y="60" width="50" height="25" fill="white" stroke="#ccc" />
+                            <text x="75" y="77" font-size="12" text-anchor="middle">4</text>
+                            <rect x="100" y="60" width="50" height="25" fill="white" stroke="#ccc" />
+                            <text x="125" y="77" font-size="12" text-anchor="middle">0</text>
+                            
+                            <rect x="160" y="60" width="60" height="25" fill="white" stroke="#ccc" />
+                            <text x="190" y="77" font-size="12" text-anchor="middle">3</text>
+                            <rect x="220" y="60" width="60" height="25" fill="#fee2e2" stroke="#ef4444" />
+                            <text x="250" y="77" font-size="12" text-anchor="middle" fill="#dc2626">?</text>
+                         </svg>
+                    </div>
+                    
+                    <div class="mt-2 space-y-3">
+                        <div class="flex items-baseline">
+                             <span class="font-bold mr-2 text-sm min-w-[80px]">Pilihan:</span>
+                             <div class="border-b border-gray-400 w-full h-6"></div>
+                        </div>
+                        <div class="flex items-baseline">
+                             <span class="font-bold mr-2 text-sm min-w-[80px]">Alasan:</span>
+                             <div class="border-b border-gray-400 w-full h-6"></div>
+                        </div>
+                        <div class="flex items-baseline">
+                             <span class="min-w-[80px]"></span>
+                             <div class="border-b border-gray-400 w-full h-6"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
