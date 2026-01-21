@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Greatest & Smallest (D2-S100)</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA (Mengikuti Style Discovery 3) --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --highlight-blue: #2563eb;
+        --highlight-red: #dc2626;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659; /* Background luar abu-abu gelap */
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        height: 29.7cm; /* Fixed A4 Height */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+        flex-shrink: 0;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8cm 2cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+      }
+
+      .input-line {
+        border: 1px solid #333;
+        width: 60px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: var(--highlight-blue);
+        vertical-align: middle;
+        font-family: inherit;
+        font-size: 1rem;
+        background: transparent;
+      }
+      .input-line.border-none {
+          border: none;
+      }
+
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+      
+      .choice-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          cursor: pointer;
+      }
+      
+      /* Updated Choice Box */
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1.5px solid #333;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        font-size: 9px;
+        font-weight: bold;
+        flex-shrink: 0;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.6cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+      }
+
+      .section-title {
+          font-weight: 800;
+          text-transform: uppercase;
+          font-size: 1.1rem;
+          color: #4b5563;
+          border-bottom: 2px solid #e5e7eb;
+          padding-bottom: 4px;
+          margin-bottom: 12px;
+          margin-top: 10px;
+      }
+
+      /* --- CARD STYLES (Num Cards) --- */
+      .num-card {
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: 1.3rem;
+        font-weight: 800;
+        background-color: white;
+        box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        min-width: 50px;
+        text-align: center;
+      }
+
+      /* --- Place Value Table Style --- */
+      .pv-table {
+        border-collapse: collapse;
+        background: white;
+        border: 2px solid #333;
+        width: 90px;
+      }
+      .pv-table th {
+        background-color: #f3f4f6;
+        border-bottom: 2px solid #333;
+        font-size: 0.7rem;
+        padding: 4px;
+      }
+      .pv-table td {
+        border-right: 1px solid #ccc;
+        font-size: 1.3rem;
+        font-weight: bold;
+        text-align: center;
+        padding: 6px;
+      }
+      .pv-table td:last-child {
+        border-right: none;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; margin: 0; }
+        .page-container { display: block; }
+        .page {
+          width: 21cm; height: 29.6cm;
+          margin: 0; box-shadow: none;
+          page-break-after: always;
+          padding: 0.5cm 1.5cm; border: none;
+        }
+        .page:last-child { page-break-after: avoid; }
+        .page-header { margin-bottom: 5px !important; }
+        
+        /* Memaksa warna tercetak */
+        .math-champs-header, .num-card, .pv-table, .choice-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Comparing numbers 2
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Code : D2-S100
+                    </div>
+                </div>
+            </div>
+            <!-- Garis pemisah header -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+           
+
+            <div class="section-title">Section A: Find the Number</div>
+
+            <!-- QUESTION 1 -->
+            <div class="soal-item mb-6">
+                <div class="font-bold mb-3 text-sm">
+                    1. Look at these three numbers:
+                </div>
+                <div class="flex justify-center gap-6 my-4">
+                    <div class="num-card">34</div>
+                    <div class="num-card">12</div>
+                    <div class="num-card">56</div>
+                </div>
+                <div class="text-sm mb-2">
+                    Which number is the <b class="text-red-600 uppercase">smallest</b>?
+                </div>
+                <div class="flex gap-8 ml-2 text-sm font-semibold">
+                    <label class="choice-item"><div class="choice-box">A</div> 34</label>
+                    <label class="choice-item"><div class="choice-box">B</div> 12</label>
+                    <label class="choice-item"><div class="choice-box">C</div> 56</label>
+                </div>
+            </div>
+
+            <!-- QUESTION 2 -->
+            <div class="soal-item mb-6">
+                <div class="font-bold mb-3 text-sm">
+                    2. Look at these Place Value charts. Which shows the <b class="text-blue-700 uppercase">greatest</b> number?
+                </div>
+                <div class="flex justify-around items-end my-4 flex-wrap gap-4">
+                    <!-- Option A -->
+                    <div class="flex flex-col items-center">
+                        <span class="font-bold text-sm mb-1">(A)</span>
+                        <table class="pv-table">
+                            <thead><tr><th>Tens</th><th>Ones</th></tr></thead>
+                            <tbody><tr><td>4</td><td>2</td></tr></tbody>
+                        </table>
+                    </div>
+                    <!-- Option B -->
+                    <div class="flex flex-col items-center">
+                        <span class="font-bold text-sm mb-1">(B)</span>
+                        <table class="pv-table">
+                            <thead><tr><th>Tens</th><th>Ones</th></tr></thead>
+                            <tbody><tr><td>8</td><td>0</td></tr></tbody>
+                        </table>
+                    </div>
+                    <!-- Option C -->
+                    <div class="flex flex-col items-center">
+                        <span class="font-bold text-sm mb-1">(C)</span>
+                        <table class="pv-table">
+                            <thead><tr><th>Tens</th><th>Ones</th></tr></thead>
+                            <tbody><tr><td>3</td><td>9</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center gap-2">
+                    <span class="font-bold text-sm">Answer:</span> 
+                    <input type="text" class="input-line w-20">
+                </div>
+            </div>
+
+            <!-- QUESTION 3 -->
+            <div class="soal-item mb-6">
+                <div class="font-bold mb-3 text-sm">
+                    3. Compare these numbers:
+                </div>
+                <div class="flex justify-center gap-4 my-4 font-bold text-lg">
+                    <span class="bg-white px-3 py-1 border border-gray-400 rounded">7 tens</span>
+                    <span class="bg-white px-3 py-1 border border-gray-400 rounded">65</span>
+                    <span class="bg-white px-3 py-1 border border-gray-400 rounded">72</span>
+                </div>
+                <div class="text-sm mb-2">
+                    Which number is the <b class="text-blue-700 uppercase">greatest</b>?
+                </div>
+                <div class="flex gap-8 ml-2 text-sm font-semibold flex-wrap">
+                    <label class="choice-item"><div class="choice-box">A</div> 7 tens</label>
+                    <label class="choice-item"><div class="choice-box">B</div> 65</label>
+                    <label class="choice-item"><div class="choice-box">C</div> 72</label>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Comparing numbers 2
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Code : D2-S100
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="section-title">Section B: Find and Subtract</div>
+            <div class="text-sm italic text-gray-600 mb-4">
+                Identify the correct number first, then subtract to find the final value.
+            </div>
+
+            <!-- QUESTION 4 -->
+            <div class="soal-item bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
+                <div class="font-bold mb-3 text-sm">
+                    4. Look at the numbers below:
+                </div>
+                <div class="flex justify-center gap-6 my-4">
+                    <div class="num-card">25</div>
+                    <div class="num-card">99</div>
+                    <div class="num-card">40</div>
+                </div>
+                <div class="pl-4 text-sm space-y-2">
+                    <div>
+                        1. Find the <b class="text-blue-700">greatest</b> number.
+                    </div>
+                    <div>
+                        2. Subtract <b>9</b> from that number.
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-white border border-gray-300 rounded text-center">
+                    <div class="text-sm font-bold mb-2">What is the final answer?</div>
+                    <div class="flex items-center justify-center gap-2 text-lg">
+                        <span class="text-xs text-gray-500 mr-2">Calculation:</span>
+                        <input type="text" class="input-line w-12 text-center"> 
+                        <span>-</span> 
+                        <input type="text" class="input-line w-12 text-center"> 
+                        <span>=</span> 
+                        <input type="text" class="input-line w-16 text-center">
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUESTION 5 -->
+            <div class="soal-item bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
+                <div class="font-bold mb-3 text-sm">
+                    5. Look at the numbers below:
+                </div>
+                <div class="flex justify-center gap-6 my-4">
+                    <div class="num-card">81</div>
+                    <div class="num-card">18</div>
+                    <div class="num-card">38</div>
+                </div>
+                <div class="pl-4 text-sm space-y-2 mb-3">
+                    <div>
+                        1. Find the <b class="text-red-600">smallest</b> number.
+                    </div>
+                    <div>
+                        2. Subtract <b>5</b> from that number.
+                    </div>
+                </div>
+                <div class="font-bold text-sm ml-4 mb-2">What is the final answer?</div>
+                <div class="flex gap-8 ml-6 text-sm font-semibold">
+                    <label class="choice-item"><div class="choice-box">A</div> 13</label>
+                    <label class="choice-item"><div class="choice-box">B</div> 15</label>
+                    <label class="choice-item"><div class="choice-box">C</div> 33</label>
+                </div>
+            </div>
+
+            <!-- QUESTION 6 -->
+            <div class="soal-item bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
+                <div class="font-bold mb-3 text-sm">
+                    6. Here are three numbers:
+                </div>
+                <div class="flex justify-center gap-4 my-4 flex-wrap">
+                    <div class="bg-white border-2 border-black rounded px-4 py-2 font-bold text-lg">55</div>
+                    <div class="bg-white border-2 border-black rounded px-4 py-2 font-bold text-lg">50</div>
+                    <div class="bg-white border-2 border-black rounded px-4 py-2 font-bold text-lg">15</div>
+                </div>
+                <div class="text-sm ml-2 mb-3">
+                    Find the <b class="text-blue-700">greatest</b> number and subtract <b>20</b>.
+                </div>
+                <div class="ml-2 flex items-center gap-2">
+                    <span class="font-bold text-sm">Answer:</span> 
+                    <input type="text" class="input-line w-24">
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Comparing numbers 2
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Code : D2-S100
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- QUESTION 7 -->
+            <div class="soal-item bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
+                <div class="font-bold mb-3 text-sm">
+                    7. Identify the <b class="text-red-600">smallest</b> number in the table. Then, take away (subtract) <b>10</b>.
+                </div>
+                <div class="flex justify-center my-4">
+                    <table class="border-collapse border-2 border-black bg-white w-full max-w-sm">
+                        <tr class="bg-gray-200">
+                            <th class="border border-black p-2">Set A</th>
+                            <th class="border border-black p-2">Set B</th>
+                            <th class="border border-black p-2">Set C</th>
+                        </tr>
+                        <tr>
+                            <td class="border border-black p-4 text-center font-bold text-xl">64</td>
+                            <td class="border border-black p-4 text-center font-bold text-xl">46</td>
+                            <td class="border border-black p-4 text-center font-bold text-xl">60</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="flex justify-center items-center gap-2">
+                    <span class="font-bold text-sm">Answer:</span> 
+                    <input type="text" class="input-line w-24">
+                </div>
+            </div>
+
+            <div class="section-title">Section C: Word Problems</div>
+            <div class="text-sm italic text-gray-600 mb-4">
+                Read the story. Find the greatest or smallest number to solve the problem.
+            </div>
+
+            <!-- QUESTION 8 -->
+            <div class="soal-item bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
+                <div class="font-bold text-sm mb-2">
+                    8. Sarah has three number cards:
+                </div>
+                <div class="flex justify-center gap-6 my-3">
+                    <div class="num-card text-lg px-4">32</div>
+                    <div class="num-card text-lg px-4">29</div>
+                    <div class="num-card text-lg px-4">41</div>
+                </div>
+                <div class="text-sm leading-relaxed mb-4">
+                    She picks the <b class="text-blue-700">greatest</b> number. Then, she gives <b>1</b> to her friend. What is the remaining number?
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-sm">Answer:</span> 
+                    <input type="text" class="input-line w-20">
+                </div>
+            </div>
+
+            <!-- QUESTION 9 -->
+            <div class="soal-item bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
+                <div class="font-bold text-sm mb-2">
+                    9. A teacher writes three numbers on the whiteboard:
+                </div>
+                <div class="bg-white p-3 rounded border border-gray-300 ml-4 mb-3 w-fit">
+                    <ul class="list-disc pl-5 text-sm font-semibold space-y-1">
+                        <li>8 tens 3 ones</li>
+                        <li>9 tens 0 ones</li>
+                        <li>8 tens 9 ones</li>
+                    </ul>
+                </div>
+                <div class="text-sm leading-relaxed mb-4">
+                    She asks Tom to circle the <b class="text-red-600">smallest</b> number. Then, Tom subtracts <b>3</b> from it. What is Tom's final answer?
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-sm">Answer:</span> 
+                    <input type="text" class="input-line w-20">
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 4 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 2</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers to 100
+                    </div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] ml-auto leading-tight mt-1">
+                        Comparing numbers 2
+                    </div>
+                    <div class="text-[11px] text-black font-medium mt-1">
+                        Code : D2-S100
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- QUESTION 10 (CHALLENGE) -->
+            <div class="soal-item bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded shadow">CHALLENGE</span>
+                    <span class="font-bold text-sm">Question 10</span>
+                </div>
+
+                <div class="text-sm mb-3">
+                    Look at these numbers: <b class="text-lg mx-1">100</b>, <b class="text-lg mx-1">89</b>, and <b class="text-lg mx-1">98</b>.
+                </div>
+                <div class="bg-white p-4 rounded border border-blue-100 shadow-sm ml-2 mb-4 text-sm space-y-2">
+                    <div>1. Find the <b class="text-blue-700">greatest</b> number.</div>
+                    <div>2. Subtract <b>50</b> from that number.</div>
+                    <div>3. What is the value?</div>
+                </div>
+                <div class="flex gap-8 ml-4 text-sm font-semibold">
+                    <label class="choice-item"><div class="choice-box">A</div> 39</label>
+                    <label class="choice-item"><div class="choice-box">B</div> 48</label>
+                    <label class="choice-item"><div class="choice-box">C</div> 50</label>
+                </div>
+            </div>
+
+            <!-- Random Encouragement Text -->
+            <div id="encouragement-text" class="mt-12 text-center text-gray-500 italic font-medium"></div>
+
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+
+    <!-- Script untuk Random Kalimat Penyemangat -->
+    <script>
+        const quotes = [
+            "Nice work finishing the set—seriously well done.",
+            "Great effort today. Quick check-through and you’re good.",
+            "Strong finish! Take a moment to review your answers.",
+            "Awesome job. If anything feels off, trust your gut and recheck it.",
+            "You’re getting sharper with every problem.",
+            "Well done—your focus really showed.",
+            "Before you close it, do one last scan for silly mistakes.",
+            "That was solid. Clean work and clear thinking.",
+            "Mistakes are part of the process—what matters is you keep going.",
+            "Great job. Try checking the trickiest question one more time.",
+            "Proud of your effort. Consistency wins.",
+            "Strong work—your math muscles are growing.",
+            "Nice! Now make sure every question has an answer.",
+            "Great progress today—keep that momentum.",
+            "You worked hard. Take a breath, then double-check.",
+            "Excellent! Try verifying one problem using a different method.",
+            "You did it—finish with a confident final check.",
+            "Little by little, a little becomes a lot.",
+            "Practice makes progress.",
+            "Steady hands win the race.",
+            "Small steps beat no steps.",
+            "Check your work, trust your growth.",
+            "A calm mind catches quiet mistakes.",
+            "Consistency is a superpower.",
+            "Progress, not perfection.",
+            "One more look saves one big oops.",
+            "Patience pays in points.",
+            "Accuracy beats speed—every time.",
+            "Strong roots, strong results.",
+            "Today’s effort is tomorrow’s confidence.",
+            "The best learners review."
+        ];
+
+        // Pilih satu secara acak
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        
+        // Masukkan ke elemen
+        document.getElementById('encouragement-text').innerText = randomQuote;
+    </script>
+  </body>
+</html>
