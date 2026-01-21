@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Addition and Subtraction of Money (D2-S153)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --bar-blue: #6496ff;
+        --bar-orange: #ffb464;
+        --bar-grey: #e5e7eb;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .svg-group,
+        .bar-model-fill {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border-bottom: 2px solid #333;
+        min-width: 60px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: bottom;
+        background: transparent;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 2rem;
+        margin-top: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 0.5rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+        position: relative;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.5cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CUSTOM SVG ASSETS --- */
+      .coin-silver { fill: #e5e7eb; stroke: #9ca3af; stroke-width: 1.5; }
+      .coin-shadow { fill: rgba(0,0,0,0.1); }
+      .coin-text { font-family: 'Noto Sans', sans-serif; font-weight: 700; text-anchor: middle; fill: #374151; }
+      .coin-label { font-family: 'Noto Sans', sans-serif; font-size: 10px; text-anchor: middle; fill: #6b7280; }
+      
+      /* Bar Model Colors */
+      .bar-blue { fill: var(--bar-blue); }
+      .bar-orange { fill: var(--bar-orange); }
+      .bar-grey { fill: var(--bar-grey); }
+      .bar-text { font-family: 'Noto Sans', sans-serif; font-size: 12px; font-weight: 600; fill: white; text-anchor: middle; dominant-baseline: middle;}
+      .bar-label { font-family: 'Noto Sans', sans-serif; font-size: 12px; font-weight: 600; fill: #333; text-anchor: middle; }
+      .bar-label-white { font-family: 'Noto Sans', sans-serif; font-size: 12px; font-weight: 600; fill: white; text-anchor: middle; dominant-baseline: middle; }
+      .brace-line { stroke: #333; stroke-width: 1; fill: none; }
+
+    </style>
+  </head>
+  <body>
+
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Money</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Addition and Subtraction of Money
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D2-S153</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <h2 class="font-bold text-lg mb-2">A. Addition of Money </h2>
+            <div class="instruction-text">
+                Instruction: Look at the model and coin pictures, then fill in the answers correctly.
+            </div>
+            
+            <div class="soal-grid mt-4">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        1. Counting Total Coins
+                    </div>
+                    <div class="mb-2">Adi has the following coins in his left pocket and right pocket. What is the sum of Adi's money?</div>
+                    
+                    <div class="flex justify-center items-center gap-4 my-4">
+                        <!-- Saku Kiri -->
+                        <div class="flex flex-col items-center">
+                            <span class="text-xs font-bold mb-1">Left Pocket</span>
+                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex gap-2 items-center relative" style="width: 140px; height: 80px; justify-content: center;">
+                                <svg width="40" height="40" viewBox="0 0 50 50" class="absolute top-2 left-2">
+                                    <circle cx="25" cy="25" r="22" class="coin-silver" />
+                                    <circle cx="25" cy="25" r="15" fill="none" stroke="#9ca3af" stroke-width="1" />
+                                    <text x="25" y="28" class="coin-text" font-size="12">200</text>
+                                    <text x="25" y="40" class="coin-label" font-size="6">Rp</text>
+                                </svg>
+                                <svg width="40" height="40" viewBox="0 0 50 50" class="absolute top-2 right-2">
+                                    <circle cx="25" cy="25" r="22" class="coin-silver" />
+                                    <circle cx="25" cy="25" r="15" fill="none" stroke="#9ca3af" stroke-width="1" />
+                                    <text x="25" y="28" class="coin-text" font-size="12">200</text>
+                                    <text x="25" y="40" class="coin-label" font-size="6">Rp</text>
+                                </svg>
+                                <svg width="40" height="40" viewBox="0 0 50 50" class="absolute bottom-1">
+                                    <circle cx="25" cy="25" r="22" class="coin-silver" />
+                                    <circle cx="25" cy="25" r="15" fill="none" stroke="#9ca3af" stroke-width="1" />
+                                    <text x="25" y="28" class="coin-text" font-size="12">100</text>
+                                    <text x="25" y="40" class="coin-label" font-size="6">Rp</text>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <span class="text-3xl font-bold text-gray-600">+</span>
+
+                        <!-- Saku Kanan -->
+                        <div class="flex flex-col items-center">
+                            <span class="text-xs font-bold mb-1">Right Pocket</span>
+                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex gap-2 items-center relative" style="width: 140px; height: 80px; justify-content: center;">
+                                <svg width="40" height="40" viewBox="0 0 50 50" class="mr-4">
+                                    <circle cx="25" cy="25" r="22" class="coin-silver" />
+                                    <circle cx="25" cy="25" r="15" fill="none" stroke="#9ca3af" stroke-width="1" />
+                                    <text x="25" y="28" class="coin-text" font-size="12">200</text>
+                                    <text x="25" y="40" class="coin-label" font-size="6">Rp</text>
+                                </svg>
+                                <svg width="40" height="40" viewBox="0 0 50 50">
+                                    <circle cx="25" cy="25" r="22" class="coin-silver" />
+                                    <circle cx="25" cy="25" r="15" fill="none" stroke="#9ca3af" stroke-width="1" />
+                                    <text x="25" y="28" class="coin-text" font-size="12">100</text>
+                                    <text x="25" y="40" class="coin-label" font-size="6">Rp</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-2 text-center">
+                        Answer: Rp<span class="input-box" style="min-width: 150px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        2. Buying Snacks
+                    </div>
+                    <div class="mb-2">The price of a candy is <b>Rp500</b>. The price of a cracker is <b>Rp400</b>. How much money must Siti pay if she buys both?</div>
+
+                    <div class="flex justify-center my-4">
+                        <svg width="400" height="120" viewBox="0 0 400 120">
+                            <!-- Bar 1: Permen (500) -->
+                            <rect x="50" y="20" width="175" height="50" class="bar-blue bar-model-fill" />
+                            <text x="137.5" y="45" class="bar-text">Rp500</text>
+                            <text x="137.5" y="10" class="bar-label">Candy</text>
+
+                            <!-- Bar 2: Kerupuk (400) -->
+                            <rect x="225" y="20" width="125" height="50" class="bar-orange bar-model-fill" />
+                            <text x="287.5" y="45" class="bar-text">Rp400</text>
+                            <text x="287.5" y="10" class="bar-label">Cracker</text>
+
+                            <!-- Curly Brace Total -->
+                            <path d="M 50 80 Q 50 90 60 90 L 195 90 Q 200 90 200 100 Q 200 90 205 90 L 340 90 Q 350 90 350 80" class="brace-line" />
+                            <text x="200" y="115" class="bar-label" font-weight="bold">Total = ?</text>
+                        </svg>
+                    </div>
+
+                    <div class="choice-container gap-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. Rp800</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. Rp900</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. Rp1.000</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        3. Savings
+                    </div>
+                    <div class="mb-2">Budi saves <b>Rp600</b> in the morning. In the afternoon, his father gives him another <b>Rp200</b>. What is Budi's total money now?</div>
+                    
+                    <div class="mt-4 mb-2 bg-gray-50 p-3 rounded max-w-md mx-auto">
+                        <div class="mb-2 font-medium text-center">Number Sentence:</div>
+                        <div class="flex justify-center items-end gap-2 text-lg">
+                            <span class="input-box" style="width: 80px;"></span>
+                            <span>+</span>
+                            <span class="input-box" style="width: 80px;"></span>
+                            <span>=</span>
+                            <span class="input-box" style="width: 80px;"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-2 text-center">
+                        Answer: Rp<span class="input-box" style="min-width: 150px;"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Money</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Addition and Subtraction of Money
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D2-S153</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <h2 class="font-bold text-lg mb-2">B. Subtraction of Money (Comparison Model)</h2>
+            <div class="soal-grid mt-4">
+                
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        4. Remaining Money
+                    </div>
+                    <div class="mb-2">Sinta brings <b>Rp900</b> to the canteen. She buys iced tea for <b>Rp500</b>. How much money does Sinta have left?</div>
+                    
+                    <div class="flex justify-center my-4">
+                        <svg width="400" height="150" viewBox="0 0 400 150">
+                            <!-- PERBAIKAN SOAL 4: Menggeser konten ke bawah agar kurung kurawal & teks di atasnya terlihat -->
+                            
+                            <!-- Curly Brace Top (Total) - Digeser turun -->
+                            <path d="M 50 40 Q 50 30 60 30 L 195 30 Q 200 30 200 20 Q 200 30 205 30 L 340 30 Q 350 30 350 40" class="brace-line" />
+                            <text x="200" y="15" class="bar-label" font-weight="bold">Total Money: Rp900</text>
+                            
+                            <!-- Whole Bar Outline - Digeser turun -->
+                            <rect x="50" y="50" width="300" height="50" fill="#eff6ff" stroke="#6496ff" stroke-width="1" />
+                            
+                            <!-- Part Used (500) -->
+                            <rect x="50" y="50" width="166" height="50" class="bar-blue bar-model-fill" />
+                            <text x="133" y="75" class="bar-text">Iced Tea (500)</text>
+
+                            <!-- Question Mark for Remainder -->
+                            <text x="258" y="75" class="bar-label" fill="#333" font-weight="bold">Left ?</text>
+                        </svg>
+                    </div>
+
+                    <div class="mt-2 text-center">
+                        Answer: Rp<span class="input-box" style="min-width: 150px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. Comparing Prices
+                    </div>
+                    <div class="mb-2">The price of a notebook is <b>Rp800</b>. The price of a pencil is <b>Rp300</b>. What is the <b>difference</b> in price between the notebook and the pencil?</div>
+
+                    <div class="flex justify-center my-4">
+                        <svg width="400" height="160" viewBox="0 0 400 160">
+                            <!-- PERBAIKAN SOAL 5: Label dimasukkan ke dalam bar agar tidak menabrak panah selisih -->
+                            
+                            <!-- Bar 1: Buku (800) -->
+                            <rect x="50" y="20" width="240" height="40" class="bar-orange bar-model-fill" />
+                            <text x="170" y="40" class="bar-label-white">Notebook (Rp800)</text> <!-- Label di dalam -->
+
+                            <!-- Bar 2: Pensil (300) -->
+                            <rect x="50" y="80" width="90" height="40" class="bar-blue bar-model-fill" />
+                            <text x="95" y="100" class="bar-label-white">Pencil (300)</text> <!-- Label di dalam -->
+
+                            <!-- Visual Lines -->
+                            <line x1="140" y1="80" x2="140" y2="20" stroke="#888" stroke-dasharray="4" />
+                            <line x1="290" y1="60" x2="290" y2="135" stroke="#888" stroke-dasharray="4" />
+                            <line x1="140" y1="120" x2="140" y2="135" stroke="#888" stroke-dasharray="4" />
+
+                            <!-- Difference Arrow (Below Bars) -->
+                            <line x1="140" y1="135" x2="290" y2="135" stroke="#333" stroke-width="1" />
+                            <path d="M 140 135 L 145 132 L 145 138 Z" fill="#333" /> 
+                            <path d="M 290 135 L 285 132 L 285 138 Z" fill="#333" /> 
+                            
+                            <text x="215" y="150" class="bar-label">Difference ?</text>
+                        </svg>
+                    </div>
+
+                    <div class="choice-container gap-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. Rp300</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. Rp400</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. Rp500</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. Amount Needed
+                    </div>
+                    <div class="mb-2">Doni wants to buy a toy for <b>Rp1.000</b>. He only has <b>Rp700</b>. How much more money does Doni need?</div>
+                    
+                    <div class="my-4 text-center p-3 bg-gray-50 rounded">
+                        <span class="font-bold">Method:</span> 
+                        <span class="font-mono text-lg ml-2">1.000 - 700 = <span class="input-box" style="min-width: 80px;"></span></span>
+                    </div>
+
+                    <div class="mt-2 text-center">
+                        Answer: Rp<span class="input-box" style="min-width: 150px;"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Money</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Addition and Subtraction of Money
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D2-S153</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <h2 class="font-bold text-lg mb-2">C. Thinking Challenge</h2>
+            <!-- PERBAIKAN HALAMAN 3: Grid gap diperkecil (0.8rem) agar muat 4 soal -->
+            <div class="soal-grid" style="gap: 0.8rem; margin-top: 0.5rem;">
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        7. Money Combination
+                    </div>
+                    <div class="mb-1 text-sm">Circle 2 coins that sum up to <b>Rp600</b>.</div>
+                    
+                    <div class="flex justify-center items-center gap-8 my-2">
+                        <div class="flex flex-col items-center cursor-pointer hover:scale-110 transition-transform">
+                            <svg width="50" height="50" viewBox="0 0 50 50">
+                                <circle cx="25" cy="25" r="23" class="coin-silver" />
+                                <circle cx="25" cy="25" r="16" fill="none" stroke="#9ca3af" stroke-width="1" />
+                                <text x="25" y="28" class="coin-text" font-size="14">100</text>
+                                <text x="25" y="42" class="coin-label" font-size="7">Rp</text>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col items-center cursor-pointer hover:scale-110 transition-transform">
+                            <svg width="50" height="50" viewBox="0 0 50 50">
+                                <circle cx="25" cy="25" r="23" class="coin-silver" />
+                                <circle cx="25" cy="25" r="16" fill="none" stroke="#9ca3af" stroke-width="1" />
+                                <text x="25" y="28" class="coin-text" font-size="14">200</text>
+                                <text x="25" y="42" class="coin-label" font-size="7">Rp</text>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col items-center cursor-pointer hover:scale-110 transition-transform">
+                            <svg width="50" height="50" viewBox="0 0 50 50">
+                                <circle cx="25" cy="25" r="23" class="coin-silver" style="fill: #fef08a; stroke: #ca8a04;" />
+                                <circle cx="25" cy="25" r="16" fill="none" stroke="#ca8a04" stroke-width="1" />
+                                <text x="25" y="28" class="coin-text" font-size="14">500</text>
+                                <text x="25" y="42" class="coin-label" font-size="7">Rp</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator" style="margin: 0.2cm 0;"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        8. Two-Step Word Problem
+                    </div>
+                    <div class="mb-1 text-sm">Ali has <b>Rp200</b>. Budi has <b>Rp300</b>. Cici has <b>Rp100</b>. What is the sum of their money?</div>
+                    
+                    <div class="mt-2 mb-1 text-center text-base font-medium bg-gray-50 p-2 rounded">
+                        Rp200 + Rp300 + Rp100 = <span class="input-box" style="min-width: 100px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator" style="margin: 0.2cm 0;"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. Less
+                    </div>
+                    <div class="mb-1 text-sm">Rina's money is <b>Rp800</b>. Tono's money is <b>Rp200 less than</b> Rina's money. How much is Tono's money?</div>
+                    
+                    <div class="flex justify-center my-2">
+                        <svg width="400" height="130" viewBox="0 0 400 130">
+                            <!-- PERBAIKAN SOAL 9: Label dimasukkan ke dalam bar agar tidak menabrak -->
+                            
+                            <!-- Bar Rina (800) -->
+                            <rect x="50" y="10" width="240" height="40" class="bar-orange bar-model-fill" />
+                            <text x="170" y="30" class="bar-label-white">Rina (800)</text>
+
+                            <!-- Bar Tono (600 - shorter) -->
+                            <rect x="50" y="60" width="180" height="40" class="bar-grey bar-model-fill" />
+                            <text x="140" y="80" class="bar-label">Tono (?)</text>
+
+                            <!-- Difference Arrow (Di ruang kosong sebelah kanan Tono) -->
+                            <!-- Karena Tono 180px dan Rina 240px, ada sisa 60px (x=230 sampai x=290) -->
+                            
+                            <!-- Garis putus-putus -->
+                            <line x1="290" y1="50" x2="290" y2="100" stroke="#888" stroke-dasharray="4" />
+                            <line x1="230" y1="60" x2="230" y2="100" stroke="#888" stroke-dasharray="4" />
+
+                            <!-- Panah di sela-sela -->
+                            <line x1="230" y1="90" x2="290" y2="90" stroke="#333" stroke-width="1" />
+                            <path d="M 230 90 L 235 87 L 235 93 Z" fill="#333" />
+                            <path d="M 290 90 L 285 87 L 285 93 Z" fill="#333" />
+
+                            <text x="260" y="115" class="bar-label" font-size="10">difference 200</text>
+                        </svg>
+                    </div>
+
+                    <div class="mt-1 text-center text-sm">
+                        Answer: Rp<span class="input-box" style="min-width: 150px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator" style="margin: 0.2cm 0;"></div>
+
+                <!-- SOAL 10 (Dipindahkan ke Halaman 3) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-blue-800">
+                        10. Guess the Coin
+                    </div>
+                    <div class="mb-2 p-2 bg-blue-50 border-l-4 border-blue-500 rounded text-xs leading-relaxed">
+                        "I am a Rupiah coin.<br>
+                        I am greater than Rp400.<br>
+                        I am smaller than Rp600.<br>
+                        Who am I?"
+                    </div>
+                    
+                    <div class="choice-container gap-6 text-sm">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. Rp200</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. Rp500</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. Rp1.000</label>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Motivation -->
+            <div class="text-center italic text-xs text-gray-500 mt-4 p-2 bg-gray-100 rounded-lg">
+               "Nice work finishing the set—seriously well done."
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
