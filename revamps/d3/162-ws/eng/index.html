@@ -1,0 +1,377 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Writing Numbers up to 1000</title>
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-text: #333333;
+            --secondary-text: #555555;
+            --grey-text: #8d8e8d;
+            
+            /* --- VARIABEL BLOK PROPORSIONAL SESUAI REQUEST --- */
+            --unit-size: 9px;
+            
+            /* Warna Satuan (Yellow) */
+            --ones-bg: #facc15; 
+            --ones-border: #a16207;
+            
+            /* Warna Puluhan (Green) */
+            --tens-bg: #4ade80;
+            --tens-border: #15803d;
+
+            /* Warna Ratusan (Blue) */
+            --hundreds-bg: #60a5fa;
+            --hundreds-border: #1e3a8a;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: "Montserrat", sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: var(--primary-text);
+            background-color: #525659;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .page {
+            background: white;
+            width: 21cm;
+            height: 29.7cm;
+            padding: 1.5cm 2cm;
+            margin-bottom: 1cm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .page-header { width: 100%; margin-bottom: 20px; flex-shrink: 0; }
+        .content-wrapper { position: relative; z-index: 1; width: 100%; flex-grow: 1; display: flex; flex-direction: column; }
+
+        .page-footer {
+            text-align: left; font-size: 6pt; color: var(--grey-text);
+            padding-top: 4px; margin-top: auto; border-top: 2px solid var(--grey-text);
+            width: 100%; display: flex; gap: 5px; align-items: center; flex-shrink: 0;
+        }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background-color: white; padding: 0; margin: 0; }
+            .page { width: 21cm; height: 29.6cm; margin: 0; box-shadow: none; page-break-after: always; padding: 0.8cm 1.5cm; border: none; }
+            .math-champs-header, .flat, .rod, .unit, .unit-seg, .pv-table th { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+
+        .math-champs-header { background-color: white; padding: 0.5rem 0; display: flex; justify-content: space-between; align-items: center; color: black; }
+        
+        /* BLOCKS CSS PROPORSIONAL SESUAI KODE B */
+        .blocks-wrapper {
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            gap: 6px;
+            padding: 10px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            min-height: 110px;
+        }
+
+        .flat {
+            width: calc(var(--unit-size) * 10);
+            height: calc(var(--unit-size) * 10);
+            background-color: var(--hundreds-bg);
+            border: 1px solid var(--hundreds-border);
+            background-image: 
+                linear-gradient(var(--hundreds-border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--hundreds-border) 1px, transparent 1px);
+            background-size: var(--unit-size) var(--unit-size);
+            background-position: -1px -1px;
+            flex-shrink: 0;
+        }
+
+        .rod {
+            display: flex;
+            flex-direction: column-reverse;
+            width: var(--unit-size);
+            flex-shrink: 0;
+        }
+
+        .rod .unit-seg {
+            width: var(--unit-size);
+            height: var(--unit-size);
+            background-color: var(--tens-bg);
+            border: 1px solid var(--tens-border);
+            border-bottom: none;
+        }
+
+        .rod .unit-seg:first-child { border-bottom: 1px solid var(--tens-border); }
+
+        .unit {
+            width: var(--unit-size);
+            height: var(--unit-size);
+            background-color: var(--ones-bg);
+            border: 1px solid var(--ones-border);
+            flex-shrink: 0;
+        }
+
+        .hundreds-group, .tens-group { display: flex; gap: 4px; align-items: flex-end; }
+        .ones-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; align-self: flex-end; }
+
+        .soal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8cm 1.2cm; }
+        .section-title { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; color: #374151; margin-bottom: 1rem; border-bottom: 2px solid #374151; padding-bottom: 0.25rem; }
+        
+        .choice-container { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+        .choice-label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; padding: 4px 8px; border: 1px solid #eee; border-radius: 4px; cursor: pointer; }
+        .choice-label:hover { background-color: #f0f9ff; }
+
+        .input-line { border: 1px solid #333; height: 30px; text-align: center; font-weight: bold; color: #2563eb; }
+        .h-separator { width: 100%; height: 1px; background-color: #ccc; margin: 0.6cm 0; }
+        .pv-table { width: 100%; border-collapse: collapse; }
+        .pv-table th, .pv-table td { border: 2px solid #333; padding: 6px; text-align: center; }
+        .pv-table th { background-color: #f3f4f6; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- ================= HALAMAN 1 ================= -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Numbers up to 1000</div>
+                        <div class="text-[10px] text-black font-medium max-w-[200px] ml-auto leading-tight mt-1">Writing numbers up to 1000 in numerals</div>
+                        <div class="text-[11px] text-black font-medium mt-1">Kode : D3-S162</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="section-title">Section A: Number Visualization (Base 10 Blocks)</div>
+                <p class="mb-4 text-sm text-gray-700">Look at the following blocks. Choose the correct numeral matching the picture.</p>
+
+                <div class="soal-grid mb-5">
+                    <!-- Soal 1 -->
+                    <div class="soal-item">
+                        <div class="font-bold mb-2">1. What number is this?</div>
+                        <div class="blocks-wrapper">
+                            <div class="hundreds-group">
+                                <div class="flat"></div><div class="flat"></div>
+                            </div>
+                            <div class="tens-group">
+                                <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                            </div>
+                            <div class="ones-group">
+                                <div class="unit"></div><div class="unit"></div>
+                                <div class="unit"></div><div class="unit"></div>
+                            </div>
+                        </div>
+                        <div class="choice-container">
+                            <label class="choice-label"><input type="checkbox"> (A) 243</label>
+                            <label class="choice-label"><input type="checkbox"> (B) 234</label>
+                            <label class="choice-label"><input type="checkbox"> (C) 324</label>
+                        </div>
+                    </div>
+
+                    <!-- Soal 2 -->
+                    <div class="soal-item">
+                        <div class="font-bold mb-2">2. What number is this?</div>
+                        <div class="blocks-wrapper">
+                            <div class="hundreds-group">
+                                <div class="flat"></div><div class="flat"></div><div class="flat"></div>
+                            </div>
+                            <div style="width: 15px;"></div>
+                            <div class="ones-group">
+                                <div class="unit"></div><div class="unit"></div>
+                            </div>
+                        </div>
+                        <div class="choice-container">
+                            <label class="choice-label"><input type="checkbox"> (A) 320</label>
+                            <label class="choice-label"><input type="checkbox"> (B) 302</label>
+                            <label class="choice-label"><input type="checkbox"> (C) 32</label>
+                        </div>
+                    </div>
+
+                    <!-- Soal 3 -->
+                    <div class="soal-item">
+                        <div class="font-bold mb-2">3. What number is this?</div>
+                        <div class="blocks-wrapper">
+                            <div class="hundreds-group">
+                                <div class="flat"></div>
+                            </div>
+                            <div class="tens-group">
+                                <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                                <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                            </div>
+                        </div>
+                        <div class="choice-container">
+                            <label class="choice-label"><input type="checkbox"> (A) 150</label>
+                            <label class="choice-label"><input type="checkbox"> (B) 105</label>
+                            <label class="choice-label"><input type="checkbox"> (C) 510</label>
+                        </div>
+                    </div>
+
+                    <!-- Soal 4: Hundreds dibuat 2 baris agar ngga terlalu ke kanan -->
+                    <div class="soal-item">
+                        <div class="font-bold mb-2">4. What number is this?</div>
+                        <div class="blocks-wrapper">
+                            <!-- 4 Hundreds in 2x2 grid -->
+                            <div class="hundreds-group grid grid-cols-2 gap-1">
+                                <div class="flat"></div><div class="flat"></div>
+                                <div class="flat"></div><div class="flat"></div>
+                            </div>
+                            <div class="tens-group">
+                                <div class="rod"><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div><div class="unit-seg"></div></div>
+                            </div>
+                            <div class="ones-group">
+                                <div class="unit"></div><div class="unit"></div><div class="unit"></div>
+                            </div>
+                        </div>
+                        <div class="choice-container">
+                            <label class="choice-label"><input type="checkbox"> (A) 403</label>
+                            <label class="choice-label"><input type="checkbox"> (B) 410</label>
+                            <label class="choice-label"><input type="checkbox"> (C) 413</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- ================= HALAMAN 2 ================= -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Numbers up to 1000</div>
+                        <div class="text-[10px] text-black font-medium mt-1">Kode : D3-S162</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="section-title">Section B: Place Value Table</div>
+                <p class="mb-4 text-sm text-gray-600">Fill in the boxes with the correct numerals.</p>
+
+                <div class="soal-grid mb-8">
+                    <div class="soal-item">
+                        <div class="font-bold mb-2">5.</div>
+                        <table class="pv-table">
+                            <thead>
+                                <tr><th>Hundreds</th><th>Tens</th><th>Ones</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-2xl font-bold py-4">6</td>
+                                    <td class="text-2xl font-bold py-4">4</td>
+                                    <td class="text-2xl font-bold py-4">8</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="mt-4 text-center">
+                            <span class="font-bold text-sm">Answer:</span>
+                            <input type="text" class="input-line w-24 ml-2">
+                        </div>
+                    </div>
+
+                    <div class="soal-item">
+                        <div class="font-bold mb-2">6.</div>
+                        <table class="pv-table">
+                            <thead>
+                                <tr><th>Hundreds</th><th>Tens</th><th>Ones</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-2xl font-bold py-4">9</td>
+                                    <td class="text-2xl font-bold py-4">0</td>
+                                    <td class="text-2xl font-bold py-4">5</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="mt-4 text-center">
+                            <span class="font-bold text-sm">Answer:</span>
+                            <input type="text" class="input-line w-24 ml-2">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 p-6 rounded-xl border border-blue-200 mb-8">
+                    <div class="font-bold mb-4">7. What number is this?</div>
+                    <div class="flex flex-wrap items-center gap-4 justify-center">
+                        <div class="bg-white px-4 py-2 border border-gray-300 rounded shadow-sm font-bold">7 Hundreds</div>
+                        <span class="text-xl font-bold">+</span>
+                        <div class="bg-white px-4 py-2 border border-gray-300 rounded shadow-sm font-bold">2 Tens</div>
+                        <span class="text-xl font-bold">+</span>
+                        <div class="bg-white px-4 py-2 border border-gray-300 rounded shadow-sm font-bold">0 Ones</div>
+                    </div>
+                    <div class="mt-6 text-center">
+                        <span class="font-bold">Result:</span>
+                        <input type="text" class="input-line w-32 ml-2">
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <div class="section-title">Section C: Number Names to Numerals</div>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between border-b pb-2">
+                        <span>8. Five hundred seventy-two</span>
+                        <input type="text" class="input-line w-24">
+                    </div>
+                    <div class="flex items-center justify-between border-b pb-2">
+                        <span>9. Eight hundred six</span>
+                        <input type="text" class="input-line w-24">
+                    </div>
+                    <div class="flex items-center justify-between border-b pb-2">
+                        <span class="font-bold">10. One thousand</span>
+                        <input type="text" class="input-line w-24">
+                    </div>
+                </div>
+
+                <div class="mt-12 text-center text-gray-500 italic text-sm">
+                    "Nice work finishing the set—seriously well done."
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+    </div>
+</body>
+</html>
