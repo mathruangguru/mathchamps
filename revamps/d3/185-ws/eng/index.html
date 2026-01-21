@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - 3-Digit Subtraction (D3-S185)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3; /* Sedikit dikurangi dari 1.4 */
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.6cm 2cm; /* Padding atas/bawah dikurangi dari 0.8cm */
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 6px; /* Dikurangi dari 8px */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.6cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .pv-table th,
+        .pv-table td {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem; /* Dikurangi signifikan dari 1.5rem */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 80px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 2rem;
+        margin-top: 6px; /* Dikurangi dari 8px */
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 1.5rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.4cm 0; /* Dikurangi drastis dari 1cm */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.6rem; /* Dikurangi dari 0.8rem */
+        background-color: #f3f4f6;
+        padding: 0.4rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* Visual Math Specifics (Tables) */
+      .pv-table {
+        border-collapse: collapse;
+        margin: 0.8rem auto; /* Dikurangi dari 1rem */
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 1.1rem;
+      }
+      .pv-table th {
+        background-color: #f3f4f6;
+        padding: 6px 16px; /* Padding vertikal dikurangi */
+        border: 2px solid #374151;
+        font-weight: 700;
+      }
+      .pv-table td {
+        padding: 8px 16px; /* Padding vertikal dikurangi */
+        border: 2px solid #374151;
+        text-align: center;
+        font-weight: 600;
+        min-width: 60px;
+      }
+      .pv-answer-cell {
+        background-color: #fffbeb; /* yellow-50 */
+        height: 45px; /* Sedikit dikurangi tingginya */
+      }
+      
+      .vertical-stack {
+        font-family: 'Noto Sans', monospace;
+        font-size: 1.5rem;
+        font-weight: 600;
+        text-align: right;
+        display: inline-block;
+        line-height: 1.5;
+      }
+      .vertical-line {
+        border-top: 3px solid #000;
+        width: 100%;
+        margin-top: 4px;
+        margin-bottom: 8px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-3) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">3-Digit Subtraction with 2-Digit Without Regrouping</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Subtracting Ones
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D3-S185</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-3 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: SUBTRACTION OF NUMBERS
+                </h1>
+            </div>
+
+            <!-- INSTRUCTION BOX -->
+            <div class="bg-gray-100 border-2 border-gray-300 p-3 mb-4 rounded-lg">
+                <h3 class="font-bold text-gray-800 mb-1">Study Guide (Visual Approach)</h3>
+                <p class="text-sm mb-1">To subtract numbers, subtract the digits based on their place value:</p>
+                <ul class="list-disc list-inside text-sm pl-2">
+                    <li>Subtract <b>Ones</b> from Ones.</li>
+                    <li>Subtract <b>Tens</b> from Tens.</li>
+                    <li>Subtract <b>Hundreds</b> from Hundreds (if any).</li>
+                </ul>
+            </div>
+
+            <div class="instruction-text py-1.5 text-sm">
+                Section A: Multiple Choice. Choose the correct answer by calculating the difference.
+            </div>
+            
+            <div class="soal-grid">
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. Calculate the result of <b>245 - 23</b>.
+                    </div>
+                    
+                    <table class="pv-table">
+                        <thead>
+                            <tr>
+                                <th>Hundreds</th>
+                                <th>Tens</th>
+                                <th>Ones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2</td>
+                                <td>4</td>
+                                <td>5</td>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>2</td>
+                                <td>3</td>
+                            </tr>
+                            <tr>
+                                <td class="pv-answer-cell"></td>
+                                <td class="pv-answer-cell"></td>
+                                <td class="pv-answer-cell"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="choice-container justify-center">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 221</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 222</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 212</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 225</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. What is the result of the subtraction <b>368 - 45</b>?
+                    </div>
+                    <div class="ml-6 mt-1 mb-2">
+                        <span class="text-2xl font-mono font-bold tracking-widest">368 - 45 = ...</span>
+                    </div>
+                    <div class="choice-container ml-6">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 323</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 325</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 313</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 343</label>
+                    </div>
+                </div>
+                
+                <div class="h-separator"></div>
+
+                 <!-- SOAL 3 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        3.
+                    </div>
+                    <div class="ml-6 mt-1 mb-2">
+                        <span class="text-2xl font-mono font-bold tracking-widest">579 - 53 = ...</span>
+                    </div>
+                    <div class="choice-container ml-6">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 516</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 526</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 525</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 523</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 4-7) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">3-Digit Subtraction with 2-Digit Without Regrouping</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Subtracting Ones
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D3-S185</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid mb-2 mt-2">
+                
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        4. The result of <b>126 - 12</b> is...
+                    </div>
+                    <div class="choice-container ml-6 mt-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 114</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 104</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 116</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 124</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        5.
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-2 mx-4 text-sm leading-relaxed">
+                        Mr. Budi has <b>487</b> bricks. <br>
+                        He used <b>65</b> bricks to repair the fence. <br>
+                        How many bricks does Mr. Budi have left?
+                    </div>
+                    <div class="choice-container ml-6">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 421</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 420</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 422</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 412</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <div class="instruction-text py-1.5 text-sm">
+                    Section B: Short Answer. Fill in the tables or blanks with the correct answer.
+                </div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1">
+                        6. Calculate the result of <b>693 - 71</b>.
+                    </div>
+                     <table class="pv-table">
+                        <thead>
+                            <tr>
+                                <th>Hundreds</th>
+                                <th>Tens</th>
+                                <th>Ones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>6</td>
+                                <td>9</td>
+                                <td>3</td>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>7</td>
+                                <td>1</td>
+                            </tr>
+                            <tr>
+                                <td class="pv-answer-cell"></td>
+                                <td class="pv-answer-cell"></td>
+                                <td class="pv-answer-cell"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="flex items-center gap-2 ml-4 justify-center">
+                        <span class="font-bold">Final Answer: </span>
+                        <span class="input-box" style="width: 150px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        7. Enter the numbers <b>854 - 40</b> into the table and calculate.
+                    </div>
+                    <table class="pv-table">
+                        <thead>
+                            <tr>
+                                <th>Hundreds</th>
+                                <th>Tens</th>
+                                <th>Ones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="h-10 w-16"></td>
+                                <td class="h-10 w-16"></td>
+                                <td class="h-10 w-16"></td>
+                            </tr>
+                            <tr>
+                                <td class="h-10 w-16">-</td>
+                                <td class="h-10 w-16"></td>
+                                <td class="h-10 w-16"></td>
+                            </tr>
+                            <tr>
+                                <td class="pv-answer-cell"></td>
+                                <td class="pv-answer-cell"></td>
+                                <td class="pv-answer-cell"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="flex items-center gap-2 ml-4 justify-center">
+                        <span class="font-bold">Final Answer: </span>
+                        <span class="input-box" style="width: 150px;"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 8-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">3-Digit Subtraction with 2-Digit Without Regrouping</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Subtracting Ones
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D3-S185</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid mb-2 mt-2">
+                
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Calculate <b>936 - 25</b>.
+                    </div>
+                    
+                    <div class="flex flex-col items-center my-2">
+                        <div class="vertical-stack">
+                            9 3 6<br>
+                            &nbsp;&nbsp; 2 5<br>
+                            <div class="vertical-line"></div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="input-box" style="width: 150px;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9.
+                    </div>
+                    
+                    <div class="text-center my-4 text-xl font-bold">
+                        762 - 41 = <span class="input-box" style="width: 150px; height: 40px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10.
+                    </div>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-2 mx-4 text-sm leading-relaxed">
+                        There are <b>158</b> storybooks in the school library.<br>
+                        Students borrowed <b>36</b> books today.<br>
+                        How many storybooks are left in the library?
+                    </div>
+
+                    <div class="ml-4 mb-2">
+                        <div class="mb-1 font-medium">Number Sentence:</div>
+                        <span class="input-box" style="width: 250px;"></span>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 ml-4 mt-2">
+                        <span class="font-bold">Answer: </span>
+                        <span class="input-box" style="width: 100px;"></span>
+                        <span class="font-semibold"> books.</span>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="text-center italic text-xs text-gray-500 mt-6">
+                "Nice work finishing the set—seriously well done."
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
