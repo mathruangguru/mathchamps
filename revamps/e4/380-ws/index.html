@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Mencari Bilangan Misterius (E4-S380)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff;
+        --path-color: #d1d5db;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm 2cm; 
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px; 
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 5px;
+        margin-top: auto; 
+        border-top: 2.5px solid var(--grey-text);
+        width: 100%;
+        display: block; 
+      }
+      .page-footer b {
+          display: block;
+          margin-bottom: 2px;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .instruction-text, .concept-box, .identity-box, .choice-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem; 
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+
+      /* Pilihan Ganda Styles */
+      .choice-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr; /* 4 kolom untuk opsi pendek */
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        margin-left: 1rem;
+        font-size: 0.9rem;
+      }
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 3px;
+        background: white;
+      }
+
+      /* Input boxes */
+      .ans-box {
+        display: inline-block;
+        width: 80px;
+        border-bottom: 1.5px solid #333;
+        text-align: center;
+      }
+      
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem; 
+        background-color: #f3f4f6;
+        padding: 0.4rem 0.8rem; 
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- SVG Styles (Flowchart) --- */
+      .flow-svg-container {
+        display: block;
+        margin: 10px auto;
+        overflow: visible;
+      }
+      .flow-box {
+        fill: #fff;
+        stroke: #333;
+        stroke-width: 1.5;
+        rx: 4; /* Rounded corners */
+      }
+      .flow-circle {
+        fill: #fff;
+        stroke: #333;
+        stroke-width: 1.5;
+      }
+      .flow-text {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        fill: #000;
+      }
+      .flow-arrow-text {
+        font-family: "Montserrat", sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        text-anchor: middle;
+        fill: #555;
+      }
+      .flow-path {
+        fill: none;
+        stroke: #333;
+        stroke-width: 1.5;
+        marker-end: url(#arrowhead);
+      }
+      .flow-path-back {
+        fill: none;
+        stroke: #d946ef; /* Fuchsia for backwards */
+        stroke-width: 1.5;
+        marker-end: url(#arrowhead-red);
+      }
+      
+      /* Worked Example Box */
+      .worked-example {
+        background-color: #f9fafb;
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+      }
+
+    </style>
+  </head>
+  <body>
+    <!-- Define SVG Pattern & Markers -->
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+            </marker>
+            <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#d946ef" />
+            </marker>
+        </defs>
+    </svg>
+
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1: CONTOH & SOAL 1-2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Bilangan Bulat Tingkat Lanjut
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Mencari Bilangan Misterius
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : E4-S380
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-5 mt-4"> 
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: Mencari Bilangan Misterius
+                </h1>
+            </div>
+
+            <!-- CONTOH SOAL -->
+            <div class="worked-example">
+                <div class="font-bold text-lg mb-2 border-b border-gray-300 pb-1">Panduan: Strategi Bekerja Mundur</div>
+                <p class="text-sm mb-2">
+                    <strong>Contoh:</strong> "Aku memikirkan sebuah bilangan. Jika dikalikan 2 lalu ditambah 3, hasilnya adalah 13."
+                </p>
+                
+                <!-- Visual Model -->
+                <div class="w-full flex flex-col items-center my-4 gap-4">
+                    <!-- Forward Flow -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold w-20 text-right">Maju:</span>
+                        <svg width="300" height="40" viewBox="0 0 300 40">
+                            <!-- Box ? -->
+                            <rect x="10" y="5" width="40" height="30" class="flow-box" />
+                            <text x="30" y="20" class="flow-text">?</text>
+                            <!-- Arrow x2 -->
+                            <path d="M55,20 L90,20" class="flow-path" />
+                            <text x="72" y="15" class="flow-arrow-text">×2</text>
+                            <!-- Circle -->
+                            <circle cx="110" cy="20" r="15" class="flow-circle" />
+                            <!-- Arrow +3 -->
+                            <path d="M130,20 L165,20" class="flow-path" />
+                            <text x="147" y="15" class="flow-arrow-text">+3</text>
+                            <!-- Box 13 -->
+                            <rect x="175" y="5" width="40" height="30" class="flow-box" style="fill:#f3f4f6;" />
+                            <text x="195" y="20" class="flow-text">13</text>
+                        </svg>
+                    </div>
+
+                    <!-- Backward Flow -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold w-20 text-right text-fuchsia-600">Mundur:</span>
+                        <svg width="300" height="40" viewBox="0 0 300 40">
+                            <!-- Box Result (5) -->
+                            <rect x="10" y="5" width="40" height="30" class="flow-box" style="stroke:#d946ef; stroke-width:2;" />
+                            <text x="30" y="20" class="flow-text" style="fill:#d946ef;">5</text>
+                            <!-- Arrow /2 -->
+                            <path d="M90,20 L55,20" class="flow-path-back" />
+                            <text x="72" y="15" class="flow-arrow-text" style="fill:#d946ef;">÷2</text>
+                            <!-- Circle 10 -->
+                            <circle cx="110" cy="20" r="15" class="flow-circle" />
+                            <text x="110" y="20" class="flow-text" style="font-size:12px;">10</text>
+                            <!-- Arrow -3 -->
+                            <path d="M165,20 L130,20" class="flow-path-back" />
+                            <text x="147" y="15" class="flow-arrow-text" style="fill:#d946ef;">-3</text>
+                            <!-- Box 13 -->
+                            <rect x="175" y="5" width="40" height="30" class="flow-box" style="fill:#f3f4f6;" />
+                            <text x="195" y="20" class="flow-text">13</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="bg-white p-2 rounded border border-gray-200 text-sm">
+                    <strong>Caranya:</strong> Balikkan operasinya dari belakang. <br>
+                    1. 13 - 3 = 10 <br>
+                    2. 10 ÷ 2 = 5. Jadi bilangan misteriusnya adalah <strong>5</strong>.
+                </div>
+            </div>
+
+            <div class="instruction-text mb-4">Bagian A: Pilihan Ganda</div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                         <span class="font-bold">1.</span> Sebuah bilangan ditambah 15, kemudian hasilnya dikalikan 4. Hasil akhirnya adalah 80. Berapakah bilangan tersebut?
+                    </div>
+                    <!-- Visual -->
+                    <div class="w-full flex justify-center my-2">
+                        <svg width="350" height="40" viewBox="0 0 350 40">
+                            <rect x="10" y="5" width="40" height="30" class="flow-box" />
+                            <text x="30" y="20" class="flow-text">?</text>
+                            
+                            <path d="M55,20 L95,20" class="flow-path" />
+                            <text x="75" y="15" class="flow-arrow-text">+15</text>
+                            
+                            <circle cx="115" cy="20" r="15" class="flow-circle" />
+                            
+                            <path d="M135,20 L175,20" class="flow-path" />
+                            <text x="155" y="15" class="flow-arrow-text">×4</text>
+                            
+                            <rect x="185" y="5" width="40" height="30" class="flow-box" />
+                            <text x="205" y="20" class="flow-text">80</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 5</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 10</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 15</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 20</label>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-2"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> Budi memikirkan sebuah angka. Ia mengalikannya dengan 8, lalu mengurangi hasilnya dengan 12. Jika hasil akhirnya adalah 52, angka berapakah yang dipikirkan Budi?
+                    </div>
+                    <!-- Visual -->
+                    <div class="w-full flex justify-center my-2">
+                        <svg width="350" height="40" viewBox="0 0 350 40">
+                            <rect x="10" y="5" width="40" height="30" class="flow-box" />
+                            <text x="30" y="20" class="flow-text">?</text>
+                            
+                            <path d="M55,20 L95,20" class="flow-path" />
+                            <text x="75" y="15" class="flow-arrow-text">×8</text>
+                            
+                            <circle cx="115" cy="20" r="15" class="flow-circle" />
+                            
+                            <path d="M135,20 L175,20" class="flow-path" />
+                            <text x="155" y="15" class="flow-arrow-text">-12</text>
+                            
+                            <rect x="185" y="5" width="40" height="30" class="flow-box" />
+                            <text x="205" y="20" class="flow-text">52</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 6</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 7</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 8</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 9</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2: SOAL 3-6 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Bilangan Bulat Tingkat Lanjut</div>
+                    <div class="text-[10px] text-black font-medium">Kode : E4-S380</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">3.</span> Aku adalah sebuah bilangan. Jika aku dibagi 3, kemudian ditambah 25, aku menjadi 40. Siapakah aku?
+                    </div>
+                    <!-- Visual -->
+                    <div class="w-full flex justify-center my-2">
+                        <svg width="350" height="40" viewBox="0 0 350 40">
+                            <rect x="10" y="5" width="40" height="30" class="flow-box" />
+                            <text x="30" y="20" class="flow-text">?</text>
+                            <path d="M55,20 L95,20" class="flow-path" />
+                            <text x="75" y="15" class="flow-arrow-text">÷3</text>
+                            <circle cx="115" cy="20" r="15" class="flow-circle" />
+                            <path d="M135,20 L175,20" class="flow-path" />
+                            <text x="155" y="15" class="flow-arrow-text">+25</text>
+                            <rect x="185" y="5" width="40" height="30" class="flow-box" />
+                            <text x="205" y="20" class="flow-text">40</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 30</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 35</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 45</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 55</label>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">4.</span> Sebuah bilangan dikalikan 5, kemudian ditambah 100, lalu hasilnya dibagi 2. Hasil akhirnya adalah 75.
+                    </div>
+                    <!-- Visual Longer -->
+                    <div class="w-full flex justify-center my-2">
+                        <svg width="450" height="40" viewBox="0 0 450 40">
+                            <rect x="10" y="5" width="40" height="30" class="flow-box" />
+                            <text x="30" y="20" class="flow-text">?</text>
+                            
+                            <path d="M55,20 L90,20" class="flow-path" />
+                            <text x="72" y="15" class="flow-arrow-text">×5</text>
+                            
+                            <circle cx="105" cy="20" r="12" class="flow-circle" />
+                            
+                            <path d="M120,20 L155,20" class="flow-path" />
+                            <text x="137" y="15" class="flow-arrow-text">+100</text>
+                            
+                            <circle cx="170" cy="20" r="12" class="flow-circle" />
+                            
+                            <path d="M185,20 L220,20" class="flow-path" />
+                            <text x="202" y="15" class="flow-arrow-text">÷2</text>
+                            
+                            <rect x="230" y="5" width="40" height="30" class="flow-box" />
+                            <text x="250" y="20" class="flow-text">75</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 5</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 10</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 25</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 50</label>
+                    </div>
+                </div>
+
+                <div class="instruction-text mt-4 mb-2">Bagian B: Isian Singkat & Uraian</div>
+                <div class="text-sm italic text-gray-500 mb-2">Gunakan cara "Bekerja Mundur".</div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">5.</span> Sebuah bilangan dikurangi 40, kemudian hasilnya dibagi 6. Hasil akhirnya adalah 9. Berapakah bilangan tersebut?
+                    </div>
+                    <div class="mt-2 flex items-baseline justify-end">
+                        <span class="font-bold mr-2">Jawab:</span>
+                        <div class="ans-box"></div>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">6.</span> "Bilangan Ajaib". Jika kamu menjumlahkanku dengan 150, lalu membagiku dengan 4, dan terakhir mengurangi hasilnya dengan 10, kamu akan mendapatkan angka 40. Berapakah aku?
+                    </div>
+                    <!-- Visual Blank -->
+                    <div class="w-full flex justify-center my-2">
+                        <svg width="400" height="40" viewBox="0 0 400 40">
+                            <rect x="10" y="5" width="40" height="30" class="flow-box" />
+                            <text x="30" y="20" class="flow-text">40</text>
+                            <path d="M55,20 L95,20" class="flow-path-back" />
+                            <circle cx="110" cy="20" r="12" class="flow-circle" />
+                            <path d="M125,20 L165,20" class="flow-path-back" />
+                            <circle cx="180" cy="20" r="12" class="flow-circle" />
+                            <path d="M195,20 L235,20" class="flow-path-back" />
+                            <rect x="245" y="5" width="40" height="30" class="flow-box" />
+                            <text x="265" y="20" class="flow-text">?</text>
+                        </svg>
+                    </div>
+                    <div class="mt-2 flex items-baseline justify-end">
+                        <span class="font-bold mr-2">Jawab:</span>
+                        <div class="ans-box"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3: SOAL 7-10 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Bilangan Bulat Tingkat Lanjut</div>
+                    <div class="text-[10px] text-black font-medium">Kode : E4-S380</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid">
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">7.</span> Andi mempunyai sejumlah kelereng. Ia memberikan setengah dari kelerengnya kepada Budi. Kemudian, ia membeli lagi 10 kelereng. Sekarang Andi memiliki 35 kelereng. Berapa banyak kelereng Andi mula-mula?
+                    </div>
+                    <div class="w-full h-16 border border-dashed border-gray-300 rounded bg-gray-50 mt-1 mb-1 p-2"></div>
+                    <div class="flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Jawab:</span>
+                        <div class="ans-box"></div>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">8.</span> Pikirkan sebuah bilangan. Kalikan bilangan itu dengan 3. Tambahkan 15. Bagi hasilnya dengan 3. Kurangi dengan 5. Hasil akhirnya ternyata adalah bilangan itu sendiri! 
+                        <span class="italic text-xs text-gray-600">(Tapi, jika hasil akhirnya disebut 10, carilah bilangan awal tersebut).</span>
+                    </div>
+                    <div class="w-full flex justify-center my-2">
+                        <svg width="450" height="40" viewBox="0 0 450 40">
+                            <rect x="5" y="5" width="30" height="30" class="flow-box" />
+                            <text x="20" y="20" class="flow-text" font-size="10">?</text>
+                            
+                            <path d="M40,20 L65,20" class="flow-path" />
+                            <text x="52" y="15" class="flow-arrow-text">×3</text>
+                            
+                            <circle cx="75" cy="20" r="10" class="flow-circle" />
+                            
+                            <path d="M85,20 L110,20" class="flow-path" />
+                            <text x="97" y="15" class="flow-arrow-text">+15</text>
+                            
+                            <circle cx="120" cy="20" r="10" class="flow-circle" />
+
+                            <path d="M130,20 L155,20" class="flow-path" />
+                            <text x="142" y="15" class="flow-arrow-text">÷3</text>
+
+                            <circle cx="165" cy="20" r="10" class="flow-circle" />
+
+                            <path d="M175,20 L200,20" class="flow-path" />
+                            <text x="187" y="15" class="flow-arrow-text">-5</text>
+                            
+                            <rect x="210" y="5" width="30" height="30" class="flow-box" />
+                            <text x="225" y="20" class="flow-text" font-size="10">10</text>
+                        </svg>
+                    </div>
+                    <div class="flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Jawab:</span>
+                        <div class="ans-box"></div>
+                    </div>
+                </div>
+
+                <!-- SOAL 9 (Logic) -->
+                <div class="soal-item">
+                     <div class="instruction-text mb-1 py-0.5 text-xs bg-blue-50 border-blue-800 text-blue-900">
+                        Tantangan Logika (Logic Challenge)
+                    </div>
+                    <div class="mb-1">
+                        <span class="font-bold">9.</span> Sebuah bilangan misterius dikalikan 10, lalu dikurangi 25. Hasilnya kemudian dibagi 5. Terakhir, hasilnya ditambah 15 sehingga menjadi 50. Buatlah alur mundurnya dan temukan bilangan tersebut!
+                    </div>
+                    
+                    <div class="mt-2 pl-4 border-l-2 border-gray-200 ml-2">
+                        <div class="flex justify-between items-center text-sm mb-2">
+                            <span>Alur Mundur:</span>
+                            <span class="border-b border-gray-400 w-48 inline-block h-4"></span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm font-bold">
+                            <span>Bilangan Misterius:</span>
+                            <div class="ans-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SOAL 10 (Complex Story) -->
+                <div class="soal-item mt-2">
+                     <div class="instruction-text mb-1 py-0.5 text-xs bg-red-50 border-red-600 text-red-900">
+                        Soal Cerita Kompleks
+                    </div>
+                    <div class="mb-1">
+                        <span class="font-bold">10.</span> Siti memiliki uang tabungan. 
+                        Hari Senin, ia menggunakan Rp 5.000 untuk jajan. 
+                        Hari Selasa, ibunya memberi tambahan uang sehingga uang Siti menjadi dua kali lipat dari sisa hari Senin. 
+                        Hari Rabu, Siti menyumbangkan Rp 10.000. 
+                        Sisa uang Siti sekarang adalah Rp 40.000. 
+                        Berapa uang tabungan Siti mula-mula?
+                    </div>
+                    
+                    <div class="mt-2 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Jawab:</span>
+                        <span class="font-bold mr-1 text-sm">Rp</span>
+                        <div class="ans-box" style="width: 100px;"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
