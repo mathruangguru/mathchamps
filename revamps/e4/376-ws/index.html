@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Sistem Waktu 24 Jam (E4-S376)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff; /* bg-blue-50 equivalent */
+        --path-color: #d1d5db; /* gray-300 */
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.5cm 2cm; 
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px; 
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; 
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.5cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .concept-box,
+        .input-box,
+        .visual-shape,
+        .data-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem; 
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 24px; 
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 22px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+
+      .input-line {
+        border: none;
+        border-bottom: 1.5px solid #333;
+        min-width: 100px;
+        display: inline-block;
+        height: 18px;
+        margin-left: 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 3px; 
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem; 
+        background-color: #f3f4f6;
+        padding: 0.3rem 0.6rem; 
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CONCEPT/DATA BOX --- */
+      .concept-box {
+        border: 2px solid #60a5fa;
+        background-color: #eff6ff;
+        border-radius: 10px;
+        padding: 10px; 
+        margin-bottom: 15px; 
+        font-size: 0.9rem;
+      }
+
+      /* SVG Styles */
+      .visual-svg {
+        display: block;
+        margin: 0 auto;
+      }
+      .axis-line { stroke: #333; stroke-width: 2; }
+      .tick-line { stroke: #333; stroke-width: 1.5; }
+      .timeline-arrow { fill: none; stroke: #333; stroke-width: 1.5; stroke-dasharray: 4,2; }
+      .timeline-text { font-family: 'Noto Sans', sans-serif; font-size: 11px; fill: #000; text-anchor: middle; }
+      .hop-text { font-family: 'Noto Sans', sans-serif; font-size: 10px; fill: #666; text-anchor: middle; font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <!-- Define SVG Arrow Marker -->
+    <svg style="display: none;">
+      <defs>
+        <marker id="arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 L1,3 z" fill="#333" />
+        </marker>
+        <marker id="arrow-blue" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 L1,3 z" fill="#2563eb" />
+        </marker>
+      </defs>
+    </svg>
+
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Waktu
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Sistem Waktu 24 Jam
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : E4-S376
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-4 mt-2"> 
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: EKSPLORASI WAKTU 24 JAM
+                </h1>
+            </div>
+
+            <!-- KONSEP VISUAL -->
+            <div class="concept-box">
+                <div class="font-bold text-blue-800 mb-2">Ringkasan Konsep (Visual Concept)</div>
+                <ul class="list-disc pl-5 mb-2">
+                    <li><b>a.m.</b> (ante meridiem): 00:00 sampai 11:59 (Pagi/Siang hari).</li>
+                    <li><b>p.m.</b> (post meridiem): 12:00 sampai 23:59 (Sore/Malam hari).</li>
+                </ul>
+                <div class="text-center font-semibold text-sm mb-2 text-blue-700">Tips Visual: Untuk mengubah waktu p.m. ke 24 jam, tambahkan 12 jam.</div>
+                
+                <!-- SVG Timeline Conversion -->
+                <div class="flex justify-center mt-2">
+                    <svg width="400" height="80" viewBox="0 0 400 80" class="visual-svg">
+                        <!-- Main Line -->
+                        <line x1="20" y1="40" x2="380" y2="40" class="axis-line" marker-end="url(#arrow)" />
+                        
+                        <!-- Ticks -->
+                        <line x1="20" y1="35" x2="20" y2="45" class="tick-line" />
+                        <line x1="110" y1="35" x2="110" y2="45" class="tick-line" />
+                        <line x1="200" y1="35" x2="200" y2="45" class="tick-line" />
+                        <line x1="290" y1="35" x2="290" y2="45" class="tick-line" />
+                        <line x1="380" y1="35" x2="380" y2="45" class="tick-line" />
+
+                        <!-- Top Labels (12h) -->
+                        <text x="20" y="25" class="timeline-text" font-weight="bold">12:00</text>
+                        <text x="110" y="25" class="timeline-text">1:00 pm</text>
+                        <text x="200" y="25" class="timeline-text">2:00 pm</text>
+                        <text x="290" y="25" class="timeline-text">3:00 pm</text>
+                        <text x="380" y="25" class="timeline-text">4:00 pm</text>
+
+                        <!-- Bottom Labels (24h) -->
+                        <text x="380" y="65" class="timeline-text" font-weight="bold" fill="#2563eb">16:00</text>
+                        <text x="290" y="65" class="timeline-text" fill="#2563eb">15:00</text>
+                        <text x="200" y="65" class="timeline-text" fill="#2563eb">14:00</text>
+                        <text x="110" y="65" class="timeline-text" fill="#2563eb">13:00</text>
+                        <text x="20" y="65" class="timeline-text" fill="#2563eb">12:00</text>
+                        
+                        <!-- Labels System -->
+                        <text x="390" y="25" class="timeline-text" text-anchor="start" font-size="9" fill="#666">Sistem 12 Jam</text>
+                        <text x="390" y="65" class="timeline-text" text-anchor="start" font-size="9" fill="#2563eb">Sistem 24 Jam</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Bagian A -->
+            <div class="instruction-text">
+                Bagian A: Konversi Waktu (Pilihan Ganda)
+            </div>
+
+            <div class="soal-grid">
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">1.</span> Pukul <b>3:00 p.m.</b> sore sama dengan pukul berapa dalam sistem 24 jam?
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> a. 03:00</label>
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> b. 13:00</label>
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> c. 15:00</label>
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> d. 18:00</label>
+                    </div>
+                </div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> Rani mulai belajar pada pukul <b>19:30</b>. Pukul berapakah itu dalam sistem 12 jam?
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> a. 7:30 a.m.</label>
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> b. 9:30 a.m.</label>
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> c. 7:30 p.m.</label>
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> d. 9:30 p.m.</label>
+                    </div>
+                </div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">3.</span> Manakah penulisan yang benar untuk <b>setengah jam setelah tengah malam</b> dalam sistem 24 jam?
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> a. 12:30</label>
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> b. 00:30</label>
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> c. 24:30</label>
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> d. 13:30</label>
+                    </div>
+                </div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">4.</span> Lihat pola berikut: 13:00, 14:00, 15:00, ... Angka berapa yang menunjukkan pukul <b>8 malam</b>?
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> a. 18:00</label>
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> b. 20:00</label>
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> c. 21:00</label>
+                        <label class="flex items-center cursor-pointer mr-6"><span class="choice-box"></span> d. 22:00</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian B -->
+            <div class="instruction-text mt-6">
+                Bagian B: Isian Singkat dengan Visualisasi
+            </div>
+
+            <div class="soal-grid">
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">5.</span> Ubahlah waktu berikut ke format yang diminta:
+                    </div>
+                    <div class="ml-4 mt-2 grid grid-cols-1 gap-2">
+                        <div>
+                            • 06:45 &rarr; Format 12 jam: <span class="input-line"></span>
+                        </div>
+                        <div>
+                            • 11:15 p.m. &rarr; Format 24 jam: <span class="input-line"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">6.</span> <b>Visualisasi Garis Waktu:</b> Sebuah kereta berangkat pukul 14:00 dan tiba pukul 16:30. Berapa lama perjalanan kereta tersebut?
+                    </div>
+                    
+                    <!-- SVG Train Timeline -->
+                    <div class="flex justify-center my-3">
+                        <svg width="400" height="70" viewBox="0 0 400 70" class="visual-svg">
+                            <line x1="20" y1="50" x2="320" y2="50" class="axis-line" marker-end="url(#arrow)" />
+                            
+                            <!-- Ticks -->
+                            <line x1="20" y1="45" x2="20" y2="55" class="tick-line" />
+                            <line x1="120" y1="45" x2="120" y2="55" class="tick-line" />
+                            <line x1="220" y1="45" x2="220" y2="55" class="tick-line" />
+                            <line x1="270" y1="45" x2="270" y2="55" class="tick-line" />
+                            
+                            <!-- Labels -->
+                            <text x="20" y="65" class="timeline-text">14:00</text>
+                            <text x="120" y="65" class="timeline-text">15:00</text>
+                            <text x="220" y="65" class="timeline-text">16:00</text>
+                            <text x="270" y="65" class="timeline-text">16:30</text>
+                            
+                            <!-- Hops -->
+                            <path d="M 20 40 Q 70 10 120 40" fill="none" stroke="#666" stroke-dasharray="4,2" marker-end="url(#arrow)" />
+                            <text x="70" y="25" class="hop-text">1 jam</text>
+                            
+                            <path d="M 120 40 Q 170 10 220 40" fill="none" stroke="#666" stroke-dasharray="4,2" marker-end="url(#arrow)" />
+                            <text x="170" y="25" class="hop-text">1 jam</text>
+                            
+                            <path d="M 220 40 Q 245 20 270 40" fill="none" stroke="#666" stroke-dasharray="4,2" marker-end="url(#arrow)" />
+                            <text x="245" y="25" class="hop-text">? menit</text>
+                        </svg>
+                    </div>
+
+                    <div class="ml-4">
+                        Jawab: <span class="input-line" style="width: 200px"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Waktu</div>
+                    <div class="text-[10px] text-black font-medium">Sistem Waktu 24 Jam</div>
+                    <div class="text-[10px] text-black font-medium">Kode : E4-S376</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <div class="soal-grid">
+                 <!-- SOAL 7 -->
+                 <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">7.</span> Ayah mulai bekerja di kebun pada pukul <b>08:30</b>. Ia bekerja selama <b>3 jam 15 menit</b>. Pada pukul berapakah Ayah selesai bekerja (dalam sistem 24 jam)?
+                    </div>
+                    <div class="bg-blue-50 p-2 rounded border border-blue-200 text-sm italic mb-2 ml-4 w-3/4">
+                        Lengkapi: 08:30 + 3 jam = ..........; Lalu tambahkan 15 menit.
+                    </div>
+                    <div class="ml-4">
+                        Jawab: <span class="input-line" style="width: 200px"></span>
+                    </div>
+                 </div>
+
+                 <!-- SOAL 8 -->
+                 <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">8.</span> Sebuah film dimulai pukul <b>18:45</b> dan berakhir pukul <b>21:15</b>. Berapa durasi film tersebut?
+                    </div>
+                    <div class="ml-4 mt-8">
+                        Jawab: <span class="input-line" style="width: 200px"></span>
+                    </div>
+                 </div>
+            </div>
+
+            <!-- Bagian C -->
+            <div class="instruction-text mt-6">
+                Bagian C: Pemecahan Masalah (Aplikasi)
+            </div>
+
+            <div class="soal-grid">
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                   <div class="mb-1">
+                       <span class="font-bold">9. Jadwal Penerbangan:</span> Pesawat Garuda lepas landas dari Jakarta pukul <b>13:45</b>. Penerbangan menuju Bali memakan waktu 1 jam 50 menit. Pukul berapa pesawat akan mendarat di Bali (Waktu Jakarta)? Gunakan sistem 24 jam.
+                   </div>
+                   <div class="ml-4 mt-8">
+                       Jawab: <span class="input-line" style="width: 200px"></span>
+                   </div>
+                </div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                   <div class="mb-1">
+                       <span class="font-bold">10.</span> Budi tidur pada pukul 21:30 dan bangun pada pukul 05:30 keesokan harinya.
+                       Gambarkan garis waktu sederhana dan hitung berapa lama Budi tidur.
+                   </div>
+                   
+                   <!-- SVG Sleep Timeline (Proportional) -->
+                   <div class="flex justify-center my-3">
+                       <svg width="400" height="80" viewBox="0 0 400 80" class="visual-svg">
+                           <!-- Total length represents 8 hours (approx) -->
+                           <!-- Scale: Let's say 40px = 1 hour -->
+                           <!-- 21:30 to 00:00 = 2.5 hours = 100px -->
+                           <!-- 00:00 to 05:30 = 5.5 hours = 220px -->
+                           
+                           <line x1="20" y1="50" x2="360" y2="50" class="axis-line" />
+                           
+                           <!-- Ticks -->
+                           <line x1="20" y1="45" x2="20" y2="55" class="tick-line" stroke-width="2" />
+                           <line x1="120" y1="45" x2="120" y2="55" class="tick-line" stroke-width="2" />
+                           <line x1="340" y1="45" x2="340" y2="55" class="tick-line" stroke-width="2" />
+                           
+                           <!-- Labels -->
+                           <text x="20" y="65" class="timeline-text">21:30</text>
+                           <text x="120" y="65" class="timeline-text">00:00</text>
+                           <text x="340" y="65" class="timeline-text">05:30</text>
+                           
+                           <!-- Visual Hops/Braces replacement -->
+                           <path d="M 20 40 Q 70 20 120 40" fill="none" stroke="#2563eb" stroke-width="1.5" />
+                           <text x="70" y="30" class="timeline-text" fill="#2563eb">... jam</text>
+                           
+                           <path d="M 120 40 Q 230 10 340 40" fill="none" stroke="#2563eb" stroke-width="1.5" />
+                           <text x="230" y="25" class="timeline-text" fill="#2563eb">... jam</text>
+                           
+                       </svg>
+                   </div>
+                   
+                   <div class="ml-4">
+                       Jawab: <span class="input-line" style="width: 200px"></span>
+                   </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
