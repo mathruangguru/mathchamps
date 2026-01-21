@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Comparison Model (D3-S249)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.2; /* Line height diperkecil */
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; 
+        min-height: 29.7cm; 
+        padding: 0.5cm 2cm; /* Padding atas bawah sedikit dikurangi */
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 2px; /* Margin header dikurangi */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 2px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 0.5cm 2cm; }
+        .page:last-child { page-break-after: avoid; }
+      }
+
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem; /* Gap antar soal dirapatkan dari 0.8rem */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        margin-bottom: 2px;
+      }
+
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 60px;
+        height: 22px; /* Tinggi input sedikit dikurangi */
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 4px;
+        padding: 0 5px;
+        vertical-align: middle;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 0.8rem; /* Gap pilihan dirapatkan */
+        margin-top: 2px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+        margin-left: 1rem;
+      }
+
+      .choice-box {
+        width: 14px; /* Ukuran kotak pilihan sedikit dikurangi */
+        height: 14px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0; /* Margin separator dirapatkan */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.2rem;
+        background-color: #f3f4f6;
+        padding: 0.2rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+      
+      .visual-box {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 0.3rem; /* Padding visual box dirapatkan */
+        background-color: #fff;
+        border-radius: 8px;
+        margin: 0.2rem 0;
+        flex-wrap: wrap;
+      }
+
+      /* SVG Styles for Bar Models */
+      .bar-model-svg {
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .bar-fill { fill: #e5e7eb; stroke: #333; stroke-width: 1.5px; }
+      .bar-empty { fill: #fff; stroke: #333; stroke-width: 1.5px; }
+      .bar-line { stroke: #333; stroke-width: 1.5px; }
+      .bar-dashed { stroke: #555; stroke-width: 1px; stroke-dasharray: 4,4; }
+      .bar-arrow { fill: none; stroke: #333; stroke-width: 1.5px; marker-end: url(#arrowhead); marker-start: url(#arrowtail); }
+      .bar-text { fill: #1f2937; text-anchor: middle; dominant-baseline: middle; }
+      .bar-label { font-size: 12px; font-weight: bold; text-anchor: start; dominant-baseline: middle; }
+      .bar-value { font-size: 13px; font-weight: bold; text-anchor: start; dominant-baseline: middle; }
+
+    </style>
+  </head>
+  <body>
+    <!-- SVG Definitions for Arrows -->
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+        </marker>
+        <marker id="arrowtail" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto">
+            <polygon points="10 0, 0 3.5, 10 7" fill="#333" />
+        </marker>
+      </defs>
+    </svg>
+
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Math Models</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Subtraction (Finding the Smaller Number)
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D3-S249</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-2 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: COMPARISON MODELS
+                </h1>
+            </div>
+
+            <div class="instruction-text">
+                Section A: Multiple Choice
+            </div>
+            
+            <div class="soal-grid">
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. Look at the comparison model for marbles below. How many marbles does Budi have?
+                    </div>
+                    <div class="visual-box">
+                        <svg width="350" height="100" viewBox="0 0 350 100" class="bar-model-svg">
+                            <!-- Adi Bar -->
+                            <rect x="50" y="10" width="200" height="30" class="bar-fill" />
+                            <text x="150" y="25" class="bar-text font-bold">25 (Adi)</text>
+                            
+                            <!-- Budi Bar -->
+                            <rect x="50" y="50" width="140" height="30" class="bar-empty" />
+                            <text x="120" y="65" class="bar-text font-bold">? (Budi)</text>
+
+                            <!-- Dashed Line -->
+                            <line x1="190" y1="50" x2="190" y2="10" class="bar-dashed" />
+
+                            <!-- Difference Arrow -->
+                            <line x1="195" y1="65" x2="245" y2="65" stroke="#333" stroke-width="1.5" marker-end="url(#arrowhead)" marker-start="url(#arrowtail)" />
+                            <text x="220" y="85" class="bar-text" style="font-size: 11px;">Difference 5</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-28"><span class="choice-box"></span> a) 30</label>
+                        <label class="flex items-center cursor-pointer w-28"><span class="choice-box"></span> b) 20</label>
+                        <label class="flex items-center cursor-pointer w-28"><span class="choice-box"></span> c) 15</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. Rani has 48 stickers. Susi has 12 stickers <u>fewer than</u> Rani. The correct number sentence to find the number of Susi's stickers is...
+                    </div>
+                    <div class="choice-container flex-col gap-1">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) 48 + 12 = 60</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) 48 - 12 = 36</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) 12 + 48 = 60</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        3. Look at the book model below. What is the value of the question mark (?) in the model above?
+                    </div>
+                    <div class="visual-box">
+                         <svg width="350" height="100" viewBox="0 0 350 100" class="bar-model-svg">
+                            <!-- Bar Besar -->
+                            <rect x="50" y="10" width="220" height="30" class="bar-fill" />
+                            <text x="160" y="25" class="bar-text font-bold">64</text>
+                            
+                            <!-- Bar Kecil -->
+                            <rect x="50" y="50" width="160" height="30" class="bar-empty" />
+                            <text x="130" y="65" class="bar-text font-bold">?</text>
+
+                            <!-- Brace -->
+                            <path d="M 210,85 L 210,90 Q 240,100 270,90 L 270,85" fill="none" stroke="#333" stroke-width="1.5" transform="translate(0, -35)"/>
+                            <text x="240" y="80" class="bar-text" style="font-size: 11px;">Difference 14</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-28"><span class="choice-box"></span> a) 50</label>
+                        <label class="flex items-center cursor-pointer w-28"><span class="choice-box"></span> b) 78</label>
+                        <label class="flex items-center cursor-pointer w-28"><span class="choice-box"></span> c) 40</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+                
+                 <!-- SOAL 4 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        4. The length of a red ribbon is 95 cm. The blue ribbon is 25 cm <u>shorter</u> than the red ribbon. What is the length of the blue ribbon?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-28"><span class="choice-box"></span> a) 70 cm</label>
+                        <label class="flex items-center cursor-pointer w-28"><span class="choice-box"></span> b) 60 cm</label>
+                        <label class="flex items-center cursor-pointer w-28"><span class="choice-box"></span> c) 120 cm</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        5. Mr. Budi sold 82 apples today. Yesterday, he sold 10 fewer apples than today. How many apples did Mr. Budi sell yesterday?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-28"><span class="choice-box"></span> a) 92 apples</label>
+                        <label class="flex items-center cursor-pointer w-28"><span class="choice-box"></span> b) 72 apples</label>
+                        <label class="flex items-center cursor-pointer w-28"><span class="choice-box"></span> c) 62 apples</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Math Models</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Subtraction (Finding the Smaller Number)
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D3-S249</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mt-2">
+                Section B: Short Answer
+            </div>
+            <div class="text-xs text-gray-500 mb-2 ml-1 italic">Complete the model (if there are dots) and calculate the answer.</div>
+
+            <div class="soal-grid mt-2">
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        6. Mom bought 56 eggs. Aunt has <u>24 fewer eggs</u> than Mom. How many eggs does Aunt have?
+                    </div>
+                    <div class="visual-box">
+                         <svg width="350" height="110" viewBox="0 0 350 110" class="bar-model-svg">
+                            <text x="10" y="25" class="bar-label">Mom</text>
+                            <rect x="50" y="10" width="200" height="30" class="bar-fill" />
+                            <text x="150" y="25" class="bar-text font-bold">56</text>
+                            
+                            <text x="10" y="65" class="bar-label">Aunt</text>
+                            <rect x="50" y="50" width="120" height="30" class="bar-empty" />
+                            <text x="110" y="65" class="bar-text font-bold">?</text>
+
+                            <!-- Dashed Line -->
+                            <line x1="170" y1="50" x2="170" y2="10" class="bar-dashed" />
+                            
+                            <!-- Arrow Beda -->
+                            <line x1="175" y1="65" x2="245" y2="65" stroke="#333" stroke-width="1.5" marker-end="url(#arrowhead)" marker-start="url(#arrowtail)" />
+                            <text x="210" y="85" class="bar-text" style="font-size: 11px;">Difference 24</text>
+                        </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 ml-4 font-bold">
+                        <span>Answer: </span>
+                        <span class="input-box w-24"></span>
+                        <span> eggs.</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        7. Older Sibling's height is 145 cm. Younger Sibling is 15 cm shorter than Older Sibling. Calculate the height of Younger Sibling!
+                    </div>
+                    <div class="ml-4 mt-2">
+                        <div class="flex items-center gap-2 font-bold">
+                            <span class="w-16">Answer:</span>
+                            <span class="input-box w-24"></span>
+                            <span> cm.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        8. There are 90 fiction books in the library. There are 35 fewer comic books than fiction books. Fill in the numbers in the brackets!
+                    </div>
+                    <div class="visual-box">
+                        <svg width="400" height="120" viewBox="0 0 400 120" class="bar-model-svg">
+                            <!-- Fiksi Label (Left) -->
+                            <text x="10" y="25" class="bar-label">Fiction Books</text>
+                            <!-- Fiksi Bar -->
+                            <rect x="90" y="10" width="200" height="30" class="bar-fill" />
+                            <!-- Fiksi Value (Right) -->
+                            <text x="300" y="25" class="bar-value">(......)</text>
+                            
+                            <!-- Komik Label (Left) -->
+                            <text x="10" y="65" class="bar-label">Comic Books</text>
+                            <!-- Komik Bar -->
+                            <rect x="90" y="50" width="130" height="30" class="bar-empty" />
+                            <!-- Komik Value (Right) -->
+                            <text x="230" y="65" class="bar-value">(?)</text>
+
+                            <!-- Brace for Difference -->
+                            <path d="M 220,85 L 220,90 Q 255,100 290,90 L 290,85" fill="none" stroke="#333" stroke-width="1.5" transform="translate(0, -35)"/>
+                            <text x="255" y="80" class="bar-text" style="font-size: 11px;">Difference ......</text>
+                        </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 ml-4 font-bold">
+                        <span>Answer: </span>
+                        <span class="input-box w-24"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. A toy store has 75 robots. The store has <u>20 fewer</u> dolls than robots.
+                    </div>
+                    <div class="ml-4 mt-1 mb-2">
+                         How many dolls are there in the store?
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 ml-4 font-bold">
+                        <span>Answer: </span>
+                        <span class="input-box w-24"></span>
+                        <span> dolls.</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        10. Challenge! Dad has Rp100.000. Uncle has Rp45.000 less than Dad.
+                    </div>
+                    <div class="ml-4 mt-1">
+                        How much money does Uncle have?
+                    </div>
+                    <div class="ml-4 mt-2 grid gap-2">
+                         <div class="flex items-center gap-2">
+                            <span class="font-bold">Number Sentence:</span>
+                            <div class="border-b-2 border-dotted border-gray-400 flex-grow max-w-xs h-6"></div>
+                        </div>
+                        <div class="flex items-center gap-2 font-bold">
+                            <span>Answer: Rp</span>
+                            <span class="input-box w-32"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center italic text-xs text-gray-400 mt-8">
+                Nice work finishing the set—seriously well done.
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
