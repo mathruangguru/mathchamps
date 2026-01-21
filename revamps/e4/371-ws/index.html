@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Eksplorasi Data (E4-S371)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff; /* bg-blue-50 equivalent */
+        --path-color: #d1d5db; /* gray-300 */
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.6cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; /* Mendorong footer ke bawah */
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.6cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .concept-box,
+        .input-box,
+        .data-table {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 26px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 24px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 5px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.1cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.4rem;
+        background-color: #f3f4f6;
+        padding: 0.2rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CONCEPT BOX --- */
+      .concept-box {
+        border: 2px solid #60a5fa;
+        background-color: #eff6ff;
+        border-radius: 10px;
+        padding: 8px;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+      }
+
+      /* --- DATA TABLE STYLE --- */
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 0.9rem;
+      }
+      .data-table th, .data-table td {
+        border: 1px solid #d1d5db;
+        padding: 8px;
+        text-align: center;
+      }
+      .data-table th {
+        background-color: #f3f4f6;
+        font-weight: 700;
+        color: #1f2937;
+      }
+      .data-table td {
+        background-color: white;
+      }
+      .data-table tr:nth-child(even) td {
+        background-color: #fafafa;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (NO 1) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Tabel dan Diagram Garis
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Eksplorasi Data
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : E4-S371
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-3 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    LEMBAR KERJA: EKSPLORASI DATA
+                </h1>
+            </div>
+
+            <!-- CONCEPT SECTION -->
+            <div class="concept-box">
+                <div class="font-bold text-blue-800 mb-1">Konsep Kunci: Membaca Data</div>
+                <div class="flex gap-4 items-center">
+                    <div class="flex-1 text-sm text-gray-700">
+                        <ul class="list-disc pl-4 space-y-1">
+                            <li><b>Tabel</b> menyusun data ke dalam baris dan kolom agar mudah dibaca.</li>
+                            <li><b>Grafik Garis</b> sangat cocok untuk menunjukkan <b>perubahan</b> data seiring waktu (seperti pertumbuhan tanaman atau perubahan suhu).</li>
+                            <li>Perhatikan <b>judul kolom</b> dan <b>satuan</b> yang digunakan.</li>
+                        </ul>
+                    </div>
+                    <div class="w-32 text-center text-5xl">
+                        📊
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-2 py-1 text-sm">
+                Bagian A: Toko Roti "Lezat" (Analisis Tabel)
+            </div>
+            
+            <div class="text-sm text-gray-700 mb-2">
+                Pemilik Toko Roti "Lezat" mencatat penjualan roti cokelat selama 5 hari.
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Hari</th>
+                        <th>Jumlah Roti Terjual (buah)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="text-left pl-4">Senin</td><td>45</td></tr>
+                    <tr><td class="text-left pl-4">Selasa</td><td>30</td></tr>
+                    <tr><td class="text-left pl-4">Rabu</td><td>60</td></tr>
+                    <tr><td class="text-left pl-4">Kamis</td><td>55</td></tr>
+                    <tr><td class="text-left pl-4">Jumat</td><td>80</td></tr>
+                </tbody>
+            </table>
+
+            <div class="soal-grid mt-4">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                         <span class="font-bold">1.</span> Pada hari apakah penjualan roti paling sedikit?
+                    </div>
+                    <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. Senin</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. Selasa</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. Rabu</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. Kamis</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (NO 2-4) ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Tabel dan Diagram Garis</div>
+                    <div class="text-[10px] text-black font-medium">Eksplorasi Data</div>
+                    <div class="text-[10px] text-black font-medium">Kode : E4-S371</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+             <!-- Lanjutan Soal Bagian A -->
+             <div class="soal-grid">
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> (Lanjutan Toko Roti "Lezat") Berapa selisih penjualan roti antara hari Jumat dan hari Senin?
+                    </div>
+               
+                    <div class="choice-container ml-4 flex-col mt-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 25 buah</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 30 buah</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 35 buah</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 45 buah</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">3.</span> Jika satu roti dijual seharga Rp2.000, berapa pendapatan toko pada hari Selasa?
+                    </div>
+                     <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. Rp50.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. Rp60.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. Rp70.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. Rp80.000</label>
+                    </div>
+                </div>
+
+                 <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">4.</span> Berapa jumlah total roti yang terjual dari hari Senin sampai hari Rabu?
+                    </div>
+                    <div class="ml-4 mt-2">
+                         Jawaban: <span class="input-box" style="width: 100px"></span> buah
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (BAGIAN B: NO 5-7) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Tabel dan Diagram Garis</div>
+                    <div class="text-[10px] text-black font-medium">Eksplorasi Data</div>
+                    <div class="text-[10px] text-black font-medium">Kode : E4-S371</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+                
+                <!-- INSTRUCTION B -->
+                <div class="instruction-text mb-2 py-1 text-sm">
+                    Bagian B: Pertumbuhan Tanaman Kacang Hijau (Grafik Garis)
+                </div>
+
+                <div class="text-sm text-gray-700 mb-2">
+                    Siti mengukur tinggi tanaman kacang hijaunya setiap minggu.
+                </div>
+
+                <table class="data-table" style="max-width: 300px; margin: 0 auto 20px auto;">
+                    <thead>
+                        <tr>
+                            <th>Minggu Ke-</th>
+                            <th>Tinggi (cm)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>2</td></tr>
+                        <tr><td>2</td><td>5</td></tr>
+                        <tr><td>3</td><td>10</td></tr>
+                        <tr><td>4</td><td>18</td></tr>
+                        <tr><td>5</td><td>20</td></tr>
+                    </tbody>
+                </table>
+                
+                <div class="soal-grid">
+
+                 <!-- SOAL 5 -->
+                 <div class="soal-item">
+                     <div class="mb-1">
+                        <span class="font-bold">5.</span> Berapakah tinggi tanaman pada Minggu ke-3?
+                    </div>
+                    <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 2 cm</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 5 cm</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 10 cm</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 18 cm</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                 <!-- SOAL 6 -->
+                 <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">6.</span> Antara minggu ke berapakah terjadi pertumbuhan paling pesat (kenaikan tinggi paling besar)?
+                    </div>
+                     <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. Minggu 1 ke 2 (Naik 3 cm)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. Minggu 2 ke 3 (Naik 5 cm)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. Minggu 3 ke 4 (Naik 8 cm)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. Minggu 4 ke 5 (Naik 2 cm)</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                 <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">7.</span> Deskripsikan tren pertumbuhan tanaman tersebut dari Minggu 1 sampai Minggu 5. (Apakah menurun, tetap, atau meningkat?)
+                    </div>
+                    
+                    <div class="ml-4 mt-2">
+                        Jawaban: <span class="input-box" style="width: 200px; text-align: left; padding-left: 10px;"></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 4 (BAGIAN C: NO 8-9) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Tabel dan Diagram Garis</div>
+                    <div class="text-[10px] text-black font-medium">Eksplorasi Data</div>
+                    <div class="text-[10px] text-black font-medium">Kode : E4-S371</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- INSTRUCTION C -->
+            <div class="instruction-text mb-2 py-1 text-sm">
+                Bagian C: Pengunjung Perpustakaan Sekolah
+            </div>
+
+            <div class="soal-grid">
+
+                 <!-- SOAL 8 -->
+                 <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">8.</span> Perhatikan tabel di bawah ini. Pada bulan apa jumlah pengunjung siswa Laki-laki dan Perempuan sama banyak?
+                    </div>
+                    
+                    <table class="data-table" style="font-size: 0.8rem;">
+                        <thead>
+                            <tr>
+                                <th>Bulan</th>
+                                <th>Laki-laki</th>
+                                <th>Perempuan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Januari</td><td>120</td><td>150</td></tr>
+                            <tr><td>Februari</td><td>100</td><td>130</td></tr>
+                            <tr><td>Maret</td><td>140</td><td>140</td></tr>
+                            <tr><td>April</td><td>110</td><td>160</td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. Januari</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. Februari</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. Maret</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. April</label>
+                    </div>
+                </div>
+            
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="mb-1 text-sm">
+                        <span class="font-bold">9.</span> Menggunakan data tabel perpustakaan sebelumnya, berapa total pengunjung (Laki-laki + Perempuan) pada bulan <b>Februari</b>?
+                    </div>
+                    <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 220 siswa</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 230 siswa</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 240 siswa</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 250 siswa</label>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 5 (NO 10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Tabel dan Diagram Garis</div>
+                    <div class="text-[10px] text-black font-medium">Eksplorasi Data</div>
+                    <div class="text-[10px] text-black font-medium">Kode : E4-S371</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <div class="instruction-text mb-2 py-1 text-sm">
+                Lanjutan Bagian C: Pengunjung Perpustakaan Sekolah
+            </div>
+
+            <div class="soal-grid">
+                <!-- SOAL 10 (Tantangan) -->
+                <div class="soal-item">
+                    <div class="mb-1 text-sm">
+                        <span class="font-bold">10. Tantangan:</span> Target pengunjung pada bulan Mei adalah <b>300 siswa</b>. Jika diperkirakan siswa perempuan yang datang adalah <b>170 orang</b>, berapa minimal siswa laki-laki yang harus berkunjung agar target tercapai?
+                    </div>
+                    
+                    <div class="concept-box mt-2">
+                        <div class="text-sm font-semibold">Ruang Berpikir:</div>
+                        <div class="h-24 border-b border-dashed border-gray-400 mt-2"></div>
+                        <div class="h-24 border-b border-dashed border-gray-400"></div>
+                    </div>
+
+                    <div class="ml-4 flex items-center gap-2 mt-4">
+                        Jawaban: <span class="input-box" style="width: 80px"></span> siswa laki-laki
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
