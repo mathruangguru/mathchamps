@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Fractions (D4-S259)</title>
+    
+    <!-- Tailwind untuk layout responsif dan utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MathJax untuk render persamaan matematika yang cantik -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA & VARIABEL --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --bg-page: #525659;
+        --shaded-color: #cbd5e1; /* slate-300 for shading */
+        --shaded-blue: #93c5fd; /* blue-300 for water */
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 9pt; /* Sedikit dikecilkan dari 10pt agar lebih muat */
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: var(--bg-page);
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      /* Container Halaman Kertas */
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        counter-reset: page;
+      }
+
+      /* SETTING KERTAS LETTER (Compact) */
+      .page {
+        background: white;
+        width: 8.5in;  
+        height: 11in;  
+        padding: 0.4in 0.5in; /* Margin halaman diperkecil */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* Header Style */
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px; /* Jarak header diperkecil */
+        border-bottom: 2px solid black;
+        padding-bottom: 4px;
+      }
+
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem; /* Gap antar elemen dikurangi */
+      }
+
+      /* Footer Style */
+      .page-footer {
+        text-align: left;
+        font-size: 8pt;
+        color: var(--grey-text);
+        padding-top: 5px;
+        margin-top: auto;
+        border-top: 1px solid #ccc;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Identitas Siswa */
+      .identity-table td {
+        padding: 4px 0;
+        font-size: 10pt;
+        font-weight: 600;
+      }
+      .dotted-line {
+        border-bottom: 1.5px dotted #999;
+        display: inline-block;
+        width: 100%;
+        height: 1em;
+      }
+
+      /* Layout Grid Soal */
+      .soal-item {
+        height: 100%; 
+        break-inside: avoid;
+        padding: 0.5rem; /* Padding dalam soal diperkecil */
+      }
+
+      /* Pilihan Ganda / Checkbox */
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        margin-bottom: 4px;
+      }
+      
+      .choice-box {
+        width: 20px; /* Ukuran box opsi diperkecil */
+        height: 20px; 
+        border: 1.5px solid #333;
+        border-radius: 50%; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        flex-shrink: 0;
+        background: white;
+        font-size: 10px;
+        font-weight: bold;
+      }
+      
+      /* Input Fields */
+      .input-line {
+        border: none;
+        border-bottom: 1.5px solid #333;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        background: transparent;
+        outline: none;
+        font-family: 'Montserrat', sans-serif;
+      }
+      
+      .ans-box {
+        border: 1.5px solid #333;
+        width: 50px; /* Lebar box jawaban diperkecil */
+        height: 30px; /* Tinggi box jawaban diperkecil */
+        display: inline-block;
+        vertical-align: middle;
+        background: white;
+      }
+
+      /* Grid Wrapper for layout */
+      .question-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem; /* Gap grid diperkecil */
+        align-items: stretch;
+      }
+
+      /* --- SVG HELPER --- */
+      svg { display: block; margin: 0 auto; }
+      
+      /* --- MEDIA QUERY PRINT --- */
+      @media print {
+        @page {
+          size: letter;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+          padding-bottom: 0;
+        }
+        .page {
+          width: 100%;
+          height: 11in;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          border: none;
+          padding: 0.4in 0.5in;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .math-champs-header, 
+        .bg-gray-50, .bg-yellow-50, .bg-blue-50, .bg-red-50, .bg-purple-50, .bg-green-50, .bg-yellow-400 {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        /* Ensure backgrounds print */
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-red-50 { background-color: #fef2f2 !important; }
+        .bg-purple-50 { background-color: #faf5ff !important; }
+        .bg-green-50 { background-color: #f0fdf4 !important; }
+        
+        .question-grid {
+              display: grid !important;
+              grid-template-columns: repeat(2, 1fr) !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-8 md:h-10 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-xs font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[9px] text-black font-semibold mt-0.5">Fractions</div>
+                    <div class="text-[8px] text-black font-medium mt-0.5" style="max-width: 250px; line-height: 1.1; margin-left: auto;">
+                        Finding fractions to make one whole
+                    </div>
+                    <div class="text-[8px] text-black font-medium mt-0.5">Code : D4-S259</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- INSTRUCTION PART A -->
+            <div class="bg-yellow-50 border border-yellow-200 p-2 rounded mb-1 text-xs">
+                <b>Part A</b><br>
+                Look at the shaded parts. What fraction needs to be added to the shaded part to make <b>1 whole</b>? Write your answer in the box.
+            </div>
+            
+            <!-- Grid Container for Q1-Q2 (2 Columns) -->
+            <div class="question-grid">
+                <!-- Question 1 -->
+                <div class="soal-item bg-gray-50 rounded border border-gray-200">
+                    <div class="font-bold mb-1 text-xs">1.</div>
+                    <div class="grid grid-cols-2 gap-1 items-center">
+                        <!-- Visual: Reduced Size -->
+                        <div>
+                            <svg width="100" height="25" viewBox="0 0 120 30">
+                                <rect x="0" y="0" width="90" height="30" fill="#cbd5e1" />
+                                <rect x="0" y="0" width="120" height="30" fill="none" stroke="black" stroke-width="2"/>
+                                <line x1="30" y1="0" x2="30" y2="30" stroke="black" stroke-width="1"/>
+                                <line x1="60" y1="0" x2="60" y2="30" stroke="black" stroke-width="1"/>
+                                <line x1="90" y1="0" x2="90" y2="30" stroke="black" stroke-width="1"/>
+                            </svg>
+                        </div>
+                        <!-- Question Text -->
+                        <div class="text-[10px] leading-tight">
+                            <span class="font-semibold block mb-1">Shaded: \(\frac{3}{4}\)</span>
+                            <span class="font-semibold block mb-1">Missing:</span>
+                            <div class="ans-box mt-0.5"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="soal-item bg-gray-50 rounded border border-gray-200">
+                    <div class="font-bold mb-1 text-xs">2.</div>
+                    <div class="grid grid-cols-2 gap-1 items-center">
+                        <!-- Visual: Reduced Size -->
+                        <div>
+                            <svg width="100" height="25" viewBox="0 0 125 30">
+                                <rect x="0" y="0" width="50" height="30" fill="#cbd5e1" />
+                                <rect x="0" y="0" width="125" height="30" fill="none" stroke="black" stroke-width="2"/>
+                                <line x1="25" y1="0" x2="25" y2="30" stroke="black" stroke-width="1"/>
+                                <line x1="50" y1="0" x2="50" y2="30" stroke="black" stroke-width="1"/>
+                                <line x1="75" y1="0" x2="75" y2="30" stroke="black" stroke-width="1"/>
+                                <line x1="100" y1="0" x2="100" y2="30" stroke="black" stroke-width="1"/>
+                            </svg>
+                        </div>
+                        <!-- Question Text -->
+                        <div class="text-[10px] leading-tight">
+                            <span class="font-semibold block mb-1">Shaded: \(\frac{2}{5}\)</span>
+                            <span class="font-semibold block mb-1">Missing:</span>
+                            <div class="ans-box mt-0.5"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 3 (Full Width - 1 Column) -->
+            <div class="soal-item bg-gray-50 rounded border border-gray-200">
+                <div class="font-bold mb-1 text-xs">3.</div>
+                <div class="flex gap-4 items-center">
+                    <!-- Visual: Reduced Size -->
+                    <div>
+                        <svg width="140" height="30" viewBox="0 0 160 40">
+                            <rect x="0" y="0" width="100" height="40" fill="#cbd5e1" />
+                            <rect x="0" y="0" width="160" height="40" fill="none" stroke="black" stroke-width="2"/>
+                            <line x1="20" y1="0" x2="20" y2="40" stroke="black" stroke-width="1"/>
+                            <line x1="40" y1="0" x2="40" y2="40" stroke="black" stroke-width="1"/>
+                            <line x1="60" y1="0" x2="60" y2="40" stroke="black" stroke-width="1"/>
+                            <line x1="80" y1="0" x2="80" y2="40" stroke="black" stroke-width="1"/>
+                            <line x1="100" y1="0" x2="100" y2="40" stroke="black" stroke-width="1"/>
+                            <line x1="120" y1="0" x2="120" y2="40" stroke="black" stroke-width="1"/>
+                            <line x1="140" y1="0" x2="140" y2="40" stroke="black" stroke-width="1"/>
+                        </svg>
+                    </div>
+                    <!-- Question Text -->
+                    <div class="text-[10px]">
+                        <span class="font-semibold block mb-1">Shaded: \(\frac{5}{8}\)</span>
+                        <span class="font-semibold block mb-1">Fraction to make 1 whole:</span>
+                        <div class="ans-box mt-0.5"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION PART B -->
+            <div class="bg-blue-50 border border-blue-200 p-2 rounded mt-2 mb-1 text-xs">
+                <b>Part B</b><br>
+                Determine the fraction needed to complete the circle to make <b>1 whole</b>.
+            </div>
+
+            <!-- Grid Container for Q4-Q5 -->
+            <div class="question-grid">
+                <!-- Question 4 -->
+                <div class="soal-item bg-white border border-gray-200 rounded">
+                    <div class="flex gap-2">
+                        <div class="w-1/3 flex justify-center items-start">
+                            <div class="font-bold mr-1 text-xs">4.</div>
+                            <svg width="50" height="50" viewBox="0 0 100 100">
+                                <path d="M50,50 L50,5 A45,45 0 0,1 88.97,72.5 Z" fill="#cbd5e1" />
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="black" stroke-width="2" />
+                                <line x1="50" y1="50" x2="50" y2="5" stroke="black" stroke-width="2"/>
+                                <line x1="50" y1="50" x2="88.97" y2="72.5" stroke="black" stroke-width="2"/>
+                                <line x1="50" y1="50" x2="11.03" y2="72.5" stroke="black" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="w-2/3">
+                            <div class="mb-1 text-[10px] font-semibold leading-tight">
+                                Shaded: \(\frac{1}{3}\). Missing?
+                            </div>
+                            <div class="flex flex-col gap-0.5 mt-1 text-[10px]">
+                                <label class="choice-item"><div class="choice-box">A</div> \(\frac{1}{3}\)</label>
+                                <label class="choice-item"><div class="choice-box">B</div> \(\frac{2}{3}\)</label>
+                                <label class="choice-item"><div class="choice-box">C</div> \(\frac{3}{3}\)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question 5 -->
+                <div class="soal-item bg-white border border-gray-200 rounded">
+                    <div class="flex gap-2">
+                        <div class="w-1/3 flex justify-center items-start">
+                            <div class="font-bold mr-1 text-xs">5.</div>
+                            <svg width="50" height="50" viewBox="0 0 100 100">
+                                 <circle cx="50" cy="50" r="45" fill="#cbd5e1" />
+                                 <path d="M50,50 L50,5 A45,45 0 0,1 88.97,27.5 Z" fill="white" />
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="black" stroke-width="2" />
+                                <line x1="50" y1="5" x2="50" y2="95" stroke="black" stroke-width="1"/>
+                                <line x1="11.03" y1="27.5" x2="88.97" y2="72.5" stroke="black" stroke-width="1"/>
+                                <line x1="11.03" y1="72.5" x2="88.97" y2="27.5" stroke="black" stroke-width="1"/>
+                            </svg>
+                        </div>
+                        <div class="w-2/3">
+                            <div class="mb-1 text-[10px] font-semibold leading-tight">
+                                Shaded: \(\frac{5}{6}\). Missing?
+                            </div>
+                            <div class="flex flex-col gap-0.5 mt-1 text-[10px]">
+                                <label class="choice-item"><div class="choice-box">A</div> \(\frac{1}{6}\)</label>
+                                <label class="choice-item"><div class="choice-box">B</div> \(\frac{5}{6}\)</label>
+                                <label class="choice-item"><div class="choice-box">C</div> \(\frac{4}{6}\)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 6: MOVED TO PAGE 1 -->
+            <div class="soal-item bg-white border border-gray-300 rounded mt-1">
+                <div class="flex gap-4">
+                    <div class="w-1/4 flex justify-center items-center">
+                        <div class="font-bold mr-2 text-xs">6.</div>
+                        <svg width="60" height="60" viewBox="0 0 100 100">
+                            <path d="M50,50 L50,5 A45,45 0 0,1 50,95 Z" fill="#cbd5e1" />
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="black" stroke-width="2" />
+                            <line x1="50" y1="5" x2="50" y2="95" stroke="black" stroke-width="1"/>
+                            <line x1="5" y1="50" x2="95" y2="50" stroke="black" stroke-width="1"/>
+                        </svg>
+                    </div>
+                    <div class="w-3/4">
+                        <div class="mb-1 text-xs">
+                            What fraction is shown by the unshaded part?
+                        </div>
+                        <div class="flex gap-4 mt-1 text-xs">
+                            <label class="choice-item"><div class="choice-box">A</div> \(\frac{1}{4}\)</label>
+                            <label class="choice-item"><div class="choice-box">B</div> \(\frac{3}{4}\)</label>
+                            <label class="choice-item"><div class="choice-box">C</div> \(\frac{2}{4}\)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spacer -->
+            <div class="mt-auto"></div>
+        </div>
+
+        <footer class="page-footer">
+            <div class="flex justify-between items-center w-full">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <span>Page 1 of 2</span>
+            </div>
+            <i class="text-[7pt] mt-0.5">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="flex justify-between items-end">
+                <span class="font-bold text-gray-500 text-xs">Fractions Continued</span>
+                <span class="text-[10px] font-bold">Code: D4-S259</span>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- INSTRUCTION PART C -->
+            <div class="bg-red-50 border border-red-200 p-2 rounded mb-1 text-xs">
+                <b>Part C</b><br>
+                Use number bonds or read the story to find the answer.
+            </div>
+
+            <!-- Grid for Q7 and Q8 (Side by Side) -->
+            <div class="question-grid">
+                <!-- Question 7: Equation -->
+                <div class="soal-item bg-gray-50 rounded border border-gray-200">
+                    <div class="font-bold mb-1 text-xs">7.</div>
+                    <div class="text-center">
+                        <p class="mb-2 text-[10px]">
+                            Find the missing fraction.
+                        </p>
+                        <div class="text-xl my-2">
+                            \(\frac{7}{10} + \boxed{\phantom{\frac{1}{1}}} = 1\)
+                        </div>
+                        <div class="text-center mt-2 text-[10px]">
+                            <b>Ans:</b> <input type="text" class="input-line w-16 text-sm text-center">
+                        </div>
+                    </div>
+                </div>
+                  
+                <!-- Question 8: MCQ Abstract -->
+                 <div class="soal-item bg-gray-50 rounded border border-gray-200">
+                    <div class="font-bold mb-1 text-xs">8.</div>
+                    <div class="mb-2 text-[10px]">
+                        Which fraction, when added to \(\frac{4}{9}\), makes 1 whole?
+                    </div>
+                    <div class="flex flex-col gap-2 mt-1 text-[10px]">
+                        <label class="choice-item justify-start bg-white p-1 rounded border border-gray-300"><div class="choice-box">A</div> \(\frac{3}{9}\)</label>
+                        <label class="choice-item justify-start bg-white p-1 rounded border border-gray-300"><div class="choice-box">B</div> \(\frac{5}{9}\)</label>
+                        <label class="choice-item justify-start bg-white p-1 rounded border border-gray-300"><div class="choice-box">C</div> \(\frac{9}{9}\)</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 9: Word Problem -->
+            <div class="soal-item bg-purple-50 rounded border border-purple-200 shadow-sm mt-1">
+                <div class="font-bold mb-1 text-purple-900 text-xs">9. Word Problem</div>
+                
+                <div class="flex gap-2 items-start">
+                    <div class="w-3/4">
+                        <div class="text-xs leading-relaxed">
+                            I have a chocolate bar that is divided into 7 pieces. I ate \(\frac{2}{7}\) of the chocolate.
+                            <br><b>What fraction of the chocolate is left?</b>
+                        </div>
+                    </div>
+                    <!-- Visual Aid -->
+                    <div class="w-1/4">
+                        <svg width="100%" height="25" viewBox="0 0 140 20">
+                            <rect x="0" y="0" width="140" height="20" fill="white" stroke="black" stroke-width="2"/>
+                            <rect x="0" y="0" width="40" height="20" fill="#cbd5e1" /> 
+                            <line x1="20" y1="0" x2="20" y2="20" stroke="black"/>
+                            <line x1="40" y1="0" x2="40" y2="20" stroke="black"/>
+                            <line x1="60" y1="0" x2="60" y2="20" stroke="black"/>
+                            <line x1="80" y1="0" x2="80" y2="20" stroke="black"/>
+                            <line x1="100" y1="0" x2="100" y2="20" stroke="black"/>
+                            <line x1="120" y1="0" x2="120" y2="20" stroke="black"/>
+                        </svg>
+                        <div class="text-[8px] text-center mt-1 text-gray-500">Visualization</div>
+                    </div>
+                </div>
+
+                <div class="mt-2 text-xs">
+                    <b>Answer:</b> <input type="text" class="input-line w-20 text-sm text-center">
+                </div>
+            </div>
+
+            <!-- Question 10: Challenge -->
+            <div class="soal-item bg-yellow-50 rounded border border-yellow-300 shadow-sm mt-2 relative overflow-hidden">
+                <div class="absolute -right-5 -top-3 bg-yellow-400 text-white font-bold px-8 py-1 rotate-12 text-[10px] shadow-md">CHALLENGE</div>
+                
+                <div class="font-bold mb-2 text-yellow-900 text-xs">10. Challenge Question!</div>
+
+                <div class="flex gap-4 items-center">
+                    <div class="w-2/3 text-xs">
+                        If \(\frac{3}{5}\) of a tank is filled with water, what fraction of the tank is <b>empty</b>?
+                    </div>
+
+                    <!-- Visual Tank -->
+                    <div class="w-1/3 flex justify-center">
+                        <svg width="60" height="80" viewBox="0 0 80 120">
+                            <rect x="10" y="10" width="60" height="100" fill="white" stroke="black" stroke-width="2.5"/>
+                            <rect x="10" y="50" width="60" height="60" fill="#93c5fd" opacity="0.8"/>
+                            <line x1="10" y1="30" x2="70" y2="30" stroke="black" stroke-dasharray="4" opacity="0.5"/>
+                            <line x1="10" y1="50" x2="70" y2="50" stroke="black" stroke-dasharray="4" opacity="0.5"/>
+                            <line x1="10" y1="70" x2="70" y2="70" stroke="black" stroke-dasharray="4" opacity="0.5"/>
+                            <line x1="10" y1="90" x2="70" y2="90" stroke="black" stroke-dasharray="4" opacity="0.5"/>
+                            <text x="40" y="85" font-size="10" text-anchor="middle" fill="#1e3a8a">Water</text>
+                            <text x="75" y="40" font-size="14" font-weight="bold" fill="red">?</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="mt-2 text-xs">
+                    <b>Answer:</b> <input type="text" class="input-line w-20 text-sm text-center">
+                </div>
+            </div>
+
+            <div class="mt-4 text-center bg-green-50 p-2 rounded-lg border border-green-200">
+                <p class="font-bold text-green-800 text-sm">Nice work finishing the set—seriously well done.</p>
+            </div>
+            
+            <div class="mt-auto"></div>
+        </div>
+
+        <footer class="page-footer">
+            <div class="flex justify-between items-center w-full">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <span>Page 2 of 2</span>
+            </div>
+            <i class="text-[7pt] mt-0.5">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
