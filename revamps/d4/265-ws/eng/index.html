@@ -1,0 +1,570 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Composing and Decomposing 2D Shapes (D4-S265)</title>
+    
+    <!-- Tailwind for utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- MAIN CSS --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --pastel-blue: #ADD8E6;
+        --pastel-red: #FFB6C1;
+        --pastel-green: #98FB98;
+        --pastel-yellow: #FFFDD0;
+        --pastel-orange: #FFCC99;
+        --soft-purple: #D8BFD8;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.35; 
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* UPDATE: Letter Size */
+      .page {
+        background: white;
+        width: 21.59cm; /* Letter Width */
+        min-height: 27.94cm; /* Letter Height */
+        padding: 1cm 1.2cm 0.6cm 1.2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px; 
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- PRINT STYLES --- */
+      @media print {
+        @page {
+          size: letter; /* UPDATE: Set to Letter */
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 27.94cm; /* Letter Height */
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1cm 1.2cm 0.6cm 1.2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .instruction-text,
+        .encouragement-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- HEADER COMPONENT --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- QUESTION LAYOUT --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+        position: relative;
+        z-index: 2; 
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-line {
+        display: inline-block;
+        border-bottom: 1.5px solid #333;
+        min-width: 100px;
+        text-align: center;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem; 
+        margin-top: 6px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-left: 1rem;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.3cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.6rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+        position: relative;
+        z-index: 2;
+      }
+
+      /* Encouragement Box */
+      .encouragement-box {
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        padding: 0.8rem;
+        background-color: #fef3c7; 
+        border-left: 4px solid #d97706; 
+        border-radius: 0.5rem;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+      }
+      .encouragement-text {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #92400e; 
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= PAGE 1 (Q 1-3) ================= -->
+      <section class="page">
+        <!-- HEADER PAGE 1 -->
+        <header class="page-header relative z-10">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">2D Shapes</div>
+                    <div class="text-[11px] text-black font-medium" style="max-width: 250px; line-height: 1.2;">Composing and decomposing 2D shapes</div>
+                    <div class="text-[11px] text-black font-medium mt-1">Code : D4-S265</div>
+                </div>
+            </div>
+            <!-- UPDATE: Thicker underline (h-1) for first header -->
+            <div class="w-full h-1 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- SECTION A Intro -->
+            <div class="instruction-text mt-2">
+                Section A: Multiple Choice<br>
+                <span class="font-normal italic">Choose the correct answer based on the picture.</span>
+            </div>
+            
+            <div class="soal-grid">
+                <!-- QUESTION 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">1. If these two squares are placed side by side, what new shape is formed?</div>
+                    <div class="flex justify-center items-center my-3 gap-4">
+                        <div class="relative">
+                            <svg width="60" height="60">
+                                <rect x="0" y="0" width="60" height="60" fill="#ADD8E6" stroke="#333" stroke-width="2"/>
+                                <text x="30" y="35" text-anchor="middle" font-weight="bold">1</text>
+                            </svg>
+                        </div>
+                        <span class="text-2xl font-bold">+</span>
+                        <div class="relative">
+                            <svg width="60" height="60">
+                                <rect x="0" y="0" width="60" height="60" fill="#ADD8E6" stroke="#333" stroke-width="2"/>
+                                <text x="30" y="35" text-anchor="middle" font-weight="bold">2</text>
+                            </svg>
+                        </div>
+                        <svg width="40" height="20" viewBox="0 0 40 20" class="mx-2">
+                             <line x1="0" y1="10" x2="35" y2="10" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                             <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                                </marker>
+                             </defs>
+                        </svg>
+                        <div class="relative">
+                             <svg width="120" height="60">
+                                <rect x="0" y="0" width="120" height="60" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="5,5"/>
+                                <text x="60" y="35" text-anchor="middle" font-size="20" font-weight="bold">?</text>
+                             </svg>
+                        </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. Rectangle</label>
+                        <label class="flex items-center cursor-pointer">b. Triangle</label>
+                        <label class="flex items-center cursor-pointer">c. Circle</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- QUESTION 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">2. A square paper is cut into 4 parts as shown below. Each small part is shaped like a...</div>
+                    <div class="flex justify-center items-center my-3 gap-6">
+                         <svg width="80" height="80">
+                             <rect x="0" y="0" width="80" height="80" fill="#FFB6C1" stroke="#333" stroke-width="2"/>
+                             <line x1="40" y1="0" x2="40" y2="80" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                             <line x1="0" y1="40" x2="80" y2="40" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                         </svg>
+                         <svg width="30" height="20" viewBox="0 0 30 20">
+                             <line x1="0" y1="10" x2="25" y2="10" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                         </svg>
+                         <div class="grid grid-cols-2 gap-2">
+                             <svg width="30" height="30"><rect x="0" y="0" width="30" height="30" fill="#FFB6C1" stroke="#333" stroke-width="1.5"/></svg>
+                             <svg width="30" height="30"><rect x="0" y="0" width="30" height="30" fill="#FFB6C1" stroke="#333" stroke-width="1.5"/></svg>
+                             <svg width="30" height="30"><rect x="0" y="0" width="30" height="30" fill="#FFB6C1" stroke="#333" stroke-width="1.5"/></svg>
+                             <svg width="30" height="30"><rect x="0" y="0" width="30" height="30" fill="#FFB6C1" stroke="#333" stroke-width="1.5"/></svg>
+                         </div>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. 4 Small Squares</label>
+                        <label class="flex items-center cursor-pointer">b. 4 Triangles</label>
+                        <label class="flex items-center cursor-pointer">c. 2 Rectangles</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- QUESTION 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">3. This honeycomb is hexagon-shaped. It is made up of 6 identical small 2D shapes. What shape is that?</div>
+                    <div class="flex justify-center items-center my-3">
+                         <svg width="100" height="100" viewBox="0 0 100 100">
+                             <polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" fill="#FFFDD0" stroke="#333" stroke-width="2"/>
+                             <line x1="25" y1="6.7" x2="75" y2="93.3" stroke="#333" stroke-width="1"/>
+                             <line x1="75" y1="6.7" x2="25" y2="93.3" stroke="#333" stroke-width="1"/>
+                             <line x1="100" y1="50" x2="0" y2="50" stroke="#333" stroke-width="1"/>
+                         </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. Triangle</label>
+                        <label class="flex items-center cursor-pointer">b. Square</label>
+                        <label class="flex items-center cursor-pointer">c. Kite</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="page-footer relative z-10">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i class="ml-auto">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 2 (Q 4-6) ================= -->
+      <section class="page">
+        <!-- HEADER PAGE 2 -->
+        <header class="page-header relative z-10">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">2D Shapes</div>
+                    <div class="text-[11px] text-black font-medium" style="max-width: 250px; line-height: 1.2;">Composing and decomposing 2D shapes</div>
+                    <div class="text-[11px] text-black font-medium mt-1">Code : D4-S265</div>
+                </div>
+            </div>
+            <!-- Regular line for subsequent pages -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                <!-- QUESTION 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">4. A circle is cut exactly in half. The result is 2...</div>
+                    <div class="flex justify-center items-center my-3">
+                         <svg width="100" height="100">
+                             <circle cx="50" cy="50" r="40" fill="#98FB98" stroke="#333" stroke-width="2"/>
+                             <line x1="10" y1="50" x2="90" y2="50" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                             <text x="50" y="30" text-anchor="middle" font-weight="bold">1</text>
+                             <text x="50" y="70" text-anchor="middle" font-weight="bold">2</text>
+                         </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. Semicircles</label>
+                        <label class="flex items-center cursor-pointer">b. Quarter circles</label>
+                        <label class="flex items-center cursor-pointer">c. Full circles</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- QUESTION 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">5. Look at this "Fish" picture. Its tail is shaped like a...</div>
+                    <div class="flex justify-center items-center my-3">
+                         <svg width="180" height="80" viewBox="0 0 180 80">
+                             <polygon points="10,40 50,70 90,40 50,10" fill="#FFCC99" stroke="#333" stroke-width="2"/>
+                             <polygon points="90,40 120,60 120,20" fill="#FFB6C1" stroke="#333" stroke-width="2"/>
+                             <circle cx="40" cy="35" r="3" fill="black"/>
+                             <text x="130" y="15" font-size="12">Tail</text>
+                             <line x1="130" y1="18" x2="110" y2="30" stroke="#333" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+                         </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer">a. Square</label>
+                        <label class="flex items-center cursor-pointer">b. Triangle</label>
+                        <label class="flex items-center cursor-pointer">c. Circle</label>
+                    </div>
+                </div>
+                
+                <div class="h-separator"></div>
+
+                <!-- SECTION B Intro -->
+                <div class="instruction-text mt-2">
+                    Section B: Fill in the Blanks & Drawing<br>
+                    <span class="font-normal italic">Answer or draw according to the instructions.</span>
+                </div>
+
+                <!-- QUESTION 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">6. Cutting Challenge.</div>
+                    <div class="mb-1">Draw one straight line inside this box to divide it into <b>1 Rectangle and 1 Right-angled Triangle</b>.</div>
+                    <div class="flex justify-center items-center my-3">
+                         <svg width="150" height="80" viewBox="0 0 150 80">
+                             <polygon points="10,70 140,70 90,10 10,10" fill="white" stroke="#333" stroke-width="2"/>
+                             <text x="75" y="45" text-anchor="middle" fill="#888" font-size="10">(Draw line here)</text>
+                         </svg>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer relative z-10">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i class="ml-auto">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 3 (Q 7-10) ================= -->
+      <section class="page">
+        <!-- HEADER PAGE 3 -->
+        <header class="page-header relative z-10">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">2D Shapes</div>
+                    <div class="text-[11px] text-black font-medium" style="max-width: 250px; line-height: 1.2;">Composing and decomposing 2D shapes</div>
+                    <div class="text-[11px] text-black font-medium mt-1">Code : D4-S265</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid">
+
+                <!-- QUESTION 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">7. Shape Math.</div>
+                    <div class="flex justify-center items-center my-3 gap-2">
+                         <svg width="30" height="30"><path d="M 0,30 L 30,30 A 30,30 0 0,0 0,0 Z" fill="#D8BFD8" stroke="#333" stroke-width="2"/></svg>
+                         <span class="font-bold">+</span>
+                         <svg width="30" height="30"><path d="M 0,30 L 0,0 A 30,30 0 0,1 30,30 Z" fill="#D8BFD8" stroke="#333" stroke-width="2"/></svg>
+                         <span class="font-bold">+</span>
+                         <svg width="30" height="30"><path d="M 0,0 L 30,0 A 30,30 0 0,1 0,30 Z" fill="#D8BFD8" stroke="#333" stroke-width="2"/></svg>
+                         <span class="font-bold">+</span>
+                         <svg width="30" height="30"><path d="M 30,0 L 30,30 A 30,30 0 0,1 0,0 Z" fill="#D8BFD8" stroke="#333" stroke-width="2"/></svg>
+                         <span class="font-bold text-xl">=</span>
+                         <div class="relative flex items-center justify-center">
+                             <svg width="50" height="50">
+                                 <circle cx="25" cy="25" r="23" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                                 <text x="25" y="30" text-anchor="middle" font-weight="bold">?</text>
+                             </svg>
+                         </div>
+                    </div>
+                    <div class="mb-2">If 4 quarter circles are put together, they will form a <span class="input-line" style="width: 200px;"></span>.</div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- QUESTION 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">8. Counting Tiles.</div>
+                    <div class="mb-1">How many small squares are needed to cover this large square?</div>
+                    <div class="flex justify-center items-center my-3">
+                         <svg width="80" height="80">
+                             <rect x="0" y="0" width="80" height="80" fill="white" stroke="#333" stroke-width="2"/>
+                             <line x1="40" y1="0" x2="40" y2="80" stroke="#333" stroke-width="2"/>
+                             <line x1="0" y1="40" x2="80" y2="40" stroke="#333" stroke-width="2"/>
+                         </svg>
+                    </div>
+                    <div class="mb-2">Answer: It takes <span class="input-line" style="width: 50px;"></span> small squares.</div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- QUESTION 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">9. Logic Puzzle.</div>
+                    <div class="bg-yellow-50 p-2 rounded border border-yellow-200 text-center italic mb-2 text-sm">"I am a Square. If you cut me from the top left corner to the bottom right corner, I will turn into 2 Triangles."</div>
+                    <div class="mb-2 text-center">True or False? <span class="input-line" style="width: 150px;"></span></div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- QUESTION 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">10. Observing Surroundings.</div>
+                    <div class="mb-1">Look around you (classroom or home). Name two real objects that are shaped like a <b>Rectangle</b> (example: door, book, table)!</div>
+                    <div class="flex justify-center mt-2">
+                        <div class="w-full h-28 border-2 border-dashed border-gray-400 rounded-lg flex flex-col justify-center items-center bg-gray-50 gap-4 p-4">
+                            <div class="flex items-center gap-2 w-full max-w-xs">
+                                <span class="font-bold">1.</span>
+                                <span class="input-line flex-grow"></span>
+                            </div>
+                            <div class="flex items-center gap-2 w-full max-w-xs">
+                                <span class="font-bold">2.</span>
+                                <span class="input-line flex-grow"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ENCOURAGEMENT MESSAGE -->
+                <div class="encouragement-box">
+                    <p class="encouragement-text" id="random-quote">Nice work finishing the set—seriously well done.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer relative z-10">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i class="ml-auto">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+
+    <!-- SCRIPT UNTUK KALIMAT RANDOM -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const quotes = [
+                "Nice work finishing the set—seriously well done.",
+                "Great effort today. Quick check-through and you’re good.",
+                "Strong finish! Take a moment to review your answers.",
+                "Awesome job. If anything feels off, trust your gut and recheck it.",
+                "You’re getting sharper with every problem.",
+                "Well done—your focus really showed.",
+                "Before you close it, do one last scan for silly mistakes.",
+                "That was solid. Clean work and clear thinking.",
+                "Mistakes are part of the process—what matters is you keep going.",
+                "Great job. Try checking the trickiest question one more time.",
+                "Proud of your effort. Consistency wins.",
+                "Strong work—your math muscles are growing.",
+                "Nice! Now make sure every question has an answer.",
+                "Great progress today—keep that momentum.",
+                "You worked hard. Take a breath, then double-check.",
+                "Excellent! Try verifying one problem using a different method.",
+                "You did it—finish with a confident final check.",
+                "Little by little, a little becomes a lot.",
+                "Practice makes progress.",
+                "Steady hands win the race.",
+                "Small steps beat no steps.",
+                "Check your work, trust your growth.",
+                "A calm mind catches quiet mistakes.",
+                "Consistency is a superpower.",
+                "Progress, not perfection.",
+                "One more look saves one big oops.",
+                "Patience pays in points.",
+                "Accuracy beats speed—every time.",
+                "Strong roots, strong results.",
+                "Today’s effort is tomorrow’s confidence.",
+                "The best learners review."
+            ];
+
+            const quoteElement = document.getElementById('random-quote');
+            if (quoteElement) {
+                const randomIndex = Math.floor(Math.random() * quotes.length);
+                quoteElement.textContent = quotes[randomIndex];
+            }
+        });
+    </script>
+  </body>
+</html>
