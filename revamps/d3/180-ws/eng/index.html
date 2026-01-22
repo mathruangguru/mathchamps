@@ -1,55 +1,645 @@
-<!DOCTYPE html><html lang="en">  <head>    <meta charset="UTF-8" />    <meta name="viewport" content="width=device-width, initial-scale=1.0" />    <title>Worksheet - Two-Step Addition (Total of Two People)</title>        <script src="https://cdn.tailwindcss.com"></script>        <link rel="preconnect" href="https://fonts.googleapis.com" />    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />    <link      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"      rel="stylesheet"    />
-    <style>      /* --- CSS UTAMA --- */      :root {        --primary-text: #333333;        --secondary-text: #555555;        --grey-text: #8d8e8d;      }
-      *, *::before, *::after {        box-sizing: border-box;      }
-      body {        font-family: "Montserrat", sans-serif;        font-size: 10pt;        line-height: 1.4;        color: var(--primary-text);        background-color: #525659;        margin: 0;        padding: 20px 0;      }
-      .page-container {        display: flex;        flex-direction: column;        align-items: center;        gap: 1cm; /* Jarak antar halaman di layar */      }
-      .page {        background: white;        width: 21cm; /* A4 Width */        min-height: 29.7cm; /* A4 Height */        padding: 1cm 2cm;        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);        position: relative;        display: flex;        flex-direction: column;      }
-      .page-header {        width: 100%;        margin-bottom: 1rem;      }
-      .content-wrapper {        position: relative;        z-index: 1;        width: 100%;        flex-grow: 1;      }
-      /* --- FOOTER --- */      .page-footer {        text-align: left;        font-size: 6pt;        color: var(--grey-text);        padding-top: 4px;        margin-top: auto; /* Ini kunci agar footer di bawah */        border-top: 2px solid var(--grey-text);        width: 100%;        display: flex;        gap: 5px;        align-items: center;      }
-      /* --- STYLE KHUSUS PRINT --- */      @media print {        @page {          size: A4;          margin: 0;        }        body {          background-color: white;          padding: 0;          margin: 0;        }                /* Wadah halaman harus BLOCK agar tidak tumpuk */        .page-container {          display: block !important;          gap: 0;        }
-        /* Halaman harus FLEX agar footer terdorong ke bawah */        .page {          width: 100%;          height: auto;          min-height: 29.7cm;          margin: 0;          box-shadow: none;          border: none;          page-break-after: always;          break-after: page;          padding: 1cm 2cm;                    display: flex !important;           flex-direction: column !important;          position: relative;        }                .page:last-child {          page-break-after: auto;          break-after: auto;        }                .math-champs-header,        .choice-box,        .instruction-text,        .input-box,        .bar-model-container {          -webkit-print-color-adjust: exact !important;          print-color-adjust: exact !important;          color-adjust: exact !important;        }        .bg-gray-50 { background-color: #f9fafb !important; }        .bg-blue-50 { background-color: #eff6ff !important; }        .bg-blue-100 { background-color: #dbeafe !important; }        .bg-cyan-200 { background-color: #a5f3fc !important; }        .bg-green-100 { background-color: #dcfce7 !important; }        .bg-green-200 { background-color: #bbf7d0 !important; }        .bg-pink-200 { background-color: #fbcfe8 !important; }        .bg-yellow-100 { background-color: #fef9c3 !important; }        .bg-yellow-200 { background-color: #fef08a !important; }        .bg-gray-200 { background-color: #e5e7eb !important; }        .bg-gray-300 { background-color: #d1d5db !important; }      }
-      /* --- KOMPONEN HEADER --- */      .math-champs-header {        background-color: white;        padding: 0.1rem 0;        display: flex;        justify-content: space-between;        align-items: center;        color: black;      }
-      /* --- KOMPONEN INPUT --- */      .input-underlined {        border-bottom: 1px solid #333;        display: inline-block;        padding: 0 5px;        min-width: 30px;        text-align: center;      }            .ansbox {        border: 1px solid #333;        width: 80px;        height: 30px;        display: inline-block;        vertical-align: middle;        background: #fff;        text-align: center;        font-weight: bold;      }
-      .choice-container {        display: flex;        flex-direction: column;        gap: 0.5rem;        margin-top: 8px;        margin-left: 1rem;      }
-      .choice-box {        width: 16px;        height: 16px;        border: 1px solid #333;        display: inline-block;        margin-right: 8px;        vertical-align: middle;        border-radius: 2px;      }
-      .instruction-text {        font-weight: 600;        color: #1f2937;        margin-bottom: 1rem;        background-color: #f3f4f6;        padding: 0.5rem;        border-radius: 4px;        border-left: 4px solid #333;      }
-      .h-separator {        width: 100%;        height: 1px;        background-color: #e5e7eb;        margin: 1rem 0;      }
-      /* --- COMPARISON MODEL STYLES --- */      .comp-model-wrapper {        width: 100%;        max-width: 500px;        margin: 1rem auto;        font-family: 'Noto Sans', sans-serif;        position: relative;      }      .comp-row {        display: flex;        align-items: center;        margin-bottom: 10px;        height: 40px;      }      .comp-label {        width: 60px;        text-align: right;        padding-right: 10px;        font-weight: bold;        font-size: 0.9rem;      }      .comp-bar-container {        flex-grow: 1;        display: flex;        height: 100%;        align-items: center;      }      .bar-segment {        height: 100%;        display: flex;        align-items: center;        justify-content: center;        font-weight: bold;        border: 1px solid #555;        font-size: 0.9rem;      }            /* Vertical Brace for Total */      .brace-vertical {        position: absolute;        right: -20px;        top: 0;        bottom: 10px; /* Adjust based on margin */        width: 20px;      }      .brace-vertical path {        fill: none;        stroke: #333;        stroke-width: 2;      }      .total-text-right {        position: absolute;        right: -100px;        top: 50%;        transform: translateY(-50%);        font-weight: bold;        text-align: left;        width: 80px;      }
-    </style>  </head>  <body>    <div class="page-container">
-      <section class="page">        <header class="page-header">            <div class="math-champs-header">                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">                <div class="text-right">                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>                    <div class="text-[10px] text-black font-semibold mt-0.5">Addition Within 1000</div>                    <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto leading-3">                        Solving two-step problems involving 'more than' relationships. Finding the total quantity of two people.                    </div>                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S181</div>                </div>            </div>            <div class="w-full h-0.5 bg-black mt-1"></div>        </header>
-        <div class="content-wrapper">                        <div class="instruction-text mt-4">                <b>Instructions:</b> Solve the problems below. These problems have <b>two steps</b>:                <ol class="list-decimal ml-5 mt-1">                    <li><b>Step 1:</b> Find the amount belonging to the second person (who has <b>more</b>).</li>                    <li><b>Step 2:</b> Add the amounts of the first person and the second person to find the <b>Total Sum</b>.</li>                </ol>            </div>
-            <h3 class="font-bold text-lg mb-4 border-b-2 border-gray-200 inline-block">Section A: Understanding the Bar Model</h3>            <p class="mb-4 text-sm">Observe the following Bar Models and fill in the empty boxes.</p>                        <div class="flex flex-col gap-8">                                <div class="w-full">                    <div class="flex gap-3 items-start">                        <div class="font-bold pt-1">1.</div>                        <div class="flex-grow">                            <p class="mb-2 text-sm">Gilang collected <b>200</b> rubber bands. Haris collected <b>35</b> <b>more</b> rubber bands than Gilang. What is the Total Sum of their rubber bands?</p>                                                        <div class="comp-model-wrapper" style="padding-right: 100px;">                                <div class="comp-row">                                    <div class="comp-label">Gilang</div>                                    <div class="comp-bar-container">                                        <div class="bar-segment bg-cyan-200" style="width: 180px;">200</div>                                    </div>                                </div>                                <div class="comp-row">                                    <div class="comp-label">Haris</div>                                    <div class="comp-bar-container">                                        <div class="bar-segment bg-cyan-200" style="width: 180px;"></div>                                        <div class="bar-segment bg-green-200" style="width: 60px;">35</div>                                        <span class="text-[10px] text-gray-500 ml-2 w-16 leading-tight">more</span>                                    </div>                                </div>
-                                 <svg class="brace-vertical" viewBox="0 0 20 100" preserveAspectRatio="none">                                    <path d="M0,0 Q10,0 10,10 L10,40 Q10,50 20,50 Q10,50 10,60 L10,90 Q10,100 0,100" />                                </svg>                                <div class="total-text-right text-sm">Total Sum = ?</div>                            </div>
-                            <div class="ml-4 mt-4 text-sm font-semibold space-y-2">                                <div>                                    <span class="inline-block w-48">Step 1 (Haris's amount):</span>                                     200 + 35 = <div class="ansbox"></div>                                </div>                                <div>                                    <span class="inline-block w-48">Step 2 (Total Sum):</span>                                     200 + <div class="ansbox"></div> = <div class="ansbox"></div>                                </div>                            </div>                        </div>                    </div>                </div>
-                <div class="h-separator"></div>
-                <div class="w-full">                    <div class="flex gap-3 items-start">                        <div class="font-bold pt-1">2.</div>                        <div class="flex-grow">                            <p class="mb-2 text-sm">Nia has <b>140</b> hair clips. Sari has <b>28</b> <b>more</b> hair clips than Nia. What is the Total Sum of their hair clips?</p>                                                        <div class="comp-model-wrapper" style="padding-right: 100px;">                                <div class="comp-row">                                    <div class="comp-label">Nia</div>                                    <div class="comp-bar-container">                                        <div class="bar-segment bg-pink-200" style="width: 150px;">140</div>                                    </div>                                </div>                                <div class="comp-row">                                    <div class="comp-label">Sari</div>                                    <div class="comp-bar-container">                                        <div class="bar-segment bg-pink-200" style="width: 150px;"></div>                                        <div class="bar-segment bg-yellow-200" style="width: 60px;">28</div>                                        <span class="text-[10px] text-gray-500 ml-2 w-16 leading-tight">more</span>                                    </div>                                </div>
-                                <svg class="brace-vertical" viewBox="0 0 20 100" preserveAspectRatio="none">                                    <path d="M0,0 Q10,0 10,10 L10,40 Q10,50 20,50 Q10,50 10,60 L10,90 Q10,100 0,100" />                                </svg>                                <div class="total-text-right text-sm">Total Sum = ?</div>                            </div>
-                            <div class="ml-4 mt-4 text-sm font-semibold space-y-2">                                <div>                                    <span class="inline-block w-48">Step 1 (Sari's amount):</span>                                     140 + 28 = <b>168</b>                                </div>                                <div>                                    <span class="inline-block w-48">Step 2 (Total Sum):</span>                                     140 + 168 = <div class="ansbox"></div>                                </div>                            </div>                        </div>                    </div>                </div>
-            </div>        </div>
-        <footer class="page-footer">          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>        </footer>      </section>
-      <section class="page">        <header class="page-header">            <div class="math-champs-header">                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">                <div class="text-right">                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>                    <div class="text-[10px] text-black font-semibold mt-0.5">Addition Within 1000</div>                    <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto leading-3">                        Solving two-step problems involving 'more than' relationships. Finding the total quantity of two people.                    </div>                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S181</div>                </div>            </div>            <div class="w-full h-0.5 bg-black mt-1"></div>        </header>
-        <div class="content-wrapper">            <h3 class="font-bold text-lg mb-4 border-b-2 border-gray-200 inline-block">Section B: Completing the Number Sentences</h3>
-            <div class="flex flex-col gap-8">                                <div class="w-full bg-gray-50 p-4 rounded border">                    <div class="flex gap-3 items-start">                        <div class="font-bold pt-1">3.</div>                        <div class="flex-grow">                            <p class="mb-3">Dito has <b>125</b> toy cards. Kiki has <b>32</b> <b>more</b> toy cards than Dito. What is the Total Sum of their toy cards?</p>                                                        <div class="bg-white p-3 rounded border border-gray-200 mb-2">                                <div class="text-sm italic text-gray-500 mb-1">Step 1: Kiki's cards</div>                                <div class="font-bold text-lg border border-black p-1 inline-block bg-white">125 + 32 = 157</div>                            </div>
-                            <div class="bg-white p-3 rounded border border-gray-200 mb-2">                                <div class="text-sm italic text-gray-500 mb-1">Step 2: Total Sum</div>                                <div class="font-bold text-lg border border-black p-1 inline-block bg-white">125 + 157 = ....</div>                            </div>                                                        <div class="mt-2 font-bold flex items-center gap-2">                                Total Answer: <div class="ansbox"></div> cards.                            </div>                        </div>                    </div>                </div>
-                <div class="w-full bg-gray-50 p-4 rounded border">                    <div class="flex gap-3 items-start">                        <div class="font-bold pt-1">4.</div>                        <div class="flex-grow">                            <p class="mb-3">Pak Yudi arranged <b>250</b> bricks. Pak Iman arranged <b>40</b> <b>more</b> bricks than Pak Yudi. What is the Total Sum of the bricks arranged by both of them?</p>                                                        <div class="space-y-3 mt-4">                                <div>                                    <i class="text-sm block text-gray-600">Step 1 (Pak Iman):</i>                                    <span class="input-underlined w-16"></span> + <span class="input-underlined w-16"></span> = <span class="input-underlined w-16"></span>                                </div>                                <div>                                    <i class="text-sm block text-gray-600">Step 2 (Total Sum):</i>                                    <span class="input-underlined w-16"></span> + <span class="input-underlined w-16"></span> = <span class="input-underlined w-16"></span>                                </div>                            </div>                                                        <div class="mt-4 font-bold flex items-center gap-2">                                Total Answer: <div class="ansbox"></div> bricks.                            </div>                        </div>                    </div>                </div>
-            </div>        </div>
-        <footer class="page-footer">            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>        </footer>      </section>
-      <section class="page">        <header class="page-header">            <div class="math-champs-header">                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">                <div class="text-right">                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>                    <div class="text-[10px] text-black font-semibold mt-0.5">Addition Within 1000</div>                    <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto leading-3">                        Solving two-step problems involving 'more than' relationships. Finding the total quantity of two people.                    </div>                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S181</div>                </div>            </div>            <div class="w-full h-0.5 bg-black mt-1"></div>        </header>
-        <div class="content-wrapper">             <h3 class="font-bold text-lg mb-4 border-b-2 border-gray-200 inline-block">Section C: Independent Practice</h3>            <p class="text-sm mb-4">Read the word problems carefully. Remember to find the second person's amount first!</p>
-            <div class="flex flex-col gap-6">                <div class="flex gap-3 items-start">                    <div class="font-bold pt-1">5.</div>                    <div class="flex-grow">                        <p class="mb-2">Ayu collected <b>210</b> congklak seeds. Dewi collected <b>34</b> <b>more</b> congklak seeds than Ayu. What is the Total Sum of their congklak seeds?</p>                        <div class="choice-container">                            <label class="cursor-pointer"><span class="choice-box"></span> A. 244 seeds</label>                            <label class="cursor-pointer"><span class="choice-box"></span> B. 454 seeds</label>                            <label class="cursor-pointer"><span class="choice-box"></span> C. 444 seeds</label>                        </div>                    </div>                </div>                                <div class="flex gap-3 items-start">                    <div class="font-bold pt-1">6.</div>                    <div class="flex-grow">                        <p class="mb-2">Bu Lilis made <b>150</b> lemper cakes. Bu Tati made <b>25</b> <b>more</b> lemper cakes than Bu Lilis. What is the Total Sum of the cakes made by both of them?</p>                        <div class="choice-container">                            <label class="cursor-pointer"><span class="choice-box"></span> A. 175 cakes</label>                            <label class="cursor-pointer"><span class="choice-box"></span> B. 300 cakes</label>                            <label class="cursor-pointer"><span class="choice-box"></span> C. 325 cakes</label>                        </div>                    </div>                </div>            </div>
-        </div>
-        <footer class="page-footer">            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>        </footer>      </section>
-      <section class="page">        <header class="page-header">            <div class="math-champs-header">                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">                <div class="text-right">                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>                    <div class="text-[10px] text-black font-semibold mt-0.5">Addition Within 1000</div>                    <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto leading-3">                        Solving two-step problems involving 'more than' relationships. Finding the total quantity of two people.                    </div>                    <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S181</div>                </div>            </div>            <div class="w-full h-0.5 bg-black mt-1"></div>        </header>
-        <div class="content-wrapper">            <h3 class="font-bold text-lg mb-4 border-b-2 border-gray-200 inline-block">Section D: Independent Practice (Continued)</h3>
-            <div class="flex flex-col gap-8">                                <div class="flex gap-3 items-start">                    <div class="font-bold pt-1">7.</div>                    <div class="flex-grow">                        <p class="mb-2">Beni played on his bicycle for <b>45</b> minutes. Candra played for <b>20</b> minutes <b>longer</b> than Beni. What is the Total Sum of their playtime?</p>                        <div class="font-bold text-lg mt-2 flex items-center gap-4 flex-wrap">                            <span>Candra's time = .....</span>                            <span>Total Sum = <div class="ansbox"></div> minutes.</span>                        </div>                    </div>                </div>
-                <div class="flex gap-3 items-start">                    <div class="font-bold pt-1">8.</div>                    <div class="flex-grow">                        <p class="mb-2">Dimas has <b>130</b> ride tickets. Putra has <b>36</b> <b>more</b> tickets than Dimas. What is the Total Sum of their tickets if combined?</p>                        <div class="font-bold text-lg mt-2 flex items-center gap-4 flex-wrap">                            <span>Putra's tickets = .....</span>                            <span>Total Sum = <div class="ansbox"></div> tickets.</span>                        </div>                    </div>                </div>
-                <div class="flex gap-3 items-start">                    <div class="font-bold pt-1">9.</div>                    <div class="flex-grow">                        <p class="mb-2">Pak Soma caught <b>310</b> kg of fish. Pak Darto caught <b>38</b> kg <b>more</b> fish than Pak Soma. What is the Total Sum of the catch of both fishermen?</p>                        <div class="font-bold text-lg mt-2 flex items-center gap-4 flex-wrap">                            <span>Pak Darto = .....</span>                            <span>Total Sum = <div class="ansbox"></div> kg.</span>                        </div>                    </div>                </div>
-                <div class="flex gap-3 items-start">                    <div class="font-bold pt-1">10.</div>                    <div class="flex-grow">                        <p class="mb-2">Uncle brought <b>400</b> thousand rupiah for shopping. Aunt brought <b>30</b> thousand rupiah <b>more</b> than Uncle. What is the Total Sum of money for both of them?</p>                        <div class="font-bold text-lg mt-2 flex items-center gap-4 flex-wrap">                            <span>Aunt's money = .....</span>                            <span>Total Sum = <div class="ansbox"></div> thousand.</span>                        </div>                    </div>                </div>
-            </div>
-            <div class="text-center italic text-xs text-gray-500 mt-12 mb-4">                "Accuracy beats speed—every time."            </div>
-        </div>
-        <footer class="page-footer">            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia -  All Rights Reserved.</b>            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>        </footer>      </section>
-    </div>  </body></html>``` 
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Worksheet - Two-Step Addition (Total of Two People)</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-Would you like me to translate any other sections or adjust the terminology further?
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1cm; /* Jarak antar halaman di layar */
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm 2cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 1rem;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; /* Ini kunci agar footer di bawah */
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+
+        body {
+          background-color: white;
+          padding: 0;
+          margin: 0;
+        }
+
+        /* Wadah halaman harus BLOCK agar tidak tumpuk */
+        .page-container {
+          display: block !important;
+          gap: 0;
+        }
+
+        /* Halaman harus FLEX agar footer terdorong ke bawah */
+        .page {
+          width: 100%;
+          height: auto;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          border: none;
+          page-break-after: always;
+          break-after: page;
+          padding: 1cm 2cm;
+          display: flex !important;
+          flex-direction: column !important;
+          position: relative;
+        }
+
+        .page:last-child {
+          page-break-after: auto;
+          break-after: auto;
+        }
+
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .bar-model-container {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-blue-100 { background-color: #dbeafe !important; }
+        .bg-cyan-200 { background-color: #a5f3fc !important; }
+        .bg-green-100 { background-color: #dcfce7 !important; }
+        .bg-green-200 { background-color: #bbf7d0 !important; }
+        .bg-pink-200 { background-color: #fbcfe8 !important; }
+        .bg-yellow-100 { background-color: #fef9c3 !important; }
+        .bg-yellow-200 { background-color: #fef08a !important; }
+        .bg-gray-200 { background-color: #e5e7eb !important; }
+        .bg-gray-300 { background-color: #d1d5db !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- KOMPONEN INPUT --- */
+      .input-underlined {
+        border-bottom: 1px solid #333;
+        display: inline-block;
+        padding: 0 5px;
+        min-width: 30px;
+        text-align: center;
+      }
+
+      .ansbox {
+        border: 1px solid #333;
+        width: 80px;
+        height: 30px;
+        display: inline-block;
+        vertical-align: middle;
+        background: #fff;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 8px;
+        margin-left: 1rem;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 2px;
+      }
+
+      .instruction-text {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem;
+        border-radius: 4px;
+        border-left: 4px solid #333;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 1rem 0;
+      }
+
+      /* --- COMPARISON MODEL STYLES --- */
+      .comp-model-wrapper {
+        width: 100%;
+        max-width: 500px;
+        margin: 1rem auto;
+        font-family: 'Noto Sans', sans-serif;
+        position: relative;
+      }
+
+      .comp-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        height: 40px;
+      }
+
+      .comp-label {
+        width: 60px;
+        text-align: right;
+        padding-right: 10px;
+        font-weight: bold;
+        font-size: 0.9rem;
+      }
+
+      .comp-bar-container {
+        flex-grow: 1;
+        display: flex;
+        height: 100%;
+        align-items: center;
+      }
+
+      .bar-segment {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        border: 1px solid #555;
+        font-size: 0.9rem;
+      }
+
+      /* Vertical Brace for Total */
+      .brace-vertical {
+        position: absolute;
+        right: -20px;
+        top: 0;
+        bottom: 10px; /* Adjust based on margin */
+        width: 20px;
+      }
+
+      .brace-vertical path {
+        fill: none;
+        stroke: #333;
+        stroke-width: 2;
+      }
+
+      .total-text-right {
+        position: absolute;
+        right: -100px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-weight: bold;
+        text-align: left;
+        width: 80px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <header class="page-header">
+          <div class="math-champs-header">
+            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain" />
+            <div class="text-right">
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+              <div class="text-[10px] text-black font-semibold mt-0.5">Addition Within 1000</div>
+              <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto leading-3">
+                Solving two-step problems involving 'more than' relationships. Finding the total quantity of two people.
+              </div>
+              <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S180</div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <div class="instruction-text mt-4">
+            <b>Instructions:</b> Solve the problems below. These problems have <b>two steps</b>:
+            <ol class="list-decimal ml-5 mt-1">
+              <li><b>Step 1:</b> Find the amount belonging to the second person (who has <b>more</b>).</li>
+              <li><b>Step 2:</b> Add the amounts of the first person and the second person to find the <b>Total Sum</b>.</li>
+            </ol>
+          </div>
+
+          <h3 class="font-bold text-lg mb-4 border-b-2 border-gray-200 inline-block">Section A: Understanding the Bar Model</h3>
+          <p class="mb-4 text-sm">Observe the following Bar Models and fill in the empty boxes.</p>
+
+          <div class="flex flex-col gap-8">
+            
+            <!-- Soal Nomor 1 -->
+            <div class="w-full">
+              <div class="flex gap-3 items-start">
+                <div class="font-bold pt-1">1.</div>
+                <div class="flex-grow">
+                  <p class="mb-2 text-sm">
+                    Gilang collected <b>200</b> rubber bands. Haris collected <b>35</b> <b>more</b> rubber bands than Gilang. What is the Total Sum of their rubber bands?
+                  </p>
+
+                  <div class="comp-model-wrapper" style="padding-right: 100px;">
+                    <div class="comp-row">
+                      <div class="comp-label">Gilang</div>
+                      <div class="comp-bar-container">
+                        <div class="bar-segment bg-cyan-200" style="width: 180px;">200</div>
+                      </div>
+                    </div>
+                    <div class="comp-row">
+                      <div class="comp-label">Haris</div>
+                      <div class="comp-bar-container">
+                        <div class="bar-segment bg-cyan-200" style="width: 180px;"></div>
+                        <div class="bar-segment bg-green-200" style="width: 60px;">35</div>
+                        <span class="text-[10px] text-gray-500 ml-2 w-16 leading-tight">more</span>
+                      </div>
+                    </div>
+                    <svg class="brace-vertical" viewBox="0 0 20 100" preserveAspectRatio="none">
+                      <path d="M0,0 Q10,0 10,10 L10,40 Q10,50 20,50 Q10,50 10,60 L10,90 Q10,100 0,100" />
+                    </svg>
+                    <div class="total-text-right text-sm">Total Sum = ?</div>
+                  </div>
+
+                  <div class="ml-4 mt-4 text-sm font-semibold space-y-2">
+                    <div>
+                      <span class="inline-block w-48">Step 1 (Haris's amount):</span>
+                      200 + 35 = <div class="ansbox"></div>
+                    </div>
+                    <div>
+                      <span class="inline-block w-48">Step 2 (Total Sum):</span>
+                      200 + <div class="ansbox"></div> = <div class="ansbox"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- Soal Nomor 2 -->
+            <div class="w-full">
+              <div class="flex gap-3 items-start">
+                <div class="font-bold pt-1">2.</div>
+                <div class="flex-grow">
+                  <p class="mb-2 text-sm">
+                    Nia has <b>140</b> hair clips. Sari has <b>28</b> <b>more</b> hair clips than Nia. What is the Total Sum of their hair clips?
+                  </p>
+
+                  <div class="comp-model-wrapper" style="padding-right: 100px;">
+                    <div class="comp-row">
+                      <div class="comp-label">Nia</div>
+                      <div class="comp-bar-container">
+                        <div class="bar-segment bg-pink-200" style="width: 150px;">140</div>
+                      </div>
+                    </div>
+                    <div class="comp-row">
+                      <div class="comp-label">Sari</div>
+                      <div class="comp-bar-container">
+                        <div class="bar-segment bg-pink-200" style="width: 150px;"></div>
+                        <div class="bar-segment bg-yellow-200" style="width: 60px;">28</div>
+                        <span class="text-[10px] text-gray-500 ml-2 w-16 leading-tight">more</span>
+                      </div>
+                    </div>
+                    <svg class="brace-vertical" viewBox="0 0 20 100" preserveAspectRatio="none">
+                      <path d="M0,0 Q10,0 10,10 L10,40 Q10,50 20,50 Q10,50 10,60 L10,90 Q10,100 0,100" />
+                    </svg>
+                    <div class="total-text-right text-sm">Total Sum = ?</div>
+                  </div>
+
+                  <div class="ml-4 mt-4 text-sm font-semibold space-y-2">
+                    <div>
+                      <span class="inline-block w-48">Step 1 (Sari's amount):</span>
+                      140 + 28 = <b>168</b>
+                    </div>
+                    <div>
+                      <span class="inline-block w-48">Step 2 (Total Sum):</span>
+                      140 + 168 = <div class="ansbox"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <header class="page-header">
+          <div class="math-champs-header">
+            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain" />
+            <div class="text-right">
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+              <div class="text-[10px] text-black font-semibold mt-0.5">Addition Within 1000</div>
+              <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto leading-3">
+                Solving two-step problems involving 'more than' relationships. Finding the total quantity of two people.
+              </div>
+              <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S180</div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <h3 class="font-bold text-lg mb-4 border-b-2 border-gray-200 inline-block">Section B: Completing the Number Sentences</h3>
+          <div class="flex flex-col gap-8">
+            
+            <!-- Soal Nomor 3 -->
+            <div class="w-full bg-gray-50 p-4 rounded border">
+              <div class="flex gap-3 items-start">
+                <div class="font-bold pt-1">3.</div>
+                <div class="flex-grow">
+                  <p class="mb-3">
+                    Dito has <b>125</b> toy cards. Kiki has <b>32</b> <b>more</b> toy cards than Dito. What is the Total Sum of their toy cards?
+                  </p>
+
+                  <div class="bg-white p-3 rounded border border-gray-200 mb-2">
+                    <div class="text-sm italic text-gray-500 mb-1">Step 1: Kiki's cards</div>
+                    <div class="font-bold text-lg border border-black p-1 inline-block bg-white">125 + 32 = 157</div>
+                  </div>
+                  <div class="bg-white p-3 rounded border border-gray-200 mb-2">
+                    <div class="text-sm italic text-gray-500 mb-1">Step 2: Total Sum</div>
+                    <div class="font-bold text-lg border border-black p-1 inline-block bg-white">125 + 157 = ....</div>
+                  </div>
+
+                  <div class="mt-2 font-bold flex items-center gap-2">
+                    Total Answer: <div class="ansbox"></div> cards.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Soal Nomor 4 -->
+            <div class="w-full bg-gray-50 p-4 rounded border">
+              <div class="flex gap-3 items-start">
+                <div class="font-bold pt-1">4.</div>
+                <div class="flex-grow">
+                  <p class="mb-3">
+                    Pak Yudi arranged <b>250</b> bricks. Pak Iman arranged <b>40</b> <b>more</b> bricks than Pak Yudi. What is the Total Sum of the bricks arranged by both of them?
+                  </p>
+
+                  <div class="space-y-3 mt-4">
+                    <div>
+                      <i class="text-sm block text-gray-600">Step 1 (Pak Iman):</i>
+                      <span class="input-underlined w-16"></span> + <span class="input-underlined w-16"></span> = <span class="input-underlined w-16"></span>
+                    </div>
+                    <div>
+                      <i class="text-sm block text-gray-600">Step 2 (Total Sum):</i>
+                      <span class="input-underlined w-16"></span> + <span class="input-underlined w-16"></span> = <span class="input-underlined w-16"></span>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 font-bold flex items-center gap-2">
+                    Total Answer: <div class="ansbox"></div> bricks.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 -->
+      <section class="page">
+        <header class="page-header">
+          <div class="math-champs-header">
+            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain" />
+            <div class="text-right">
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+              <div class="text-[10px] text-black font-semibold mt-0.5">Addition Within 1000</div>
+              <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto leading-3">
+                Solving two-step problems involving 'more than' relationships. Finding the total quantity of two people.
+              </div>
+              <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S180</div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <h3 class="font-bold text-lg mb-4 border-b-2 border-gray-200 inline-block">Section C: Independent Practice</h3>
+          <p class="text-sm mb-4">Read the word problems carefully. Remember to find the second person's amount first!</p>
+          <div class="flex flex-col gap-6">
+            
+            <!-- Soal Nomor 5 -->
+            <div class="flex gap-3 items-start">
+              <div class="font-bold pt-1">5.</div>
+              <div class="flex-grow">
+                <p class="mb-2">
+                  Ayu collected <b>210</b> congklak seeds. Dewi collected <b>34</b> <b>more</b> congklak seeds than Ayu. What is the Total Sum of their congklak seeds?
+                </p>
+                <div class="choice-container">
+                  <label class="cursor-pointer"><span class="choice-box"></span> A. 244 seeds</label>
+                  <label class="cursor-pointer"><span class="choice-box"></span> B. 454 seeds</label>
+                  <label class="cursor-pointer"><span class="choice-box"></span> C. 444 seeds</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Soal Nomor 6 -->
+            <div class="flex gap-3 items-start">
+              <div class="font-bold pt-1">6.</div>
+              <div class="flex-grow">
+                <p class="mb-2">
+                  Bu Lilis made <b>150</b> lemper cakes. Bu Tati made <b>25</b> <b>more</b> lemper cakes than Bu Lilis. What is the Total Sum of the cakes made by both of them?
+                </p>
+                <div class="choice-container">
+                  <label class="cursor-pointer"><span class="choice-box"></span> A. 175 cakes</label>
+                  <label class="cursor-pointer"><span class="choice-box"></span> B. 300 cakes</label>
+                  <label class="cursor-pointer"><span class="choice-box"></span> C. 325 cakes</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 4 -->
+      <section class="page">
+        <header class="page-header">
+          <div class="math-champs-header">
+            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain" />
+            <div class="text-right">
+              <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+              <div class="text-[10px] text-black font-semibold mt-0.5">Addition Within 1000</div>
+              <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto leading-3">
+                Solving two-step problems involving 'more than' relationships. Finding the total quantity of two people.
+              </div>
+              <div class="text-[10px] text-black font-medium mt-0.5">Kode : D3-S180</div>
+            </div>
+          </div>
+          <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+          <h3 class="font-bold text-lg mb-4 border-b-2 border-gray-200 inline-block">Section D: Independent Practice (Continued)</h3>
+          <div class="flex flex-col gap-8">
+            
+            <!-- Soal Nomor 7 -->
+            <div class="flex gap-3 items-start">
+              <div class="font-bold pt-1">7.</div>
+              <div class="flex-grow">
+                <p class="mb-2">
+                  Beni played on his bicycle for <b>45</b> minutes. Candra played for <b>20</b> minutes <b>longer</b> than Beni. What is the Total Sum of their playtime?
+                </p>
+                <div class="font-bold text-lg mt-2 flex items-center gap-4 flex-wrap">
+                  <span>Candra's time = .....</span>
+                  <span>Total Sum = <div class="ansbox"></div> minutes.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Soal Nomor 8 -->
+            <div class="flex gap-3 items-start">
+              <div class="font-bold pt-1">8.</div>
+              <div class="flex-grow">
+                <p class="mb-2">
+                  Dimas has <b>130</b> ride tickets. Putra has <b>36</b> <b>more</b> tickets than Dimas. What is the Total Sum of their tickets if combined?
+                </p>
+                <div class="font-bold text-lg mt-2 flex items-center gap-4 flex-wrap">
+                  <span>Putra's tickets = .....</span>
+                  <span>Total Sum = <div class="ansbox"></div> tickets.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Soal Nomor 9 -->
+            <div class="flex gap-3 items-start">
+              <div class="font-bold pt-1">9.</div>
+              <div class="flex-grow">
+                <p class="mb-2">
+                  Pak Soma caught <b>310</b> kg of fish. Pak Darto caught <b>38</b> kg <b>more</b> fish than Pak Soma. What is the Total Sum of the catch of both fishermen?
+                </p>
+                <div class="font-bold text-lg mt-2 flex items-center gap-4 flex-wrap">
+                  <span>Pak Darto = .....</span>
+                  <span>Total Sum = <div class="ansbox"></div> kg.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Soal Nomor 10 -->
+            <div class="flex gap-3 items-start">
+              <div class="font-bold pt-1">10.</div>
+              <div class="flex-grow">
+                <p class="mb-2">
+                  Uncle brought <b>400</b> thousand rupiah for shopping. Aunt brought <b>30</b> thousand rupiah <b>more</b> than Uncle. What is the Total Sum of money for both of them?
+                </p>
+                <div class="font-bold text-lg mt-2 flex items-center gap-4 flex-wrap">
+                  <span>Aunt's money = .....</span>
+                  <span>Total Sum = <div class="ansbox"></div> thousand.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center italic text-xs text-gray-500 mt-12 mb-4">
+            "Accuracy beats speed—every time."
+          </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
