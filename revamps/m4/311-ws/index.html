@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Aljabar Mastery 4 (Pecahan & Total)</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        /* UKURAN LETTER */
+        width: 8.5in;  /* Lebar Letter: 21.59cm */
+        min-height: 11in; /* Tinggi Letter: 27.94cm */
+        /* Padding bawah dikurangi sedikit agar footer aman */
+        padding: 0.75in 1in 0.5in 1in; 
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER (Satu Baris) --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: letter;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 8.5in;
+          min-height: 11in;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.75in 0.8in 0.5in 0.8in;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        /* Memaksa background color tercetak */
+        .math-champs-header,
+        .bar-model, 
+        .bar-segment {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8cm 1.5cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        margin-bottom: 0.8rem;
+      }
+
+      /* Input & Choices */
+      .input-line {
+        border: 1px solid #333;
+        width: 80px;
+        height: 35px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        font-family: inherit;
+        font-size: 1rem;
+        background-color: #f9fafb;
+      }
+      
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 6px;
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.3cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1.2rem;
+        font-size: 1.1em;
+      }
+      
+      /* Utilities */
+      .no-break {
+        page-break-inside: avoid;
+      }
+
+      /* --- Singapore Math Visuals --- */
+      .bar-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-right: 8px;
+        width: 50px;
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 4</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Aljabar - Tingkat Tinggi
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Diberikan jumlah mutlak, kuantitas barang & hubungan pecahan, cari jumlah total
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : M4-S311
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mt-4">
+                Yuk kerjakan soal berikut.
+            </div>
+            
+            <!-- Margin bawah dikurangi agar jarak ke separator lebih dekat -->
+            <div class="soal-grid mb-2">
+                <!-- No 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        1. Banyak buku Andi adalah 
+                        <span class="inline-flex flex-col text-center align-middle text-xs leading-none mx-1 relative -top-1">
+                            <span class="border-b border-black pb-0.5">1</span>
+                            <span class="pt-0.5">2</span>
+                        </span>
+                        dari buku Budi. Jika Andi memiliki 10 buku, berapa total buku mereka?
+                    </div>
+                    
+                    <!-- Visual Q1 -->
+                    <div class="my-4">
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">Andi</span>
+                            <div class="h-8 w-12 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs">10</div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bar-label">Budi</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-12 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs"></div>
+                                <div class="h-8 w-12 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="choice-container">
+                        <div>(A) 20</div>
+                        <div>(B) 30</div>
+                        <div>(C) 40</div>
+                        <div>(D) 15</div>
+                    </div>
+                </div>
+
+                <!-- No 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        2. Panjang pita merah adalah 
+                        <span class="inline-flex flex-col text-center align-middle text-xs leading-none mx-1 relative -top-1">
+                            <span class="border-b border-black pb-0.5">1</span>
+                            <span class="pt-0.5">3</span>
+                        </span>
+                        panjang pita biru. Jika total panjang keduanya 40 cm, berapa panjang pita merah?
+                    </div>
+                    
+                    <!-- Visual Q2 -->
+                    <div class="my-4">
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">Merah</span>
+                            <div class="h-8 w-10 bg-red-100 border border-red-600 flex items-center justify-center font-bold text-xs">?</div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bar-label">Biru</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-10 bg-blue-100 border border-blue-600"></div>
+                                <div class="h-8 w-10 bg-blue-100 border border-blue-600"></div>
+                                <div class="h-8 w-10 bg-blue-100 border border-blue-600"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="choice-container">
+                        <div>(A) 10 cm</div>
+                        <div>(B) 20 cm</div>
+                        <div>(C) 30 cm</div>
+                        <div>(D) 15 cm</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- Q3 & Q4 -->
+            <div class="soal-grid mb-5">
+                <!-- No 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        3. Berat kotak A adalah 
+                        <span class="inline-flex flex-col text-center align-middle text-xs leading-none mx-1 relative -top-1">
+                            <span class="border-b border-black pb-0.5">2</span>
+                            <span class="pt-0.5">5</span>
+                        </span>
+                        berat kotak B. Jika berat kotak B adalah 25 kg, berapa total berat kedua kotak?
+                    </div>
+                    
+                    <!-- Visual Q3 -->
+                    <div class="my-4">
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">Kotak A</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-8 bg-green-100 border border-green-600"></div>
+                                <div class="h-8 w-8 bg-green-100 border border-green-600"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bar-label">Kotak B</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-8 bg-green-100 border border-green-600"></div>
+                                <div class="h-8 w-8 bg-green-100 border border-green-600"></div>
+                                <div class="h-8 w-8 bg-green-100 border border-green-600"></div>
+                                <div class="h-8 w-8 bg-green-100 border border-green-600"></div>
+                                <div class="h-8 w-8 bg-green-100 border border-green-600"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="choice-container">
+                        <div>(A) 30 kg</div>
+                        <div>(B) 35 kg</div>
+                        <div>(C) 40 kg</div>
+                        <div>(D) 45 kg</div>
+                    </div>
+                </div>
+
+                <!-- No 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        4. Uang Tina adalah 
+                        <span class="inline-flex flex-col text-center align-middle text-xs leading-none mx-1 relative -top-1">
+                            <span class="border-b border-black pb-0.5">3</span>
+                            <span class="pt-0.5">4</span>
+                        </span>
+                        uang Sari. Jika uang Tina Rp 15.000, berapa uang Sari?
+                    </div>
+                    
+                    <!-- Visual Q4 -->
+                    <div class="my-4">
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">Tina</span>
+                            <div class="flex gap-1 relative">
+                                <div class="h-8 w-10 bg-yellow-100 border border-yellow-600"></div>
+                                <div class="h-8 w-10 bg-yellow-100 border border-yellow-600"></div>
+                                <div class="h-8 w-10 bg-yellow-100 border border-yellow-600"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bar-label">Sari</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-10 bg-yellow-100 border border-yellow-600"></div>
+                                <div class="h-8 w-10 bg-yellow-100 border border-yellow-600"></div>
+                                <div class="h-8 w-10 bg-yellow-100 border border-yellow-600"></div>
+                                <div class="h-8 w-10 bg-yellow-100 border border-yellow-600"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="choice-container">
+                        <div>(A) Rp 20.000</div>
+                        <div>(B) Rp 25.000</div>
+                        <div>(C) Rp 30.000</div>
+                        <div>(D) Rp 35.000</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 4</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Aljabar - Tingkat Tinggi
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Diberikan jumlah mutlak, kuantitas barang & hubungan pecahan, cari jumlah total
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : M4-S311
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- Q5 & Q6 -->
+            <div class="soal-grid mb-5 mt-4">
+                <!-- No 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. Jumlah kelereng merah 
+                        <span class="inline-flex flex-col text-center align-middle text-xs leading-none mx-1 relative -top-1">
+                            <span class="border-b border-black pb-0.5">2</span>
+                            <span class="pt-0.5">3</span>
+                        </span>
+                        kelereng biru. Jika kelereng merah ada 12 butir, berapa jumlah total kelereng?
+                    </div>
+                    
+                    <!-- Visual Q5 -->
+                    <div class="my-4">
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">Merah</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-10 bg-red-100 border border-red-600 flex items-center justify-center font-bold text-xs">6</div>
+                                <div class="h-8 w-10 bg-red-100 border border-red-600 flex items-center justify-center font-bold text-xs">6</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bar-label">Biru</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-10 bg-blue-100 border border-blue-600"></div>
+                                <div class="h-8 w-10 bg-blue-100 border border-blue-600"></div>
+                                <div class="h-8 w-10 bg-blue-100 border border-blue-600"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-2 text-sm font-semibold">Hitung total kelereng merah dan biru!</div>
+                    <div class="choice-container">
+                        <div>(A) 18</div>
+                        <div>(B) 24</div>
+                        <div>(C) 30</div>
+                        <div>(D) 36</div>
+                    </div>
+                </div>
+
+                <!-- No 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">6. Perbandingan umur Dani dan Eko adalah 3 : 5. Jika jumlah umur mereka 64 tahun, berapa umur Eko?</div>
+                    
+                     <!-- Visual Q6 -->
+                     <div class="my-4">
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">Dani</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-8 bg-gray-100 border border-gray-600"></div>
+                                <div class="h-8 w-8 bg-gray-100 border border-gray-600"></div>
+                                <div class="h-8 w-8 bg-gray-100 border border-gray-600"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bar-label">Eko</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-8 bg-gray-100 border border-gray-600"></div>
+                                <div class="h-8 w-8 bg-gray-100 border border-gray-600"></div>
+                                <div class="h-8 w-8 bg-gray-100 border border-gray-600"></div>
+                                <div class="h-8 w-8 bg-gray-100 border border-gray-600"></div>
+                                <div class="h-8 w-8 bg-gray-100 border border-gray-600"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="choice-container">
+                        <div>(A) 24 tahun</div>
+                        <div>(B) 32 tahun</div>
+                        <div>(C) 40 tahun</div>
+                        <div>(D) 48 tahun</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- Q7 & Q8 -->
+            <div class="soal-grid mb-5">
+                <!-- No 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. Sebanyak 
+                        <span class="inline-flex flex-col text-center align-middle text-xs leading-none mx-1 relative -top-1">
+                            <span class="border-b border-black pb-0.5">1</span>
+                            <span class="pt-0.5">4</span>
+                        </span>
+                        siswa di suatu kelas adalah laki-laki, yaitu 12 anak. Berapa jumlah sisa siswa (perempuan)?
+                    </div>
+                    
+                    <!-- Visual Q7 -->
+                    <div class="my-4 mb-4"> 
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">Total</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-12 bg-blue-100 border border-blue-600 flex items-center justify-center text-xs font-bold">12</div>
+                                <div class="h-8 w-12 bg-pink-100 border border-pink-600"></div>
+                                <div class="h-8 w-12 bg-pink-100 border border-pink-600"></div>
+                                <div class="h-8 w-12 bg-pink-100 border border-pink-600"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-2 mb-2 text-sm font-semibold">Berapa jumlah siswa perempuan?</div>
+                    <div class="choice-container">
+                        <div>(A) 24</div>
+                        <div>(B) 36</div>
+                        <div>(C) 48</div>
+                        <div>(D) 12</div>
+                    </div>
+                </div>
+
+                <!-- No 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Sebuah botol berisi air 
+                        <span class="inline-flex flex-col text-center align-middle text-xs leading-none mx-1 relative -top-1">
+                            <span class="border-b border-black pb-0.5">3</span>
+                            <span class="pt-0.5">5</span>
+                        </span>
+                        bagian. Jika air tersebut dituangkan, volumenya 600 ml. Berapa volume botol penuh?
+                    </div>
+                    
+                    <!-- Visual Q8 -->
+                    <div class="my-4">
+                        <div class="flex items-center">
+                            <span class="bar-label">Botol</span>
+                            <div class="flex gap-1 relative">
+                                <div class="h-8 w-8 bg-blue-200 border border-blue-600"></div>
+                                <div class="h-8 w-8 bg-blue-200 border border-blue-600"></div>
+                                <div class="h-8 w-8 bg-blue-200 border border-blue-600"></div>
+                                <div class="h-8 w-8 bg-white border border-gray-400 border-dashed"></div>
+                                <div class="h-8 w-8 bg-white border border-gray-400 border-dashed"></div>
+                                <div class="absolute top-9 left-0 w-[104px] text-[10px] text-center font-bold">600 ml</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-2 text-sm font-semibold mt-6">Hitung volume penuh botol!</div>
+                    <div class="choice-container">
+                        <div>(A) 800 ml</div>
+                        <div>(B) 900 ml</div>
+                        <div>(C) 1000 ml</div>
+                        <div>(D) 1200 ml</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 4</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Aljabar - Tingkat Tinggi
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Diberikan jumlah mutlak, kuantitas barang & hubungan pecahan, cari jumlah total
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : M4-S311
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- No 9 -->
+            <div class="bg-gray-50 border border-gray-300 rounded-xl p-4 mb-2 no-break mt-6">
+                <div class="font-bold text-lg mb-4">9. Masalah Tangki Air</div>
+                <div class="flex flex-col md:flex-row gap-8 items-start">
+                    <div class="flex-1">
+                        <ul class="list-disc ml-5 space-y-2">
+                            <li class="flex items-center">
+                                Sebuah tangki terisi air
+                                <span class="inline-flex flex-col text-center align-middle text-xs leading-none mx-2 relative -top-1">
+                                    <span class="border-b border-black pb-0.5">1</span>
+                                    <span class="pt-0.5">5</span>
+                                </span>
+                                bagian.
+                            </li>
+                            <li>Jumlah air tersebut diketahui sebanyak 20 liter.</li>
+                        </ul>
+                        
+                        <!-- Visual Q9 -->
+                        <div class="my-3">
+                            <div class="flex items-center mb-1">
+                                <span class="bar-label">Tangki</span>
+                                <div class="flex gap-1">
+                                    <div class="h-8 w-12 bg-blue-200 border border-blue-600 flex items-center justify-center font-bold text-xs">20L</div>
+                                    <div class="h-8 w-12 bg-white border border-gray-400 border-dashed"></div>
+                                    <div class="h-8 w-12 bg-white border border-gray-400 border-dashed"></div>
+                                    <div class="h-8 w-12 bg-white border border-gray-400 border-dashed"></div>
+                                    <div class="h-8 w-12 bg-white border border-gray-400 border-dashed"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 font-semibold text-blue-800">
+                            Berapa liter air yang dibutuhkan lagi untuk mengisi tangki sampai penuh (bagian yang kosong)?
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-2">
+                        <span class="font-bold text-sm">Jawaban (Liter):</span>
+                        <input type="text" class="input-line" style="width: 100px; font-size: 1.2rem;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- No 10 -->
+            <div class="bg-blue-50 border border-blue-300 rounded-xl p-4 mb-2 no-break">
+                <div class="font-bold text-lg mb-4">10. Tabungan Buku</div>
+                <p class="mb-6 flex items-center flex-wrap">
+                    Rina menggunakan 
+                    <span class="inline-flex flex-col text-center align-middle text-xs leading-none mx-1 relative -top-1">
+                        <span class="border-b border-black pb-0.5">3</span>
+                        <span class="pt-0.5">7</span>
+                    </span>
+                    dari uang tabungannya untuk membeli buku pelajaran. Harga buku pelajaran tersebut adalah Rp 60.000. Berapakah <b>jumlah total</b> uang tabungan Rina mula-mula?
+                </p>
+                
+                <!-- Visual Logic -->
+                <div class="flex w-full max-w-md mx-auto h-6 border-2 border-black mb-12 relative">
+                    <!-- 3 bagian terisi (60k) -->
+                    <div class="h-full bg-green-200 flex items-center justify-center font-bold text-xs border-r border-black" style="width: 14.28%;"></div>
+                    <div class="h-full bg-green-200 flex items-center justify-center font-bold text-xs border-r border-black" style="width: 14.28%;"></div>
+                    <div class="h-full bg-green-200 flex items-center justify-center font-bold text-xs border-r border-black" style="width: 14.28%;"></div>
+                    
+                    <!-- 4 bagian sisa -->
+                    <div class="h-full bg-white border-r border-black border-dashed" style="width: 14.28%;"></div>
+                    <div class="h-full bg-white border-r border-black border-dashed" style="width: 14.28%;"></div>
+                    <div class="h-full bg-white border-r border-black border-dashed" style="width: 14.28%;"></div>
+                    <div class="h-full bg-white" style="width: 14.28%;"></div>
+                    
+                    <!-- Bracket Siku -->
+                    <div class="absolute top-full left-0 w-[42.85%] mt-2">
+                        <div class="h-2 border-l-2 border-r-2 border-b-2 border-black w-full"></div>
+                        <div class="text-center font-bold mt-1 text-xs text-black">Rp 60.000</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-6">
+                    <div class="p-3 bg-white rounded shadow cursor-pointer border hover:border-blue-500">
+                        <span class="font-bold mr-2">(A)</span> Rp 100.000
+                    </div>
+                    <div class="p-3 bg-white rounded shadow cursor-pointer border hover:border-blue-500">
+                        <span class="font-bold mr-2">(B)</span> Rp 120.000
+                    </div>
+                    <div class="p-3 bg-white rounded shadow cursor-pointer border hover:border-blue-500">
+                        <span class="font-bold mr-2">(C)</span> Rp 140.000
+                    </div>
+                    <div class="p-3 bg-white rounded shadow cursor-pointer border hover:border-blue-500">
+                        <span class="font-bold mr-2">(D)</span> Rp 160.000
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center text-gray-500 italic">
+                Hebat! Kamu sudah latihan dengan serius dan fokus.
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
