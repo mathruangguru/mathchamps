@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Aljabar Mastery 4 (Harga & Kuantitas)</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        /* UKURAN LETTER */
+        width: 8.5in;  /* Lebar Letter: 21.59cm */
+        min-height: 11in; /* Tinggi Letter: 27.94cm */
+        /* Padding bawah dikurangi sedikit agar footer aman */
+        padding: 0.75in 1in 0.5in 1in; 
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER (Satu Baris) --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: letter;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 8.5in;
+          min-height: 11in;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.75in 0.8in 0.5in 0.8in;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        /* Memaksa background color tercetak */
+        .math-champs-header,
+        .bar-model, 
+        .bar-segment {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8cm 1.5cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        margin-bottom: 0.8rem;
+      }
+
+      /* Input & Choices */
+      .input-line {
+        border: 1px solid #333;
+        width: 80px;
+        height: 35px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        font-family: inherit;
+        font-size: 1rem;
+        background-color: #f9fafb;
+      }
+      
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 6px;
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.3cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1.2rem;
+        font-size: 1.1em;
+      }
+      
+      /* Utilities */
+      .no-break {
+        page-break-inside: avoid;
+      }
+
+      /* --- Singapore Math Visuals --- */
+      .bar-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-right: 8px;
+        width: 50px;
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 4</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Aljabar - Tingkat Tinggi
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Diberikan jumlah mutlak, harga satuan & hubungan kuantitas-harga
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : M4-S312
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mt-4">
+                Yuk kerjakan soal berikut.
+            </div>
+            
+            <div class="soal-grid mb-2">
+                <!-- No 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        1. Harga sebuah buku adalah 2 kali harga pensil. Jika harga pensil Rp 3.000, berapa total harga 1 buku dan 1 pensil?
+                    </div>
+                    
+                    <!-- Visual Q1 -->
+                    <div class="my-4">
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">Pensil</span>
+                            <div class="h-8 w-14 bg-gray-100 border border-gray-600 flex items-center justify-center font-bold text-xs italic">p</div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bar-label">Buku</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-14 bg-gray-100 border border-gray-600 flex items-center justify-center font-bold text-xs italic text-gray-400">p</div>
+                                <div class="h-8 w-14 bg-gray-100 border border-gray-600 flex items-center justify-center font-bold text-xs italic text-gray-400">p</div>
+                            </div>
+                        </div>
+                        <div class="ml-[58px] mt-1 text-[10px] text-gray-500 italic">p = 3.000</div>
+                    </div>
+
+                    <div class="choice-container">
+                        <div>(A) Rp 6.000</div>
+                        <div>(B) Rp 9.000</div>
+                        <div>(C) Rp 12.000</div>
+                        <div>(D) Rp 15.000</div>
+                    </div>
+                </div>
+
+                <!-- No 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        2. Uang Sasa Rp 20.000. Harga satu roti Rp 5.000. Jika Sasa membeli 3 roti, berapa sisa uangnya?
+                    </div>
+                    
+                    <!-- Visual Q2 -->
+                    <div class="my-4">
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">Uang</span>
+                            <div class="h-8 w-36 bg-green-100 border border-green-600 flex items-center justify-center font-bold text-xs">20.000</div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bar-label">Beli</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-9 bg-yellow-100 border border-yellow-600 flex items-center justify-center text-[9px] font-bold">5.000</div>
+                                <div class="h-8 w-9 bg-yellow-100 border border-yellow-600 flex items-center justify-center text-[9px] font-bold">5.000</div>
+                                <div class="h-8 w-9 bg-yellow-100 border border-yellow-600 flex items-center justify-center text-[9px] font-bold">5.000</div>
+                                <div class="h-8 w-9 bg-white border border-green-600 border-dashed flex items-center justify-center text-[9px] font-bold">Sisa?</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="choice-container">
+                        <div>(A) Rp 5.000</div>
+                        <div>(B) Rp 10.000</div>
+                        <div>(C) Rp 15.000</div>
+                        <div>(D) Rp 0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- Q3 & Q4 -->
+            <div class="soal-grid mb-5">
+                <!-- No 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        3. Harga barang B lebih mahal Rp 5.000 dari barang A. Jika harga barang A = Rp 10.000, berapa total harga untuk 2 barang A dan 1 barang B?
+                    </div>
+                    
+                    <!-- Visual Q3 -->
+                    <div class="my-4">
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">A</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-12 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs">A</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bar-label">B</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-12 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs text-gray-400">A</div>
+                                <div class="h-8 w-8 bg-red-50 border border-red-400 border-dashed flex items-center justify-center text-[8px] font-bold">+5.000</div>
+                            </div>
+                        </div>
+                        <div class="ml-[58px] mt-1 text-[10px] text-gray-500 italic">A = 10.000</div>
+                    </div>
+
+                    <div class="choice-container">
+                        <div>(A) Rp 25.000</div>
+                        <div>(B) Rp 30.000</div>
+                        <div>(C) Rp 35.000</div>
+                        <div>(D) Rp 40.000</div>
+                    </div>
+                </div>
+
+                <!-- No 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        4. Uang Ibu Rp 100.000. Ibu membeli 2 kg jeruk (harga Rp 20.000/kg). Sisa uangnya cukup untuk membeli berapa kg mangga jika harga mangga Rp 30.000/kg?
+                    </div>
+                    
+                    <!-- Visual Q4 -->
+                    <div class="my-4">
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">Awal</span>
+                            <div class="h-8 w-32 bg-green-100 border border-green-600 flex items-center justify-center font-bold text-xs">100.000</div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bar-label">Beli</span>
+                            <div class="flex">
+                                <div class="h-8 w-10 bg-orange-100 border border-orange-600 flex items-center justify-center text-[9px] text-center leading-tight">20.000</div>
+                                <div class="h-8 w-10 bg-orange-100 border border-orange-600 flex items-center justify-center text-[9px] text-center leading-tight">20.000</div>
+                                <div class="h-8 w-12 bg-white border border-green-600 border-dashed flex items-center justify-center text-xs font-bold">?</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="choice-container">
+                        <div>(A) 1 kg</div>
+                        <div>(B) 2 kg</div>
+                        <div>(C) 3 kg</div>
+                        <div>(D) 4 kg</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 4</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Aljabar - Tingkat Tinggi
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Diberikan jumlah mutlak, harga satuan & hubungan kuantitas-harga
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : M4-S312
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- Q5 & Q6 -->
+            <div class="soal-grid mb-5 mt-4">
+                <!-- No 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. Total harga adalah 5 kali harga satuan (<span class="italic">p</span>). Jika <span class="italic">p</span> = Rp 2.000, berapa total harganya?
+                    </div>
+                    
+                    <!-- Visual Q5 -->
+                    <div class="my-4">
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">Total</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-8 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs italic">p</div>
+                                <div class="h-8 w-8 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs italic">p</div>
+                                <div class="h-8 w-8 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs italic">p</div>
+                                <div class="h-8 w-8 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs italic">p</div>
+                                <div class="h-8 w-8 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs italic">p</div>
+                            </div>
+                        </div>
+                        <div class="ml-[58px] mt-1 text-xs text-gray-600">p = 2.000</div>
+                    </div>
+                    
+                    <div class="choice-container">
+                        <div>(A) Rp 8.000</div>
+                        <div>(B) Rp 10.000</div>
+                        <div>(C) Rp 12.000</div>
+                        <div>(D) Rp 15.000</div>
+                    </div>
+                </div>
+
+                <!-- No 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. Ayah membeli 5 tiket dengan harga <span class="italic">h</span> per tiket. Ayah membayar Rp 50.000 dan mendapat kembalian Rp 10.000. Berapa harga satu tiket (<span class="italic">h</span>)?
+                    </div>
+                    
+                     <!-- Visual Q6 -->
+                     <div class="my-4">
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">Uang</span>
+                            <!-- Lebar total = (5 x w-8) + (1 x w-10) + (5 x gap-1) = 10rem + 2.5rem + 1.25rem = 13.75rem -->
+                            <div class="h-8 w-[13.75rem] bg-green-100 border border-green-600 flex items-center justify-center font-bold text-xs">50.000</div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bar-label">Bayar</span>
+                            <div class="flex gap-1">
+                                <!-- 5 kotak tiket masing-masing h -->
+                                <div class="h-8 w-8 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs italic">h</div>
+                                <div class="h-8 w-8 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs italic">h</div>
+                                <div class="h-8 w-8 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs italic">h</div>
+                                <div class="h-8 w-8 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs italic">h</div>
+                                <div class="h-8 w-8 bg-blue-100 border border-blue-600 flex items-center justify-center font-bold text-xs italic">h</div>
+                                <!-- Sisa -->
+                                <div class="h-8 w-10 bg-white border border-green-600 border-dashed flex items-center justify-center text-[10px] leading-none text-center">Sisa<br>10.000</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="choice-container">
+                        <div>(A) Rp 5.000</div>
+                        <div>(B) Rp 8.000</div>
+                        <div>(C) Rp 10.000</div>
+                        <div>(D) Rp 12.000</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- Q7 & Q8 -->
+            <div class="soal-grid mb-5">
+                <!-- No 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. Harga 1 celana adalah 2 kali harga baju. Jika harga baju = Rp 30.000, berapa total harga 1 celana dan 1 baju?
+                    </div>
+                    
+                    <!-- Visual Q7 -->
+                    <div class="my-4 mb-4"> 
+                        <div class="flex items-center mb-1">
+                            <span class="bar-label">Baju</span>
+                            <div class="h-8 w-12 bg-yellow-100 border border-yellow-600 flex items-center justify-center text-xs font-bold italic">b</div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bar-label">Celana</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-12 bg-yellow-100 border border-yellow-600 flex items-center justify-center text-xs font-bold text-gray-400 italic">b</div>
+                                <div class="h-8 w-12 bg-yellow-100 border border-yellow-600 flex items-center justify-center text-xs font-bold text-gray-400 italic">b</div>
+                            </div>
+                        </div>
+                        <div class="ml-[58px] mt-1 text-[10px] text-gray-500 italic">b = 30.000</div>
+                    </div>
+                    
+                    <div class="choice-container">
+                        <div>(A) Rp 60.000</div>
+                        <div>(B) Rp 90.000</div>
+                        <div>(C) Rp 100.000</div>
+                        <div>(D) Rp 120.000</div>
+                    </div>
+                </div>
+
+                <!-- No 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Harga tas adalah setengah dari harga sepatu. Jika harga sepatu Rp 200.000, berapa total harga keduanya?
+                    </div>
+                    
+                    <!-- Visual Q8 -->
+                    <div class="my-4">
+                        <div class="flex items-center mb-1 relative">
+                            <span class="bar-label">Sepatu</span>
+                            <div class="flex gap-1">
+                                <div class="h-8 w-16 bg-purple-100 border border-purple-600 flex items-center justify-center text-[10px] font-bold text-gray-400">t</div>
+                                <div class="h-8 w-16 bg-purple-100 border border-purple-600 flex items-center justify-center text-[10px] font-bold text-gray-400">t</div>
+                            </div>
+                            <!-- Bracket kanan untuk total sepatu -->
+                            <div class="absolute left-[8.5rem] top-0 h-8 flex items-center text-xs font-bold text-gray-600"></div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bar-label">Tas</span>
+                            <div class="h-8 w-16 bg-purple-100 border border-purple-600 flex items-center justify-center text-[10px] font-bold">t</div>
+                        </div>
+                        <div class="ml-[58px] mt-1 text-[10px] text-gray-500 italic">t = harga tas</div>
+                    </div>
+
+                    <div class="choice-container">
+                        <div>(A) Rp 250.000</div>
+                        <div>(B) Rp 300.000</div>
+                        <div>(C) Rp 350.000</div>
+                        <div>(D) Rp 400.000</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 4</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Aljabar - Tingkat Tinggi
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Diberikan jumlah mutlak, harga satuan & hubungan kuantitas-harga
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Kode : M4-S312
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- No 9 -->
+            <div class="bg-gray-50 border border-gray-300 rounded-xl p-4 mb-2 no-break mt-6">
+                <div class="font-bold text-lg mb-4">9. Paket Hemat</div>
+                <div class="flex flex-col md:flex-row gap-8 items-start">
+                    <div class="flex-1">
+                        <ul class="list-disc ml-5 space-y-2">
+                            <li>1 Paket = 2 Ayam + 1 Nasi.</li>
+                            <li>Harga Ayam = Rp 10.000 per potong.</li>
+                            <li>Harga Nasi = Rp 5.000 per porsi.</li>
+                        </ul>
+                        
+                        <!-- Visual Q9 -->
+                        <div class="my-3">
+                            <div class="flex items-center mb-1">
+                                <span class="bar-label">1 Paket</span>
+                                <div class="flex gap-1">
+                                    <div class="h-8 w-12 bg-orange-100 border border-orange-600 flex items-center justify-center text-[10px] font-bold">10.000</div>
+                                    <div class="h-8 w-12 bg-orange-100 border border-orange-600 flex items-center justify-center text-[10px] font-bold">10.000</div>
+                                    <div class="h-8 w-10 bg-white border border-gray-400 border-dashed flex items-center justify-center text-[10px] font-bold">5.000</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 font-semibold text-blue-800">
+                            Jika Kakak memiliki uang Rp 50.000, berapa banyak paket yang bisa dibeli?
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-2">
+                        <span class="font-bold text-sm">Jawaban (Paket):</span>
+                        <input type="text" class="input-line" style="width: 100px; font-size: 1.2rem;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- No 10 -->
+            <div class="bg-blue-50 border border-blue-300 rounded-xl p-4 mb-2 no-break">
+                <div class="font-bold text-lg mb-4">10. Konsep Harga Total</div>
+                <p class="mb-6 flex items-center flex-wrap">
+                    Sebuah toko menjual dua jenis barang: Barang A seharga Rp 5.000 dan Barang B seharga Rp 8.000. Jika Andi membeli <span class="italic font-serif mx-1">x</span> buah Barang A dan <span class="italic font-serif mx-1">y</span> buah Barang B, manakah bentuk aljabar untuk <b>total harga</b> yang harus dibayar?
+                </p>
+                
+                <!-- Visual Logic: Kotak-kotak terpisah menggambarkan x buah dan y buah -->
+                <div class="flex justify-center gap-8 mb-8 mt-4">
+                    <!-- Kelompok Barang A -->
+                    <div class="flex flex-col items-center">
+                        <div class="flex gap-1 mb-2">
+                            <div class="h-8 w-8 bg-red-100 border border-red-600 flex items-center justify-center text-[9px] font-bold">5.000</div>
+                            <div class="h-8 w-8 bg-red-100 border border-red-600 flex items-center justify-center text-[9px] font-bold">5.000</div>
+                            <div class="h-8 flex items-center justify-center font-bold">...</div>
+                            <div class="h-8 w-8 bg-red-100 border border-red-600 flex items-center justify-center text-[9px] font-bold">5.000</div>
+                        </div>
+                        <!-- Bracket bawah untuk x buah -->
+                        <div class="w-full border-l border-r border-b border-black h-2 relative">
+                            <div class="absolute top-full w-full text-center text-xs font-bold mt-1">x buah</div>
+                        </div>
+                    </div>
+
+                    <!-- Tanda Tambah -->
+                    <div class="flex items-center text-xl font-bold text-gray-400">+</div>
+
+                    <!-- Kelompok Barang B -->
+                    <div class="flex flex-col items-center">
+                        <div class="flex gap-1 mb-2">
+                            <div class="h-8 w-8 bg-blue-100 border border-blue-600 flex items-center justify-center text-[9px] font-bold">8.000</div>
+                            <div class="h-8 w-8 bg-blue-100 border border-blue-600 flex items-center justify-center text-[9px] font-bold">8.000</div>
+                            <div class="h-8 flex items-center justify-center font-bold">...</div>
+                            <div class="h-8 w-8 bg-blue-100 border border-blue-600 flex items-center justify-center text-[9px] font-bold">8.000</div>
+                        </div>
+                        <!-- Bracket bawah untuk y buah -->
+                        <div class="w-full border-l border-r border-b border-black h-2 relative">
+                            <div class="absolute top-full w-full text-center text-xs font-bold mt-1">y buah</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-10">
+                    <div class="p-3 bg-white rounded shadow cursor-pointer border hover:border-blue-500">
+                        <span class="font-bold mr-2">(A)</span> 5.000x + 8.000y
+                    </div>
+                    <div class="p-3 bg-white rounded shadow cursor-pointer border hover:border-blue-500">
+                        <span class="font-bold mr-2">(B)</span> 5.000 + x + 8.000 + y
+                    </div>
+                    <div class="p-3 bg-white rounded shadow cursor-pointer border hover:border-blue-500">
+                        <span class="font-bold mr-2">(C)</span> 13.000(x + y)
+                    </div>
+                    <div class="p-3 bg-white rounded shadow cursor-pointer border hover:border-blue-500">
+                        <span class="font-bold mr-2">(D)</span> 8.000x + 5.000y
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center text-gray-500 italic">
+                Hebat! Kamu sudah latihan dengan serius dan fokus.
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
