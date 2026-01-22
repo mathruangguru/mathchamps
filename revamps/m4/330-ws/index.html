@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Berapa Selisih Akhirnya?</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- KaTeX for Fraction Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --primary-text: #333333;
+            --grey-text: #8d8e8d;
+            --bar-blue: #bae6fd;
+            --bar-blue-dark: #7dd3fc;
+            --bar-green: #bbf7d0;
+            --bar-green-dark: #86efac;
+            --bar-yellow: #fef08a;
+            --bar-yellow-dark: #fde047;
+            --bar-orange: #fed7aa;
+            --bar-orange-dark: #fdba74;
+            --bar-purple: #e9d5ff;
+            --bar-purple-dark: #d8b4fe;
+            --bar-pink: #fbcfe8;
+            --bar-pink-dark: #f9a8d4;
+            --line-color: #000000;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: "Montserrat", sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: var(--primary-text);
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 20px 0;
+        }
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .page {
+            background: white;
+            width: 21.0cm;
+            min-height: 29.7cm;
+            padding: 1.2cm 1.8cm;
+            margin-bottom: 1cm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .page-header {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .math-champs-header {
+            background-color: white;
+            padding: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: black;
+        }
+        .page-footer {
+            text-align: left;
+            font-size: 6pt;
+            color: var(--grey-text);
+            padding-top: 4px;
+            margin-top: auto;
+            border-top: 2px solid var(--grey-text);
+            width: 100%;
+            display: flex; gap: 5px; align-items: center;
+        }
+        .content-wrapper {
+            flex: 1;
+            padding-bottom: 20px;
+        }
+        .mph-bar {
+            height: 48px; 
+            border: 1.5px solid var(--line-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            position: relative;
+        }
+        .bar-label {
+            font-size: 9px;
+            font-weight: 800;
+            color: #444;
+            margin-right: 8px;
+            min-width: 60px;
+            text-align: right;
+        }
+        .state-title {
+            font-size: 10px;
+            font-weight: 900;
+            color: #000;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.05em;
+        }
+        .svg-brace {
+            width: 100%;
+            height: 12px;
+            display: block;
+            overflow: visible;
+        }
+        .svg-brace path {
+            fill: none;
+            stroke: #333;
+            stroke-width: 1.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .calc-box {
+            border: 1.5px solid #333;
+            min-width: 55px;
+            display: inline-block;
+            height: 28px;
+            vertical-align: middle;
+            margin: 0 4px;
+            border-radius: 4px;
+        }
+        .answer-line {
+            border-bottom: 1.5px solid #333;
+            min-width: 60px;
+            display: inline-block;
+            height: 22px;
+            vertical-align: middle;
+            margin: 0 4px;
+        }
+        .long-answer-line {
+            border-bottom: 1.5px solid #333;
+            min-width: 400px;
+            display: inline-block;
+            height: 22px;
+            vertical-align: middle;
+            margin: 0 4px;
+        }
+        .question-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 35px;
+        }
+        .q-number {
+            font-weight: 800;
+            min-width: 25px;
+            text-align: right;
+        }
+        .q-content {
+            flex: 1;
+            text-align: justify;
+        }
+        .example-box {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            background-color: #fafafa;
+        }
+        
+        /* Bar Fill Colors */
+        .fill-blue { background-color: var(--bar-blue); }
+        .fill-blue-dark { background-color: var(--bar-blue-dark); }
+        .fill-green { background-color: var(--bar-green); }
+        .fill-green-dark { background-color: var(--bar-green-dark); }
+        .fill-yellow { background-color: var(--bar-yellow); }
+        .fill-yellow-dark { background-color: var(--bar-yellow-dark); }
+        .fill-orange { background-color: var(--bar-orange); }
+        .fill-orange-dark { background-color: var(--bar-orange-dark); }
+        .fill-purple { background-color: var(--bar-purple); }
+        .fill-purple-dark { background-color: var(--bar-purple-dark); }
+        .fill-pink { background-color: var(--bar-pink); }
+        .fill-pink-dark { background-color: var(--bar-pink-dark); }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background-color: white; padding: 0; }
+            .page { width: 100%; border: none; box-shadow: none; margin: 0; page-break-after: always; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- HALAMAN 1 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[11px] text-black font-semibold mt-1 uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[11px] text-black font-medium leading-tight text-right">Mencari Selisih Akhir (Unit Bertambah)</div>
+                        <div class="text-[11px] text-black font-medium">Kode : M4-S330</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="text-center mb-6 mt-4">
+                    <h1 class="text-xl font-black uppercase tracking-wider text-gray-800">Berapa Selisih Akhirnya?</h1>
+                </div>
+
+                <!-- SEKSI CONTOH -->
+                <div class="example-box">
+                    <h2 class="font-bold text-sm mb-3 text-black italic">Mari Mengamati Contoh!</h2>
+                    <p class="text-sm mb-6 text-justify text-gray-800">Dina dan Raya memiliki kelereng dengan perbandingan 1 : 3. Dina membeli 10 butir kelereng lagi sehingga perbandingan kelereng mereka sekarang menjadi 2 : 3. Berapa selisih kelereng mereka sekarang?</p>
+                    
+                    <div class="flex justify-between gap-10 mb-12 mt-6">
+                        <!-- KOLOM AWAL -->
+                        <div class="flex-1">
+                            <div class="state-title">Kondisi Awal:</div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center">
+                                    <div class="bar-label">Dina</div>
+                                    <div class="mph-bar fill-yellow w-[40px]"></div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="bar-label">Raya</div>
+                                    <div class="flex">
+                                        <div class="mph-bar fill-blue w-[40px] border-r-0"></div>
+                                        <div class="mph-bar fill-blue w-[40px] border-r-0"></div>
+                                        <div class="mph-bar fill-blue w-[40px]"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- KOLOM KINI -->
+                        <div class="flex-1">
+                            <div class="state-title">Kondisi Kini:</div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center">
+                                    <div class="bar-label">Dina</div>
+                                    <div class="flex relative">
+                                        <div class="mph-bar fill-yellow w-[40px] border-r-0"></div>
+                                        <div class="mph-bar fill-yellow-dark w-[40px]"></div>
+                                        <!-- Top Brace Addition -->
+                                        <div class="absolute -top-11 left-[40px] w-[40px] flex flex-col items-center">
+                                            <div class="text-[11px] font-extrabold mb-1">10</div>
+                                            <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="bar-label">Raya</div>
+                                    <div class="flex relative">
+                                        <div class="mph-bar fill-blue w-[40px] border-r-0"></div>
+                                        <div class="mph-bar fill-blue w-[40px] border-r-0"></div>
+                                        <div class="mph-bar fill-blue w-[40px]"></div>
+                                        <!-- Bottom Brace Result -->
+                                        <div class="absolute -bottom-11 left-[80px] w-[40px] flex flex-col items-center">
+                                            <svg class="svg-brace transform rotate-180" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                            <div class="text-[12px] font-bold mt-1">?</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm space-y-3 mt-8 ml-4 border-t pt-4">
+                        <div class="leading-relaxed">Kenaikan unit Dina (2 unit &minus; 1 unit) = 1 unit.</div>
+                        <div class="leading-relaxed">1 unit = 10 butir.</div>
+                        <div class="leading-relaxed">Selisih kelereng kini (3 unit &minus; 2 unit) = 1 unit.</div>
+                        <div class="pt-4 font-bold italic text-black">Jadi, selisih kelereng mereka sekarang adalah 10 butir.</div>
+                    </div>
+                </div>
+
+                <!-- Soal 1 -->
+                <div class="question-item">
+                    <div class="q-number">1.</div>
+                    <div class="q-content">
+                        <p class="mb-4 text-gray-800">Rasio panjang pita Riza dan Naraya adalah 1 : 2. Riza membeli 12 cm pita lagi sehingga rasio pita mereka menjadi 5 : 6. Berapa selisih panjang pita mereka sekarang?</p>
+                        
+                        <div class="flex justify-between gap-10 mb-12 mt-6">
+                            <!-- Kondisi Awal: 1 bar Riza (90px) = 3 bar Kini (30px*3) -->
+                            <div class="flex-1">
+                                <div class="state-title">Kondisi Awal:</div>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Riza</div>
+                                        <div class="flex">
+                                            <div class="mph-bar fill-green w-[90px]"></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Naraya</div>
+                                        <div class="flex">
+                                            <div class="mph-bar fill-pink w-[90px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[90px]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Kondisi Kini: per unit 30px -->
+                            <div class="flex-1">
+                                <div class="state-title">Kondisi Kini:</div>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Riza</div>
+                                        <div class="flex relative">
+                                            <div class="mph-bar fill-green w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-green w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-green w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-green-dark w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-green-dark w-[30px]"></div>
+                                            <!-- Top Brace for 12 cm -->
+                                            <div class="absolute -top-11 left-[90px] w-[60px] flex flex-col items-center">
+                                                <div class="text-[10px] font-extrabold mb-1 whitespace-nowrap">12 cm</div>
+                                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Naraya</div>
+                                        <div class="flex relative">
+                                            <div class="mph-bar fill-pink w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[30px]"></div>
+                                            <!-- Bottom Brace for Selisih -->
+                                            <div class="absolute -bottom-11 left-[150px] w-[30px] flex flex-col items-center">
+                                                <svg class="svg-brace transform rotate-180" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                                <div class="text-[12px] font-bold mt-1">?</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-sm space-y-4 mt-8 ml-6">
+                            <div>2 units = 12 cm</div>
+                            <div>1 unit = <span class="calc-box"></span> &divide; <span class="calc-box"></span> = <span class="calc-box"></span> cm</div>
+                            <div class="font-bold pt-1">Jadi, selisih panjang pita mereka sekarang adalah <span class="answer-line w-32"></span> cm.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 2 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[11px] text-black font-semibold mt-1 uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[11px] text-black font-medium leading-tight text-right">Mencari Selisih Akhir (Unit Bertambah)</div>
+                        <div class="text-[11px] text-black font-medium">Kode : M4-S330</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- Soal 2 -->
+                <div class="question-item mt-6">
+                    <div class="q-number">2.</div>
+                    <div class="q-content">
+                        <p class="mb-4 text-gray-800">Fiar dan Hani memiliki uang dengan rasio 2 : 3. Fiar mendapat tambahan Rp15.000 sehingga rasionya menjadi 1 : 1 terhadap uang Hani. Berapa selisih uang mereka mula-mula?</p>
+                        
+                        <div class="flex justify-between gap-10 mb-12 mt-6">
+                            <div class="flex-1">
+                                <div class="state-title">Kondisi Awal:</div>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Fiar</div>
+                                        <div class="flex">
+                                            <div class="mph-bar fill-orange w-[45px] border-r-0"></div>
+                                            <div class="mph-bar fill-orange w-[45px]"></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Hani</div>
+                                        <div class="flex">
+                                            <div class="mph-bar fill-purple w-[45px] border-r-0"></div>
+                                            <div class="mph-bar fill-purple w-[45px] border-r-0"></div>
+                                            <div class="mph-bar fill-purple w-[45px]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="state-title">Kondisi Kini:</div>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Fiar</div>
+                                        <div class="flex relative">
+                                            <div class="mph-bar fill-orange w-[45px] border-r-0"></div>
+                                            <div class="mph-bar fill-orange w-[45px] border-r-0"></div>
+                                            <div class="mph-bar fill-orange-dark w-[45px]"></div>
+                                            <!-- Top Brace -->
+                                            <div class="absolute -top-11 left-[90px] w-[45px] flex flex-col items-center">
+                                                <div class="text-[10px] font-extrabold mb-1 whitespace-nowrap">Rp15.000</div>
+                                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Hani</div>
+                                        <div class="flex relative">
+                                            <div class="mph-bar fill-purple w-[45px] border-r-0"></div>
+                                            <div class="mph-bar fill-purple w-[45px] border-r-0"></div>
+                                            <div class="mph-bar fill-purple w-[45px]"></div>
+                                            <!-- Bottom Brace -->
+                                            <div class="absolute -bottom-11 left-[90px] w-[45px] flex flex-col items-center">
+                                                <svg class="svg-brace transform rotate-180" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                                <div class="text-[12px] font-bold mt-1">?</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-sm space-y-4 mt-8 ml-6">
+                            <div>1 unit = Rp15.000</div>
+                            <div>1 unit = <span class="calc-box"></span> &divide; <span class="calc-box"></span> = Rp <span class="calc-box"></span></div>
+                            <div class="font-bold pt-1 italic">Jadi, selisih uang mereka mula-mula adalah Rp <span class="answer-line w-32"></span>.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-12 mt-12">
+                    <!-- Soal 3 -->
+                    <div class="question-item">
+                        <div class="q-number">3.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800">Perbandingan banyak buku cerita Tantri dan Hadi adalah 3 : 5. Tantri membeli 6 buku lagi sehingga rasionya menjadi 1 : 1 terhadap buku Hadi. Berapa banyak buku yang dimiliki Hadi mula-mula?</p>
+                            <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 4 -->
+                    <div class="question-item">
+                        <div class="q-number">4.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800">Muti dan Jaka memiliki tabungan dengan rasio 1 : 4. Muti menabung lagi sebesar Rp30.000 sehingga rasionya menjadi 1 : 2 terhadap tabungan Jaka. Berapa selisih uang mereka sekarang?</p>
+                            <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 5 -->
+                    <div class="question-item">
+                        <div class="q-number">5.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800">Wadah A dan Wadah B berisi kelereng dengan rasio 2 : 5. Ke dalam Wadah A ditambahkan 12 butir kelereng lagi sehingga rasionya menjadi 4 : 5. Berapa total kelereng di kedua wadah sekarang?</p>
+                            <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 3 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[11px] text-black font-semibold mt-1 uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[11px] text-black font-medium leading-tight text-right">Mencari Selisih Akhir (Unit Bertambah)</div>
+                        <div class="text-[11px] text-black font-medium">Kode : M4-S330</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper space-y-12 mt-10">
+                <!-- Soal 6 -->
+                <div class="question-item">
+                    <div class="q-number">6.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Toko Buah X dan Toko Buah Y memiliki persediaan apel dengan rasio 1 : 3. Toko Buah X menerima kiriman 20 kg apel lagi sehingga rasionya menjadi 1 : 1. Berapa banyak apel di Toko Buah X mula-mula?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 7 -->
+                <div class="question-item">
+                    <div class="q-number">7.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Perbandingan tabungan Siska dan Tio adalah 2 : 7. Siska menabung lagi sebesar Rp40.000. Sekarang rasionya menjadi 3 : 2 terhadap tabungan Tio. Berapa tabungan Tio mula-mula?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 8 -->
+                <div class="question-item">
+                    <div class="q-number">8.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Andi dan Budi memiliki tabungan dengan rasio 3 : 4. Andi menabung Rp10.000 lagi sehingga tabungan mereka menjadi sama banyak. Berapa selisih tabungan mereka mula-mula?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 9 -->
+                <div class="question-item">
+                    <div class="q-number">9.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Rasio kelereng Merah dan kelereng Biru adalah 2 : 3. Ditambahkan 15 butir kelereng Merah lagi sehingga rasionya menjadi 5 : 3. Berapa total kelereng sekarang?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 10 -->
+                <div class="question-item">
+                    <div class="q-number">10.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Tabungan Lia dan Mia memiliki rasio 1 : 5. Lia menabung Rp24.000 lagi sehingga rasionya menjadi 1 : 2 terhadap tabungan Mia. Berapa tabungan Mia mula-mula?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <div class="mt-16 text-center">
+                    <div class="inline-block p-5 border-2 border-dashed border-gray-200 rounded-3xl bg-slate-50">
+                        <p class="text-sm font-bold text-gray-700 italic">"Good job! Kamu sudah berani menghadapi soal-soal menantang."</p>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+    </div>
+
+    <!-- Initialize KaTeX with proper delimiters and error handling -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+    </script>
+</body>
+</html>
