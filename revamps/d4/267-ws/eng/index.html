@@ -1,0 +1,595 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - 2D Shape Patterns (D4-S267)</title>
+    
+    <!-- Tailwind for utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- MAIN CSS --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        /* Pastel Color Palette */
+        --pastel-blue: #ADD8E6;
+        --pastel-red: #FFB6C1;
+        --pastel-green: #98FB98;
+        --pastel-yellow: #FFFDD0;
+        --pastel-orange: #FFCC99;
+        --pastel-cyan: #E0FFFF;
+        --pastel-gray: #E5E7EB;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3; 
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      /* LETTER SIZE SETTING (2 Compact Pages) */
+      .page {
+        background: white;
+        width: 8.5in;  
+        height: 11in; 
+        padding: 0.5in 0.6in; /* Thin margins */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px; 
+        border-bottom: 2px solid black;
+        padding-bottom: 4px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 8pt;
+        color: var(--grey-text);
+        padding-top: 5px;
+        margin-top: auto; 
+        border-top: 1px solid #ccc;
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- PRINT STYLES --- */
+      @media print {
+        @page {
+          size: letter;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          height: 11in;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.5in 0.6in;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .instruction-text, .soal-item svg, .encouragement-box, .bg-gray-50 {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.7rem; /* Distance between questions */
+        position: relative;
+        z-index: 2; 
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        border-bottom: 1px dashed #eee;
+        padding-bottom: 0.5rem;
+      }
+      .soal-item:last-child {
+        border-bottom: none;
+      }
+
+      .input-line {
+        display: inline-block;
+        border-bottom: 1.5px solid #333;
+        min-width: 80px;
+        text-align: center;
+        padding: 0 5px;
+        color: blue;
+      }
+      
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        margin-top: 2px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        margin-left: 0.5rem;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem; 
+        background-color: #f3f4f6;
+        padding: 0.3rem 0.8rem; 
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      .encouragement-box {
+        margin-top: auto;
+        margin-bottom: 0.5rem;
+        padding: 0.6rem;
+        background-color: #fef3c7; 
+        border-left: 4px solid #d97706; 
+        border-radius: 0.5rem;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+      }
+      .encouragement-text {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #92400e; 
+        font-style: italic;
+      }
+
+      /* Helper Classes for SVG */
+      .svg-shape { stroke: #333; stroke-width: 1.5; stroke-linejoin: round; }
+      .fill-none { fill: none; }
+      .fill-blue { fill: var(--pastel-blue); }
+      .fill-red { fill: var(--pastel-red); }
+      .fill-orange { fill: var(--pastel-orange); }
+      .fill-green { fill: var(--pastel-green); }
+      .fill-cyan { fill: var(--pastel-cyan); }
+      .fill-gray { fill: var(--pastel-gray); }
+
+    </style>
+  </head>
+  <body>
+
+    <div class="page-container">
+      
+      <!-- ================= PAGE 1 (Q 1-5) ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">2D Shapes</div>
+                    <div class="text-[10px] text-black font-medium mt-0.5" style="max-width: 200px; line-height: 1.1; margin-left: auto;">Completing patterns with 2D shapes</div>
+                    <div class="text-[9px] text-black font-medium mt-0.5">Code : D4-S267</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text">
+                Instruction: Observe the sequence of 2D shape patterns below. Determine which shape fits in the box with the question mark (?).
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- Q1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">1. Continue the following pattern.</div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex-shrink-0 ml-2">
+                            <svg width="220" height="50" viewBox="0 0 220 50">
+                                <circle cx="25" cy="25" r="20" class="svg-shape fill-none" />
+                                <polygon points="60,45 85,45 72.5,5" class="svg-shape fill-none" />
+                                <circle cx="120" cy="25" r="20" class="svg-shape fill-none" />
+                                <polygon points="155,45 180,45 167.5,5" class="svg-shape fill-none" />
+                                <!-- Box -->
+                                <rect x="195" y="5" width="25" height="40" stroke="black" stroke-dasharray="4" fill="none"/>
+                                <text x="207.5" y="30" text-anchor="middle" font-size="20" font-weight="bold">?</text>
+                            </svg>
+                        </div>
+                        <div class="choice-container w-full">
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">A.</span> Circle</label>
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">B.</span> Triangle</label>
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">C.</span> Square</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">2. Look at the AB-AB-AB pattern sequence of 2D shapes below.</div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex-shrink-0 ml-2">
+                             <svg width="240" height="40" viewBox="0 0 280 40">
+                              
+                   
+                                <rect x="80" y="5" width="50" height="30" class="svg-shape fill-red" />
+                             
+                                <rect x="40" y="5" width="30" height="30" class="svg-shape fill-blue" />
+                                <rect x="80" y="5" width="50" height="30" class="svg-shape fill-red" />
+                                <rect x="140" y="5" width="30" height="30" class="svg-shape fill-blue" />
+                              
+                                <!-- Box -->
+                                <rect x="220" y="0" width="55" height="40" stroke="black" stroke-dasharray="4" fill="none"/>
+                                <text x="247.5" y="25" text-anchor="middle" font-size="20" font-weight="bold">?</text>
+                             </svg>
+                        </div>
+                        <div class="w-full text-sm ml-2">
+                            <strong>Answer:</strong><br>
+                            <span class="input-line" style="width: 120px;"></span><br>
+                            <span class="text-xs italic text-gray-500">(Draw/Write name)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">3. This triangle rotates following a pattern.</div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex-shrink-0 ml-2">
+                             <svg width="220" height="50" viewBox="0 0 260 50">
+                                <!-- Up -->
+                                <polygon points="10,40 40,40 25,10" class="svg-shape fill-none" />
+                                <!-- Down -->
+                                <polygon points="50,10 80,10 65,40" class="svg-shape fill-none" />
+                                <!-- Up -->
+                                <polygon points="90,40 120,40 105,10" class="svg-shape fill-none" />
+                                <!-- Down -->
+                                <polygon points="130,10 160,10 145,40" class="svg-shape fill-none" />
+                                <!-- Box -->
+                                <rect x="180" y="5" width="50" height="40" stroke="black" stroke-dasharray="4" fill="none"/>
+                                <text x="205" y="30" text-anchor="middle" font-size="20" font-weight="bold">?</text>
+                             </svg>
+                        </div>
+                        <div class="choice-container w-full">
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">A.</span> Triangle pointing up</label>
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">B.</span> Triangle pointing down</label>
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">C.</span> Triangle pointing sideways</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">4. Look at the repeating pattern below.</div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex-shrink-0 ml-2">
+                             <svg width="220" height="50" viewBox="0 0 260 50">
+                                <!-- Semicircle -->
+                                <path d="M 10,40 A 20,20 0 0,1 50,40 Z" class="svg-shape fill-orange" />
+                                <!-- Square -->
+                                <rect x="60" y="10" width="30" height="30" class="svg-shape fill-blue" />
+                                <!-- Semicircle -->
+                                <path d="M 100,40 A 20,20 0 0,1 140,40 Z" class="svg-shape fill-orange" />
+                                <!-- Square -->
+                                <rect x="150" y="10" width="30" height="30" class="svg-shape fill-blue" />
+                                <!-- Box -->
+                                <rect x="190" y="5" width="40" height="40" stroke="black" stroke-dasharray="4" fill="none"/>
+                                <text x="210" y="30" text-anchor="middle" font-size="20" font-weight="bold">?</text>
+                             </svg>
+                        </div>
+                        <div class="choice-container w-full">
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">A.</span> Square</label>
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">B.</span> Circle</label>
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">C.</span> Semicircle</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">5. Look at the following AB-AB-AB regular shape pattern.</div>
+                    <div class="flex items-center justify-start gap-6 my-2 ml-4">
+                        <div class="text-center">
+                            <svg width="40" height="40"><circle cx="20" cy="20" r="18" class="svg-shape fill-cyan"/></svg>
+                            <div class="text-[10px] mt-0.5">Whole</div>
+                        </div>
+                   
+                        <div class="text-xl font-bold">→</div>
+                        <div class="text-center">
+                            <svg width="40" height="40"><path d="M 20,20 L 38,20 A 18,18 0 0,0 2,20 Z" class="svg-shape fill-cyan" transform="rotate(180, 20, 20)"/></svg>
+                            <div class="text-[10px] mt-0.5">Semicircle</div>
+                        </div>
+                        <div class="text-xl font-bold">→</div>
+                      <div class="flex items-center justify-start gap-6 my-2 ml-4">
+                        <div class="text-center">
+                            <svg width="40" height="40"><circle cx="20" cy="20" r="18" class="svg-shape fill-cyan"/></svg>
+                            <div class="text-[10px] mt-0.5">Whole</div>
+                        </div>
+                   
+                        <div class="text-xl font-bold">→</div>
+                        <div class="border-2 border-dashed border-gray-400 w-10 h-10 flex items-center justify-center font-bold text-xl">?</div>
+                    </div>
+                    <div class="choice-container flex-row gap-4 ml-4">
+                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">A.</span> Whole</label>
+                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">B.</span> Semicircle</label>
+                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">C.</span> Square</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Page 1 of 2</b>
+          <span class="ml-auto">Math Champs - Discovery 4</span>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 2 (Q 6-10) ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="flex justify-between items-end">
+                <span class="font-bold text-gray-500 text-sm">Continued 2D Shape Patterns</span>
+                <span class="text-xs font-bold">Code: D4-S267</span>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                
+                <!-- Q6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">6. The following pattern is based on size: Big, Small, Small.</div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-end gap-1 my-2 ml-4">
+                            <svg width="25" height="40"><rect x="0" y="0" width="25" height="40" class="svg-shape fill-none"/></svg>
+                            <svg width="15" height="25"><rect x="0" y="0" width="15" height="25" class="svg-shape fill-none"/></svg>
+                            <svg width="15" height="25"><rect x="0" y="0" width="15" height="25" class="svg-shape fill-none"/></svg>
+                            
+                            <div class="w-4"></div> <!-- Spacer -->
+                            <svg width="25" height="40"><rect x="0" y="0" width="25" height="40" class="svg-shape fill-none"/></svg>
+                            <svg width="15" height="25"><rect x="0" y="0" width="15" height="25" class="svg-shape fill-none"/></svg>
+                            <svg width="15" height="25"><rect x="0" y="0" width="15" height="25" class="svg-shape fill-none"/></svg>
+                            
+                            <div class="w-4"></div> <!-- Spacer -->
+                            <svg width="25" height="40"><rect x="0" y="0" width="25" height="40" class="svg-shape fill-none"/></svg>
+                            <svg width="15" height="25"><rect x="0" y="0" width="15" height="25" class="svg-shape fill-none"/></svg>
+                            
+                            <div class="border border-dashed border-black w-6 h-8 flex items-center justify-center text-lg font-bold ml-1">?</div>
+                        </div>
+                        <div class="w-full text-sm ml-2">
+                             <strong>Answer:</strong><br>
+                            <span class="input-line" style="width: 120px;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">7. There is a missing shape in the middle of this pattern.</div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex-shrink-0 ml-2">
+                             <svg width="220" height="40" viewBox="0 0 280 50">
+                                <!-- Square -->
+                                <rect x="10" y="10" width="30" height="30" class="svg-shape fill-none" />
+                                <!-- Circle -->
+                                <circle cx="65" cy="25" r="15" class="svg-shape fill-none" />
+                                <!-- Box -->
+                                <rect x="95" y="5" width="50" height="40" stroke="black" stroke-dasharray="4" fill="none"/>
+                                <text x="120" y="30" text-anchor="middle" font-size="20" font-weight="bold">?</text>
+                                <!-- Circle -->
+                                <circle cx="175" cy="25" r="15" class="svg-shape fill-none" />
+                                <!-- Square -->
+                                <rect x="210" y="10" width="30" height="30" class="svg-shape fill-none" />
+                             </svg>
+                        </div>
+                        <div class="choice-container w-full">
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">A.</span> Square</label>
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">B.</span> Circle</label>
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">C.</span> Triangle</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">8. Observe the rotation direction of the green triangle.</div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2 my-2 ml-4">
+                             <!-- Right -->
+                             <svg width="30" height="30"><polygon points="4,4 4,26 26,15" class="svg-shape fill-green" /></svg>
+                             <!-- Down -->
+                             <svg width="30" height="30"><polygon points="4,4 26,4 15,26" class="svg-shape fill-green" /></svg>
+                             <!-- Left -->
+                             <svg width="30" height="30"><polygon points="26,4 26,26 4,15" class="svg-shape fill-green" /></svg>
+                             <!-- Up -->
+                             <svg width="30" height="30"><polygon points="4,26 26,26 15,4" class="svg-shape fill-green" /></svg>
+                             
+                             <div class="border border-dashed border-black w-8 h-8 flex items-center justify-center font-bold text-lg">?</div>
+                        </div>
+                        <div class="choice-container w-full ml-4">
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">A.</span> Right</label>
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">B.</span> Up</label>
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">C.</span> Down</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">9. Determine the core pattern (the part that repeats).</div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex-shrink-0 ml-4">
+                             <svg width="180" height="30" viewBox="0 0 240 40">
+                                <g>
+                                    <circle cx="15" cy="20" r="10" class="svg-shape fill-gray" />
+                                    <rect x="35" y="10" width="20" height="20" class="svg-shape fill-none" />
+                                    <rect x="65" y="10" width="20" height="20" class="svg-shape fill-none" />
+                                </g>
+                                <g transform="translate(85,0)">
+                                    <circle cx="15" cy="20" r="10" class="svg-shape fill-gray" />
+                                    <rect x="35" y="10" width="20" height="20" class="svg-shape fill-none" />
+                                    <rect x="65" y="10" width="20" height="20" class="svg-shape fill-none" />
+                                </g>
+                                <text x="190" y="25" font-size="24">...</text>
+                             </svg>
+                        </div>
+                        <div class="choice-container w-full">
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">A.</span> 1 O, 1 []</label>
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">B.</span> 1 O, 2 []</label>
+                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"><span class="mr-2 font-bold">C.</span> 2 O, 1 []</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 text-sm">10. Draw the next shape in this pattern:</div>
+                    <div class="flex items-center gap-4 my-2 ml-4">
+                         <!-- Circ in Rect -->
+                         <svg width="40" height="40">
+                             <rect x="2" y="2" width="36" height="36" class="svg-shape fill-none"/>
+                             <circle cx="20" cy="20" r="12" class="svg-shape fill-none"/>
+                         </svg>
+                         <!-- Tri in Rect -->
+                         <svg width="40" height="40">
+                             <rect x="2" y="2" width="36" height="36" class="svg-shape fill-none"/>
+                             <polygon points="5,32 35,32 20,8" class="svg-shape fill-none"/>
+                         </svg>
+                         <!-- Circ in Rect -->
+                         <svg width="40" height="40">
+                             <rect x="2" y="2" width="36" height="36" class="svg-shape fill-none"/>
+                             <circle cx="20" cy="20" r="12" class="svg-shape fill-none"/>
+                         </svg>
+                         <!-- Tri in Rect -->
+                         <svg width="40" height="40">
+                             <rect x="2" y="2" width="36" height="36" class="svg-shape fill-none"/>
+                             <polygon points="5,32 35,32 20,8" class="svg-shape fill-none"/>
+                         </svg>
+                         
+                         <div class="border-2 border-dashed border-gray-400 w-16 h-16 bg-gray-50 flex items-center justify-center text-[10px] text-gray-400 text-center p-1">
+                             (Draw)
+                         </div>
+                    </div>
+                </div>
+
+                <!-- ENCOURAGEMENT -->
+                <div class="encouragement-box">
+                    <p class="encouragement-text" id="random-quote">Practice makes progress.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Page 2 of 2</b>
+          <span class="ml-auto">Copyright Ⓒ 2025 - PT Ruang Raya Indonesia</span>
+        </footer>
+      </section>
+
+    </div>
+
+    <!-- SCRIPT UNTUK KALIMAT RANDOM -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const quotes = [
+                "Nice work finishing the set—seriously well done.",
+                "Great effort today. Quick check-through and you’re good.",
+                "Strong finish! Take a moment to review your answers.",
+                "Awesome job. If anything feels off, trust your gut and recheck it.",
+                "You’re getting sharper with every problem.",
+                "Well done—your focus really showed.",
+                "Before you close it, do one last scan for silly mistakes.",
+                "That was solid. Clean work and clear thinking.",
+                "Mistakes are part of the process—what matters is you keep going.",
+                "Great job. Try checking the trickiest question one more time.",
+                "Proud of your effort. Consistency wins.",
+                "Strong work—your math muscles are growing.",
+                "Nice! Now make sure every question has an answer.",
+                "Great progress today—keep that momentum.",
+                "You worked hard. Take a breath, then double-check.",
+                "Excellent! Try verifying one problem using a different method.",
+                "You did it—finish with a confident final check.",
+                "Little by little, a little becomes a lot.",
+                "Practice makes progress.",
+                "Steady hands win the race.",
+                "Small steps beat no steps.",
+                "Check your work, trust your growth.",
+                "A calm mind catches quiet mistakes.",
+                "Consistency is a superpower.",
+                "Progress, not perfection.",
+                "One more look saves one big oops.",
+                "Patience pays in points.",
+                "Accuracy beats speed—every time.",
+                "Strong roots, strong results.",
+                "Today’s effort is tomorrow’s confidence.",
+                "The best learners review."
+            ];
+
+            const quoteElement = document.getElementById('random-quote');
+            if (quoteElement) {
+                const randomIndex = Math.floor(Math.random() * quotes.length);
+                quoteElement.textContent = quotes[randomIndex];
+            }
+        });
+    </script>
+  </body>
+</html>
