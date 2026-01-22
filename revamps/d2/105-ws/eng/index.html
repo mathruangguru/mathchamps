@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Discovery 2: Subtraction with Regrouping (D2-S105)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-text: #333333;
+            --grey-text: #8d8e8d;
+            --tens-color: #4ade80; 
+            --tens-border: #15803d; 
+            --ones-color: #facc15; 
+            --ones-border: #a16207; 
+            --cross-color: #ef4444;
+            --unit-size: 11px; /* Ukuran identik untuk semua unit */
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        
+        body {
+            font-family: "Noto Sans", sans-serif;
+            font-size: 10pt;
+            color: var(--primary-text);
+            background-color: #e0e0e0;
+            margin: 0; padding: 20px 0;
+        }
+
+        .page-container {
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+        }
+
+        .page {
+            background: white; width: 21cm; height: 29.7cm;
+            padding: 1.2cm 1.6cm;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            position: relative; display: flex; flex-direction: column;
+        }
+
+        .math-champs-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid #333; padding-bottom: 8px; margin-bottom: 15px;
+        }
+
+        .header-info { text-align: right; display: flex; flex-direction: column; gap: 1px; }
+        .header-level { font-family: "Montserrat"; font-size: 16px; font-weight: 900; text-transform: uppercase; }
+
+        .main-title-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .main-title {
+            font-family: "Montserrat";
+            font-size: 1.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #1f2937;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+        .main-subtitle {
+            font-family: "Montserrat";
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .section-title {
+            font-family: "Montserrat";
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 1rem; color: #4b5563; border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 3px; margin-bottom: 12px; margin-top: 10px;
+        }
+
+        .soal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
+        
+        .soal-item {
+            background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;
+            padding: 10px; break-inside: avoid;
+        }
+
+        /* --- SISTEM KOTAK PRESISI --- */
+        .group-container {
+            position: relative; border: 2px dashed #cbd5e1; border-radius: 6px;
+            padding: 15px 10px 8px 10px; display: flex; gap: 10px; align-items: flex-end;
+            background-color: #f8fafc; margin-top: 10px;
+        }
+
+        .num-label-badge {
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            background: white; border: 1.5px solid #94a3b8; padding: 0 6px;
+            border-radius: 10px; font-size: 0.75rem; font-weight: 800; color: #475569;
+            z-index: 20;
+        }
+
+        .box-unit {
+            width: var(--unit-size); height: var(--unit-size);
+            border: 1px solid; flex-shrink: 0; position: relative;
+        }
+
+        .rod-container { display: flex; flex-direction: column-reverse; position: relative; }
+        .box-unit.ten { background-color: var(--tens-color); border-color: var(--tens-border); margin-top: -1px; }
+        .box-unit.one { background-color: var(--ones-color); border-color: var(--ones-border); }
+
+        /* --- TANDA SILANG --- */
+        .crossed { position: relative; }
+        .crossed::before, .crossed::after {
+            content: "";
+            position: absolute;
+            inset: 0px; 
+            z-index: 10;
+            pointer-events: none;
+        }
+        .crossed::before {
+            background: linear-gradient(to top right, transparent 46%, var(--cross-color) 46%, var(--cross-color) 54%, transparent 54%);
+        }
+        .crossed::after {
+            background: linear-gradient(to bottom right, transparent 46%, var(--cross-color) 46%, var(--cross-color) 54%, transparent 54%);
+        }
+
+        .tens-group { display: flex; gap: 4px; }
+        .ones-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; min-width: 25px; }
+
+        .arrow-exchange {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--cross-color); font-weight: bold; margin: 0 2px;
+        }
+        .arrow-text { font-size: 0.5rem; text-transform: uppercase; margin-top: -4px; }
+
+        /* --- PERBAIKAN ALIGNMENT PENGURANGAN SUSUN --- */
+        .vertical-math {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.5rem;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1.5px solid #e5e7eb;
+            position: relative;
+        }
+        .vm-row {
+            display: flex;
+            justify-content: flex-end;
+            position: relative;
+            width: 100%;
+            align-items: flex-end;
+        }
+        .vm-digit {
+            width: 24px; 
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .vm-operator {
+            width: 24px;
+            text-align: center;
+            margin-left: 5px;
+        }
+        .vm-line {
+            border-top: 2.5px solid #333;
+            margin-top: 5px;
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+        }
+        .vm-spacer {
+            width: 24px;
+            margin-left: 5px;
+        }
+
+        .borrow-mark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 110%;
+            height: 2px;
+            background-color: var(--cross-color);
+            transform: translate(-50%, -50%) rotate(-45deg);
+            z-index: 5;
+        }
+        .borrow-helper {
+            font-size: 0.85rem;
+            color: var(--cross-color);
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 2px;
+            height: 15px;
+        }
+
+        .choice-container { display: flex; gap: 8px; justify-content: center; margin-top: 8px; flex-wrap: wrap; }
+        .choice-item {
+            display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 4px 10px;
+            background: white; border: 1px solid #d1d5db; border-radius: 15px; font-size: 0.8rem;
+        }
+        .choice-circle { width: 12px; height: 12px; border: 1.5px solid #9ca3af; border-radius: 50%; }
+
+        .info-box {
+            background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 8px;
+            margin-bottom: 10px; border-radius: 4px; font-size: 9pt;
+        }
+
+        .page-footer {
+            font-size: 6pt; color: var(--grey-text); border-top: 1.5px solid var(--grey-text);
+            padding-top: 4px; margin-top: auto; display: flex; align-items: center; gap: 5px;
+            justify-content: space-between;
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .page { box-shadow: none; margin: 0; page-break-after: always; }
+            .rod-container, .box-unit, .vertical-math, .info-box, .main-title-section { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        
+        <!-- ================= PAGE 1 ================= -->
+        <section class="page">
+            <header class="math-champs-header">
+                <img src="https://mathruangguru.github.io/mathchamps/revamps/logoMC-2026.png" alt="Math Champs" class="h-12">
+                <div class="header-info">
+                    <div class="header-level text-black">Discovery 2</div>
+                    <div class="text-[11px] font-bold text-black">Addition & Subtraction within 100</div>
+                    <div class="text-[10px] font-medium text-black italic text-right max-w-[280px]">Subtraction with Regrouping</div>
+                    <div class="text-[11px] font-bold text-black">Code : D2-S105</div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="main-title-section">
+                    <h1 class="main-title">Subtraction with Regrouping</h1>
+                    <p class="main-subtitle">If the ones of the number being subtracted are not enough, move 1 rod (10 ones) from the tens place to become 10 units in the ones place.</p>
+                </div>
+
+                <div class="info-box flex justify-center items-center gap-8 py-2">
+                    <div class="flex items-center gap-3">
+                        <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                        <div class="arrow-exchange"><span>&rarr;</span><span class="arrow-text text-[6px]">EXCHANGE</span></div>
+                        <div class="grid grid-cols-5 gap-0.5">
+                            <div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div>
+                            <div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div>
+                        </div>
+                    </div>
+                    <span class="font-bold text-[10px] uppercase tracking-tighter">1 Ten = 10 Ones</span>
+                </div>
+
+                <div class="section-title">Section A: Picture Concepts</div>
+                
+                <div class="soal-grid">
+                    <!-- Question 1 -->
+                    <div class="soal-item">
+                        <div class="font-bold text-xs mb-1">1. Find the value of 32 - 5:</div>
+                        <div class="text-[9px] text-gray-600 leading-tight mb-2 italic">Since 2 is not enough to subtract 5, 1 rod (10 units) from the tens is moved to become 10 units in the ones.</div>
+                        <div class="flex flex-col items-center">
+                            <div class="group-container">
+                                <div class="num-label-badge">32</div>
+                                <div class="tens-group">
+                                    <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                    <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                    <div class="rod-container crossed"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                </div>
+                                <div class="arrow-exchange text-red-500">&rarr;</div>
+                                <div class="ones-group">
+                                    <div class="box-unit one"></div><div class="box-unit one"></div>
+                                    <div class="box-unit one crossed"></div><div class="box-unit one crossed"></div><div class="box-unit one crossed"></div><div class="box-unit one crossed"></div><div class="box-unit one crossed"></div>
+                                    <div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-[10px] font-bold text-blue-600">Remaining: 2 Tens + 7 Ones</div>
+                        </div>
+                        <div class="choice-container">
+                            <label class="choice-item"><div class="choice-circle"></div> 26</label>
+                            <label class="choice-item"><div class="choice-circle"></div> 27</label>
+                            <label class="choice-item"><div class="choice-circle"></div> 28</label>
+                        </div>
+                    </div>
+
+                    <!-- Question 2 -->
+                    <div class="soal-item">
+                        <div class="font-bold text-xs mb-1">2. Find the value of 24 - 8:</div>
+                        <div class="text-[9px] text-gray-600 leading-tight mb-2 italic">Since 4 is not enough to subtract 8, 1 rod (10 units) from the tens is moved to become 10 units in the ones.</div>
+                        <div class="flex flex-col items-center">
+                            <div class="group-container">
+                                <div class="num-label-badge">24</div>
+                                <div class="tens-group">
+                                    <div class="rod-container"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                    <div class="rod-container crossed"><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div><div class="box-unit ten"></div></div>
+                                </div>
+                                <div class="arrow-exchange text-red-500">&rarr;</div>
+                                <div class="ones-group">
+                                    <div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div><div class="box-unit one"></div>
+                                    <div class="box-unit one crossed"></div><div class="box-unit one crossed"></div><div class="box-unit one crossed"></div><div class="box-unit one crossed"></div><div class="box-unit one crossed"></div>
+                                    <div class="box-unit one crossed"></div><div class="box-unit one crossed"></div><div class="box-unit one crossed"></div><div class="box-unit one"></div><div class="box-unit one"></div>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-[10px] font-bold text-blue-600">Remaining: 1 Ten + 6 Ones</div>
+                        </div>
+                        <div class="choice-container">
+                            <label class="choice-item"><div class="choice-circle"></div> 14</label>
+                            <label class="choice-item"><div class="choice-circle"></div> 15</label>
+                            <label class="choice-item"><div class="choice-circle"></div> 16</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 2 ================= -->
+        <section class="page">
+            <header class="math-champs-header">
+                <img src="https://mathruangguru.github.io/mathchamps/revamps/logoMC-2026.png" alt="Math Champs" class="h-12">
+                <div class="header-info">
+                    <div class="header-level text-black">Discovery 2</div>
+                    <div class="text-[11px] font-bold text-black">Addition & Subtraction within 100</div>
+                    <div class="text-[10px] font-medium text-black italic text-right max-w-[280px]">Subtraction with Regrouping</div>
+                    <div class="text-[11px] font-bold text-black">Code : D2-S105</div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="section-title">Section B: Vertical Subtraction</div>
+                <div class="info-box flex items-center gap-6 mb-4">
+                    <div class="vertical-math" style="font-size: 1rem; padding: 10px;">
+                        <div class="vm-row">
+                            <div class="vm-digit"><div class="borrow-helper">4</div><div class="relative">5<div class="borrow-mark"></div></div></div>
+                            <div class="vm-digit"><div class="borrow-helper">12</div>2</div>
+                            <div class="vm-spacer"></div>
+                        </div>
+                        <div class="vm-row">
+                            <div class="vm-digit">1</div><div class="vm-digit">8</div>
+                            <span class="vm-operator">-</span>
+                        </div>
+                        <div class="vm-line">
+                            <div class="vm-digit">3</div><div class="vm-digit">4</div>
+                        </div>
+                    </div>
+                    <div class="text-[9px] leading-tight font-medium">
+                        <b>Steps:</b><br>
+                        1. 2 is not enough to subtract 8.<br>
+                        2. Regroup 1 ten from 5 (5 becomes 4).<br>
+                        3. Ones become 12 (10 + 2).<br>
+                        4. 12 - 8 = 4. Then 4 - 1 = 3.
+                    </div>
+                </div>
+
+                <div class="soal-grid">
+                    <!-- Question 3 -->
+                    <div class="soal-item">
+                        <div class="font-bold text-xs mb-2">3. Calculate: 45 - 28</div>
+                        <div class="flex justify-center">
+                            <div class="vertical-math">
+                                <div class="vm-row">
+                                    <div class="vm-digit"><div class="borrow-helper">3</div><div class="relative">4<div class="borrow-mark"></div></div></div>
+                                    <div class="vm-digit"><div class="borrow-helper">15</div>5</div>
+                                    <div class="vm-spacer"></div>
+                                </div>
+                                <div class="vm-row">
+                                    <div class="vm-digit">2</div><div class="vm-digit">8</div>
+                                    <span class="vm-operator">-</span>
+                                </div>
+                                <div class="vm-line">
+                                    <div class="vm-digit text-gray-300">?</div><div class="vm-digit text-gray-300">?</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="choice-container">
+                            <label class="choice-item"><div class="choice-circle"></div> 17</label>
+                            <label class="choice-item"><div class="choice-circle"></div> 27</label>
+                        </div>
+                    </div>
+                    <!-- Question 4 -->
+                    <div class="soal-item">
+                        <div class="font-bold text-xs mb-2">4. Calculate: 61 - 34</div>
+                        <div class="flex justify-center">
+                            <div class="vertical-math">
+                                <div class="vm-row">
+                                    <div class="vm-digit"><div class="borrow-helper">&nbsp;</div>6</div>
+                                    <div class="vm-digit"><div class="borrow-helper">&nbsp;</div>1</div>
+                                    <div class="vm-spacer"></div>
+                                </div>
+                                <div class="vm-row">
+                                    <div class="vm-digit">3</div><div class="vm-digit">4</div>
+                                    <span class="vm-operator">-</span>
+                                </div>
+                                <div class="vm-line">
+                                    <div class="vm-digit text-gray-300">?</div><div class="vm-digit text-gray-300">?</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="choice-container">
+                            <label class="choice-item"><div class="choice-circle"></div> 27</label>
+                            <label class="choice-item"><div class="choice-circle"></div> 37</label>
+                        </div>
+                    </div>
+                    <!-- Question 5 -->
+                    <div class="soal-item">
+                        <div class="font-bold text-xs mb-2">5. Calculate: 80 - 45</div>
+                        <div class="flex justify-center">
+                            <div class="vertical-math">
+                                <div class="vm-row">
+                                    <div class="vm-digit"><div class="borrow-helper">&nbsp;</div>8</div>
+                                    <div class="vm-digit"><div class="borrow-helper">&nbsp;</div>0</div>
+                                    <div class="vm-spacer"></div>
+                                </div>
+                                <div class="vm-row">
+                                    <div class="vm-digit">4</div><div class="vm-digit">5</div>
+                                    <span class="vm-operator">-</span>
+                                </div>
+                                <div class="vm-line">
+                                    <div class="vm-digit text-gray-300">?</div><div class="vm-digit text-gray-300">?</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="choice-container">
+                            <label class="choice-item"><div class="choice-circle"></div> 35</label>
+                            <label class="choice-item"><div class="choice-circle"></div> 45</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title mt-4">Section C: Word Problems</div>
+                <div class="flex flex-col gap-3">
+                    <div class="soal-item">
+                        <div class="font-bold text-xs">6. Uncle's Eggs</div>
+                        <div class="text-sm">Uncle has 52 eggs. 18 eggs broke. How many eggs are left?</div>
+                        <div class="choice-container mt-2">
+                            <label class="choice-item"><div class="choice-circle"></div> 34</label>
+                            <label class="choice-item"><div class="choice-circle"></div> 36</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 3 ================= -->
+        <section class="page">
+            <header class="math-champs-header">
+                <img src="https://mathruangguru.github.io/mathchamps/revamps/logoMC-2026.png" alt="Math Champs" class="h-12">
+                <div class="header-info">
+                    <div class="header-level text-black">Discovery 2</div>
+                    <div class="text-[11px] font-bold text-black">Addition & Subtraction within 100</div>
+                    <div class="text-[10px] font-medium text-black italic text-right max-w-[280px]">Subtraction with Regrouping</div>
+                    <div class="text-[11px] font-bold text-black">Code : D2-S105</div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="flex flex-col gap-4">
+                    <!-- QUESTION 7 -->
+                    <div class="soal-item">
+                        <div class="font-bold text-xs">7. Toy Cars</div>
+                        <div class="text-sm">There are 63 cars. 27 were sold. How many cars are left?</div>
+                        <div class="choice-container mt-2">
+                            <label class="choice-item"><div class="choice-circle"></div> 36</label>
+                            <label class="choice-item"><div class="choice-circle"></div> 46</label>
+                        </div>
+                    </div>
+                    <div class="soal-item">
+                        <div class="font-bold text-xs">8. Mother's Buttons</div>
+                        <div class="text-sm">Mother bought 90 buttons. 45 were used. How many are left?</div>
+                        <div class="choice-container mt-2">
+                            <label class="choice-item"><div class="choice-circle"></div> 45</label>
+                            <label class="choice-item"><div class="choice-circle"></div> 55</label>
+                        </div>
+                    </div>
+                    <div class="soal-item">
+                        <div class="font-bold text-xs">9. Quick Calculation</div>
+                        <div class="text-sm">What is the result of 72 - 38?</div>
+                        <div class="choice-container mt-2">
+                            <label class="choice-item"><div class="choice-circle"></div> 34</label>
+                            <label class="choice-item"><div class="choice-circle"></div> 44</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title mt-6 text-center">Final Challenge</div>
+                <div class="soal-item border-2 border-yellow-400 bg-yellow-50 py-10">
+                    <div class="flex items-center gap-2 mb-4 justify-center">
+                        <div class="bg-yellow-400 text-white text-xs font-black px-3 py-1 rounded uppercase">Challenge</div>
+                        <div class="font-bold text-lg">10. Bus Passengers</div>
+                    </div>
+                    <div class="text-center text-md mb-8 max-w-lg mx-auto leading-relaxed">
+                        There are <b>54</b> passengers on the bus. <br>
+                        At the bus stop, <b>19</b> people got off. <br>
+                        How many passengers are left on the bus?
+                    </div>
+                    <div class="flex justify-center items-center gap-8 mb-8">
+                        <div class="text-center"><div class="text-xs font-bold text-gray-400 mb-1">AT FIRST</div><div class="text-3xl font-black text-blue-600">54</div></div>
+                        <div class="text-3xl text-gray-300">-</div>
+                        <div class="text-center"><div class="text-xs font-bold text-gray-400 mb-1">GOT OFF</div><div class="text-3xl font-black text-red-500">19</div></div>
+                        <div class="text-3xl text-gray-300">=</div>
+                        <div class="w-16 h-16 border-4 border-dashed border-gray-300 rounded-xl flex items-center justify-center text-gray-300 text-2xl">?</div>
+                    </div>
+                    <div class="choice-container gap-10">
+                        <label class="choice-item text-lg py-2 px-6"><div class="choice-circle w-4 h-4"></div> 35</label>
+                        <label class="choice-item text-lg py-2 px-6"><div class="choice-circle w-4 h-4"></div> 45</label>
+                    </div>
+                </div>
+
+                <div id="encouragement-text" class="mt-auto py-10 text-center text-gray-400 italic font-medium text-xs"></div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const encouragementEl = document.getElementById('encouragement-text');
+            if (encouragementEl) {
+                const quotes = [
+                    "Nice work finishing the set—seriously well done.",
+                    "Great effort today. Quick check-through and you’re good.",
+                    "Strong finish! Take a moment to review your answers.",
+                    "Awesome job. If anything feels off, trust your gut and recheck it.",
+                    "You’re getting sharper with every problem.",
+                    "Well done—your focus really showed.",
+                    "Before you close it, do one last scan for silly mistakes.",
+                    "That was solid. Clean work and clear thinking.",
+                    "Mistakes are part of the process—what matters is you keep going.",
+                    "Great job. Try checking the trickiest question one more time.",
+                    "Proud of your effort. Consistency wins.",
+                    "Strong work—your math muscles are growing.",
+                    "Nice! Now make sure every question has an answer.",
+                    "Great progress today—keep that momentum.",
+                    "You worked hard. Take a breath, then double-check.",
+                    "Excellent! Try verifying one problem using a different method.",
+                    "You did it—finish with a confident final check.",
+                    "Little by little, a little becomes a lot.",
+                    "Practice makes progress.",
+                    "Steady hands win the race.",
+                    "Small steps beat no steps.",
+                    "Check your work, trust your growth.",
+                    "A calm mind catches quiet mistakes.",
+                    "Consistency is a superpower.",
+                    "Progress, not perfection.",
+                    "One more look saves one big oops.",
+                    "Patience pays in points.",
+                    "Accuracy beats speed—every time.",
+                    "Strong roots, strong results.",
+                    "Today’s effort is tomorrow’s confidence.",
+                    "The best learners review."
+                ];
+                encouragementEl.innerText = quotes[Math.floor(Math.random() * quotes.length)];
+            }
+        });
+    </script>
+</body>
+</html>
