@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Berapa Jumlah Barangnya Sekarang?</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- KaTeX for Fraction Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --primary-text: #333333;
+            --grey-text: #8d8e8d;
+            --bar-blue: #bae6fd;
+            --bar-blue-dark: #7dd3fc;
+            --bar-green: #bbf7d0;
+            --bar-green-dark: #86efac;
+            --bar-yellow: #fef08a;
+            --bar-yellow-dark: #fde047;
+            --bar-orange: #fed7aa;
+            --bar-orange-dark: #fdba74;
+            --bar-purple: #e9d5ff;
+            --bar-purple-dark: #d8b4fe;
+            --bar-pink: #fbcfe8;
+            --bar-pink-dark: #f9a8d4;
+            --line-color: #000000;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: "Montserrat", sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: var(--primary-text);
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 20px 0;
+        }
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .page {
+            background: white;
+            width: 21.0cm;
+            min-height: 29.7cm;
+            padding: 1.2cm 1.8cm;
+            margin-bottom: 1cm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .page-header {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .math-champs-header {
+            background-color: white;
+            padding: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: black;
+        }
+        .page-footer {
+            text-align: left;
+            font-size: 6pt;
+            color: var(--grey-text);
+            padding-top: 4px;
+            margin-top: auto;
+            border-top: 2px solid var(--grey-text);
+            width: 100%;
+            display: flex; gap: 5px; align-items: center;
+        }
+        .content-wrapper {
+            flex: 1;
+            padding-bottom: 20px;
+        }
+        .mph-bar {
+            height: 54px; 
+            border: 1.5px solid var(--line-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            position: relative;
+        }
+        .sub-unit {
+            border-right: 1px dashed rgba(0,0,0,0.3);
+            height: 100%;
+            flex: 1;
+        }
+        .sub-unit:last-child { border-right: none; }
+        .bar-label {
+            font-size: 9px;
+            font-weight: 800;
+            color: #444;
+            margin-right: 12px;
+            min-width: 65px;
+            text-align: right;
+        }
+        .state-title {
+            font-size: 10px;
+            font-weight: 900;
+            color: #000;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 0.05em;
+        }
+        .svg-brace {
+            width: 100%;
+            height: 12px;
+            display: block;
+            overflow: visible;
+        }
+        .svg-brace path {
+            fill: none;
+            stroke: #333;
+            stroke-width: 1.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .calc-box {
+            border: 1.5px solid #333;
+            min-width: 55px;
+            display: inline-block;
+            height: 28px;
+            vertical-align: middle;
+            margin: 0 4px;
+            border-radius: 4px;
+        }
+        .answer-line {
+            border-bottom: 1.5px solid #333;
+            min-width: 60px;
+            display: inline-block;
+            height: 22px;
+            vertical-align: middle;
+            margin: 0 4px;
+        }
+        .long-answer-line {
+            border-bottom: 1.5px solid #333;
+            min-width: 400px;
+            display: inline-block;
+            height: 22px;
+            vertical-align: middle;
+            margin: 0 4px;
+        }
+        .question-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 35px;
+        }
+        .q-number {
+            font-weight: 800;
+            min-width: 25px;
+            text-align: right;
+        }
+        .q-content {
+            flex: 1;
+            text-align: justify;
+        }
+        .example-box {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            background-color: #fafafa;
+        }
+        
+        /* Bar Fill Colors */
+        .fill-blue { background-color: var(--bar-blue); }
+        .fill-blue-dark { background-color: var(--bar-blue-dark); }
+        .fill-green { background-color: var(--bar-green); }
+        .fill-green-dark { background-color: var(--bar-green-dark); }
+        .fill-yellow { background-color: var(--bar-yellow); }
+        .fill-yellow-dark { background-color: var(--bar-yellow-dark); }
+        .fill-orange { background-color: var(--bar-orange); }
+        .fill-orange-dark { background-color: var(--bar-orange-dark); }
+        .fill-purple { background-color: var(--bar-purple); }
+        .fill-purple-dark { background-color: var(--bar-purple-dark); }
+        .fill-pink { background-color: var(--bar-pink); }
+        .fill-pink-dark { background-color: var(--bar-pink-dark); }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background-color: white; padding: 0; }
+            .page { width: 21.0cm; border: none; box-shadow: none; margin: 0; page-break-after: always; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- HALAMAN 1 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[11px] text-black font-semibold mt-1 uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[11px] text-black font-medium leading-tight text-right">Mencari Kuantitas Barang (Sinkronisasi Unit)</div>
+                        <div class="text-[11px] text-black font-medium">Kode : M4-S331</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="text-center mb-8 mt-4">
+                    <h1 class="text-xl font-black uppercase tracking-wider text-gray-800">Berapa Jumlah Barangnya Sekarang?</h1>
+                </div>
+
+                <!-- SEKSI CONTOH -->
+                <div class="example-box">
+                    <h2 class="font-bold text-sm mb-4 text-black italic">Mari Mengamati Contoh!</h2>
+                    <p class="text-sm mb-6 text-justify text-gray-800">Arka dan Baim memiliki kelereng dengan perbandingan 1 : 2. Arka membeli 15 butir kelereng lagi sehingga perbandingan kelereng mereka sekarang menjadi 3 : 4. Berapa banyak kelereng yang dimiliki Arka sekarang?</p>
+                    
+                    <div class="flex flex-col gap-8 mb-14 mt-8 items-center">
+                        <div class="w-full max-w-[500px]">
+                            <div class="state-title">Kondisi Awal (1 : 2):</div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center">
+                                    <div class="bar-label">Arka</div>
+                                    <div class="mph-bar fill-yellow w-[80px]">
+                                        <div class="sub-unit"></div><div class="sub-unit"></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="bar-label">Baim</div>
+                                    <div class="flex">
+                                        <div class="mph-bar fill-blue w-[80px] border-r-0">
+                                            <div class="sub-unit"></div><div class="sub-unit"></div>
+                                        </div>
+                                        <div class="mph-bar fill-blue w-[80px]">
+                                            <div class="sub-unit"></div><div class="sub-unit"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full max-w-[500px]">
+                            <div class="state-title">Kondisi Kini (3 : 4):</div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center">
+                                    <div class="bar-label">Arka</div>
+                                    <div class="flex relative">
+                                        <div class="mph-bar fill-yellow w-[40px] border-r-0"></div>
+                                        <div class="mph-bar fill-yellow w-[40px] border-r-0"></div>
+                                        <div class="mph-bar fill-yellow-dark w-[40px]"></div>
+                                        <!-- Top Brace Addition -->
+                                        <div class="absolute -top-11 left-[80px] w-[40px] flex flex-col items-center">
+                                            <div class="text-[11px] font-extrabold mb-1">15</div>
+                                            <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="bar-label">Baim</div>
+                                    <div class="flex relative">
+                                        <div class="mph-bar fill-blue w-[40px] border-r-0"></div>
+                                        <div class="mph-bar fill-blue w-[40px] border-r-0"></div>
+                                        <div class="mph-bar fill-blue w-[40px] border-r-0"></div>
+                                        <div class="mph-bar fill-blue w-[40px]"></div>
+                                        <!-- Bottom Brace Result -->
+                                        <div class="absolute -bottom-11 left-0 w-[120px] flex flex-col items-center">
+                                            <svg class="svg-brace transform rotate-180" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                            <div class="text-[12px] font-bold mt-1 text-black">?</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm space-y-3 mt-8 ml-4 border-t pt-4">
+                        <div class="leading-relaxed italic text-gray-600">Baim tetap 4 unit. Arka naik dari 2 menjadi 3 unit.</div>
+                        <div class="leading-relaxed">1 unit = 15 butir.</div>
+                        <div class="leading-relaxed">3 units = 3 &times; 15 = 45 butir.</div>
+                        <div class="pt-4 font-bold text-black italic">Jadi, kelereng Arka sekarang adalah 45 butir.</div>
+                    </div>
+                </div>
+
+                <!-- Soal 1 -->
+                <div class="question-item">
+                    <div class="q-number">1.</div>
+                    <div class="q-content">
+                        <p class="mb-4 text-gray-800">Rasio panjang pita Cika dan Dafa adalah 2 : 3. Cika membeli 10 cm pita lagi sehingga rasio pita mereka menjadi 3 : 4. Berapa panjang pita Cika sekarang?</p>
+                        
+                        <div class="flex flex-col gap-10 mb-14 mt-8 items-center">
+                            <div class="w-full max-w-[600px]">
+                                <div class="state-title">Kondisi Awal (2 : 3):</div>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Cika</div>
+                                        <div class="flex">
+                                            <!-- 2 units, each divided into 4 dashed ones -->
+                                            <div class="mph-bar fill-green w-[120px] border-r-0">
+                                                <div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div>
+                                            </div>
+                                            <div class="mph-bar fill-green w-[120px]">
+                                                <div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Dafa</div>
+                                        <div class="flex">
+                                            <!-- 3 units, each divided into 4 dashed ones -->
+                                            <div class="mph-bar fill-pink w-[120px] border-r-0">
+                                                <div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div>
+                                            </div>
+                                            <div class="mph-bar fill-pink w-[120px] border-r-0">
+                                                <div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div>
+                                            </div>
+                                            <div class="mph-bar fill-pink w-[120px]">
+                                                <div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="w-full max-w-[600px]">
+                                <div class="state-title">Kondisi Kini (3 : 4):</div>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Cika</div>
+                                        <div class="flex relative">
+                                            <!-- 9 units total -->
+                                            <div class="mph-bar fill-green w-[30px] border-r-0"></div><div class="mph-bar fill-green w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-green w-[30px] border-r-0"></div><div class="mph-bar fill-green w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-green w-[30px] border-r-0"></div><div class="mph-bar fill-green w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-green w-[30px] border-r-0"></div><div class="mph-bar fill-green w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-green-dark w-[30px]"></div>
+                                            <!-- Top Brace for 10 cm -->
+                                            <div class="absolute -top-11 left-[240px] w-[30px] flex flex-col items-center">
+                                                <div class="text-[10px] font-extrabold mb-1 whitespace-nowrap">10 cm</div>
+                                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Dafa</div>
+                                        <div class="flex relative">
+                                            <!-- 12 units total -->
+                                            <div class="mph-bar fill-pink w-[30px] border-r-0"></div><div class="mph-bar fill-pink w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[30px] border-r-0"></div><div class="mph-bar fill-pink w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[30px] border-r-0"></div><div class="mph-bar fill-pink w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[30px] border-r-0"></div><div class="mph-bar fill-pink w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[30px] border-r-0"></div><div class="mph-bar fill-pink w-[30px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[30px] border-r-0"></div><div class="mph-bar fill-pink w-[30px]"></div>
+                                            <!-- Bottom Brace -->
+                                            <div class="absolute -bottom-11 left-0 w-[270px] flex flex-col items-center">
+                                                <svg class="svg-brace transform rotate-180" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                                <div class="text-[12px] font-bold mt-1 text-black">?</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-sm space-y-4 mt-8 ml-6">
+                            <div>Rasio Cika : Dafa awal = 2 : 3 &rarr; 8 : <span class="calc-box"></span></div>
+                            <div>Rasio Cika : Dafa kini = 3 : 4 &rarr; <span class="calc-box"></span> : 12</div>
+                            <div>1 unit = <span class="calc-box"></span> cm</div>
+                            <div><span class="calc-box"></span> units = <span class="calc-box"></span> &times; <span class="calc-box"></span> = <span class="calc-box"></span></div>
+                            <div class="font-bold pt-1">Jadi, panjang pita Cika sekarang adalah <span class="answer-line w-32"></span> cm.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 2 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[11px] text-black font-semibold mt-1 uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[11px] text-black font-medium leading-tight text-right">Mencari Kuantitas Barang (Sinkronisasi Unit)</div>
+                        <div class="text-[11px] text-black font-medium">Kode : M4-S331</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- Soal 2 -->
+                <div class="question-item mt-6">
+                    <div class="q-number">2.</div>
+                    <div class="q-content">
+                        <p class="mb-4 text-gray-800">Evan dan Gaby mengumpulkan uang dengan rasio 3 : 2. Evan menabung lagi sebesar Rp20.000 sehingga rasionya menjadi 2 : 1 terhadap uang Gaby. Berapa uang Evan sekarang?</p>
+                        
+                        <div class="flex flex-col gap-10 mb-14 mt-8 items-center">
+                            <div class="w-full max-w-[500px]">
+                                <div class="state-title">Kondisi Awal (3 : 2):</div>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Evan</div>
+                                        <div class="flex">
+                                            <div class="mph-bar fill-orange w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-orange w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-orange w-[50px]"></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Gaby</div>
+                                        <div class="flex">
+                                            <div class="mph-bar fill-purple w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-purple w-[50px]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-full max-w-[500px]">
+                                <div class="state-title">Kondisi Kini (2 : 1):</div>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Evan</div>
+                                        <div class="flex relative">
+                                            <!-- 2:1 scaled to 4:2 -->
+                                            <div class="mph-bar fill-orange w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-orange w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-orange w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-orange-dark w-[50px]"></div>
+                                            <!-- Top Brace -->
+                                            <div class="absolute -top-11 left-[150px] w-[50px] flex flex-col items-center">
+                                                <div class="text-[10px] font-extrabold mb-1 whitespace-nowrap">Rp20rb</div>
+                                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Gaby</div>
+                                        <div class="flex relative">
+                                            <div class="mph-bar fill-purple w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-purple w-[50px]"></div>
+                                            <!-- Bottom Brace -->
+                                            <div class="absolute -bottom-11 left-0 w-[200px] flex flex-col items-center">
+                                                <svg class="svg-brace transform rotate-180" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                                <div class="text-[12px] font-bold mt-1 text-black">?</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-sm space-y-4 mt-8 ml-6">
+                            <div>Rasio sesudah Evan : Gaby = 2 : 1 &rarr; <span class="calc-box"></span> : 2</div>
+                            <div>1 unit = Rp <span class="calc-box"></span></div>
+                            <div><span class="calc-box"></span> units = <span class="calc-box"></span> &times; <span class="calc-box"></span> = Rp <span class="calc-box"></span></div>
+                            <div class="font-bold pt-1 italic text-black">Jadi, banyak uang Evan sekarang adalah Rp <span class="answer-line w-32"></span>.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-10 mt-12">
+                    <!-- Soal 3 -->
+                    <div class="question-item">
+                        <div class="q-number">3.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800">Perbandingan banyak krayon Lia dan Miko adalah 4 : 5. Lia membeli 8 krayon lagi sehingga rasionya menjadi 6 : 5 terhadap krayon Miko. Berapa banyak krayon yang dimiliki Lia sekarang?</p>
+                            <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 4 -->
+                    <div class="question-item">
+                        <div class="q-number">4.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800">Sasha dan Reno memiliki tabungan dengan rasio 1 : 3. Sasha menabung lagi sebesar Rp50.000 sehingga rasionya menjadi 1 : 1 terhadap tabungan Reno. Berapa tabungan Reno mula-mula?</p>
+                            <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 3 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[11px] text-black font-semibold mt-1 uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[11px] text-black font-medium leading-tight text-right">Mencari Kuantitas Barang (Sinkronisasi Unit)</div>
+                        <div class="text-[11px] text-black font-medium">Kode : M4-S331</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper space-y-12 mt-10">
+                <!-- Soal 5 -->
+                <div class="question-item">
+                    <div class="q-number">5.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Keranjang C dan Keranjang D berisi buah jeruk dengan rasio 3 : 4. Sebanyak 12 jeruk ditambahkan ke Keranjang C sehingga rasionya menjadi 5 : 4. Berapa total jeruk di kedua keranjang sekarang?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 6 -->
+                <div class="question-item">
+                    <div class="q-number">6.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Persediaan tepung di Gudang P dan Gudang Q memiliki rasio 2 : 5. Gudang P menerima kiriman 30 kg tepung lagi sehingga rasionya menjadi 4 : 5. Berapa banyak tepung di Gudang P sekarang?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 7 -->
+                <div class="question-item">
+                    <div class="q-number">7.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Perbandingan tabungan Kiki dan Lala adalah 2 : 3. Kiki menabung lagi sebesar Rp100.000. Sekarang rasionya menjadi 4 : 3 terhadap tabungan Lala. Berapa jumlah tabungan mereka berdua mula-mula?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 8 -->
+                <div class="question-item">
+                    <div class="q-number">8.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Rasio koleksi kartu Zaki dan Yusuf adalah 3 : 4. Zaki menambah 9 kartu lagi ke koleksinya sehingga rasionya menjadi 1 : 1 terhadap kartu Yusuf. Berapa banyak kartu yang dimiliki Yusuf?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 9 -->
+                <div class="question-item">
+                    <div class="q-number">9.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Rasio berat mangga di Kotak 1 dan Kotak 2 adalah 2 : 3. Kotak 1 ditambahkan 10 kg mangga lagi sehingga rasionya menjadi 4 : 3. Berapa berat total mangga mula-mula?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 10 -->
+                <div class="question-item">
+                    <div class="q-number">10.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Perbandingan kelereng Putih dan Hitam di sebuah toples adalah 5 : 6. Jika 14 butir kelereng Putih ditambahkan, rasionya menjadi 6 : 5 terhadap kelereng Hitam. Berapa banyak kelereng Hitam mula-mula?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <div class="mt-16 text-center">
+                    <div class="inline-block p-5 border-2 border-dashed border-gray-200 rounded-3xl bg-slate-50">
+                        <p class="text-sm font-bold text-gray-700 italic">"Bangga sama kamu—kamu tidak menyerah dan menyelesaikannya."</p>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+    </div>
+
+    <!-- Initialize KaTeX with proper delimiters and error handling -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+    </script>
+</body>
+</html>
