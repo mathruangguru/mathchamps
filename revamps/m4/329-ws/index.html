@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Mencari Jumlah Mula-mula</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- KaTeX for Fraction Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --primary-text: #333333;
+            --grey-text: #8d8e8d;
+            --bar-blue: #bae6fd;
+            --bar-green: #bbf7d0;
+            --bar-yellow: #fef08a;
+            --bar-red: #fecaca;
+            --bar-orange: #fed7aa;
+            --bar-purple: #e9d5ff;
+            --bar-pink: #fbcfe8;
+            --line-color: #000000;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: "Montserrat", sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: var(--primary-text);
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 20px 0;
+        }
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .page {
+            background: white;
+            width: 21.0cm;
+            min-height: 29.7cm;
+            padding: 1.2cm 1.8cm;
+            margin-bottom: 1cm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .page-header {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .math-champs-header {
+            background-color: white;
+            padding: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: black;
+        }
+        .page-footer {
+            text-align: left;
+            font-size: 6pt;
+            color: var(--grey-text);
+            padding-top: 4px;
+            margin-top: auto;
+            border-top: 2px solid var(--grey-text);
+            width: 100%;
+            display: flex; gap: 5px; align-items: center;
+        }
+        .content-wrapper {
+            flex: 1;
+            padding-bottom: 40px;
+        }
+        .mph-bar {
+            height: 44px;
+            border: 1.5px solid var(--line-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            position: relative;
+        }
+        .bar-dashed {
+            border-style: dashed;
+            background-color: #f9fafb !important;
+            opacity: 0.5;
+        }
+        .svg-brace {
+            width: 100%;
+            height: 12px;
+            display: block;
+            overflow: visible;
+        }
+        .svg-brace path {
+            fill: none;
+            stroke: #333;
+            stroke-width: 1.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .calc-box {
+            border: 1.5px solid #333;
+            min-width: 55px;
+            display: inline-block;
+            height: 28px;
+            vertical-align: middle;
+            margin: 0 4px;
+            border-radius: 4px;
+        }
+        .answer-line {
+            border-bottom: 1.5px solid #333;
+            min-width: 60px;
+            display: inline-block;
+            height: 22px;
+            vertical-align: middle;
+            margin: 0 4px;
+        }
+        .long-answer-line {
+            border-bottom: 1.5px solid #333;
+            min-width: 400px;
+            display: inline-block;
+            height: 22px;
+            vertical-align: middle;
+            margin: 0 4px;
+        }
+        .question-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 35px;
+        }
+        .q-number {
+            font-weight: 800;
+            min-width: 25px;
+            text-align: right;
+        }
+        .q-content {
+            flex: 1;
+            text-align: justify;
+        }
+        .example-box {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            background-color: #fafafa;
+        }
+        .fill-blue { background-color: var(--bar-blue); }
+        .fill-green { background-color: var(--bar-green); }
+        .fill-yellow { background-color: var(--bar-yellow); }
+        .fill-orange { background-color: var(--bar-orange); }
+        .fill-purple { background-color: var(--bar-purple); }
+        .fill-pink { background-color: var(--bar-pink); }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background-color: white; padding: 0; }
+            .page { width: 100%; border: none; box-shadow: none; margin: 0; page-break-after: always; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- HALAMAN 1 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 4</div>
+                        <div class="text-[11px] text-black font-semibold mt-1 uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[11px] text-black font-medium leading-tight whitespace-nowrap">Rasio Awal, Belanja Pecahan & Selisih Akhir</div>
+                        <div class="text-[11px] text-black font-medium">Kode : M4-S329</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="text-center mb-10 mt-6">
+                    <h1 class="text-xl font-black uppercase tracking-wider text-gray-800">Berapa Jumlah Mula-mula?</h1>
+                </div>
+
+                <!-- SEKSI CONTOH -->
+                <div class="example-box">
+                    <h2 class="font-bold text-sm mb-4 text-black italic">Mari Mengamati Contoh!</h2>
+                    <p class="text-sm mb-12 text-justify text-gray-800">Kean dan Liam memiliki kelereng dengan perbAmmarngan 5 : 2. Kean memberikan $\frac{2}{5}$ kelerengnya kepada adiknya. Sekarang, selisih kelereng Kean dan Liam adalah 10 butir. Berapa banyak kelereng Kean mula-mula?</p>
+                    
+                    <div class="flex justify-center mb-20 mt-12">
+                        <div class="relative">
+                            <div class="flex flex-col gap-4">
+                                <!-- Bar Kean -->
+                                <div class="flex items-center">
+                                    <div class="w-16 text-xs font-bold text-gray-600">Kean</div>
+                                    <div class="flex w-[300px] relative">
+                                        <div class="mph-bar fill-yellow w-[60px] border-r-0"></div>
+                                        <div class="mph-bar fill-yellow w-[60px] border-r-0"></div>
+                                        <div class="mph-bar fill-yellow w-[60px] border-r-0"></div>
+                                        <div class="mph-bar bar-dashed w-[60px] border-r-0"></div>
+                                        <div class="mph-bar bar-dashed w-[60px]"></div>
+                                        
+                                        <!-- Top Brace for Question Mark (Mula-mula) -->
+                                        <div class="absolute -top-11 left-0 w-[300px] flex flex-col items-center">
+                                            <div class="text-[12px] font-extrabold mb-1">?</div>
+                                            <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Bar Liam -->
+                                <div class="flex items-center">
+                                    <div class="w-16 text-xs font-bold text-gray-600">Liam</div>
+                                    <div class="flex w-[300px] relative">
+                                        <div class="mph-bar fill-blue w-[60px] border-r-0"></div>
+                                        <div class="mph-bar fill-blue w-[60px]"></div>
+                                        
+                                        <!-- Bottom Brace for 10 -->
+                                        <div class="absolute -bottom-11 left-[120px] w-[60px] flex flex-col items-center">
+                                            <svg class="svg-brace transform rotate-180" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                            <div class="text-[12px] font-bold mt-1 text-black">10</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm space-y-3 mt-12 ml-4">
+                        <div class="leading-relaxed italic">Kean memberikan $\frac{2}{5}$ kelerengnya, maka sisa unit Kean adalah 3 unit. Selisih unit Kean dan Liam sekarang adalah $3 - 2 = 1$ unit.</div>
+                        <div class="leading-relaxed">1 unit = 10</div>
+                        <div class="leading-relaxed">5 units = 5 &times; 10 = 50 butir.</div>
+                        <div class="pt-4 font-bold border-t border-gray-100 italic text-black">Jadi, kelereng Kean mula-mula adalah 50 butir.</div>
+                    </div>
+                </div>
+
+                <!-- Soal 1 -->
+                <div class="question-item">
+                    <div class="q-number">1.</div>
+                    <div class="q-content">
+                        <p class="mb-4 text-gray-800">Mika dan Nara memiliki pita dengan perbAmmarngan panjang 3 : 5. Mika memotong pitanya sepanjang $\frac{1}{3}$ bagian. Sekarang, selisih panjang pita mereka adalah 12 cm. Berapa panjang pita Nara mula-mula?</p>
+                        <div class="flex justify-center mb-20 mt-16">
+                            <div class="relative">
+                                <div class="flex flex-col gap-4">
+                                    <div class="flex items-center">
+                                        <div class="w-16 text-xs font-bold text-gray-600">Mika</div>
+                                        <div class="flex w-[250px] relative">
+                                            <div class="mph-bar fill-green w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-green w-[50px] border-r-0"></div>
+                                            <div class="mph-bar bar-dashed w-[50px]"></div>
+                                            
+                                            <!-- Brace for 12 cm ON TOP OF MIKA -->
+                                            <div class="absolute -top-11 left-[100px] w-[150px] flex flex-col items-center">
+                                                <div class="text-[12px] font-extrabold mb-1">12 cm</div>
+                                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="w-16 text-xs font-bold text-gray-600">Nara</div>
+                                        <div class="flex w-[250px] relative">
+                                            <div class="mph-bar fill-pink w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-pink w-[50px]"></div>
+                                            
+                                            <!-- Brace for ? below Nara's bar -->
+                                            <div class="absolute -bottom-11 left-0 w-[250px] flex flex-col items-center">
+                                                <svg class="svg-brace transform rotate-180" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                                <div class="text-[12px] font-extrabold mt-1">?</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-sm space-y-4 mt-12 ml-6">
+                            <div>3 units = 12</div>
+                            <div>1 unit = <span class="calc-box"></span> &divide; <span class="calc-box"></span> = <span class="calc-box"></span></div>
+                            <div>5 units = 5 &times; <span class="calc-box"></span> = <span class="calc-box"></span></div>
+                            <div class="font-bold pt-1">Jadi, panjang pita Nara adalah <span class="answer-line w-32"></span> cm.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 2 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 4</div>
+                        <div class="text-[11px] text-black font-semibold mt-1 uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[11px] text-black font-medium leading-tight">Rasio Awal, Belanja Pecahan & Selisih Akhir</div>
+                        <div class="text-[11px] text-black font-medium">Kode : M4-S329</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- Soal 2 -->
+                <div class="question-item mt-6">
+                    <div class="q-number">2.</div>
+                    <div class="q-content">
+                        <p class="mb-4 text-gray-800">Olive dan Pasha memiliki uang saku dengan rasio 5 : 2. Olive menyumbangkan $\frac{1}{5}$ uangnya. Sekarang, Olive memiliki Rp20.000 lebih banyak dari Pasha. Berapa uang saku Olive mula-mula?</p>
+                        <div class="flex justify-center mb-20 mt-16">
+                            <div class="relative">
+                                <div class="flex flex-col gap-4">
+                                    <div class="flex items-center">
+                                        <div class="w-16 text-xs font-bold text-gray-600">Olive</div>
+                                        <div class="flex w-[250px] relative">
+                                            <div class="mph-bar fill-orange w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-orange w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-orange w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-orange w-[50px] border-r-0"></div>
+                                            <div class="mph-bar bar-dashed w-[50px]"></div>
+                                            
+                                            <!-- Brace for ? ABOVE OLIVE (5 units mula-mula) -->
+                                            <div class="absolute -top-11 left-0 w-[250px] flex flex-col items-center">
+                                                <div class="text-[12px] font-extrabold mb-1">?</div>
+                                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="w-16 text-xs font-bold text-gray-600">Pasha</div>
+                                        <div class="flex w-[250px] relative">
+                                            <div class="mph-bar fill-purple w-[50px] border-r-0"></div>
+                                            <div class="mph-bar fill-purple w-[50px]"></div>
+
+                                            <!-- Brace for Rp20.000 below Pasha (Diff between 4u Olive and 2u Pasha is 2u) -->
+                                            <div class="absolute -bottom-11 left-[100px] w-[100px] flex flex-col items-center">
+                                                <svg class="svg-brace transform rotate-180" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                                <div class="text-[12px] font-extrabold mt-1">Rp20.000</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-sm space-y-4 mt-12 ml-6">
+                            <div>2 units = Rp20.000</div>
+                            <div>1 unit = <span class="calc-box"></span> &divide; <span class="calc-box"></span> = Rp <span class="calc-box"></span></div>
+                            <div>5 units = 5 &times; <span class="calc-box"></span> = Rp <span class="calc-box"></span></div>
+                            <div class="font-bold pt-1 italic">Jadi, uang saku Olive mula-mula adalah Rp <span class="answer-line w-32"></span>.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-12 mt-12">
+                    <!-- Soal 3 -->
+                    <div class="question-item">
+                        <div class="q-number">3.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800">Gita dan Hadi memiliki koleksi stiker dengan perbAmmarngan 7 : 5. Gita memberikan $\frac{3}{7}$ koleksinya kepada adiknya. Sekarang, selisih stiker Gita dan Hadi adalah 4 lembar. Berapa stiker Gita mula-mula?</p>
+                            <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 4 -->
+                    <div class="question-item">
+                        <div class="q-number">4.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800">PerbAmmarngan tabungan Indah dan Jaka adalah 5 : 2. Indah mengambil $\frac{3}{5}$ bagian tabungannya untuk membeli tas. Jika sekarang sisa uang Indah sama dengan uang Jaka, dan uang yang diambil Indah adalah Rp60.000, berapa uang Jaka mula-mula?</p>
+                            <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 5 -->
+                    <div class="question-item">
+                        <div class="q-number">5.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800">Rasio kelereng Mika dan Nara adalah 5 : 3. Mika memberikan $\frac{1}{5}$ kelerengnya kepada temannya. Sekarang Mika memiliki 6 kelereng lebih banyak dari Nara. Berapa banyak kelereng Mika mula-mula?</p>
+                            <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 3 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 4</div>
+                        <div class="text-[11px] text-black font-semibold mt-1 uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[11px] text-black font-medium leading-tight">Rasio Awal, Belanja Pecahan & Selisih Akhir</div>
+                        <div class="text-[11px] text-black font-medium">Kode : M4-S329</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper space-y-12 mt-10">
+                <!-- Soal 6 -->
+                <div class="question-item">
+                    <div class="q-number">6.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Qiana dan Raka memiliki apel dengan perbAmmarngan 4 : 1. Qiana memberikan $\frac{1}{4}$ apelnya kepada Raka. Sekarang, selisih apel mereka adalah 10 buah. Berapa total apel mereka mula-mula?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 7 -->
+                <div class="question-item">
+                    <div class="q-number">7.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">PerbAmmarngan buku Siska dan Tio adalah 3 : 2. Siska mendonasikan $\frac{1}{3}$ bukunya. Sekarang Siska dan Tio memiliki jumlah buku yang sama. Jika total buku mereka berdua sekarang adalah 24 buku, berapa buku Siska mula-mula?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 8 -->
+                <div class="question-item">
+                    <div class="q-number">8.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Ammar dan Billy memiliki tabungan dengan rasio 5 : 3. Ammar menyedekahkan $\frac{2}{5}$ tabungannya. Sekarang, Ammar memiliki Rp10.000 lebih banyak daripada Billy. Berapa total tabungan mereka mula-mula?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 9 -->
+                <div class="question-item">
+                    <div class="q-number">9.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">Rasio jumlah pensil Caca dan Dedi adalah 4 : 3. Caca memberikan $\frac{1}{2}$ pensilnya kepada adiknya. Jika sekarang Dedi memiliki 5 pensil lebih banyak daripada Caca, berapa pensil Dedi mula-mula?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 10 -->
+                <div class="question-item">
+                    <div class="q-number">10.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800">PerbAmmarngan uang jajan Erin dan Faris adalah 5 : 1. Erin membelanjakan $\frac{3}{5}$ uang jajannya untuk membeli buku. Sekarang, selisih uang jajan mereka adalah Rp4.000. Berapa uang jajan Erin mula-mula?</p>
+                        <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <div class="mt-20 text-center">
+                    <div class="inline-block p-5 border-2 border-dashed border-gray-200 rounded-3xl bg-slate-50">
+                        <p class="text-sm font-bold text-gray-700 italic">"Setiap latihan bikin kamu naik level!"</p>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+    </div>
+
+    <!-- Initialize KaTeX with proper delimiters and error handling -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+    </script>
+</body>
+</html>
