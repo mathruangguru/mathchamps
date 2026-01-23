@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Time Measurement (D4-S329)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --mc-blue: #3b82f6;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.2;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; 
+        min-height: 29.7cm; 
+        padding: 0.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        margin-top: 5px;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 2px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 0.5cm 2cm; }
+        .page:last-child { page-break-after: avoid; }
+      }
+
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* Grid Soal */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 80px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 4px;
+        padding: 0 5px;
+        vertical-align: middle;
+        background-color: white;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.2rem;
+        margin-top: 5px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+        margin-left: 1rem;
+      }
+
+      .choice-box {
+        width: 14px;
+        height: 14px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        border-radius: 3px;
+        vertical-align: text-bottom;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.2rem;
+        background-color: #f3f4f6;
+        padding: 0.2rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+      
+      .visual-box {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 0.5rem;
+        background-color: #fff;
+        border-radius: 8px;
+        margin: 0.2rem 0;
+        flex-wrap: wrap;
+      }
+
+      /* SVG Styles */
+      .math-svg {
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        overflow: visible;
+      }
+      .clock-face { fill: white; stroke: #333; stroke-width: 2px; }
+      .clock-hand { stroke: #1f2937; stroke-linecap: round; }
+      .clock-hand-hour { stroke-width: 3px; }
+      .clock-hand-minute { stroke-width: 2px; }
+      .clock-tick { stroke: #666; stroke-width: 1px; }
+      .timeline-line { stroke: #333; stroke-width: 2px; }
+      .timeline-jump { fill: none; stroke: #3b82f6; stroke-width: 1.5px; stroke-dasharray: 4; marker-end: url(#arrow); }
+      .box-dashed { fill: none; stroke: #666; stroke-width: 1.5px; stroke-dasharray: 4; }
+      .text-center-svg { text-anchor: middle; dominant-baseline: middle; fill: #1f2937; }
+    </style>
+  </head>
+  <body>
+
+    <!-- SVG Definitions for Arrows -->
+    <svg style="display: none;">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#3b82f6" />
+        </marker>
+        <!-- Reusable Clock Numbers Group -->
+        <g id="clock-numbers">
+            <text x="0" y="-27" class="text-center-svg" font-size="8">12</text>
+            <text x="13.5" y="-23.4" class="text-center-svg" font-size="8">1</text>
+            <text x="23.4" y="-13.5" class="text-center-svg" font-size="8">2</text>
+            <text x="27" y="0" class="text-center-svg" font-size="8">3</text>
+            <text x="23.4" y="13.5" class="text-center-svg" font-size="8">4</text>
+            <text x="13.5" y="23.4" class="text-center-svg" font-size="8">5</text>
+            <text x="0" y="27" class="text-center-svg" font-size="8">6</text>
+            <text x="-13.5" y="23.4" class="text-center-svg" font-size="8">7</text>
+            <text x="-23.4" y="13.5" class="text-center-svg" font-size="8">8</text>
+            <text x="-27" y="0" class="text-center-svg" font-size="8">9</text>
+            <text x="-23.4" y="-13.5" class="text-center-svg" font-size="8">10</text>
+            <text x="-13.5" y="-23.4" class="text-center-svg" font-size="8">11</text>
+        </g>
+      </defs>
+    </svg>
+
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Measurement</div>
+                    <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto">
+                        Start Time, Duration, and End Time
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D4-S329</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mt-4">
+                Learning Guide
+            </div>
+            
+            <div class="text-xs bg-yellow-50 border border-yellow-200 p-2 rounded mb-2 text-slate-700 italic">
+                <strong>Tips:</strong> Use the <strong>Count forward</strong> method with the help of a clock or number line. Remember: Short hand = Hour, Long hand = Minute.
+            </div>
+            
+            <div class="instruction-text mt-2 bg-blue-50">
+                Part A: Using Analog Clocks
+            </div>
+
+            <div class="soal-grid">
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. Look at the start time on the first clock. Add a duration of 30 minutes.
+                    </div>
+                    <div class="visual-box">
+                        <svg width="350" height="100" class="math-svg">
+                            <!-- Clock 1: 02:00 -->
+                            <g transform="translate(50, 50)">
+                                <circle cx="0" cy="0" r="35" class="clock-face" />
+                                <use href="#clock-numbers" />
+                                <!-- Hands 02:00 (Hour: -30deg from 3pm, Min: -90deg from 3pm) -->
+                                <line x1="0" y1="0" x2="17" y2="-10" class="clock-hand clock-hand-hour" />
+                                <line x1="0" y1="0" x2="0" y2="-28" class="clock-hand clock-hand-minute" />
+                                <text x="0" y="50" class="text-center-svg" font-size="11">Time 2:00</text>
+                            </g>
+
+                            <!-- Arrow & Duration -->
+                            <text x="175" y="40" class="text-center-svg" font-size="16" font-weight="bold" fill="#3b82f6">+</text>
+                            <text x="175" y="60" class="text-center-svg" font-size="12" fill="#3b82f6">30 Minutes</text>
+
+                            <!-- Clock 2: Blank/Question -->
+                            <g transform="translate(300, 50)">
+                                <circle cx="0" cy="0" r="35" class="clock-face" stroke-dasharray="4" />
+                                <use href="#clock-numbers" />
+                                <text x="0" y="0" class="text-center-svg" font-size="20" font-weight="bold" fill="#666" opacity="0.3">?</text>
+                                <text x="0" y="50" class="text-center-svg" font-size="11">Time ...</text>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="font-bold mb-1">What time does the activity end?</div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a) 2:15</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b) 2:30</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c) 3:00</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d) 1:30</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. Start time is 4:15. Duration of activity is 45 minutes.
+                    </div>
+                    <div class="visual-box">
+                         <svg width="350" height="100" class="math-svg">
+                            <!-- Clock 1: 04:15 -->
+                            <g transform="translate(50, 50)">
+                                <circle cx="0" cy="0" r="35" class="clock-face" />
+                                <use href="#clock-numbers" />
+                                <!-- Hands 04:15 (Hour slightly past 4) -->
+                                <line x1="0" y1="0" x2="12" y2="15" class="clock-hand clock-hand-hour" /> <!-- approx 4 -->
+                                <line x1="0" y1="0" x2="28" y2="0" class="clock-hand clock-hand-minute" /> <!-- 3 (15 min) -->
+                                <text x="0" y="50" class="text-center-svg" font-size="11">Time 4:15</text>
+                            </g>
+
+                            <!-- Arrow & Duration -->
+                            <text x="175" y="40" class="text-center-svg" font-size="16" font-weight="bold" fill="#3b82f6">+</text>
+                            <text x="175" y="60" class="text-center-svg" font-size="12" fill="#3b82f6">45 Minutes</text>
+
+                             <!-- Clock 2: Blank/Question -->
+                            <g transform="translate(300, 50)">
+                                <circle cx="0" cy="0" r="35" class="clock-face" stroke-dasharray="4" />
+                                <use href="#clock-numbers" />
+                                <text x="0" y="0" class="text-center-svg" font-size="20" font-weight="bold" fill="#666" opacity="0.3">?</text>
+                            </g>
+                         </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 ml-1 font-bold">
+                        <span>What time does the activity end? </span>
+                        <span class="input-box"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+                
+                <div class="instruction-text mt-2 bg-blue-50">
+                    Part B: Using Time Number Lines
+                </div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        3. Siti starts learning piano at 3:30 p.m. She practices for 1 hour.
+                    </div>
+                    <div class="visual-box">
+                         <svg width="320" height="70" class="math-svg">
+                             <!-- Timeline -->
+                             <line x1="20" y1="40" x2="300" y2="40" class="timeline-line" marker-end="url(#arrow)" />
+                             
+                             <!-- Start Tick -->
+                             <line x1="40" y1="35" x2="40" y2="45" stroke="#333" stroke-width="2" />
+                             <text x="40" y="60" class="text-center-svg" font-size="11">3:30</text>
+                             
+                             <!-- Jump -->
+                             <path d="M 40 35 Q 150 5 260 35" class="timeline-jump" />
+                             <!-- FIX: Moved text up to y=10 to avoid collision with line peak at y=20 -->
+                             <text x="150" y="10" class="text-center-svg" fill="#3b82f6" font-size="11">+ 1 Hour</text>
+                             
+                             <!-- End Box -->
+                             <rect x="240" y="30" width="40" height="20" fill="white" stroke="#333" stroke-dasharray="2" />
+                             <text x="260" y="40" class="text-center-svg" font-size="12" font-weight="bold">?</text>
+                         </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 ml-1 font-bold">
+                        <span>What time does Siti finish? </span>
+                        <span class="input-box"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Measurement</div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D4-S329</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid mt-2">
+                
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        4. Budi watches cartoons starting at 5:10. The cartoon lasts for 20 minutes.
+                    </div>
+                    <div class="visual-box">
+                         <svg width="320" height="80" class="math-svg">
+                             <!-- Timeline -->
+                             <line x1="10" y1="50" x2="310" y2="50" class="timeline-line" marker-end="url(#arrow)" />
+                             
+                             <!-- Start -->
+                             <line x1="30" y1="45" x2="30" y2="55" stroke="#333" stroke-width="2" />
+                             <text x="30" y="70" class="text-center-svg" font-size="10">5:10</text>
+                             
+                             <!-- Jump 1 -->
+                             <path d="M 30 45 Q 80 20 130 45" class="timeline-jump" />
+                             <text x="80" y="30" class="text-center-svg" fill="#3b82f6" font-size="10">+10 min</text>
+                             
+                             <!-- Mid Point -->
+                             <line x1="130" y1="45" x2="130" y2="55" stroke="#333" stroke-width="2" />
+                             
+                             <!-- Jump 2 -->
+                             <path d="M 130 45 Q 180 20 230 45" class="timeline-jump" />
+                             <text x="180" y="30" class="text-center-svg" fill="#3b82f6" font-size="10">+10 min</text>
+                             
+                             <!-- End -->
+                             <rect x="210" y="40" width="40" height="20" fill="white" stroke="#333" stroke-dasharray="2" />
+                             <text x="230" y="50" class="text-center-svg" font-size="12" font-weight="bold">?</text>
+                         </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a) 5:20</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b) 5:30</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c) 5:40</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d) 6:10</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        5. (Challenge) The soccer match starts at 9:50 a.m. It lasts for 20 minutes.
+                    </div>
+                    <div class="visual-box">
+                         <svg width="320" height="80" class="math-svg">
+                             <line x1="10" y1="50" x2="310" y2="50" class="timeline-line" marker-end="url(#arrow)" />
+                             
+                             <!-- 09.50 -->
+                             <line x1="30" y1="45" x2="30" y2="55" stroke="#333" stroke-width="2" />
+                             <text x="30" y="70" class="text-center-svg" font-size="10">9:50</text>
+                             
+                             <!-- +10m -->
+                             <path d="M 30 45 Q 80 20 130 45" class="timeline-jump" />
+                             <text x="80" y="30" class="text-center-svg" fill="#3b82f6" font-size="10">+10 min</text>
+                             
+                             <!-- 10.00 -->
+                             <line x1="130" y1="45" x2="130" y2="55" stroke="#333" stroke-width="2" />
+                             <text x="130" y="70" class="text-center-svg" font-size="10">10:00</text>
+
+                             <!-- +10m -->
+                             <path d="M 130 45 Q 180 20 230 45" class="timeline-jump" />
+                             <text x="180" y="30" class="text-center-svg" fill="#3b82f6" font-size="10">+10 min</text>
+
+                             <rect x="210" y="40" width="45" height="20" fill="white" stroke="#333" stroke-dasharray="2" />
+                             <text x="232" y="50" class="text-center-svg" font-size="12" font-weight="bold">?</text>
+                         </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 ml-1 font-bold">
+                        <span>What time does the match end? </span>
+                        <span class="input-box"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <div class="instruction-text mt-2 bg-blue-50">
+                    Part C: Word Problems
+                </div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        6. Mom puts the cake in the oven at 10:00. The cake takes 45 minutes to bake.
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 ml-1 font-bold">
+                        <span>When is the cake ready? At </span>
+                        <span class="input-box"></span>
+                    </div>
+                </div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        7. Dad starts washing the car at 8:15 a.m. The washing time is 1 hour 30 minutes.
+                    </div>
+                    <div class="font-bold mb-1">What time does Dad finish?</div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a) 9:30</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b) 9:45</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c) 8:45</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d) 10:15</label>
+                    </div>
+                </div>
+
+                 <!-- SOAL 8 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        8. The school bus leaves at 7:30. The journey takes half an hour (30 minutes).
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 ml-1 font-bold">
+                        <span>What time does the bus arrive? </span>
+                        <span class="input-box"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Measurement</div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D4-S329</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mt-1">
+                Part C Continued
+            </div>
+
+            <div class="soal-grid mt-2">
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. Ani starts doing homework at 6:45 a.m.
+                    </div>
+                    <ul class="list-disc ml-5 mb-2 text-sm font-semibold text-gray-700">
+                        <li>15 minutes for numbers 1-5.</li>
+                        <li>15 minutes more for numbers 6-10.</li>
+                    </ul>
+                    <div class="flex items-center gap-2 mt-1 ml-1 font-bold">
+                        <span>What time does Ani finish everything? </span>
+                        <span class="input-box"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        10. Pattern Challenge: Train Schedule
+                    </div>
+                    <div class="visual-box">
+                        <table class="w-full max-w-[300px] border-collapse text-sm font-bold">
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-400 p-2 text-left">Train</th>
+                                <th class="border border-gray-400 p-2 text-center">Departure Time</th>
+                            </tr>
+                            <tr>
+                                <td class="border border-gray-400 p-2">Train A</td>
+                                <td class="border border-gray-400 p-2 text-center">1:00</td>
+                            </tr>
+                            <tr>
+                                <td class="border border-gray-400 p-2">Train B</td>
+                                <td class="border border-gray-400 p-2 text-center">1:30</td>
+                            </tr>
+                            <tr>
+                                <td class="border border-gray-400 p-2">Train C</td>
+                                <td class="border border-gray-400 p-2 text-center">2:00</td>
+                            </tr>
+                            <tr class="bg-blue-50">
+                                <td class="border border-gray-400 p-2">Train D</td>
+                                <td class="border border-gray-400 p-2 text-center text-blue-600">?</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 ml-1 font-bold">
+                        <span>What time does Train D depart? </span>
+                        <span class="input-box"></span>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="text-center italic text-xs text-gray-400 mt-8">
+                "Nice work finishing the set—seriously well done."
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
