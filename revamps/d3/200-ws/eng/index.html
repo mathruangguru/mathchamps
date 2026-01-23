@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Dividing by Grouping (D3-S200)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .bar-model-box,
+        .tcolorbox,
+        .vertical-math-table td,
+        .svg-icon {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-blue-100 { background-color: #dbeafe !important; }
+        .bg-green-100 { background-color: #dcfce7 !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem; 
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 60px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.2rem;
+        margin-top: 4px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+        margin-left: 1.5rem;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.15cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.4rem;
+        background-color: #f3f4f6;
+        padding: 0.2rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* --- VISUAL MATH SPECIFICS --- */
+      .bar-label {
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 11px;
+        font-weight: bold;
+        text-anchor: middle;
+        fill: #333;
+      }
+      .brace-label {
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 10px;
+        text-anchor: middle;
+        fill: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Multiplication of 2, 5, and 10</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Dividing by Grouping
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D3-S200</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-4 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    DIVIDING BY GROUPING
+                </h1>
+                <p class="text-xs italic text-gray-600">
+                    "In the grouping method, we divide objects into equal groups to find how many groups are formed."
+                </p>
+            </div>
+
+            <!-- SECTION A -->
+            <div class="instruction-text">
+                Part A: Visual Concepts (CPA)
+            </div>
+            <div class="mb-2 text-sm text-gray-600 italic px-2">
+                Look at the pictures and group according to instructions.
+            </div>
+
+            <div class="soal-grid">
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        1. Group into 2 objects in each group.
+                    </div>
+                    <div class="text-sm mb-2">There are 10 balls. Circle every 2 balls to make one group.</div>
+                    
+                    <!-- SVG Balls -->
+                    <div class="flex justify-center my-2">
+                        <svg width="300" height="50">
+                            <!-- 10 Circles -->
+                            <g fill="#e5e7eb" stroke="#333" stroke-width="1.5">
+                                <circle cx="20" cy="25" r="12" />
+                                <circle cx="48" cy="25" r="12" />
+                                <circle cx="76" cy="25" r="12" />
+                                <circle cx="104" cy="25" r="12" />
+                                <circle cx="132" cy="25" r="12" />
+                                <circle cx="160" cy="25" r="12" />
+                                <circle cx="188" cy="25" r="12" />
+                                <circle cx="216" cy="25" r="12" />
+                                <circle cx="244" cy="25" r="12" />
+                                <circle cx="272" cy="25" r="12" />
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="font-semibold text-sm ml-4">How many groups are formed?</div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> A. 2 groups</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> B. 5 groups</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> C. 10 groups</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        2. Group into 5 stars in each box.
+                    </div>
+                    <div class="text-sm mb-2">There are 9 stars below. If we put 3 stars into one box, how many boxes are needed?</div>
+
+                    <!-- SVG Stars -->
+                    <div class="flex justify-center my-2 bg-yellow-50 p-2 rounded border border-yellow-200">
+                        <svg width="280" height="40">
+                             <defs>
+                                <polygon id="star" points="10,1 12,7 19,7 13,11 15,18 10,14 5,18 7,11 1,7 8,7" fill="#facc15" stroke="#ca8a04" />
+                            </defs>
+                            <use href="#star" x="0" y="5" transform="scale(1.5)" />
+                            <use href="#star" x="20" y="5" transform="scale(1.5)" />
+                            <use href="#star" x="40" y="5" transform="scale(1.5)" />
+                            <use href="#star" x="60" y="5" transform="scale(1.5)" />
+                            <use href="#star" x="80" y="5" transform="scale(1.5)" />
+                            
+                            <use href="#star" x="110" y="5" transform="scale(1.5)" />
+                            <use href="#star" x="130" y="5" transform="scale(1.5)" />
+                            <use href="#star" x="150" y="5" transform="scale(1.5)" />
+                            <use href="#star" x="170" y="5" transform="scale(1.5)" />
+                            <use href="#star" x="190" y="5" transform="scale(1.5)" />
+
+                            <use href="#star" x="220" y="5" transform="scale(1.5)" />
+                            <use href="#star" x="240" y="5" transform="scale(1.5)" />
+                            <use href="#star" x="260" y="5" transform="scale(1.5)" />
+                            <use href="#star" x="280" y="5" transform="scale(1.5)" />
+                            <use href="#star" x="300" y="5" transform="scale(1.5)" />
+                        </svg>
+                    </div>
+                    
+                    <div class="ml-4 mt-2 font-bold text-sm">
+                        Answer: <span class="input-box w-16"></span> boxes.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        3. Look at the bar pictures below.
+                    </div>
+                    <div class="text-sm mb-2">Each bundle contains 10 sticks.</div>
+
+                    <!-- SVG Bundles -->
+                    <div class="flex justify-center my-2 gap-8">
+                        <svg width="200" height="60">
+                            <!-- Bundle 1 -->
+                            <g transform="translate(10, 10)">
+                                <rect x="0" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <rect x="5" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <rect x="10" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <rect x="15" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <rect x="20" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <!-- Tie -->
+                                <path d="M -5 18 Q 12 25 30 18" stroke="#333" stroke-width="3" fill="none" />
+                            </g>
+                            <!-- Bundle 2 -->
+                             <g transform="translate(60, 10)">
+                                <rect x="0" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <rect x="5" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <rect x="10" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <rect x="15" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <rect x="20" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <!-- Tie -->
+                                <path d="M -5 18 Q 12 25 30 18" stroke="#333" stroke-width="3" fill="none" />
+                            </g>
+                            <!-- Bundle 3 -->
+                             <g transform="translate(110, 10)">
+                                <rect x="0" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <rect x="5" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <rect x="10" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <rect x="15" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <rect x="20" y="0" width="4" height="40" fill="#a16207" stroke="black" />
+                                <!-- Tie -->
+                                <path d="M -5 18 Q 12 25 30 18" stroke="#333" stroke-width="3" fill="none" />
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="text-sm">The total sum of sticks is 30. We divide them into groups of 10. The correct number sentence is:</div>
+                      <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> A. 30 ÷ 3 = 10</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> B. 30 ÷ 10 = 3</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> C. 10 ÷ 2 = 5</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        4. Word Problem
+                    </div>
+                    <div class="text-sm">Budi has 18 socks. He wants to pair them (1 pair = 2 socks). How many pairs of socks does Budi have? (Hint: 18 ÷ 2 = ...)</div>
+                    <div class="ml-4 mt-2 font-bold text-sm">
+                        Answer: <span class="input-box w-16"></span> pairs.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Multiplication of 2, 5, and 10</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Dividing by Grouping
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D3-S200</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        5. The Teacher has 25 students in class.
+                    </div>
+                    <div class="text-sm">The Teacher wants to make study groups. Each group contains 5 students. How many groups are formed?</div>
+                    
+                    <!-- SVG Bar Model Divison -->
+                    <div class="flex justify-center my-3">
+                        <svg width="320" height="80">
+                            <!-- Main Bar -->
+                            <rect x="50" y="10" width="220" height="30" fill="#dbeafe" stroke="#333" stroke-width="1.5"/>
+                            <text x="160" y="29" class="bar-label">Total 25 Students</text>
+                            
+                            <!-- Division Arrows -->
+                            <g stroke="#555" stroke-width="1">
+                                <path d="M 50 45 L 50 55" />
+                                <path d="M 94 45 L 94 55" /> <!-- Approx split -->
+                                <path d="M 138 45 L 138 55" />
+                                <path d="M 182 45 L 182 55" />
+                                <path d="M 226 45 L 226 55" />
+                                <path d="M 270 45 L 270 55" />
+                            </g>
+                            
+                            <!-- Label below -->
+                            <text x="160" y="65" font-size="10" fill="#555" text-anchor="middle" font-family="Noto Sans">Divided into 5 students per group</text>
+                        </svg>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> A. 4 groups</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> B. 5 groups</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> C. 6 groups</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold">6. Relationship between Multiplication and Division</div>
+                    <div class="text-sm mt-1">Division is the inverse of multiplication.</div>
+                    <div class="bg-gray-100 p-2 rounded mt-2 border-l-4 border-gray-500 font-mono text-sm text-center">
+                        If 7 x 2 = 14, then 14 ÷ 2 = ...
+                    </div>
+                    <div class="ml-4 mt-3 font-bold text-sm">
+                        Answer: <span class="input-box w-16"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold">7. Array of Boxes</div>
+                    <div class="text-sm mb-2">Look at the array of boxes below.</div>
+
+                    <!-- SVG Grid 5x2 -->
+                    <div class="flex justify-center my-2 gap-4 items-center">
+                        <svg width="150" height="60">
+                            <!-- Grid -->
+                            <rect x="0" y="0" width="150" height="60" fill="none" stroke="#333" stroke-width="2"/>
+                            <!-- Horiz line -->
+                            <line x1="0" y1="30" x2="150" y2="30" stroke="#333" stroke-width="1"/>
+                            <!-- Vert lines -->
+                            <line x1="30" y1="0" x2="30" y2="60" stroke="#333" stroke-width="1"/>
+                            <line x1="60" y1="0" x2="60" y2="60" stroke="#333" stroke-width="1"/>
+                            <line x1="90" y1="0" x2="90" y2="60" stroke="#333" stroke-width="1"/>
+                            <line x1="120" y1="0" x2="120" y2="60" stroke="#333" stroke-width="1"/>
+                        </svg>
+                        <div class="text-xs font-semibold">
+                            = 10 boxes total<br>
+                            (2 rows, 5 columns)
+                        </div>
+                    </div>
+
+                    <div class="text-sm italic text-gray-600 mb-2">
+                        If 10 boxes are divided into groups of 5 (each row), we get 2 groups.<br>
+                        <strong>If 10 boxes are divided into groups of 2 (each column), how many groups do we get?</strong>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> A. 2</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> B. 5</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> C. 10</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold">8. Money Denominations</div>
+                    <div class="text-sm mt-1">Dad has Rp50,000. Dad exchanges it for Rp10,000 notes. How many Rp10,000 notes does Dad get?</div>
+                    <div class="font-mono text-center text-sm font-bold bg-green-100 p-1 rounded my-2 text-green-800">
+                        50 ÷ 10 = ...
+                    </div>
+                    <div class="ml-4 font-bold text-sm">
+                        Answer: <span class="input-box w-16"></span> notes.
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold">9. Division Logic</div>
+                    <div class="text-sm mb-1">Which statement is <span class="text-red-600 font-extrabold">FALSE</span> about dividing 20?</div>
+                    <div class="choice-container flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 20 ÷ 2 = 10</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 20 ÷ 10 = 2</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 20 ÷ 5 = 5</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Multiplication of 2, 5, and 10</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Dividing by Grouping
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D3-S200</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                
+                <!-- SOAL 10 (Challenge) -->
+                <div class="soal-item">
+                    <div class="font-bold text-red-700">
+                        10. (Drawing Challenge)
+                    </div>
+                    <div class="text-sm">
+                        Draw 8 circles in the box below. Then circle every 2 circles to show <strong>8 ÷ 2 = 4</strong>.
+                    </div>
+                    <!-- Increased height for drawing since it's on a new page -->
+                    <div class="border-2 border-dashed border-gray-400 rounded-lg h-96 mt-2 flex items-center justify-center text-gray-400 italic text-sm relative">
+                        <!-- Space for student to draw -->
+                        <span class="absolute bottom-2 right-2 text-xs text-gray-300">Drawing Area</span>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="text-center italic text-xs text-gray-400 mt-6">
+                "Nice work finishing the set—seriously well done."
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
