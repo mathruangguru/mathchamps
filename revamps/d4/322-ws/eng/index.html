@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Length Measurement (D4-S322)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --mc-blue: #3b82f6;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; 
+        min-height: 29.7cm; 
+        padding: 0.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        margin-top: 5px;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 5px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 0.5cm 2cm; }
+        .page:last-child { page-break-after: avoid; }
+      }
+
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* Grid Soal */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 80px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 4px;
+        padding: 0 5px;
+        vertical-align: middle;
+        background-color: white;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 5px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 1rem;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        border-radius: 3px;
+        vertical-align: text-bottom;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.3cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 5px solid #333;
+      }
+      
+      .visual-box {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 0.5rem;
+        background-color: #fff;
+        border-radius: 8px;
+        margin: 0.5rem 0;
+        flex-wrap: wrap;
+      }
+
+      /* SVG Styles */
+      .math-svg {
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        overflow: visible;
+      }
+      .box-fill { fill: #f9fafb; stroke: #374151; stroke-width: 1.5px; }
+      .box-fill-blue { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5px; }
+      .box-fill-yellow { fill: #fef9c3; stroke: #ca8a04; stroke-width: 1.5px; }
+      .text-center-svg { text-anchor: middle; dominant-baseline: middle; fill: #1f2937; }
+      .brace-path { fill: none; stroke: #000; stroke-width: 1.2px; }
+      
+      /* Student Info Header */
+      .student-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      .info-field {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .info-line {
+        border-bottom: 1.5px solid #333;
+        width: 120px;
+        display: inline-block;
+        height: 1.2em;
+      }
+      .info-line.long { width: 180px; }
+      
+    </style>
+  </head>
+  <body>
+
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Measurement</div>
+                    <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto">
+                        Two-Step Word Problems on Cutting Objects
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D4-S322</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+
+            <div class="instruction-text">
+                Instruction: Use bar models to help you solve the problems. Remember, these are two-step word problems!
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. Mother has a rope that is 100 cm long. She cuts 30 cm to tie newspapers, and cuts another 45 cm for a clothesline. How many cm of rope does Mother have left now?
+                    </div>
+                    <div class="visual-box">
+                        <svg width="320" height="80" class="math-svg">
+                            <!-- Total Brace -->
+                            <path d="M 10 25 Q 10 10 160 10 T 310 25" class="brace-path" />
+                            <text x="160" y="5" class="text-center-svg" font-size="10" font-weight="bold">Total 100 cm</text>
+                            
+                            <!-- Bar -->
+                            <rect x="10" y="30" width="300" height="30" class="box-fill" />
+                            
+                            <!-- Cuts -->
+                            <!-- 30% for 30cm -->
+                            <line x1="100" y1="30" x2="100" y2="60" stroke="#333" stroke-width="1.5" />
+                            <text x="55" y="45" class="text-center-svg">30 cm</text>
+                            <text x="55" y="72" class="text-center-svg" font-size="9">Newspapers</text>
+                            
+                            <!-- 45% for 45cm -> 135px width -->
+                            <line x1="235" y1="30" x2="235" y2="60" stroke="#333" stroke-width="1.5" />
+                            <text x="167" y="45" class="text-center-svg">45 cm</text>
+                            <text x="167" y="72" class="text-center-svg" font-size="9">Clothesline</text>
+                            
+                            <!-- Remainder -->
+                            <text x="272" y="45" class="text-center-svg" font-weight="bold">?</text>
+                            <text x="272" y="72" class="text-center-svg" font-size="9">Left</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 15 cm</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 25 cm</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 35 cm</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. Father has a pipe that is 90 cm long. He cuts it into 3 parts. The first part is 20 cm long. The second part is 35 cm long. What is the length of the third part (leftover pipe)?
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-1 font-bold">
+                        <span>Answer: </span>
+                        <span class="input-box w-24"></span>
+                        <span>cm</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        3. Siti cuts her decorative ribbon. She gives 25 cm to Lani and 15 cm to Dayu. Siti still has 40 cm of ribbon left. What was the length of Siti's ribbon at first?
+                    </div>
+                    <div class="visual-box">
+                        <svg width="320" height="80" class="math-svg">
+                            <!-- Bars: 25 (approx 93px), 15 (approx 56px), 40 (approx 150px) -->
+                            <rect x="10" y="10" width="93" height="30" class="box-fill-blue" />
+                            <text x="56" y="25" class="text-center-svg">25 cm</text>
+                            
+                            <rect x="103" y="10" width="56" height="30" class="box-fill-blue" />
+                            <text x="131" y="25" class="text-center-svg">15</text>
+                            
+                            <rect x="159" y="10" width="150" height="30" class="box-fill-blue" />
+                            <text x="234" y="25" class="text-center-svg">Left 40 cm</text>
+                            
+                            <!-- Bottom Brace -->
+                            <path d="M 10 45 Q 10 60 160 60 T 309 45" class="brace-path" />
+                            <text x="160" y="72" class="text-center-svg" font-weight="bold">Total Length at First = ?</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 65 cm</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 70 cm</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 80 cm</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        4. Mr. Budi cuts a long piece of wood into 2 pieces of equal length. If the length of one piece is 45 cm, and there is still a small leftover piece of wood 10 cm long that is unused. What was the length of Mr. Budi's wood at first?
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-1 font-bold">
+                        <span>Answer: </span>
+                        <span class="input-box w-24"></span>
+                        <span>cm</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        5. A wire is 200 cm long. It is cut 50 cm for the bedroom light. Then, it is cut again for the garden light. If the remaining wire is now 70 cm, what is the length of the wire used for the garden light?
+                    </div>
+                    <div class="text-sm bg-yellow-50 border border-yellow-200 p-2 rounded mb-2 mt-1 text-slate-700 italic">
+                        <strong>Hint:</strong> Find the total known wire first (Bedroom light + Left).
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 80 cm</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 120 cm</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 130 cm</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Measurement</div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D4-S322</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+
+            <div class="soal-grid mt-2">
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        6. Edo has a scout stick. He cuts the top end 10 cm because it is broken. He cuts the bottom end 10 cm to make it even. The length of Edo's stick is now 140 cm. What was the length of Edo's stick before it was cut?
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-1 font-bold">
+                        <span>Answer: </span>
+                        <span class="input-box w-24"></span>
+                        <span>cm</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        7. Rani has a blue ribbon that is 150 cm long. She cuts the ribbon into 3 parts: Part A, Part B, and Part C. The length of Part A is 40 cm. The length of Part B is 50 cm. What is the length of Part C?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 60 cm</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 50 cm</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 40 cm</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        8. Thinking Challenge (Discovery) <br>
+                        There are two ribbons, Red Ribbon and Yellow Ribbon. The Red Ribbon is 100 cm long. The Yellow Ribbon is 80 cm long. Both ribbons are cut 20 cm each. What is the difference in length between the two ribbons after being cut?
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-1 font-bold">
+                        <span>Answer: </span>
+                        <span class="input-box w-24"></span>
+                        <span>cm</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. A wire is cut into 4 parts of equal length. The length of each piece is 5 cm. There is still a remaining wire of 2 cm that is not cut. What was the total length of the wire at first?
+                    </div>
+                    <div class="visual-box">
+                        <svg width="320" height="60" class="math-svg">
+                            <!-- 4 bars of 5cm -->
+                            <rect x="10" y="15" width="60" height="30" class="box-fill-yellow" />
+                            <text x="40" y="30" class="text-center-svg">5</text>
+                            
+                            <rect x="70" y="15" width="60" height="30" class="box-fill-yellow" />
+                            <text x="100" y="30" class="text-center-svg">5</text>
+                            
+                            <rect x="130" y="15" width="60" height="30" class="box-fill-yellow" />
+                            <text x="160" y="30" class="text-center-svg">5</text>
+                            
+                            <rect x="190" y="15" width="60" height="30" class="box-fill-yellow" />
+                            <text x="220" y="30" class="text-center-svg">5</text>
+                            
+                            <!-- Remainder 2cm -->
+                            <rect x="250" y="15" width="24" height="30" fill="#e5e7eb" stroke="#374151" stroke-width="1.5" />
+                            <text x="262" y="30" class="text-center-svg" font-size="10">2</text>
+                            
+                            <!-- Labels below -->
+                            <text x="40" y="55" class="text-center-svg" font-size="9">1</text>
+                            <text x="100" y="55" class="text-center-svg" font-size="9">2</text>
+                            <text x="160" y="55" class="text-center-svg" font-size="9">3</text>
+                            <text x="220" y="55" class="text-center-svg" font-size="9">4</text>
+                            <text x="262" y="55" class="text-center-svg" font-size="9">Left</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 20 cm</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 22 cm</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 25 cm</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        10. Budi cuts a rope that is 1 meter long. (Remember: 1 meter = 100 cm). He cuts it into two parts. The first piece is 10 cm longer than the second piece. If the second piece is 45 cm long, what is the length of the remaining rope?
+                    </div>
+                    <div class="text-sm bg-yellow-50 border border-yellow-200 p-2 rounded mb-2 mt-1 text-slate-700 italic">
+                        <strong>Watch out:</strong> Calculate the length of the first piece first, then find the total length of both pieces, then find the remainder from 100 cm. If there is no remainder, write 0.
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-1 font-bold">
+                        <span>Answer: </span>
+                        <span class="input-box w-24"></span>
+                        <span>cm</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="encouragement-message" class="text-center italic text-xs text-gray-400 mt-8">
+                <!-- Javascript will fill this -->
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+    <script>
+        const quotes = [
+            "Nice work finishing the set—seriously well done.",
+            "Great effort today. Quick check-through and you’re good.",
+            "Strong finish! Take a moment to review your answers.",
+            "Awesome job. If anything feels off, trust your gut and recheck it.",
+            "You’re getting sharper with every problem.",
+            "Well done—your focus really showed.",
+            "Before you close it, do one last scan for silly mistakes.",
+            "That was solid. Clean work and clear thinking.",
+            "Mistakes are part of the process—what matters is you keep going.",
+            "Great job. Try checking the trickiest question one more time.",
+            "Proud of your effort. Consistency wins.",
+            "Strong work—your math muscles are growing.",
+            "Nice! Now make sure every question has an answer.",
+            "Great progress today—keep that momentum.",
+            "You worked hard. Take a breath, then double-check.",
+            "Excellent! Try verifying one problem using a different method.",
+            "You did it—finish with a confident final check.",
+            "Little by little, a little becomes a lot.",
+            "Practice makes progress.",
+            "Steady hands win the race.",
+            "Small steps beat no steps.",
+            "Check your work, trust your growth.",
+            "A calm mind catches quiet mistakes.",
+            "Consistency is a superpower.",
+            "Progress, not perfection.",
+            "One more look saves one big oops.",
+            "Patience pays in points.",
+            "Accuracy beats speed—every time.",
+            "Strong roots, strong results.",
+            "Today’s effort is tomorrow’s confidence.",
+            "The best learners review."
+        ];
+        
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        const el = document.getElementById("encouragement-message");
+        if(el) {
+            el.textContent = randomQuote;
+        }
+    </script>
+  </body>
+</html>
