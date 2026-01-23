@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Mass Measurement (D4-S328)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --mc-blue: #3b82f6;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.2;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; 
+        min-height: 29.7cm; 
+        padding: 0.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        margin-top: 5px;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 2px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 0.5cm 2cm; }
+        .page:last-child { page-break-after: avoid; }
+      }
+
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* Grid Soal */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 60px;
+        height: 22px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 4px;
+        padding: 0 5px;
+        vertical-align: middle;
+        background-color: white;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.2rem;
+        margin-top: 5px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+        margin-left: 1rem;
+      }
+
+      .choice-box {
+        width: 14px;
+        height: 14px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        border-radius: 3px;
+        vertical-align: text-bottom;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.2rem;
+        background-color: #f3f4f6;
+        padding: 0.2rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+      
+      .visual-box {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 0.5rem;
+        background-color: #fff;
+        border-radius: 8px;
+        margin: 0.2rem 0;
+        flex-wrap: wrap;
+      }
+
+      /* SVG Styles */
+      .math-svg {
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        overflow: visible;
+      }
+      .box-stroke { fill: none; stroke: #333; stroke-width: 2px; }
+      .box-fill { fill: #f3f4f6; stroke: #374151; stroke-width: 1.5px; }
+      .box-fill-blue { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5px; }
+      .box-fill-red { fill: #fee2e2; stroke: #dc2626; stroke-width: 1.5px; }
+      .box-fill-orange { fill: #ffedd5; stroke: #ea580c; stroke-width: 1.5px; }
+      .box-fill-green { fill: #dcfce7; stroke: #16a34a; stroke-width: 1.5px; }
+      .box-fill-yellow { fill: #fef9c3; stroke: #ca8a04; stroke-width: 1.5px; }
+      .box-dashed { fill: none; stroke: #666; stroke-width: 1.5px; stroke-dasharray: 4; }
+      .text-center-svg { text-anchor: middle; dominant-baseline: middle; fill: #1f2937; }
+      .brace-path { fill: none; stroke: #000; stroke-width: 1.5px; }
+      
+      .math-symbol {
+        font-family: 'Noto Sans', sans-serif;
+        font-weight: bold;
+        display: inline-block;
+        margin: 0 2px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Measurement</div>
+                    <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto">
+                        3-Step Word Problems (Mass of 3 People)
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D4-S328</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-sm bg-gray-50 border border-gray-300 p-3 rounded mb-4 shadow-sm">
+                <strong>Concept Example: Comparison Model</strong><br>
+                Andi's mass is 20 kg. Budi is 5 kg heavier than Andi. Cici is 2 kg lighter than Budi. What is Cici's mass?
+                <div class="flex justify-center my-2">
+                    <svg width="300" height="90" class="math-svg">
+                        <!-- Andi -->
+                        <text x="40" y="15" text-anchor="end" font-size="11">Andi</text>
+                        <rect x="50" y="5" width="100" height="20" class="box-fill-blue" />
+                        <text x="100" y="17" class="text-center-svg" font-size="10">20 kg</text>
+                        
+                        <!-- Budi -->
+                        <text x="40" y="45" text-anchor="end" font-size="11">Budi</text>
+                        <rect x="50" y="35" width="100" height="20" class="box-fill-blue" />
+                        <rect x="150" y="35" width="30" height="20" class="box-fill-red" />
+                        <text x="165" y="47" class="text-center-svg" font-size="10">+5</text>
+                        
+                        <!-- Cici -->
+                        <text x="40" y="75" text-anchor="end" font-size="11">Cici</text>
+                        <rect x="50" y="65" width="130" height="20" class="box-fill-green" />
+                        <rect x="160" y="65" width="20" height="20" class="box-dashed" />
+                        <text x="170" y="77" class="text-center-svg" font-size="9">-2</text>
+                    </svg>
+                </div>
+                <div class="text-xs">
+                    <strong>Step 1:</strong> Budi = 20 + 5 = 25 kg.<br>
+                    <strong>Step 2:</strong> Cici = 25 - 2 = 23 kg.
+                </div>
+            </div>
+            
+            <div class="instruction-text mt-4">
+                Part A: Multiple Choice Practice
+            </div>
+            
+            <div class="soal-grid">
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. Siti's mass is 24 kg. Dayu is 3 kg heavier than Siti. Edo is 2 kg heavier than Dayu. What is Edo's mass?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a) 27 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b) 29 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c) 30 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d) 25 kg</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. Uncle Bobot has a mass of 60 kg. Uncle Gembul is 5 kg lighter than Uncle Bobot. Uncle Kurus is 10 kg lighter than Uncle Gembul.
+                    </div>
+                    <div class="visual-box">
+                        <svg width="320" height="100" class="math-svg">
+                            <!-- Bobot -->
+                            <rect x="10" y="10" width="200" height="20" class="box-fill-blue" />
+                            <text x="110" y="22" class="text-center-svg" font-size="10">Bobot (60 kg)</text>
+
+                            <!-- Gembul -->
+                            <rect x="10" y="40" width="180" height="20" class="box-fill-blue" />
+                            <text x="100" y="52" class="text-center-svg" font-size="10">Gembul (?)</text>
+                            <rect x="190" y="40" width="20" height="20" class="box-dashed" />
+                            <text x="200" y="52" class="text-center-svg" font-size="9">-5</text>
+
+                            <!-- Kurus -->
+                            <rect x="10" y="70" width="150" height="20" class="box-fill-blue" />
+                            <text x="85" y="82" class="text-center-svg" font-size="10">Kurus (?)</text>
+                            <rect x="160" y="70" width="30" height="20" class="box-dashed" />
+                            <text x="175" y="82" class="text-center-svg" font-size="9">-10</text>
+                        </svg>
+                    </div>
+                    <div class="font-bold mb-1">What is Uncle Kurus's mass?</div>
+                    <div class="flex items-center gap-2 mt-1 ml-1 font-bold">
+                        <span>Answer: </span>
+                        <span class="input-box w-20"></span>
+                        <span>kg</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        3. The Red Suitcase has a mass of 15 kg. The Blue Suitcase is 4 kg heavier than the Red Suitcase. The Green Suitcase's mass is equal to the Blue Suitcase plus 3 kg. What is the mass of the Green Suitcase?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a) 19 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b) 21 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c) 22 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d) 25 kg</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        4. Rara keeps 3 cats. Cat A has a mass of 3 kg. Cat B is 2 kg heavier than Cat A. Cat C is 1 kg heavier than Cat B.
+                    </div>
+                    <div class="font-bold mb-1">What is the <u>total mass</u> of the three cats?</div>
+                    <div class="flex items-center gap-2 mt-1 ml-1 font-bold">
+                        <span>Answer: </span>
+                        <span class="input-box w-20"></span>
+                        <span>kg</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Measurement</div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D4-S328</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mt-1">
+                Part B: Problem Solving & Logic
+            </div>
+
+            <div class="soal-grid mt-2">
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        5. Dad's mass is 70 kg. Mom is 10 kg lighter than Dad. Older Sibling's mass is half of Mom's mass. What is Older Sibling's mass?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a) 60 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b) 30 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c) 35 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d) 25 kg</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        6. A box of apples has a mass of 12 kg. A box of oranges is 3 kg heavier than the box of apples. A box of mangoes is 5 kg heavier than the box of oranges.
+                    </div>
+
+                    <div class="font-bold mb-1">What is the mass of the box of Mangoes?</div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a) 15 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b) 18 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c) 20 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d) 25 kg</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        7. Anton, Beni, and Candra are weighing themselves.
+                    </div>
+                    <ul class="list-disc ml-5 mb-2 text-sm font-semibold text-gray-700">
+                        <li>Anton: 30 kg</li>
+                        <li>Beni: 4 kg lighter than Anton</li>
+                        <li>Candra: 2 kg heavier than Beni</li>
+                    </ul>
+                    <div class="font-bold mb-1">Who is the heaviest?</div>
+                    <div class="flex items-center gap-2 mt-1 ml-1 font-bold">
+                        <span>Answer: </span>
+                        <span class="input-box w-40"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        8. (Challenge) Didi's mass is 28 kg. Eko's mass is the same as Didi's. Fajar's mass is 5 kg heavier than the combined mass of Didi and Eko. What is Fajar's mass?
+                    </div>
+                    <div class="visual-box">
+                         <svg width="320" height="90" class="math-svg">
+                            <!-- Didi -->
+                             <rect x="20" y="10" width="80" height="20" class="box-fill-yellow" />
+                             <text x="60" y="22" class="text-center-svg" font-size="10">Didi (28)</text>
+                             <!-- Eko -->
+                             <rect x="20" y="35" width="80" height="20" class="box-fill-yellow" />
+                             <text x="60" y="47" class="text-center-svg" font-size="10">Eko (28)</text>
+                             <!-- Fajar -->
+                             <rect x="20" y="60" width="160" height="20" class="box-fill-orange" />
+                             <rect x="180" y="60" width="40" height="20" class="box-fill-orange" />
+                             <text x="100" y="72" class="text-center-svg" font-size="10">Fajar (?)</text>
+                             <text x="200" y="72" class="text-center-svg" font-size="9" fill="white">+5</text>
+                          </svg>
+                    </div>
+                    <div class="flex flex-col gap-2 mt-2 ml-4">
+                        <div class="flex items-center gap-2 text-sm font-semibold">
+                            <span>Fajar's Mass:</span>
+                            <span class="input-box w-20"></span>
+                            <span>kg</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Measurement</div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D4-S328</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mt-1">
+                Part B Continued
+            </div>
+
+            <div class="soal-grid mt-2">
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. Ani's school bag has a mass of 2 kg. Budi's bag is 1 kg heavier than Ani's. Citra's bag is 2 kg heavier than Budi's.
+                    </div>
+                    <div class="font-bold mb-1">What is the difference in mass between Citra's bag and Ani's bag?</div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a) 3 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b) 4 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c) 5 kg</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d) 1 kg</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        10. Three goats are being weighed.
+                    </div>
+                    <ul class="list-disc ml-5 mb-2 text-sm font-semibold text-gray-700">
+                        <li>White Goat: 25 kg</li>
+                        <li>Black Goat: 5 kg heavier than the White Goat</li>
+                        <li>Brown Goat: 10 kg heavier than the Black Goat</li>
+                    </ul>
+                    <div class="visual-box">
+                         <svg width="320" height="90" class="math-svg">
+                             <!-- Putih -->
+                             <rect x="10" y="10" width="80" height="15" class="box-fill-green" />
+                             <text x="50" y="20" class="text-center-svg" font-size="9">White</text>
+                             <!-- Hitam -->
+                             <rect x="10" y="35" width="100" height="15" class="box-fill-green" />
+                             <text x="60" y="45" class="text-center-svg" font-size="9">Black</text>
+                             <!-- Cokelat -->
+                             <rect x="10" y="60" width="140" height="15" class="box-fill-green" />
+                             <text x="80" y="70" class="text-center-svg" font-size="9">Brown</text>
+                             <!-- Curly Brackets logic simplified with lines -->
+                             <line x1="150" y1="60" x2="150" y2="75" stroke="black" stroke-width="1" />
+                             <text x="170" y="70" font-size="10" font-weight="bold">?</text>
+                          </svg>
+                    </div>
+                    <div class="font-bold mb-1">What is the mass of the Brown Goat?</div>
+                    <div class="flex items-center gap-2 mt-1 ml-1 font-bold">
+                        <span>Answer: </span>
+                        <span class="input-box w-20"></span>
+                        <span>kg</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center italic text-xs text-gray-400 mt-4">
+                "Nice work finishing the set—seriously well done."
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
