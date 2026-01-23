@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Finding Start Time (D4-S329)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --mc-blue: #3b82f6;
+        --mc-red: #ef4444;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; 
+        min-height: 29.7cm; 
+        padding: 0.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        margin-top: 5px;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 5px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 0.5cm 2cm; }
+        .page:last-child { page-break-after: avoid; }
+      }
+
+      .math-champs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* Grid Soal */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 80px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 4px;
+        padding: 0 5px;
+        vertical-align: middle;
+        background-color: white;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+        margin-left: 1rem;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        border-radius: 3px;
+        vertical-align: text-bottom;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 5px solid #333;
+      }
+      
+      .visual-box {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 0.8rem;
+        background-color: #fff;
+        border: 1px dashed #cbd5e1;
+        border-radius: 8px;
+        margin: 0.5rem 0;
+        flex-wrap: wrap;
+      }
+
+      /* SVG Styles */
+      .math-svg {
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        overflow: visible;
+      }
+      .timeline-line { stroke: #333; stroke-width: 2.5px; marker-end: url(#arrowhead); }
+      .tick-mark { stroke: #333; stroke-width: 2.5px; }
+      .jump-arrow-blue { fill: none; stroke: #3b82f6; stroke-width: 2px; marker-end: url(#arrowhead-blue); }
+      .jump-arrow-red { fill: none; stroke: #ef4444; stroke-width: 2px; marker-end: url(#arrowhead-red); }
+      .jump-arrow-dashed { fill: none; stroke: #666; stroke-width: 2px; stroke-dasharray: 4; marker-end: url(#arrowhead-gray); }
+      
+      .text-label { text-anchor: middle; font-size: 12px; fill: #1f2937; font-weight: bold; }
+      .text-time { text-anchor: middle; font-size: 14px; fill: #000; font-weight: 800; }
+      .text-jump { text-anchor: middle; font-size: 11px; fill: #4b5563; font-weight: 600; background-color: white;}
+
+    </style>
+  </head>
+  <body>
+
+    <!-- SVG Defs for Arrows -->
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+        </marker>
+        <marker id="arrowhead-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#3b82f6" />
+        </marker>
+        <marker id="arrowhead-red" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#ef4444" />
+        </marker>
+        <marker id="arrowhead-gray" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#666" />
+        </marker>
+      </defs>
+    </svg>
+
+    <div class="page-container">
+      
+      <!-- ================= PAGE 1 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Measurement</div>
+                    <div class="text-[10px] text-black font-medium max-w-[280px] leading-tight ml-auto">
+                        Finding Start Time
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D4-S330</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mt-4">
+                Instruction: Use the Timeline to count backward from the end time to the start time.
+            </div>
+
+            <div class="soal-grid">
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. Concept Visualization:
+                    </div>
+                    <div class="mb-2 text-sm text-gray-700">
+                        The painting class ends at 10.00 a.m. The class lasts for 1 hour. Before painting, students do preparation for 1 hour. What time do they start preparation?
+                    </div>
+                    <div class="visual-box">
+                        <svg width="320" height="80" class="math-svg">
+                            <!-- Line -->
+                            <line x1="10" y1="50" x2="300" y2="50" class="timeline-line" />
+                            
+                            <!-- End Time -->
+                            <line x1="280" y1="40" x2="280" y2="60" class="tick-mark" />
+                            <text x="280" y="30" class="text-label">End</text>
+                            <text x="280" y="75" class="text-time">10.00</text>
+
+                            <!-- Jump 1 (Melukis 1 jam) -->
+                            <path d="M 280 40 Q 230 10 180 40" class="jump-arrow-blue" fill="none" />
+                            <text x="230" y="20" class="text-jump text-blue-500">- 1 hour</text>
+                            <line x1="180" y1="45" x2="180" y2="55" class="tick-mark" style="stroke-width:1.5px"/>
+
+                            <!-- Jump 2 (Persiapan 1 jam) -->
+                            <path d="M 180 40 Q 130 10 80 40" class="jump-arrow-red" fill="none" />
+                            <text x="130" y="20" class="text-jump text-red-500">- 1 hour</text>
+                            
+                            <!-- Start Time -->
+                            <line x1="80" y1="40" x2="80" y2="60" class="tick-mark" />
+                            <text x="80" y="30" class="text-label">Start</text>
+                            <text x="80" y="75" class="text-time" fill="#ef4444">?</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> a) 07.00 a.m.</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> b) 08.00 a.m.</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> c) 09.00 a.m.</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> d) 12.00 p.m.</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. Andi finished playing football at 16.00.
+                    </div>
+                    <div class="mb-1 text-sm text-gray-700">
+                        He played football for 1 hour. Before playing, he warmed up for 30 minutes. What time did Andi start warming up?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> a) 13.30</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> b) 14.00</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> c) 14.30</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> d) 15.30</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        3. Mother finished baking a cake at 11.30 a.m.
+                    </div>
+                    <div class="mb-1 text-sm text-gray-700">
+                        The cake was baked for 30 minutes. Mother prepared the batter for 30 minutes before baking. What time did Mother start making the cake?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> a) 10.00 a.m.</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> b) 10.30 a.m.</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> c) 11.00 a.m.</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> d) 12.30 p.m.</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        4. A cartoon movie ended at 09.00 a.m.
+                    </div>
+                    <div class="mb-1 text-sm text-gray-700">
+                        The movie consisted of two parts. The second part lasted 30 minutes. The first part lasted 30 minutes. What time did the movie start?
+                    </div>
+                    <div class="visual-box">
+                        <svg width="320" height="70" class="math-svg">
+                            <line x1="10" y1="50" x2="300" y2="50" class="timeline-line" />
+                            <!-- End -->
+                            <line x1="280" y1="40" x2="280" y2="60" class="tick-mark" />
+                            <text x="280" y="70" class="text-time">09.00</text>
+                            <!-- Jumps -->
+                            <path d="M 280 40 Q 230 10 180 40" class="jump-arrow-dashed" fill="none" />
+                            <path d="M 180 40 Q 130 10 80 40" class="jump-arrow-dashed" fill="none" />
+                            <!-- Start -->
+                            <line x1="80" y1="40" x2="80" y2="60" class="tick-mark" />
+                            <text x="80" y="30" class="text-label">Start</text>
+                            <text x="80" y="70" class="text-time" fill="#ef4444">?</text>
+                        </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-1 font-bold">
+                        <span>Answer: Time </span>
+                        <span class="input-box"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 2 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Measurement</div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D4-S330</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mt-2">
+                Part B: Word Problems & Challenges
+            </div>
+
+            <div class="soal-grid mt-4">
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        5. Budi arrived home at 14.00 (2 p.m.).
+                    </div>
+                    <div class="mb-1 text-sm text-gray-700">
+                        The journey home took 1 hour. Before going home, he stopped at a bookstore for 1 hour. What time did Budi leave school (before going to the bookstore)?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> a) 11.00 a.m.</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> b) 12.00 p.m.</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> c) 13.00 (1 p.m.)</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> d) 16.00 (4 p.m.)</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        6. Siti finished doing homework at 08.00 p.m.
+                    </div>
+                    <div class="mb-1 text-sm text-gray-700">
+                        Math homework was done in 30 minutes. Indonesian homework in 30 minutes. What time did Siti start studying?
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-1 font-bold">
+                        <span>Answer: Time </span>
+                        <span class="input-box"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1 flex items-center gap-2">
+                        7. Challenge <span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded border border-red-200">High Ability</span>
+                    </div>
+                    <div class="mb-1 text-sm text-gray-700">
+                        The birthday party ended at 05.15 p.m. The cake cutting ceremony lasted 15 minutes. Before that, there were games for 1 hour. What time did the games start?
+                    </div>
+                    <div class="visual-box">
+                        <svg width="320" height="80" class="math-svg">
+                            <line x1="10" y1="50" x2="300" y2="50" class="timeline-line" />
+                            
+                            <!-- End 05.15 -->
+                            <line x1="280" y1="40" x2="280" y2="60" class="tick-mark" />
+                            <text x="280" y="30" class="text-label">End</text>
+                            <text x="280" y="75" class="text-time">05.15</text>
+
+                            <!-- Jump 1 (-15 min) -->
+                            <path d="M 280 40 Q 260 20 240 40" class="jump-arrow-red" fill="none" />
+                            <text x="260" y="15" class="text-jump text-red-500" font-size="9">-15m</text>
+                            <line x1="240" y1="45" x2="240" y2="55" class="tick-mark" style="stroke-width:1.5px"/>
+                            <text x="240" y="70" class="text-time" font-size="10" fill="#666">05.00</text>
+
+                            <!-- Jump 2 (-1 jam) -->
+                            <path d="M 240 40 Q 170 10 100 40" class="jump-arrow-blue" fill="none" />
+                            <text x="170" y="20" class="text-jump text-blue-500">- 1 hour</text>
+                            
+                            <!-- Start -->
+                            <line x1="100" y1="40" x2="100" y2="60" class="tick-mark" />
+                            <text x="100" y="30" class="text-label">Start</text>
+                            <text x="100" y="75" class="text-time" fill="#ef4444">?</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> a) 03.15 p.m.</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> b) 04.00 p.m.</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> c) 04.15 p.m.</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> d) 06.30 p.m.</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        8. Father finished washing the car and watering the plants at 10.00 a.m.
+                    </div>
+                    <div class="mb-1 text-sm text-gray-700">
+                        Washing the car took 30 minutes. Watering the plants took 15 minutes. Father's total working time was 45 minutes. What time did Father start?
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-1 font-bold">
+                        <span>Answer: Time </span>
+                        <span class="input-box"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 3 ================= -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Measurement</div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D4-S330</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mt-2">
+                Part C: Application
+            </div>
+
+            <div class="soal-grid mt-4">
+                
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. The train arrived at the station at 12.30 p.m.
+                    </div>
+                    <div class="mb-1 text-sm text-gray-700">
+                        The train journey took 2 hours. Before departing, the train was checked for 30 minutes. What time did the train check start?
+                    </div>
+                    <div class="visual-box">
+                        <svg width="320" height="60" class="math-svg">
+                             <!-- Simple timeline hint -->
+                             <line x1="20" y1="30" x2="300" y2="30" stroke="#ccc" stroke-width="2" />
+                             <circle cx="280" cy="30" r="4" fill="#333" />
+                             <text x="280" y="50" class="text-time" font-size="10">12.30</text>
+                             <path d="M 280 30 Q 230 5 180 30" stroke="#3b82f6" fill="none" marker-end="url(#arrowhead-blue)"/>
+                             <text x="230" y="15" font-size="9" fill="#3b82f6">Journey</text>
+                             <path d="M 180 30 Q 150 5 120 30" stroke="#ef4444" fill="none" marker-end="url(#arrowhead-red)"/>
+                             <text x="150" y="15" font-size="9" fill="#ef4444">Check</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> a) 09.30 a.m.</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> b) 10.00 a.m.</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> c) 10.30 a.m.</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> d) 11.00 a.m.</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        10. Word Problem (Fill in the blanks):
+                    </div>
+                    <div class="mb-2 text-sm text-gray-700 bg-yellow-50 p-2 border border-yellow-200 rounded">
+                        Edo finished piano lesson at 04.30 p.m. The piano lesson lasted for 45 minutes. Before the lesson, Edo ate for 15 minutes.
+                    </div>
+                    
+                    <div class="flex flex-col gap-3 mt-2 ml-2">
+                        <div class="flex items-center gap-2 font-bold">
+                            <span>Complete the following sentence:</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span>Edo started eating at </span>
+                            <span class="input-box w-32"></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="text-center italic text-xs text-gray-400 mt-10">
+                "Nice work finishing the set—seriously well done."
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
