@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Menyamakan Bagian untuk Mencari Rasio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- KaTeX for Fraction Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --primary-text: #333333;
+            --grey-text: #8d8e8d;
+            --bar-blue: #bae6fd;
+            --bar-green: #bbf7d0;
+            --bar-yellow: #fef08a;
+            --bar-orange: #fed7aa;
+            --bar-purple: #e9d5ff;
+            --bar-pink: #fbcfe8;
+            --line-color: #000000;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: "Montserrat", sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: var(--primary-text);
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+        }
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+        }
+        .page {
+            background: white;
+            width: 210mm;
+            height: 297mm;
+            padding: 15mm 20mm;
+            margin-bottom: 10mm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        .page-header {
+            width: 100%;
+            margin-bottom: 5mm;
+        }
+        .math-champs-header {
+            background-color: white;
+            padding: 0.2rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: black;
+        }
+        .page-footer {
+            text-align: left;
+            font-size: 6pt;
+            color: var(--grey-text);
+            padding-top: 4px;
+            margin-top: auto;
+            border-top: 1.5px solid var(--grey-text);
+            width: 100%;
+            display: flex; gap: 5px; align-items: center;
+        }
+        .content-wrapper {
+            flex: 1;
+            padding-bottom: 5mm;
+        }
+        .mph-bar {
+            height: 42px; 
+            border: 1.5px solid var(--line-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.85rem;
+            position: relative;
+        }
+        .sub-unit {
+            border-right: 1.5px dashed rgba(0,0,0,0.3);
+            height: 100%;
+            flex: 1;
+        }
+        .sub-unit:last-child { border-right: none; }
+        .bar-label {
+            font-size: 10px;
+            font-weight: 900;
+            color: #444;
+            margin-right: 12px;
+            min-width: 70px; 
+            text-align: right;
+            text-transform: uppercase;
+        }
+        .svg-brace {
+            width: 100%;
+            height: 12px;
+            display: block;
+            overflow: visible;
+        }
+        .svg-brace path {
+            fill: none;
+            stroke: #000;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .long-answer-line {
+            border-bottom: 1.5px solid #333;
+            min-width: 380px;
+            display: inline-block;
+            height: 22px;
+            vertical-align: middle;
+            margin: 0 4px;
+        }
+        .question-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .q-number {
+            font-weight: 800;
+            min-width: 25px;
+            text-align: right;
+        }
+        .q-content {
+            flex: 1;
+            text-align: justify;
+        }
+        .example-box {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            background-color: #fafafa;
+        }
+        
+        .fill-blue { background-color: var(--bar-blue); }
+        .fill-green { background-color: var(--bar-green); }
+        .fill-yellow { background-color: var(--bar-yellow); }
+        .fill-orange { background-color: var(--bar-orange); }
+        .fill-purple { background-color: var(--bar-purple); }
+        .fill-pink { background-color: var(--bar-pink); }
+
+        @media print {
+            body { background-color: white; }
+            .page-container { padding: 0; }
+            .page { 
+                margin: 0; 
+                box-shadow: none; 
+                page-break-after: always;
+                width: 210mm;
+                height: 297mm;
+            }
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            * { -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- HALAMAN 1: JUDUL & CONTOH -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                    <div class="text-right leading-tight">
+                        <div class="text-sm font-extrabold text-black uppercase tracking-wide">MASTERY 4</div>
+                        <div class="text-[10px] text-black font-semibold uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[10px] text-black font-medium text-right">Menyamakan Bagian untuk Mencari Rasio</div>
+                        <div class="text-[10px] text-black font-medium text-right">Kode : M4-S334</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-1"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="text-center mb-8 mt-6">
+                    <h1 class="text-xl font-black uppercase tracking-wider text-gray-800">Menyamakan Bagian untuk Mencari Rasio</h1>
+                </div>
+
+                <div class="example-box">
+                    <h2 class="font-bold text-sm mb-4 text-black italic text-center">Mari Mengamati Contoh!</h2>
+                    <p class="text-sm mb-12 text-justify text-gray-800 leading-relaxed px-4">Sebanyak $\frac{5}{6}$ dari kelereng Kaka memiliki jumlah yang sama dengan $\frac{2}{3}$ dari kelereng Lala. Tentukan rasio kelereng Kaka terhadap kelereng Lala!</p>
+                    
+                    <!-- BAR MODEL -->
+                    <div class="flex flex-col gap-8 mb-12 mt-12 items-center">
+                        <div class="relative">
+                            <div class="flex flex-col gap-6">
+                                <!-- Kaka -->
+                                <div class="flex items-center">
+                                    <div class="bar-label">Kaka</div>
+                                    <div class="flex relative">
+                                        <div class="mph-bar fill-yellow w-[38px] border-r-0"><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                        <div class="mph-bar fill-yellow w-[38px] border-r-0"><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                        <div class="mph-bar fill-yellow w-[38px] border-r-0"><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                        <div class="mph-bar fill-yellow w-[38px] border-r-0"><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                        <div class="mph-bar fill-yellow w-[38px] border-r-0"><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                        <div class="mph-bar w-[38px]"><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                        <!-- Top Brace -->
+                                        <div class="absolute -top-12 left-0 w-[190px] flex flex-col items-center">
+                                            <div class="text-[10px] font-bold mb-1">Bagian yang Sama (10 unit)</div>
+                                            <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Lala -->
+                                <div class="flex items-center">
+                                    <div class="bar-label">Lala</div>
+                                    <div class="flex">
+                                        <div class="mph-bar fill-blue w-[95px] border-r-0"><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                        <div class="mph-bar fill-blue w-[95px] border-r-0"><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                        <div class="mph-bar w-[95px]"><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- LANGKAH-LANGKAH PEMBAHASAN FLOW -->
+                    <div class="bg-white border-2 border-gray-100 rounded-xl p-6 mx-4 flex flex-col items-center space-y-6">
+                        <div class="flex flex-col items-center gap-2">
+                            <span class="text-[10px] font-black uppercase text-gray-400 tracking-widest bg-gray-50 px-4 py-1 rounded-full">Samakan Pembilang (KPK 5 & 2 = 10)</span>
+                            <div class="flex items-center gap-16 text-lg font-bold text-blue-700 mt-4">
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[10px] text-gray-400 font-normal mb-1">Kaka</span>
+                                    <span>$\frac{5}{6} = \frac{10}{12}$</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[10px] text-gray-400 font-normal mb-1">Lala</span>
+                                    <span>$\frac{2}{3} = \frac{10}{15}$</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full h-px bg-gray-100 relative">
+                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-blue-400 font-bold">$\downarrow$</div>
+                        </div>
+
+                        <div class="flex flex-col items-center gap-4">
+                            <div class="flex items-center gap-8">
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase">Unit Kaka</span>
+                                    <span class="text-xl font-black text-gray-700">12</span>
+                                </div>
+                                <div class="text-gray-300 font-black text-2xl">:</div>
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase">Unit Lala</span>
+                                    <span class="text-xl font-black text-gray-700">15</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-3 bg-yellow-400 text-black px-10 py-3 rounded-xl shadow-lg">
+                                <span class="text-xs font-bold uppercase tracking-tight">Rasio Akhir</span>
+                                <span class="text-2xl font-black italic">4 : 5</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-dashed border-gray-200 w-full text-center">
+                            <p class="text-[13px] font-bold italic text-black">Jadi, rasio kelereng Kaka terhadap Lala adalah 4 : 5.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 2: SOAL 1, 2, 3, 4 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                    <div class="text-right leading-tight">
+                        <div class="text-sm font-extrabold text-black uppercase tracking-wide">MASTERY 4</div>
+                        <div class="text-[10px] text-black font-semibold uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[10px] text-black font-medium text-right">Menyamakan Bagian untuk Mencari Rasio</div>
+                        <div class="text-[10px] text-black font-medium text-right">Kode : M4-S334</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-1"></div>
+            </header>
+
+            <div class="content-wrapper px-4">
+                <!-- Soal 1 -->
+                <div class="question-item mt-4">
+                    <div class="q-number">1.</div>
+                    <div class="q-content">
+                        <p class="mb-4 text-gray-800 leading-relaxed">Sebanyak $\frac{3}{4}$ panjang pita Maya sama dengan $\frac{1}{2}$ panjang pita Nunu. Tentukan rasio panjang pita Maya terhadap panjang pita Nunu!</p>
+                        <div class="flex flex-col gap-10 mb-6 mt-14 items-center">
+                            <div class="relative">
+                                <div class="flex flex-col gap-8">
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Maya</div>
+                                        <div class="flex relative">
+                                            <div class="mph-bar fill-green w-[45px] border-r-0"></div><div class="mph-bar fill-green w-[45px] border-r-0"></div><div class="mph-bar fill-green w-[45px] border-r-0"></div><div class="mph-bar w-[45px]"></div>
+                                            <div class="absolute -top-12 left-0 w-[135px] flex flex-col items-center">
+                                                <div class="text-[10px] font-bold mb-1 text-gray-400">Sama</div>
+                                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Nunu</div>
+                                        <div class="flex">
+                                            <div class="mph-bar fill-pink w-[135px] border-r-0"><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                            <div class="mph-bar w-[135px]"><div class="sub-unit"></div><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="font-bold text-sm">Jawaban: _________________</p>
+                    </div>
+                </div>
+
+                <div class="h-8"></div>
+
+                <!-- Soal 2 -->
+                <div class="question-item">
+                    <div class="q-number">2.</div>
+                    <div class="q-content">
+                        <p class="mb-4 text-gray-800 leading-relaxed">Diketahui bahwa $\frac{2}{5}$ uang Oki sama dengan $\frac{1}{3}$ uang Puti. Berapakah rasio uang Oki terhadap uang Puti?</p>
+                        <div class="flex flex-col gap-10 mb-6 mt-14 items-center">
+                            <div class="relative">
+                                <div class="flex flex-col gap-8">
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Oki</div>
+                                        <div class="flex relative">
+                                            <div class="mph-bar fill-orange w-[45px] border-r-0"></div><div class="mph-bar fill-orange w-[45px] border-r-0"></div><div class="mph-bar w-[45px] border-r-0"></div><div class="mph-bar w-[45px] border-r-0"></div><div class="mph-bar w-[45px]"></div>
+                                            <div class="absolute -top-12 left-0 w-[90px] flex flex-col items-center">
+                                                <div class="text-[10px] font-bold mb-1 text-gray-400">Sama</div>
+                                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Puti</div>
+                                        <div class="flex">
+                                            <div class="mph-bar fill-purple w-[90px] border-r-0"><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                            <div class="mph-bar w-[90px] border-r-0"><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                            <div class="mph-bar w-[90px]"><div class="sub-unit"></div><div class="sub-unit"></div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="font-bold text-sm">Jawaban: _________________</p>
+                    </div>
+                </div>
+
+                <div class="h-8"></div>
+
+                <!-- Soal 3 -->
+                <div class="question-item">
+                    <div class="q-number">3.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800 leading-relaxed">Sebanyak $\frac{3}{5}$ luas kebun Qiqi ditanami mawar, sedangkan $\frac{1}{2}$ luas kebun Riri ditanami melati. Jika luas lahan mawar dan melati tersebut sama besar, berapakah rasio total luas kebun Qiqi terhadap kebun Riri?</p>
+                        <div class="mt-2 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+
+                <!-- Soal 4 -->
+                <div class="question-item">
+                    <div class="q-number">4.</div>
+                    <div class="q-content">
+                        <p class="text-gray-800 leading-relaxed">Di sebuah toko, $\frac{2}{7}$ harga tas Sasa sama dengan $\frac{1}{3}$ harga sepatu Tata. Manakah yang lebih mahal, tas Sasa atau sepatu Tata? Tentukan rasio harganya!</p>
+                        <div class="mt-2 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 3: SOAL 5-10 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                    <div class="text-right leading-tight">
+                        <div class="text-sm font-extrabold text-black uppercase tracking-wide">MASTERY 4</div>
+                        <div class="text-[10px] text-black font-semibold uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[10px] text-black font-medium text-right">Menyamakan Bagian untuk Mencari Rasio</div>
+                        <div class="text-[10px] text-black font-medium text-right">Kode : M4-S334</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-1"></div>
+            </header>
+
+            <div class="content-wrapper px-4">
+                <div class="space-y-10 mt-6">
+                    <div class="question-item">
+                        <div class="q-number">5.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed">Diketahui bahwa $\frac{4}{9}$ banyak buku di Rak A sama dengan $\frac{2}{3}$ banyak buku di Rak B. Tentukan rasio banyak buku di Rak A terhadap Rak B!</p>
+                            <div class="mt-2 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                    <div class="question-item">
+                        <div class="q-number">6.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed">Sebanyak $\frac{1}{4}$ tabungan Uli sama dengan $\frac{3}{10}$ tabungan Vina. Jika tabungan Uli adalah Rp120.000, berapakah tabungan Vina?</p>
+                            <div class="mt-2 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                    <div class="question-item">
+                        <div class="q-number">7.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed">Dua buah tangki air, X dan Y, berisi air dengan jumlah berbeda. Sebanyak $\frac{4}{5}$ isi tangki X sama dengan $\frac{2}{3}$ isi tangki Y. Tentukan perbandingan isi tangki X dan tangki Y!</p>
+                            <div class="mt-2 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                    <div class="question-item">
+                        <div class="q-number">8.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed">Perbandingan massa benda A dan B sedang dihitung. Jika $\frac{3}{7}$ massa benda A sama dengan $\frac{1}{3}$ massa benda B, manakah benda yang lebih berat? Tentukan rasionya!</p>
+                            <div class="mt-2 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                    <div class="question-item">
+                        <div class="q-number">9.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed">Selisih tinggi pohon jati dan pohon mahoni adalah 120 cm. Jika $\frac{2}{3}$ tinggi pohon jati sama dengan $\frac{4}{7}$ tinggi pohon mahoni, tentukan tinggi masing-masing pohon!</p>
+                            <div class="mt-2 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                    <div class="question-item">
+                        <div class="q-number">10.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed font-bold">TANTANGAN:</p>
+                            <p class="text-gray-800 leading-relaxed italic py-1">Jika $\frac{3}{8}$ berat sekarung beras sama dengan $\frac{3}{4}$ berat sekarung gandum, dan total berat keduanya adalah 36 kg, tentukan berat masing-masing karung tersebut!</p>
+                            <div class="mt-2 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-14 text-center">
+                    <p class="text-[13px] font-bold text-gray-600 italic">"Belajar dari salah, tiap langkah makin tangguh."</p>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+    </div>
+
+    <!-- Initialize KaTeX with proper delimiters and error handling -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+    </script>
+</body>
+</html>
