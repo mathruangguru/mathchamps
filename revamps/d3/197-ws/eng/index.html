@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Two-Step Word Problems (D3-S197)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .bar-model-box,
+        .tcolorbox,
+        .vertical-math-table td,
+        .svg-icon {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-blue-100 { background-color: #dbeafe !important; }
+        .bg-green-100 { background-color: #dcfce7 !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem; 
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 60px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.2rem;
+        margin-top: 4px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+        margin-left: 1.5rem;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.15cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.4rem;
+        background-color: #f3f4f6;
+        padding: 0.2rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* --- VISUAL MATH SPECIFICS --- */
+      .bar-label {
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 11px;
+        font-weight: bold;
+        text-anchor: middle;
+        fill: #333;
+      }
+      .brace-label {
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 10px;
+        text-anchor: middle;
+        fill: #555;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Subtraction Within 1000</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Two-Step Word Problems Part Three
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D3-S197</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-4 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    COMPARING & ADDING (HUNDREDS)
+                </h1>
+            </div>
+
+            <!-- SECTION A -->
+            <div class="instruction-text">
+                Section A: Let's Observe (Visualization)
+            </div>
+            <div class="mb-2 text-sm text-gray-600 italic px-2">
+                Fill in the empty boxes according to the provided bar models.
+            </div>
+
+            <div class="soal-grid">
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        1. Mr. Ali harvested 250 kg of rice. Mr. Budi harvested 50 kg less rice than Mr. Ali. What is the total rice they harvested together?
+                    </div>
+                    
+                    <!-- SVG Bar Model Comparison -->
+                    <!-- Scale: 1 unit ~ 0.5px. 250 -> 125px -->
+                    <div class="flex justify-center my-1">
+                        <svg width="320" height="120">
+                            <!-- Pak Ali Bar (250) -->
+                            <rect x="50" y="10" width="150" height="30" fill="#dbeafe" stroke="#333" stroke-width="1.5"/>
+                            <text x="125" y="29" class="bar-label">Mr. Ali (250)</text>
+                            
+                            <!-- Pak Budi Bar (250-50=200) Width approx 120 -->
+                            <rect x="50" y="50" width="120" height="30" fill="#dcfce7" stroke="#333" stroke-width="1.5"/>
+                            <text x="110" y="69" class="bar-label">Mr. Budi (?)</text>
+                            
+                            <!-- Difference (Dotted) -->
+                            <rect x="170" y="50" width="30" height="30" fill="none" stroke="#666" stroke-width="1.5" stroke-dasharray="4"/>
+                            
+                            <!-- Brace Difference -->
+                            <path d="M 170 85 L 170 88 L 200 88 L 200 85" fill="none" stroke="#333" stroke-width="1"/>
+                            <text x="185" y="100" class="brace-label">difference 50</text>
+                            
+                            <!-- Brace Total -->
+                            <path d="M 210 10 L 215 10 L 215 80 L 210 80" fill="none" stroke="#333" stroke-width="1.5"/>
+                            <text x="240" y="45" alignment-baseline="middle" font-weight="bold" font-size="11" fill="#333">Total?</text>
+                        </svg>
+                    </div>
+
+                    <div class="pl-4 space-y-1 text-sm font-semibold">
+                        <div>
+                            Step 1 (Find Mr. Budi): 
+                            <span class="inline-block mx-2">250 - 50 = </span>
+                            <span class="input-box w-16"></span> kg
+                        </div>
+                        <div>
+                            Step 2 (Total): 
+                            <span class="inline-block mx-2">250 + </span>
+                            <span class="input-box w-16"></span>
+                            <span class="mx-1">=</span>
+                            <span class="input-box w-16"></span> kg
+                        </div>
+                        <div class="mt-1 text-gray-700">
+                            So, their total rice is <span class="input-box w-20"></span> kg.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        2. Shop A sold 340 toys. Shop B sold 120 toys fewer than Shop A. What is the sum of toys in both shops?
+                    </div>
+
+                    <!-- SVG Bar Model Comparison -->
+                    <!-- Scale: 340 -> 170px width -->
+                    <div class="flex justify-center my-1">
+                        <svg width="320" height="120">
+                            <!-- Toko A Bar (340) -->
+                            <rect x="30" y="10" width="170" height="30" fill="#dbeafe" stroke="#333" stroke-width="1.5"/>
+                            <text x="115" y="29" class="bar-label">Shop A (340)</text>
+                            
+                            <!-- Toko B Bar (340-120=220) Width approx 110 -->
+                            <rect x="30" y="50" width="110" height="30" fill="#dcfce7" stroke="#333" stroke-width="1.5"/>
+                            <text x="85" y="69" class="bar-label">Shop B (?)</text>
+                            
+                            <!-- Difference (Dotted) -->
+                            <rect x="140" y="50" width="60" height="30" fill="none" stroke="#666" stroke-width="1.5" stroke-dasharray="4"/>
+                            
+                            <!-- Brace Difference -->
+                            <path d="M 140 85 L 140 88 L 200 88 L 200 85" fill="none" stroke="#333" stroke-width="1"/>
+                            <text x="170" y="100" class="brace-label">difference 120</text>
+                            
+                            <!-- Brace Total -->
+                            <path d="M 210 10 L 215 10 L 215 80 L 210 80" fill="none" stroke="#333" stroke-width="1.5"/>
+                            <text x="240" y="45" alignment-baseline="middle" font-weight="bold" font-size="11" fill="#333">Total?</text>
+                        </svg>
+                    </div>
+
+                    <div class="pl-4 space-y-1 text-sm font-semibold">
+                        <div>
+                            Step 1 (Find Shop B): 
+                            <span class="inline-block mx-2">340 - 120 = </span>
+                            <span class="input-box w-16"></span>
+                        </div>
+                        <div>
+                            Step 2 (Total): 
+                            <span class="inline-block mx-2">340 + </span>
+                            <span class="input-box w-16"></span>
+                            <span class="mx-1">=</span>
+                            <span class="input-box w-16"></span>
+                        </div>
+                        <div class="mt-1 text-gray-700">
+                            So, the sum of toys in both shops is <span class="input-box w-20"></span>.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SECTION B Start -->
+                <div class="instruction-text mt-2">
+                    Section B: Short Answer (Guided)
+                </div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        3. Dimas has savings of Rp 500. Eko has savings of Rp 200 less than Dimas. What is the sum of their savings together?
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded p-2 mt-2 mx-2 text-sm font-semibold">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span>Eko's Savings:</span> 
+                            <span>500 - 200 = </span>
+                            <span class="input-box w-20"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span>Total Savings:</span> 
+                            <span>500 + </span>
+                            <span class="input-box w-20"></span>
+                            <span>=</span>
+                            <span class="input-box w-24"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Subtraction Within 1000</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Two-Step Word Problems Part Three
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : D3-S197</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        4. Library X has 480 storybooks. Library Y has 150 books fewer than Library X. What is the total number of storybooks in both libraries?
+                    </div>
+                    <div class="flex flex-col gap-2 mt-2 ml-4 text-sm font-bold">
+                        <div>Library Y Books = 480 - 150 = <span class="input-box w-20"></span></div>
+                        <div>Total Books = 480 + <span class="input-box w-20"></span> = <span class="input-box w-24"></span></div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        5. Father traveled a distance of 300 meters. Uncle traveled 100 meters less than Father. What is the total distance traveled by both of them?
+                    </div>
+                    <div class="flex flex-col gap-2 mt-2 ml-4 text-sm font-bold">
+                        <div>Uncle's Distance = <span class="input-box w-20"></span> m</div>
+                        <div>Total Distance = <span class="input-box w-24"></span> m</div>
+                    </div>
+                </div>
+
+                <!-- SECTION C -->
+                <div class="instruction-text mt-4">
+                    Section C: Multiple Choice
+                </div>
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        6. Orchard A produced 250 fruits. Orchard B produced 100 fruits fewer than Orchard A. What is the total fruit from both orchards?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> A. 150 fruits</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> B. 350 fruits</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> C. 400 fruits</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        7. There are 320 male students. There are 120 fewer female students than male students. What is the total number of students?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> A. 200 students</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> B. 440 students</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> C. 520 students</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        8. The red truck carries 400 bricks. The blue truck carries 150 fewer bricks than the red truck. What is the total number of bricks?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> A. 250 bricks</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> B. 550 bricks</label>
+                        <label class="flex items-center cursor-pointer w-40"><span class="choice-box"></span> C. 650 bricks</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold">
+                        9. Plane A flies at a height of 650 m. Plane B flies 200 m lower than A. What is the sum of their heights?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> A. 450 m</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> B. 850 m</label>
+                        <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> C. 1,100 m</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 (Challenge) -->
+                <div class="soal-item">
+                    <div class="font-bold text-red-700">
+                        10. (Challenge) Mother bought 550 grams of flour. Aunt bought 250 grams less flour than Mother. Calculate the total weight of their flour!
+                    </div>
+                    <div class="border-2 border-dashed border-gray-400 rounded-lg h-32 mt-2 flex items-center justify-center text-gray-400 italic text-sm">
+                        Bar Model Drawing & Calculation Area
+                    </div>
+                    <div class="flex justify-end items-center gap-2 mt-2 font-bold text-sm">
+                        <span>Answer:</span>
+                        <span class="input-box w-24"></span> grams
+                    </div>
+                </div>
+
+            </div>
+            
+            <div id="random-quote" class="text-center italic text-xs text-gray-400 mt-6 mb-12">
+                <!-- Quote will be inserted here by JS -->
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+    <script>
+        const quotes = [
+            "Nice work finishing the set—seriously well done.",
+            "Great effort today. Quick check-through and you’re good.",
+            "Strong finish! Take a moment to review your answers.",
+            "Awesome job. If anything feels off, trust your gut and recheck it.",
+            "You’re getting sharper with every problem.",
+            "Well done—your focus really showed.",
+            "Before you close it, do one last scan for silly mistakes.",
+            "That was solid. Clean work and clear thinking.",
+            "Mistakes are part of the process—what matters is you keep going.",
+            "Great job. Try checking the trickiest question one more time.",
+            "Proud of your effort. Consistency wins.",
+            "Strong work—your math muscles are growing.",
+            "Nice! Now make sure every question has an answer.",
+            "Great progress today—keep that momentum.",
+            "You worked hard. Take a breath, then double-check.",
+            "Excellent! Try verifying one problem using a different method.",
+            "You did it—finish with a confident final check.",
+            "Little by little, a little becomes a lot.",
+            "Practice makes progress.",
+            "Steady hands win the race.",
+            "Small steps beat no steps.",
+            "Check your work, trust your growth.",
+            "A calm mind catches quiet mistakes.",
+            "Consistency is a superpower.",
+            "Progress, not perfection.",
+            "One more look saves one big oops.",
+            "Patience pays in points.",
+            "Accuracy beats speed—every time.",
+            "Strong roots, strong results.",
+            "Today’s effort is tomorrow’s confidence.",
+            "The best learners review."
+        ];
+        
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        document.getElementById("random-quote").innerText = `"${randomQuote}"`;
+    </script>
+  </body>
+</html>
