@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Discovery 3 - Membandingkan Panjang</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA (LOCKED) --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT (LOCKED) --- */
+      @media print {
+        @page { size: A4; margin: 0.5cm; }
+        body { background-color: white; padding: 0; -webkit-print-color-adjust: exact; }
+        .page-container { display: block; }
+        .page { width: 100%; height: auto; min-height: 28cm; margin: 0; box-shadow: none; page-break-after: always; padding: 0.5cm 1.5cm; border: none; }
+        .page:last-child { page-break-after: avoid; }
+        
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+
+        /* Force Dark Borders & Inputs */
+        [class*="border"] { border-color: #000 !important; }
+        input { border: 1.5px solid #000 !important; }
+        
+        /* Logo Fix */
+        .math-champs-header img { height: 45px !important; width: auto !important; }
+
+        /* Specific Shapes Outline for Print Clarity */
+        .wood-log, .tape-measure, .car-body, .car-wheel {
+            border: 1.5px solid #000 !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 80px;
+        height: 28px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 26px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 5px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.3rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CONCEPT BOX --- */
+      .concept-box {
+        border: 2px solid #b45309; /* Amber-700 */
+        background-color: #fef3c7; /* Amber-100 */
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+      }
+
+      /* --- VISUAL ASSETS (CSS SHAPES) --- */
+      /* Horizontal Ruler */
+      .h-ruler {
+        position: relative;
+        height: 40px;
+        border-bottom: 2px solid #333;
+        margin-top: 10px;
+      }
+      .h-tick {
+        position: absolute;
+        bottom: 0;
+        width: 1px;
+        height: 8px;
+        background: #333;
+      }
+      .h-label {
+        position: absolute;
+        bottom: -15px;
+        font-size: 9px;
+        transform: translateX(-50%);
+        font-weight: bold;
+      }
+
+      /* Wood Log */
+      .wood-log {
+        height: 20px;
+        background-color: #d97706; /* Amber-600 */
+        border: 1px solid #92400e;
+        border-radius: 4px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+      }
+      /* Wood texture lines */
+      .wood-log::after {
+        content: "";
+        position: absolute;
+        top: 4px;
+        left: 5px;
+        right: 5px;
+        height: 2px;
+        background: rgba(255,255,255,0.3);
+        border-radius: 2px;
+      }
+
+      /* Car */
+      .car-container {
+        position: relative;
+        height: 40px;
+      }
+      .car-body {
+        height: 25px;
+        border-radius: 5px 5px 2px 2px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border: 1px solid #333;
+      }
+      .car-wheel {
+        width: 10px;
+        height: 10px;
+        background: #333;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 5px;
+      }
+      
+      /* Measuring Tape Style */
+      .tape-container {
+        display: flex;
+        align-items: center;
+        gap: 0;
+      }
+      .tape-segment {
+        height: 20px;
+        border: 1px solid #555;
+        border-right: none;
+        background: #fbbf24;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+      }
+      .tape-segment:last-child {
+        border-right: 1px solid #555;
+        border-radius: 0 4px 4px 0;
+      }
+      .tape-segment:first-child {
+        border-radius: 4px 0 0 4px;
+      }
+
+      /* Quote Box */
+      .quote-box {
+        margin-top: auto;
+        margin-bottom: 10px;
+        padding: 10px 15px;
+        background-color: #f0fdf4;
+        border: 1px dashed #16a34a;
+        border-radius: 8px;
+        text-align: center;
+        font-style: italic;
+        color: #15803d;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-2) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Panjang
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Membandingkan dan mencari selisih panjang (meter)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : D3-S226
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-4 mt-2">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    PERBANDINGAN PANJANG
+                </h1>
+                <p class="text-xs italic text-gray-500">Mencari selisih panjang berarti mengurangi panjang yang lebih besar dengan yang lebih kecil.</p>
+            </div>
+
+            <!-- WORKED EXAMPLE -->
+            <div class="concept-box">
+                <div class="font-bold text-amber-900 mb-2 border-b border-amber-500 pb-1">Contoh Pengerjaan</div>
+                
+                <div class="flex flex-col gap-4">
+                    <!-- Visual Representation -->
+                    <div class="relative w-full h-24 bg-white rounded border border-amber-200 p-4">
+                        <!-- Ruler Background -->
+                        <div class="h-ruler absolute w-full bottom-2 left-0">
+                             <div class="h-tick" style="left: 20px;"></div><div class="h-label" style="left: 20px;">0m</div>
+                             <div class="h-tick" style="left: 120px;"></div><div class="h-label" style="left: 120px;">5m</div>
+                             <div class="h-tick" style="left: 220px;"></div><div class="h-label" style="left: 220px;">10m</div>
+                             <div class="h-tick" style="left: 320px;"></div><div class="h-label" style="left: 320px;">15m</div>
+                        </div>
+
+                        <!-- Object A (Log 10m) 1m = 20px -->
+                        <div class="wood-log absolute top-2" style="left: 20px; width: 200px;">Kayu A (10m)</div>
+                        
+                        <!-- Object B (Log 6m) -->
+                        <div class="wood-log absolute top-10" style="left: 20px; width: 120px; background-color: #92400e;">Kayu B (6m)</div>
+
+                        <!-- Difference Indicator -->
+                        <div class="absolute top-10 h-4 border-b-2 border-dashed border-red-500 flex items-center justify-center text-[10px] text-red-600 font-bold" style="left: 140px; width: 80px;">
+                            Selisih ?
+                        </div>
+                    </div>
+
+                    <!-- Explanation -->
+                    <div class="text-sm">
+                        <p class="mb-1 font-bold text-amber-900">Berapa selisih panjang kedua kayu?</p>
+                        <ul class="list-disc pl-5 space-y-1 text-gray-800">
+                            <li>Panjang Kayu A = <strong>10 meter</strong>.</li>
+                            <li>Panjang Kayu B = <strong>6 meter</strong>.</li>
+                            <li>Selisih = Panjang A - Panjang B</li>
+                            <li class="font-mono bg-white p-1 rounded border border-amber-300 inline-block mt-1">10m - 6m = <strong>4 meter</strong></li>
+                        </ul>
+                        <p class="mt-2 text-xs text-gray-600 italic">Kayu A lebih panjang 4 meter daripada Kayu B.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-3 py-1 text-sm">
+                Bagian A: Konsep Dasar (Visual)
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- Q1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        1. Perhatikan gambar dua mobil berikut. Berapa meter selisih panjang Mobil A dan Mobil B?
+                    </div>
+                    
+                    <div class="border-b-4 border-gray-700 pb-2 h-28 relative max-w-sm mx-auto mb-4 bg-gray-50 pt-4 rounded px-4">
+                        <!-- Mobil A (5m) -->
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="text-xs font-bold w-12">Mobil A</span>
+                            <div class="car-container w-full relative">
+                                <div class="car-body bg-blue-400" style="width: 150px;"></div>
+                                <div class="car-wheel" style="left: 20px;"></div>
+                                <div class="car-wheel" style="left: 110px;"></div>
+                                <div class="absolute top-1 right-0 text-xs font-bold text-gray-600" style="left: 160px;">5 m</div>
+                            </div>
+                        </div>
+
+                        <!-- Mobil B (3m) -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold w-12">Mobil B</span>
+                            <div class="car-container w-full relative">
+                                <div class="car-body bg-red-400" style="width: 90px;"></div>
+                                <div class="car-wheel" style="left: 15px;"></div>
+                                <div class="car-wheel" style="left: 60px;"></div>
+                                <div class="absolute top-1 right-0 text-xs font-bold text-gray-600" style="left: 100px;">3 m</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-2 max-w-xs mx-auto text-center">
+                        <div class="text-sm">
+                             <span class="font-bold">Hitungan:</span> 5m - 3m = <span class="input-box" style="width: 40px;"></span> m
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. Pita Biru panjangnya <strong>8 meter</strong>. Pita Merah panjangnya <strong>11 meter</strong>. Pita manakah yang lebih panjang?
+                    </div>
+                    <!-- Visual Abstract -->
+                    <div class="flex flex-col gap-2 my-3 pl-4 border-l-2 border-gray-300">
+                         <div class="flex items-center gap-2">
+                             <div class="h-2 bg-blue-500 rounded" style="width: 80px;"></div> <span class="text-xs text-blue-700 font-bold">8m</span>
+                         </div>
+                         <div class="flex items-center gap-2">
+                             <div class="h-2 bg-red-500 rounded" style="width: 110px;"></div> <span class="text-xs text-red-700 font-bold">11m</span>
+                         </div>
+                    </div>
+
+                    <div class="flex justify-start gap-6 mt-2 font-bold text-sm">
+                        <label class="cursor-pointer bg-white border border-blue-300 px-4 py-2 rounded hover:bg-blue-50 flex items-center gap-2">
+                            <span class="choice-box"></span> Pita Biru
+                        </label>
+                        <label class="cursor-pointer bg-white border border-red-300 px-4 py-2 rounded hover:bg-red-50 flex items-center gap-2">
+                            <span class="choice-box"></span> Pita Merah
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 3-6) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Panjang 
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Membandingkan dan mencari selisih panjang (meter)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : D3-S226
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+             <!-- INSTRUCTION A (Continued) -->
+             <div class="instruction-text mb-3 py-1 text-sm">
+                Lanjutan: Konsep Dasar (Visual)
+            </div>
+
+            <div class="soal-grid mb-6">
+                 <!-- Q3 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        3. Perhatikan gambar pagar berikut. Pagar manakah yang paling pendek?
+                    </div>
+                    
+                    <div class="flex flex-col gap-3 border p-3 rounded bg-white">
+                        <div class="flex items-center gap-4">
+                            <span class="font-bold w-4 text-center">A</span>
+                            <div class="h-6 bg-amber-800 flex items-center justify-center text-white text-[10px] border border-amber-950" style="width: 100px;">10m</div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="font-bold w-4 text-center">B</span>
+                            <div class="h-6 bg-amber-600 flex items-center justify-center text-white text-[10px] border border-amber-950" style="width: 140px;">14m</div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="font-bold w-4 text-center">C</span>
+                            <div class="h-6 bg-amber-400 flex items-center justify-center text-white text-[10px] border border-amber-950" style="width: 80px;">8m</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-row gap-4 mt-3 ml-2 text-sm font-semibold">
+                        <label class="flex items-center gap-2 cursor-pointer"><span class="choice-box"></span> Pagar A</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><span class="choice-box"></span> Pagar B</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><span class="choice-box"></span> Pagar C</label>
+                    </div>
+                </div>
+            </div>
+             
+             <div class="h-separator"></div>
+
+             <!-- INSTRUCTION B -->
+             <div class="instruction-text mb-3 py-1 text-sm">
+                Bagian B: Penerapan Hitung & Soal Cerita
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- Q4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        4. Panjang karpet ruang tamu <strong>15 meter</strong>. Panjang karpet kamar tidur <strong>9 meter</strong>. Berapa meter selisih panjang kedua karpet?
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 ml-4">
+                        <span class="border border-gray-400 px-2 py-1 rounded bg-white">15</span> - 
+                        <span class="border border-gray-400 px-2 py-1 rounded bg-white">9</span> = 
+                        <span class="input-box"></span> meter
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item bg-green-50 p-3 rounded-lg border-2 border-green-200">
+                    <div class="font-bold mb-1 text-green-900">
+                        5. Ibu membeli kain sepanjang <strong>12 meter</strong>. Bibi membeli kain sepanjang <strong>18 meter</strong>. Berapa meter kain Bibi lebih panjang dari kain Ibu?
+                    </div>
+                    <div class="text-right mt-2">
+                         Jawaban: <span class="input-box"></span> meter
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item bg-blue-50 p-3 rounded-lg border-2 border-blue-200">
+                    <div class="font-bold mb-1 text-blue-900">
+                        6. Andi melompat sejauh <strong>2 meter</strong>. Budi melompat sejauh <strong>4 meter</strong>. Berapa meter Budi harus mundur agar posisinya sama dengan Andi?
+                    </div>
+                    <div class="text-xs text-blue-700 italic mb-2">(Tips: Cari selisih jarak lompatan mereka)</div>
+                    <div class="text-right mt-1">
+                        Jawaban: <span class="input-box"></span> meter
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 7-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Discovery 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Panjang
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Membandingkan dan mencari selisih panjang (meter)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : D3-S226
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- SECTION C: Logika & Masalah -->
+            <div class="instruction-text text-amber-800 border-amber-500 mb-3 py-1 text-sm bg-amber-50 border-l-4 rounded">
+                C. Logika & Masalah
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. Urutkan benda berikut dari yang <strong>paling panjang</strong> ke yang paling pendek.
+                    </div>
+                    
+                    <div class="flex flex-col gap-2 border-l-4 border-gray-300 pl-4 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold w-16">Pipa A:</span>
+                            <div class="h-3 bg-gray-500 rounded" style="width: 60px;"></div> <span class="text-xs">6m</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold w-16">Pipa B:</span>
+                            <div class="h-3 bg-gray-500 rounded" style="width: 120px;"></div> <span class="text-xs">12m</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold w-16">Pipa C:</span>
+                            <div class="h-3 bg-gray-500 rounded" style="width: 90px;"></div> <span class="text-xs">9m</span>
+                        </div>
+                    </div>
+
+                    <div class="choice-container ml-2">
+                        <label class="flex items-center gap-2 cursor-pointer"><span class="choice-box"></span> A, C, B</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><span class="choice-box"></span> B, C, A</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><span class="choice-box"></span> C, B, A</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        8. Panjang Meja = 2 meter. Panjang Lemari = 5 meter.
+                    </div>
+                    <div class="text-sm text-gray-700 mb-2 pl-4">
+                        "Lemari lebih panjang ..... meter daripada Meja."
+                    </div>
+                    <div class="ml-4">
+                        Isi titik-titik di atas: <span class="input-box"></span> meter
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        9. Ada 3 ular mainan. Ular Hijau (15m), Ular Kuning (10m), Ular Merah (20m).
+                        Ular manakah yang panjangnya berada di <strong>tengah-tengah</strong> jika diurutkan?
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center gap-2 cursor-pointer"><span class="choice-box"></span> Hijau</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><span class="choice-box"></span> Kuning</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><span class="choice-box"></span> Merah</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SECTION D: Tantangan Konsep -->
+                <div class="instruction-text text-purple-800 border-purple-500 mb-3 py-1 text-sm bg-purple-50 border-l-4 rounded">
+                    D. Tantangan Konsep
+                </div>
+
+                <!-- SOAL 10 (Logic/Challenge) -->
+                <div class="soal-item bg-purple-50 p-4 rounded border-2 border-purple-200">
+                    <div class="font-bold mb-2 text-purple-900">
+                        10. Kereta A panjangnya <strong>10 meter</strong>. Kereta B panjangnya <strong>4 meter</strong>.
+                        Jika kita menyambungkan <strong>2 Kereta B</strong>, apakah panjang totalnya lebih panjang atau lebih pendek dari Kereta A?
+                    </div>
+                    <div class="mb-2 text-xs font-semibold text-purple-800">
+                        (Petunjuk: Hitung dulu panjang 2 Kereta B: 4m + 4m = ... )
+                    </div>
+                    <div class="choice-container ml-2">
+                        <label class="flex items-center gap-2 cursor-pointer"><span class="choice-box"></span> Lebih Panjang</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><span class="choice-box"></span> Lebih Pendek</label>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- QUOTE BOX (Randomly Inserted) -->
+            <div class="quote-box">
+                "Hebat! Kamu sudah latihan dengan serius dan fokus."
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
