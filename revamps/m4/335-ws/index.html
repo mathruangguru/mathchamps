@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - HOTS Grouping (Nilai Sisa)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- KaTeX for Fraction Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --primary-text: #333333;
+            --grey-text: #8d8e8d;
+            --bar-blue: #bae6fd;
+            --bar-green: #bbf7d0;
+            --bar-yellow: #fef08a;
+            --bar-red: #fecaca;
+            --bar-orange: #fed7aa;
+            --bar-purple: #e9d5ff;
+            --bar-pink: #fbcfe8;
+            --line-color: #000000;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: "Montserrat", sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: var(--primary-text);
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+        }
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+        }
+        .page {
+            background: white;
+            width: 210mm;
+            height: 297mm;
+            padding: 15mm 20mm;
+            margin-bottom: 10mm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        .page-header {
+            width: 100%;
+            margin-bottom: 5mm;
+        }
+        .math-champs-header {
+            background-color: white;
+            padding: 0.2rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: black;
+        }
+        .page-footer {
+            text-align: left;
+            font-size: 6pt;
+            color: var(--grey-text);
+            padding-top: 4px;
+            margin-top: auto;
+            border-top: 1.5px solid var(--grey-text);
+            width: 100%;
+            display: flex; gap: 5px; align-items: center;
+        }
+        .content-wrapper {
+            flex: 1;
+            padding-bottom: 5mm;
+        }
+        .mph-bar {
+            height: 42px; 
+            border: 1.5px solid var(--line-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            position: relative;
+        }
+        .bar-dashed {
+            border-style: dashed;
+            opacity: 0.3;
+            background-color: #f3f4f6 !important;
+        }
+        .bar-label {
+            font-size: 10px;
+            font-weight: 900;
+            color: #444;
+            margin-right: 12px;
+            min-width: 85px; 
+            text-align: right;
+            text-transform: uppercase;
+        }
+        .svg-brace {
+            width: 100%;
+            height: 12px;
+            display: block;
+            overflow: visible;
+        }
+        .svg-brace path {
+            fill: none;
+            stroke: #000;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .vertical-brace-container {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .long-answer-line {
+            border-bottom: 1.5px solid #333;
+            min-width: 350px;
+            display: inline-block;
+            height: 22px;
+            vertical-align: middle;
+            margin: 0 4px;
+        }
+        .question-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .q-number {
+            font-weight: 800;
+            min-width: 25px;
+            text-align: right;
+        }
+        .q-content {
+            flex: 1;
+            text-align: justify;
+            font-weight: 400; /* Ensure unbold */
+        }
+        .example-box {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            background-color: #fafafa;
+        }
+        
+        .fill-blue { background-color: var(--bar-blue); }
+        .fill-green { background-color: var(--bar-green); }
+        .fill-yellow { background-color: var(--bar-yellow); }
+        .fill-red { background-color: var(--bar-red); }
+        .fill-orange { background-color: var(--bar-orange); }
+        .fill-purple { background-color: var(--bar-purple); }
+        .fill-pink { background-color: var(--bar-pink); }
+
+        @media print {
+            body { background-color: white; }
+            .page-container { padding: 0; }
+            .page { 
+                margin: 0; 
+                box-shadow: none; 
+                page-break-after: always;
+                width: 210mm;
+                height: 297mm;
+            }
+            @page { size: A4; margin: 0; }
+            * { -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- HALAMAN 1: JUDUL & CONTOH -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                    <div class="text-right leading-tight">
+                        <div class="text-sm font-extrabold text-black uppercase tracking-wide">MASTERY 4</div>
+                        <div class="text-[10px] text-black font-semibold uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[10px] text-black font-medium text-right">Menghitung nilai benda berdasarkan rasio dan sisa unit.</div>
+                        <div class="text-[10px] text-black font-medium text-right">Kode : M4-S335</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-1"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="text-center mb-8 mt-6">
+                    <h1 class="text-xl font-black uppercase tracking-wider text-gray-800">Menghitung Mundur dari Nilai Sisa</h1>
+                </div>
+
+                <div class="example-box">
+                    <h2 class="font-bold text-sm mb-4 text-black italic text-center">Mari Mengamati Contoh!</h2>
+                    <p class="text-sm mb-12 text-justify text-gray-800 leading-relaxed px-4">Wira memiliki dua jenis wadah kelereng. Toples Merah masing-masing berisi 10 butir, sedangkan Toples Biru masing-masing berisi 5 butir. Perbandingan banyak toples Merah terhadap Biru adalah $3 : 2$. Jika Wira mengambil seluruh isi kelereng dari $\frac{2}{3}$ bagian jumlah toples Merah miliknya, sisa total isi kelereng di seluruh toples yang ada adalah 40 butir. Berapa banyak toples Biru yang dimiliki Wira?</p>
+                    
+                    <!-- BAR MODEL EXAMPLE -->
+                    <div class="flex justify-center mb-16 mt-16">
+                        <div class="relative flex">
+                            <div class="flex flex-col gap-5">
+                                <!-- Toples Merah -->
+                                <div class="flex items-center">
+                                    <div class="bar-label">Toples Merah</div>
+                                    <div class="flex relative">
+                                        <div class="mph-bar fill-red w-[60px] border-r-0"></div>
+                                        <div class="mph-bar bar-dashed w-[60px] border-r-0"></div>
+                                        <div class="mph-bar bar-dashed w-[60px]"></div>
+                                        
+                                        <!-- Brace Above Sisa -->
+                                        <div class="absolute -top-10 left-0 w-[60px] flex flex-col items-center">
+                                            <div class="text-[9px] font-bold mb-1 text-blue-600">Sisa</div>
+                                            <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                        </div>
+                                        <!-- Brace Above Diambil -->
+                                        <div class="absolute -top-10 left-[60px] w-[120px] flex flex-col items-center">
+                                            <div class="text-[9px] font-bold mb-1 text-gray-400">Diambil</div>
+                                            <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Toples Biru -->
+                                <div class="flex items-center">
+                                    <div class="bar-label">Toples Biru</div>
+                                    <div class="flex">
+                                        <div class="mph-bar fill-blue w-[60px] border-r-0"></div>
+                                        <div class="mph-bar fill-blue w-[60px]"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Vertical Brace Right for Sisa Total -->
+                            <div class="relative ml-4" style="height: 108px;">
+                                <div class="vertical-brace-container" style="left: 0;">
+                                    <svg class="h-[108px] w-4" viewBox="0 0 15 100" preserveAspectRatio="none">
+                                        <path d="M0,0 Q10,0 10,5 L10,45 Q10,50 15,50 Q10,50 10,55 L10,95 Q10,100 0,100" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round"/>
+                                    </svg>
+                                    <div class="text-[11px] font-black absolute left-8 whitespace-nowrap text-black leading-tight">Sisa Total:<br>40 butir</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- PEMBAHASAN PERDETAIL -->
+                    <div class="text-[13px] space-y-3 mt-4 mx-4 border-t pt-6">
+                        <div class="flex gap-2">
+                            <span class="font-semibold text-gray-400">&bull;</span>
+                            <div><b>Langkah 1:</b> Tentukan sisa unit masing-masing wadah.</div>
+                        </div>
+                        <div class="ml-6 space-y-1">
+                            <div>Unit sisa toples Merah $=$ $3 \text{ unit} - 2 \text{ unit} = \mathbf{1 \text{ unit}}$</div>
+                            <div>Unit sisa toples Biru $=$ $\mathbf{2 \text{ unit (tetap)}}$</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="font-semibold text-gray-400">&bull;</span>
+                            <div><b>Langkah 2:</b> Hitung nilai sisa per 1 kelompok unit.</div>
+                        </div>
+                        <div class="ml-6">
+                            <div>Nilai sisa $=$ $(1 \text{ unit} \times 10 \text{ butir}) + (2 \text{ unit} \times 5 \text{ butir}) = 10 + 10 = \mathbf{20 \text{ butir/unit}}$</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="font-semibold text-gray-400">&bull;</span>
+                            <div><b>Langkah 3:</b> Cari nilai pengali (jumlah unit sebenarnya).</div>
+                        </div>
+                        <div class="ml-6">
+                            <div>$\text{Jumlah Unit} = \text{Sisa Total} \div \text{Nilai per Kelompok} = 40 \div 20 = \mathbf{2}$</div>
+                        </div>
+                        <div class="flex gap-2 pt-2 border-t border-dashed border-gray-200">
+                            <span class="font-semibold text-blue-600">&bull;</span>
+                            <div class="font-bold">Banyak toples Biru $=$ $2 \text{ unit} \times 2 = \mathbf{4 \text{ toples}}$</div>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-[13px] font-bold italic text-black">Jadi, Wira memiliki 4 toples kelereng Biru.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 2 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                    <div class="text-right leading-tight">
+                        <div class="text-sm font-extrabold text-black uppercase tracking-wide">MASTERY 4</div>
+                        <div class="text-[10px] text-black font-semibold uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[10px] text-black font-medium text-right">Menghitung nilai benda berdasarkan rasio dan sisa unit.</div>
+                        <div class="text-[10px] text-black font-medium text-right">Kode : M4-S335</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-1"></div>
+            </header>
+
+            <div class="content-wrapper px-4">
+                <!-- Soal 1 -->
+                <div class="question-item mt-4">
+                    <div class="q-number">1.</div>
+                    <div class="q-content">
+                        <p class="mb-4 text-gray-800 leading-relaxed text-justify">Sebuah toko menyediakan kelereng dalam dua ukuran kemasan. Kemasan Besar berisi 20 butir dan kemasan Kecil berisi 10 butir. Perbandingan jumlah kemasan Besar terhadap Kecil adalah $5 : 4$. Setelah $\frac{2}{5}$ bagian dari stok kemasan Besar terjual, sisa total kelereng di toko tersebut adalah 200 butir. Hitunglah berapa banyak kemasan Besar yang ada di toko tersebut mula-mula!</p>
+                        
+                        <div class="flex justify-center mb-16 mt-16">
+                            <div class="relative flex">
+                                <div class="flex flex-col gap-5">
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Kms. Besar</div>
+                                        <div class="flex relative">
+                                            <div class="mph-bar fill-green w-[45px] border-r-0"></div><div class="mph-bar fill-green w-[45px] border-r-0"></div><div class="mph-bar fill-green w-[45px] border-r-0"></div>
+                                            <div class="mph-bar bar-dashed w-[45px] border-r-0"></div><div class="mph-bar bar-dashed w-[45px]"></div>
+                                            <!-- Brace Sisa -->
+                                            <div class="absolute -top-10 left-0 w-[135px] flex flex-col items-center">
+                                                <div class="text-[9px] font-bold mb-1 text-blue-600">Sisa</div>
+                                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Kms. Kecil</div>
+                                        <div class="flex">
+                                            <div class="mph-bar fill-pink w-[50px] border-r-0"></div><div class="mph-bar fill-pink w-[50px] border-r-0"></div><div class="mph-bar fill-pink w-[50px] border-r-0"></div><div class="mph-bar fill-pink w-[50px]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="relative ml-4" style="height: 108px;">
+                                    <div class="vertical-brace-container">
+                                        <svg class="h-[108px] w-4" viewBox="0 0 15 100" preserveAspectRatio="none">
+                                            <path d="M0,0 Q10,0 10,5 L10,45 Q10,50 15,50 Q10,50 10,55 L10,95 Q10,100 0,100" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round"/>
+                                        </svg>
+                                        <div class="text-[11px] font-black absolute left-8 whitespace-nowrap text-black leading-tight">Total Sisa:<br>200 butir</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="font-bold text-sm">Jawaban: _________________</p>
+                    </div>
+                </div>
+
+                <div class="h-10"></div>
+
+                <!-- Soal 2 -->
+                <div class="question-item">
+                    <div class="q-number">2.</div>
+                    <div class="q-content">
+                        <p class="mb-4 text-gray-800 leading-relaxed text-justify">Seorang petani mengemas apel ke dalam dua jenis kotak. Kotak tipe X masing-masing seberat 10 kg dan kotak tipe Y masing-masing seberat 5 kg. Perbandingan banyak kotak X terhadap Y adalah $3 : 5$. Petani tersebut menjual 2 buah kotak tipe X. Jika sisa total berat apel di seluruh kotak yang tersisa adalah 145 kg, tentukan banyak kotak tipe Y mula-mula!</p>
+                        
+                        <div class="flex justify-center mb-16 mt-16">
+                            <div class="relative flex">
+                                <div class="flex flex-col gap-5">
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Kotak X</div>
+                                        <div class="flex relative">
+                                            <div class="mph-bar fill-orange w-[60px] border-r-0"></div>
+                                            <div class="mph-bar bar-dashed w-[60px] border-r-0"></div>
+                                            <div class="mph-bar bar-dashed w-[60px]"></div>
+                                            <!-- Brace Diambil -->
+                                            <div class="absolute -top-10 left-[60px] w-[120px] flex flex-col items-center">
+                                                <div class="text-[9px] font-bold mb-1 text-gray-400">2 Kotak Terjual</div>
+                                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="bar-label">Kotak Y</div>
+                                        <div class="flex">
+                                            <div class="mph-bar fill-purple w-[60px] border-r-0"></div><div class="mph-bar fill-purple w-[60px] border-r-0"></div><div class="mph-bar fill-purple w-[60px] border-r-0"></div><div class="mph-bar fill-purple w-[60px] border-r-0"></div><div class="mph-bar fill-purple w-[60px]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="relative ml-4" style="height: 108px;">
+                                    <div class="vertical-brace-container">
+                                        <svg class="h-[108px] w-4" viewBox="0 0 15 100" preserveAspectRatio="none">
+                                            <path d="M0,0 Q10,0 10,5 L10,45 Q10,50 15,50 Q10,50 10,55 L10,95 Q10,100 0,100" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round"/>
+                                        </svg>
+                                        <div class="text-[11px] font-black absolute left-8 whitespace-nowrap text-black leading-tight">Total Sisa:<br>145 kg</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="font-bold text-sm">Jawaban: _________________</p>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 3 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                    <div class="text-right leading-tight">
+                        <div class="text-sm font-extrabold text-black uppercase tracking-wide">MASTERY 4</div>
+                        <div class="text-[10px] text-black font-semibold uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[10px] text-black font-medium text-right">Menghitung nilai benda berdasarkan rasio dan sisa unit.</div>
+                        <div class="text-[10px] text-black font-medium text-right">Kode : M4-S335</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-1"></div>
+            </header>
+
+            <div class="content-wrapper px-4">
+                <div class="space-y-12 mt-6">
+                    <div class="question-item">
+                        <div class="q-number">3.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed text-justify">Zara memiliki persediaan kotak pensil dalam dua tipe. Kotak tipe A berisi 50 batang dan kotak tipe B berisi 20 batang. Perbandingan jumlah kotak A terhadap B adalah $2 : 3$. Zara memberikan seluruh isi pensil dari $\frac{1}{2}$ bagian jumlah kotak A miliknya kepada teman-temannya. Jika sisa seluruh isi pensil di kotak Zara adalah 330 batang, berapa total jumlah kotak (A dan B) yang dimiliki Zara mula-mula?</p>
+                            <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                    <div class="question-item">
+                        <div class="q-number">4.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed text-justify">Raka memiliki wadah berisi cat merah (10 liter) dan cat biru (2 liter) dengan rasio $4 : 1$. Ia menggunakan 3 wadah cat merah untuk mengecat pagar. Sisa total volume cat Raka sekarang adalah 96 liter. Berapa banyak wadah cat biru yang dimiliki Raka mula-mula?</p>
+                            <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                    <div class="question-item">
+                        <div class="q-number">5.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed text-justify">Sebuah gudang menyimpan peti telur tipe A berisi 30 butir dan peti tipe B berisi 12 butir dengan perbandingan $2 : 5$. Jika $\frac{1}{2}$ bagian dari peti tipe A dikeluarkan dari gudang dan sisa total telur sekarang adalah 900 butir, berapa banyak peti tipe B di gudang tersebut mula-mula?</p>
+                            <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                    <div class="question-item">
+                        <div class="q-number">6.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed text-justify">Perbandingan banyak mobil mainan di dalam kotak merah (isi 15 buah) dan kotak kuning (isi 10 buah) milik Fatih adalah $3 : 4$. Fatih memberikan 2 kotak merah kepada adiknya. Sisa total isi mobil mainan Fatih sekarang adalah 255 buah. Berapa banyak kotak kuning yang dimiliki Fatih?</p>
+                            <div class="mt-4 font-bold text-sm">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 4 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                    <div class="text-right leading-tight">
+                        <div class="text-sm font-extrabold text-black uppercase tracking-wide">MASTERY 4</div>
+                        <div class="text-[10px] text-black font-semibold uppercase tracking-tight">Kemampuan Lanjutan – Rasio</div>
+                        <div class="text-[10px] text-black font-medium text-right">Menghitung nilai benda berdasarkan rasio dan sisa unit.</div>
+                        <div class="text-[10px] text-black font-medium text-right">Kode : M4-S335</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-1"></div>
+            </header>
+
+            <div class="content-wrapper px-4">
+                <div class="space-y-12 mt-10">
+                    <div class="question-item">
+                        <div class="q-number">7.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed text-justify">Dodi memiliki paket alat tulis tipe A (isi 8 buah) dan tipe B (isi 4 buah) dengan perbandingan banyak paket $3 : 2$. Dodi memberikan $\frac{1}{3}$ bagian jumlah paket A dan $\frac{1}{2}$ bagian jumlah paket B miliknya kepada adiknya. Jika sisa seluruh isi alat tulis Dodi sekarang adalah 120 buah, hitunglah total jumlah isi alat tulis (seluruh butir) yang dimiliki Dodi mula-mula!</p>
+                            <div class="mt-8 font-bold text-sm text-left">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                    <div class="question-item">
+                        <div class="q-number">8.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed text-justify">Rasio banyak tabung gas tipe A seberat 12 kg dan tipe B seberat 3 kg adalah $2 : 5$. Jika petugas menggunakan 1 buah tabung gas tipe A, sisa total berat gas di seluruh tabung adalah 105 kg. Berapa banyak tabung gas tipe B yang tersedia di sana mula-mula?</p>
+                            <div class="mt-4 font-bold text-sm text-left">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                    <div class="question-item">
+                        <div class="q-number">9.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed text-justify">Persediaan beras di toko Jaya terdiri dari karung tipe A seberat 25 kg dan tipe B seberat 10 kg dengan rasio $4 : 3$. Setelah toko menjual $\frac{3}{4}$ bagian dari karung tipe A, sisa total berat beras di toko tersebut adalah 110 kg. Berapa total seluruh karung (A dan B) yang ada di toko mula-mula?</p>
+                            <div class="mt-4 font-bold text-sm text-left">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                    <div class="question-item">
+                        <div class="q-number">10.</div>
+                        <div class="q-content">
+                            <p class="text-gray-800 leading-relaxed text-justify">Rasio lembar uang Rp10.000 dan Rp5.000 di sebuah celengan adalah $5 : 2$. Iwan mengambil $\frac{1}{5}$ bagian uang Rp10.000 dan $\frac{1}{2}$ bagian uang Rp5.000 untuk jajan. Jika sisa total nilai uang di celengan adalah Rp180.000, berapa banyak lembar Rp10.000 di celengan tersebut mula-mula?</p>
+                            <div class="mt-4 font-bold text-sm text-left">Jawaban: <span class="long-answer-line"></span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-14 text-center">
+                    <p class="text-[13px] font-bold text-gray-700 italic">"Mantap! Tutup dengan senyum—kamu sudah bekerja luar biasa. 😊"</p>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+    </div>
+
+    <!-- Initialize KaTeX -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+    </script>
+</body>
+</html>
