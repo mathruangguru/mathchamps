@@ -1,0 +1,615 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Horizontal Bar Graphs</title>
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+ 
+    <style>
+        :root {
+            --primary-text: #333333;
+            --secondary-text: #555555;
+            --grey-text: #8d8e8d;
+            --thou-color: #0072B2;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Montserrat", sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: var(--primary-text);
+            background-color: #525659;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .page {
+            background: white;
+            width: 21cm;
+            min-height: 29.7cm;
+            padding: 1.5cm 2cm;
+            margin-bottom: 1cm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-header {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .page-footer {
+            text-align: left;
+            font-size: 6pt;
+            color: var(--grey-text);
+            padding-top: 4px;
+            margin-top: auto;
+            border-top: 2px solid var(--grey-text);
+            width: 100%;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background-color: white; padding: 0; }
+            .page-container { display: block; }
+            .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 1.5cm 2cm; }
+            .page:last-child { page-break-after: avoid; }
+        }
+
+        .math-champs-header {
+            background-color: white;
+            padding: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: black;
+        }
+
+        .instruction-text {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            background-color: #f3f4f6;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.95rem;
+            text-align: left;
+            border-left: 4px solid var(--thou-color);
+        }
+
+        .answer-box {
+            border: 1.5px solid #d1d5db;
+            display: inline-block;
+            height: 30px;
+            vertical-align: middle;
+            margin: 0 6px;
+            background-color: white;
+            border-radius: 4px;
+        }
+
+        .question-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .q-number {
+            font-weight: 700;
+            font-size: 1rem;
+            min-width: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .q-content {
+            width: 100%;
+            font-size: 0.95rem;
+        }
+
+        /* MENDATAR BAR GRAPH STYLES */
+        .chart-area {
+            position: relative;
+            margin: 40px auto 70px 115px; 
+            width: fit-content;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 380px;
+            height: 240px;
+            border-left: 2px solid black;
+            border-bottom: 2px solid black;
+        }
+
+        /* Arrows */
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -6px;
+            width: 0; height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 10px solid black;
+        }
+
+        .chart-container::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            right: -10px;
+            width: 0; height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 10px solid black;
+        }
+
+        /* New Label Position: Above Y-axis */
+        .y-axis-label-top {
+            position: absolute;
+            top: -30px;
+            left: -100px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: #4b5563;
+            width: 100px;
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        .x-axis-label {
+            position: absolute;
+            bottom: -55px;
+            right: -20px;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .grid-line-v {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            border-right: 1px solid #e5e7eb;
+            height: 100%;
+        }
+
+        .grid-line-v-major {
+            border-right: 1.5px solid #9ca3af;
+        }
+
+        .x-tick-label {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .bars-wrapper-h {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            height: 100%;
+            padding: 10px 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .bar-group-h {
+            display: flex;
+            align-items: center;
+            height: 35px;
+            position: relative;
+        }
+
+        .bar-h {
+            height: 100%;
+            border: 1.5px solid black;
+            transition: width 0.3s;
+        }
+
+        .bar-label-h {
+            position: absolute;
+            left: -10px;
+            transform: translateX(-100%);
+            padding-right: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- HALAMAN 1: Q1-2 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Bar Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Reading and Interpreting Horizontal Bar Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Code : E2-S136</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="text-center mb-10 mt-2">
+                    <h1 class="text-xl font-black uppercase tracking-wider text-gray-800">
+                        READING HORIZONTAL BAR GRAPHS
+                    </h1>
+                </div>
+
+                <div class="instruction-text">
+                    Part 1: Types of Story Books in the Library
+                </div>
+                <p class="text-sm mb-6">This horizontal bar graph shows the number of story books borrowed by students in the school library. Each student was asked to choose one favorite type of book. Use this graph to answer questions 1 to 5.</p>
+
+                <!-- DIAGRAM 1 -->
+                <div class="chart-area">
+                    <!-- Label Above Y-axis -->
+                    <div class="y-axis-label-top">Type of Book</div>
+                    
+                    <div class="chart-container">
+                        <div class="x-axis-label">Number of Books</div>
+                        
+                        <!-- All Grid Lines (Scale 0-32, Major every 4, Minor every 1) -->
+                        <div class="grid-line-v" style="left: 0px;"><span class="x-tick-label">0</span></div>
+                        <div class="grid-line-v opacity-30" style="left: 11.87px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 23.75px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 35.62px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 47.5px;"><span class="x-tick-label">4</span></div>
+                        <div class="grid-line-v opacity-30" style="left: 59.37px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 71.25px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 83.12px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 95px;"><span class="x-tick-label">8</span></div>
+                        <div class="grid-line-v opacity-30" style="left: 106.87px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 118.75px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 130.62px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 142.5px;"><span class="x-tick-label">12</span></div>
+                        <div class="grid-line-v opacity-30" style="left: 154.37px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 166.25px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 178.12px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 190px;"><span class="x-tick-label">16</span></div>
+                        <div class="grid-line-v opacity-30" style="left: 201.87px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 213.75px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 225.62px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 237.5px;"><span class="x-tick-label">20</span></div>
+                        <div class="grid-line-v opacity-30" style="left: 249.37px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 261.25px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 273.12px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 285px;"><span class="x-tick-label">24</span></div>
+                        <div class="grid-line-v opacity-30" style="left: 296.87px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 308.75px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 320.62px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 332.5px;"><span class="x-tick-label">28</span></div>
+                        <div class="grid-line-v opacity-30" style="left: 344.37px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 356.25px;"></div>
+                        <div class="grid-line-v opacity-30" style="left: 368.12px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 380px;"></div> <!-- Number 32 removed -->
+
+                        <div class="bars-wrapper-h">
+                            <div class="bar-group-h">
+                                <div class="bar-label-h">Fables</div>
+                                <div class="bar-h bg-cyan-400" style="width: 142.5px;"></div>
+                            </div>
+                            <div class="bar-group-h">
+                                <div class="bar-label-h">Mystery</div>
+                                <div class="bar-h bg-purple-400" style="width: 95px;"></div>
+                            </div>
+                            <div class="bar-group-h">
+                                <div class="bar-label-h">Adventure</div>
+                                <div class="bar-h bg-green-400" style="width: 261.25px;"></div>
+                            </div>
+                            <div class="bar-group-h">
+                                <div class="bar-label-h">Comics</div>
+                                <div class="bar-h bg-yellow-400" style="width: 190px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1 mt-4">
+                    <div class="question-row">
+                        <div class="q-number">1.</div>
+                        <div class="q-content">
+                            How many Adventure books were borrowed?
+                            <div class="mt-2 flex items-center">
+                                <span class="text-blue-800 font-bold">Ans:</span> 
+                                <div class="answer-box w-16"></div> 
+                                <span>books.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-row">
+                        <div class="q-number">2.</div>
+                        <div class="q-content">
+                            Which type of book was borrowed the least?
+                            <div class="mt-2 flex items-center">
+                                <span class="text-blue-800 font-bold">Ans:</span> 
+                                <div class="answer-box w-48"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 2: Q3-5 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Bar Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Reading and Interpreting Horizontal Bar Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Code : E2-S136</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="flex flex-col gap-1 mt-4">
+                    <div class="question-row">
+                        <div class="q-number">3.</div>
+                        <div class="q-content">
+                            How many Fable books were borrowed?
+                            <div class="flex gap-8 mt-2 font-medium text-gray-700">
+                                <div>a. 8 books</div>
+                                <div>b. 12 books</div>
+                                <div>c. 16 books</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-row">
+                        <div class="q-number">4.</div>
+                        <div class="q-content">
+                            What is the difference between the number of Comic books and Mystery books?
+                            <div class="mt-2 flex items-center">
+                                <span class="text-blue-800 font-bold">Ans:</span> 
+                                <div class="answer-box w-16"></div> 
+                                <span>books.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-row">
+                        <div class="q-number">5.</div>
+                        <div class="q-content">
+                            If there are 2 additional Adventure books borrowed, what is the total number of Adventure books now?
+                            <div class="mt-2 flex items-center">
+                                <span class="text-blue-800 font-bold">Ans:</span> 
+                                <div class="answer-box w-16"></div> 
+                                <span>books.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 3: Part 2 & Q6-8 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Bar Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Reading and Interpreting Horizontal Bar Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Code : E2-S136</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="instruction-text">
+                    Part 2: Student Savings in a Week
+                </div>
+                <p class="text-sm mb-6">This horizontal bar graph shows the savings of four students in one week. The bottom scale shows the amount of money in thousands of Rupiah. Use this graph to answer questions 6 to 10.</p>
+
+                <!-- DIAGRAM 2 -->
+                <div class="chart-area">
+                    <!-- Label Above Y-axis -->
+                    <div class="y-axis-label-top">Student Name</div>
+                    
+                    <div class="chart-container">
+                        <div class="x-axis-label">Savings (thousands of Rupiah)</div>
+                        
+                        <!-- Full Grid Lines (Scale 0-60, Major every 10, Minor every 2) -->
+                        <div class="grid-line-v" style="left: 0px;"><span class="x-tick-label">0</span></div>
+                        <div class="grid-line-v opacity-40" style="left: 12.66px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 25.33px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 38px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 50.66px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 63.33px;"><span class="x-tick-label">10</span></div>
+                        <div class="grid-line-v opacity-40" style="left: 76px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 88.66px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 101.33px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 114px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 126.66px;"><span class="x-tick-label">20</span></div>
+                        <div class="grid-line-v opacity-40" style="left: 139.33px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 152px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 164.66px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 177.33px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 190px;"><span class="x-tick-label">30</span></div>
+                        <div class="grid-line-v opacity-40" style="left: 202.66px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 215.33px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 228px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 240.66px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 253.33px;"><span class="x-tick-label">40</span></div>
+                        <div class="grid-line-v opacity-40" style="left: 266px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 278.66px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 291.33px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 304px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 316.66px;"><span class="x-tick-label">50</span></div>
+                        <div class="grid-line-v opacity-40" style="left: 329.33px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 342px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 354.66px;"></div>
+                        <div class="grid-line-v opacity-40" style="left: 367.33px;"></div>
+                        <div class="grid-line-v grid-line-v-major" style="left: 380px;"></div> <!-- Number 60 removed -->
+
+                        <div class="bars-wrapper-h">
+                            <div class="bar-group-h">
+                                <div class="bar-label-h">Adi</div>
+                                <div class="bar-h bg-blue-500" style="width: 190px;"></div>
+                            </div>
+                            <div class="bar-group-h">
+                                <div class="bar-label-h">Budi</div>
+                                <div class="bar-h bg-blue-500" style="width: 342px;"></div>
+                            </div>
+                            <div class="bar-group-h">
+                                <div class="bar-label-h">Caca</div>
+                                <div class="bar-h bg-blue-500" style="width: 126.66px;"></div>
+                            </div>
+                            <div class="bar-group-h">
+                                <div class="bar-label-h">Dina</div>
+                                <div class="bar-h bg-blue-500" style="width: 291.33px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1 mt-4">
+                    <div class="question-row">
+                        <div class="q-number">6.</div>
+                        <div class="q-content">
+                            Who has the greatest savings?
+                            <div class="mt-2 flex items-center">
+                                <span class="text-blue-800 font-bold">Ans:</span> 
+                                <div class="answer-box w-48"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-row">
+                        <div class="q-number">7.</div>
+                        <div class="q-content">
+                            How many thousands of Rupiah does Dina have in savings?
+                            <div class="flex gap-8 mt-2 font-medium text-gray-700">
+                                <div>a. 40</div>
+                                <div>b. 46</div>
+                                <div>c. 50</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-row">
+                        <div class="q-number">8.</div>
+                        <div class="q-content">
+                            How much less is Adi's savings compared to Budi's?
+                            <div class="mt-2 flex items-center">
+                                <span class="text-blue-800 font-bold">Ans:</span> 
+                                <div class="answer-box w-16"></div> 
+                                <span>thousands of Rupiah.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 4: Q9-10 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Bar Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Reading and Interpreting Horizontal Bar Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Code : E2-S136</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="flex flex-col gap-1 mt-4">
+                    <div class="question-row">
+                        <div class="q-number">9.</div>
+                        <div class="q-content">
+                            If Caca saves another 10 thousand Rupiah, what is Caca's total savings?
+                            <div class="mt-2 flex items-center">
+                                <span class="text-blue-800 font-bold">Ans:</span> 
+                                <div class="answer-box w-16"></div> 
+                                <span>thousands of Rupiah.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-row">
+                        <div class="q-number">10.</div>
+                        <div class="q-content">
+                            What is the total savings of Adi and Caca combined?
+                            <div class="mt-2 flex items-center">
+                                <span class="text-blue-800 font-bold">Ans:</span> 
+                                <div class="answer-box w-16"></div> 
+                                <span>thousands of Rupiah.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-20 mb-10 text-center">
+                    <p class="text-black italic font-bold">"Mistakes are part of the process—what matters is you keep going."</p>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+    </div>
+</body>
+</html>
