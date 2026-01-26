@@ -1,0 +1,521 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Making Bar Graphs</title>
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+        :root {
+            --primary-text: #333333;
+            --secondary-text: #555555;
+            --grey-text: #8d8e8d;
+            --thou-color: #0072B2;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Montserrat", sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: var(--primary-text);
+            background-color: #525659;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .page {
+            background: white;
+            width: 21cm;
+            min-height: 29.7cm;
+            padding: 1.5cm 2cm;
+            margin-bottom: 1cm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-header {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .page-footer {
+            text-align: left;
+            font-size: 6pt;
+            color: var(--grey-text);
+            padding-top: 4px;
+            margin-top: auto;
+            border-top: 2px solid var(--grey-text);
+            width: 100%;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background-color: white; padding: 0; }
+            .page-container { display: block; }
+            .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 1.5cm 2cm; }
+            .page:last-child { page-break-after: avoid; }
+        }
+
+        .math-champs-header {
+            background-color: white;
+            padding: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: black;
+        }
+
+        .instruction-text {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            background-color: #f3f4f6;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.95rem;
+            text-align: left;
+            border-left: 4px solid var(--thou-color);
+        }
+
+        .answer-box {
+            border: 1.5px solid #d1d5db;
+            display: inline-block;
+            height: 30px;
+            vertical-align: middle;
+            margin: 0 6px;
+            background-color: white;
+            border-radius: 4px;
+        }
+
+        .question-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .q-number {
+            font-weight: 700;
+            font-size: 1rem;
+            min-width: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .q-content {
+            width: 100%;
+            font-size: 0.95rem;
+        }
+
+        /* PICTOGRAM STYLES */
+        .pictogram-container {
+            border: 2px solid #333;
+            margin: 10px auto;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .pictogram-header {
+            background-color: #f8fafc;
+            border-bottom: 2px solid #333;
+            padding: 8px;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .pictogram-row {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+            min-height: 50px;
+            align-items: center;
+        }
+
+        .pictogram-label {
+            width: 120px;
+            padding: 10px;
+            font-weight: 600;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .pictogram-data {
+            flex-grow: 1;
+            padding: 10px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .pictogram-footer {
+            border-top: 2px solid #333;
+            padding: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            background-color: #f8fafc;
+        }
+
+        /* SYMBOLS */
+        .circle-icon {
+            width: 24px;
+            height: 24px;
+            background-color: #93c5fd;
+            border: 1.5px solid #1e40af;
+            border-radius: 50%;
+        }
+
+        .half-circle-icon {
+            width: 12px;
+            height: 24px;
+            background-color: #93c5fd;
+            border: 1.5px solid #1e40af;
+            border-right: none;
+            border-radius: 24px 0 0 24px;
+        }
+
+        .square-icon {
+            width: 22px;
+            height: 22px;
+            border: 1.5px solid #475569;
+        }
+
+        .half-star {
+            position: relative;
+            display: inline-block;
+            width: 14px;
+            height: 28px;
+            overflow: hidden;
+            font-size: 28px;
+            line-height: 1;
+            vertical-align: middle;
+        }
+
+        .half-star span {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- HALAMAN 1 (BAGIAN 1) -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Bar Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Making Bar Graphs from Picture Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Code : E2-S134</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="text-center mb-8 mt-2">
+                    <h1 class="text-xl font-black uppercase tracking-wider text-gray-800">
+                        MAKING BAR GRAPHS
+                    </h1>
+                </div>
+
+                <div class="instruction-text">
+                    Part 1: Students' Favorite Fruit Juice
+                </div>
+                <p class="text-sm mb-6">Grade 3 students chose their favorite fruit juice. Look at the Picture Graph below to answer questions 1 to 3.</p>
+
+                <!-- PICTOGRAM 1 -->
+                <div class="pictogram-container">
+                    <div class="pictogram-header text-orange-700 uppercase tracking-widest">Favorite Fruit Juice</div>
+                    <div class="pictogram-row">
+                        <div class="pictogram-label">Orange</div>
+                        <div class="pictogram-data">
+                            <div class="square-icon bg-orange-200"></div><div class="square-icon bg-orange-200"></div><div class="square-icon bg-orange-200"></div><div class="square-icon bg-orange-200"></div><div class="square-icon bg-orange-200"></div><div class="square-icon bg-orange-200"></div>
+                        </div>
+                    </div>
+                    <div class="pictogram-row">
+                        <div class="pictogram-label">Mango</div>
+                        <div class="pictogram-data">
+                            <div class="square-icon bg-yellow-200"></div><div class="square-icon bg-yellow-200"></div><div class="square-icon bg-yellow-200"></div>
+                        </div>
+                    </div>
+                    <div class="pictogram-row">
+                        <div class="pictogram-label">Avocado</div>
+                        <div class="pictogram-data">
+                            <div class="square-icon bg-green-200"></div><div class="square-icon bg-green-200"></div><div class="square-icon bg-green-200"></div><div class="square-icon bg-green-200"></div><div class="square-icon bg-green-200"></div>
+                        </div>
+                    </div>
+                    <div class="pictogram-footer font-medium">
+                        Key: 1 <div class="square-icon inline-block w-4 h-4 align-middle bg-gray-200"></div> stands for 3 students
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1 mt-8">
+                    <div class="question-row">
+                        <div class="q-number">1.</div>
+                        <div class="q-content">
+                            Which bar graph correctly represents the Fruit Juice data above?
+                            
+                            <div class="mt-6 flex justify-center">
+                                <img src="https://images2.imgbox.com/9f/3f/ezxn5yvf_o.png" alt="Fruit Juice Bar Graph Options" class="max-w-[500px] h-auto border border-gray-100 rounded shadow-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-row">
+                        <div class="q-number">2.</div>
+                        <div class="q-content">
+                            Based on the picture graph above, how many students like Orange Juice?
+                            <div class="flex flex-wrap gap-x-8 gap-y-2 mt-2 font-medium">
+                                <div>a. 6 students</div>
+                                <div>b. 12 students</div>
+                                <div>c. 18 students</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-row">
+                        <div class="q-number">3.</div>
+                        <div class="q-content">
+                            What is the total number of students in this survey?
+                            <div class="mt-2 flex items-center">
+                                <span class="text-blue-800 font-bold">Answer:</span> 
+                                <div class="answer-box w-20"></div> 
+                                <span>students.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 2 (BAGIAN 2) -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Bar Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Making Bar Graphs from Picture Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Code : E2-S134</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="instruction-text">
+                    Part 2: "Ceria" Toy Shop
+                </div>
+                <p class="text-sm mb-6">Look at the toy sales picture graph below to answer questions 4 to 7.</p>
+                
+                <!-- PICTOGRAM 2 -->
+                <div class="pictogram-container">
+                    <div class="pictogram-header text-blue-900 uppercase tracking-widest">Toy Sales</div>
+                    <div class="pictogram-row">
+                        <div class="pictogram-label">Robot</div>
+                        <div class="pictogram-data">
+                            <div class="circle-icon"></div>
+                            <div class="circle-icon"></div>
+                        </div>
+                    </div>
+                    <div class="pictogram-row">
+                        <div class="pictogram-label">Doll</div>
+                        <div class="pictogram-data">
+                            <div class="circle-icon"></div>
+                            <div class="circle-icon"></div>
+                            <div class="half-circle-icon"></div>
+                        </div>
+                    </div>
+                    <div class="pictogram-row">
+                        <div class="pictogram-label">Toy Car</div>
+                        <div class="pictogram-data">
+                            <div class="circle-icon"></div>
+                            <div class="half-circle-icon"></div>
+                        </div>
+                    </div>
+                    <div class="pictogram-footer font-medium">
+                        Key: 1 <div class="circle-icon inline-block w-4 h-4 align-middle"></div> stands for 8 toys
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1 mt-8">
+                    <div class="question-row">
+                        <div class="q-number">4.</div>
+                        <div class="q-content">
+                            If one full circle stands for 8 toys, then how many toys does one half-circle symbol stand for?
+                            <div class="mt-2 flex items-center">
+                                <span class="text-blue-800 font-bold">Answer:</span> 
+                                <div class="answer-box w-16"></div> 
+                                <span>toys.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-row">
+                        <div class="q-number">5.</div>
+                        <div class="q-content">
+                            Based on the toy picture graph, what is the total number of Dolls sold?
+                            <div class="flex gap-x-8 mt-2 font-medium">
+                                <div>a. 16 toys</div>
+                                <div>b. 20 toys</div>
+                                <div>c. 24 toys</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-row">
+                        <div class="q-number">6.</div>
+                        <div class="q-content">
+                            Which bar graph correctly represents the toy data?
+                            
+                            <div class="mt-6 flex justify-center">
+                                <img src="https://images2.imgbox.com/ec/96/SrTTziwz_o.png" alt="Toy Bar Graph Options" class="max-w-[500px] h-auto border border-gray-100 rounded shadow-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-row">
+                        <div class="q-number">7.</div>
+                        <div class="q-content">
+                            What is the difference between the number of Dolls and Toy Cars?
+                            <div class="mt-2 flex items-center">
+                                <span class="text-blue-800 font-bold">Answer:</span> 
+                                <div class="answer-box w-16"></div> 
+                                <span>toys.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 3 (BAGIAN 3) -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Bar Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Making Bar Graphs from Picture Graphs</div>
+                        <div class="text-[11px] text-black font-medium">Code : E2-S134</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="instruction-text">
+                    Part 3: Mr. Budi's Garden Harvest
+                </div>
+                <p class="text-sm mb-4">Mr. Budi recorded his garden harvest in the following Picture Graph to answer questions 8 to 10.</p>
+
+                <!-- PICTOGRAM 3 -->
+                <div class="pictogram-container">
+                    <div class="pictogram-header text-red-700 uppercase tracking-widest">Harvest (kg)</div>
+                    <div class="pictogram-row">
+                        <div class="pictogram-label">Apple</div>
+                        <div class="pictogram-data">
+                            <span class="text-red-500 text-2xl">★</span><span class="text-red-500 text-2xl">★</span><span class="text-red-500 text-2xl">★</span>
+                        </div>
+                    </div>
+                    <div class="pictogram-row">
+                        <div class="pictogram-label">Banana</div>
+                        <div class="pictogram-data">
+                            <span class="text-yellow-500 text-2xl">★</span><span class="text-yellow-500 text-2xl">★</span><span class="text-yellow-500 text-2xl">★</span><span class="text-yellow-500 text-2xl">★</span><span class="text-yellow-500 text-2xl">★</span>
+                        </div>
+                    </div>
+                    <div class="pictogram-row">
+                        <div class="pictogram-label">Melon</div>
+                        <div class="pictogram-data">
+                            <span class="text-green-500 text-2xl">★</span><span class="text-green-500 text-2xl">★</span><span class="text-green-500 text-2xl">★</span><span class="text-green-500 text-2xl">★</span><span class="half-star text-green-500"><span>★</span></span>
+                        </div>
+                    </div>
+                    <div class="pictogram-footer font-medium">
+                        Key: 1 <span class="text-gray-400 text-lg">★</span> stands for 10 kg
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1 mt-6">
+                    <div class="question-row">
+                        <div class="q-number">8.</div>
+                        <div class="q-content">
+                            What is the total Banana harvest?
+                            <div class="mt-2 flex items-center">
+                                <span class="text-blue-800 font-bold">Answer:</span> 
+                                <div class="answer-box w-20"></div> 
+                                <span>kg.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-row">
+                        <div class="q-number">9.</div>
+                        <div class="q-content">
+                            Which bar graph correctly represents the harvest data above?
+                            
+                            <div class="mt-6 flex justify-center">
+                                <img src="https://images2.imgbox.com/8b/fc/ihnQlgKf_o.png" alt="Harvest Bar Graph Options" class="max-w-[500px] h-auto border border-gray-100 rounded shadow-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-row">
+                        <div class="q-number">10.</div>
+                        <div class="q-content">
+                            What is the total harvest of Apples and Melons combined?
+                            <div class="mt-2 flex items-center">
+                                <span class="text-blue-800 font-bold">Answer:</span> 
+                                <div class="answer-box w-20"></div> 
+                                <span>kg.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-16 mb-8 text-center">
+                    <p class="text-black italic font-bold">"Mistakes are part of the process—what matters is you keep going."</p>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+    </div>
+</body>
+</html>
