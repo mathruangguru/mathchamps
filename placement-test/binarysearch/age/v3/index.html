@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Math Champs - Placement Test</title>
+    <title>Math Champs - Placement Test (Live Data)</title>
     <!-- Font 'Nunito' & 'Noto Sans' -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
     <!-- KaTeX untuk Rumus Matematika Cantik -->
@@ -86,13 +87,32 @@
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         h1 { color: var(--primary); font-weight: 900; font-size: 2.2rem; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: -0.5px; }
         h2 { color: #7f8c8d; font-weight: 600; margin: 0; }
-        .input-group { margin-bottom: 25px; text-align: left; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; }
+        .input-group { margin-bottom: 25px; text-align: left; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
         .input-label { display: block; font-weight: 700; margin-bottom: 10px; color: var(--dark); font-size: 1.1rem; }
         .name-input {
-            width: 100%; padding: 15px 20px; font-size: 1.2rem; border: 2px solid #e0e6ed; border-radius: 15px;
+            width: 100%; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #e0e6ed; border-radius: 15px;
             font-family: 'Nunito', sans-serif; outline: none; transition: border-color 0.2s; background: white;
         }
         .name-input:focus { border-color: var(--primary); }
+        
+        /* Agent Section Style */
+        .agent-section {
+            background-color: #f8f9fa;
+            border: 2px dashed #cbd5e0;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 0.9rem;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
         .progress-container {
             background: #eef2f5; height: 14px; border-radius: 50px; margin: 0 0 30px; overflow: hidden;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
@@ -180,14 +200,17 @@
     <!-- MAIN GAME STAGE -->
     <div class="game-stage">
         <div class="content-card">
-            <!-- SCREEN 0: INPUT NAME & CLASS & EMAIL -->
+            
+            <!-- SCREEN 0: INPUT DATA -->
             <div id="inputNameScreen" class="screen active" style="text-align: center;">
                 <div style="font-size: 4rem; margin-bottom: 10px;">👋</div>
                 <h1>Halo, Champion!</h1>
-                <h2 style="margin-bottom: 40px;">Lengkapi data dirimu</h2>
+                <h2 style="margin-bottom: 30px;">Lengkapi data sebelum mulai</h2>
+
+                <!-- SECTION: DATA SISWA -->
                 <div class="input-group">
                     <label class="input-label">Nama Lengkap</label>
-                    <input type="text" id="studentNameInput" class="name-input" placeholder="Tulis namamu di sini..." autocomplete="off">
+                    <input type="text" id="studentNameInput" class="name-input" placeholder="Tulis nama lengkapmu di sini..." autocomplete="off">
                 </div>
                 <div class="input-group">
                     <label class="input-label">Kelas</label>
@@ -203,11 +226,31 @@
                         <option value="9">Kelas 9</option>
                     </select>
                 </div>
-                <!-- ADDED: INPUT EMAIL -->
                 <div class="input-group">
-                    <label class="input-label">Email</label>
+                    <label class="input-label">Email Siswa/Ortu</label>
                     <input type="email" id="studentEmailInput" class="name-input" placeholder="contoh: nama@email.com" autocomplete="off">
                 </div>
+
+                <!-- SECTION: DATA SALES/AGENT -->
+                <div class="agent-section">
+                    <div class="section-title">— Diisi oleh Petugas Lapangan —</div>
+                    
+                    <!-- Nama Agent -->
+                    <div class="input-group">
+                        <label class="input-label">Nama Agent/Sales</label>
+                        <input type="text" id="agentNameInput" class="name-input" placeholder="Nama Anda (Petugas)" autocomplete="off">
+                    </div>
+
+                    <!-- Cabang Dropdown Searchable -->
+                    <div class="input-group">
+                        <label class="input-label">Pilih Cabang</label>
+                        <input list="branchList" id="branchInput" class="name-input" placeholder="Ketik nama kota (Contoh: Bandung)...">
+                        <datalist id="branchList">
+                            <!-- Populated by JS -->
+                        </datalist>
+                    </div>
+                </div>
+
                 <button class="btn" onclick="saveNameAndContinue()">Lanjut</button>
             </div>
 
@@ -284,9 +327,118 @@
 
 <script>
     // --- CONFIG ---
-    const googleScriptURL = 'https://script.google.com/macros/s/AKfycbzKZtcse1dnwd6XKJras2aVKiSiWs5zB7MgQH_piB3lYFX6TLh2i6VvM2QcS4A5Nwzdaw/exec';
+    // [PENTING] GANTI URL DI BAWAH INI DENGAN URL WEB APP KAMU SENDIRI
+    const googleScriptURL = 'https://script.google.com/macros/s/AKfycbxpX4xEk7I6L4vBDlRyYBysb7kMUGvrPtlKDOV_KeBI1F4-b9o87uhdT29m4qj1mFIqgg/exec'; 
 
-    // 1. DATA SOAL
+    // --- 0. DATA CABANG & SOAL ---
+    
+    // Data Cabang (Cleaned List)
+    const branches = [
+        "Atambua - Proklamasi", "Badung - Kapal", "Bagan Batu - Simpang Pujud", "Balige - Patuan Nagari",
+        "Balikpapan - Jendral Sudirman Plus", "Balikpapan - Sungai Ampal", "Banda Aceh - Jambo Tape",
+        "Banda Aceh - Merduati", "Banda Aceh - Teuku Nyak Arief", "Bandar Lampung - Gajah Mada Plus",
+        "Bandar Lampung - Rajabasa", "Bandar Lampung - Sumur Batu", "Bandar Lampung - Way Halim",
+        "Bandung - Antapani", "Bandung - Baleendah", "Bandung - Bengawan", "Bandung - Buahbatu",
+        "Bandung - Cibiru", "Bandung - Kopo", "Bandung - Kota Baru Parahyangan Plus", "Bandung - MTC",
+        "Bandung - MTC Plus", "Bandung - Padalarang", "Bandung - Pajajaran", "Bandung - Setiabudi",
+        "Bandung - Setiabudi Plus", "Bangkalan - Soekarno Hatta", "Bangkinang - Jenderal Sudirman",
+        "Banjar - Didi Kartasasmita", "Banjarbaru - Ahmad Yani", "Banjarmasin - Gatot Subroto",
+        "Banjarmasin - Gatot Subroto Plus", "Banjarmasin - Hasan Bashri", "Bantul - Gose", "Banyuwangi - Brawijaya",
+        "Banyuwangi - Genteng", "Batam - Batam Center", "Batam - Batam Center Plus", "Batam - Nagoya",
+        "Batang - Pemuda", "Batu - Agus Salim", "Baturaja - Ahmad Yani", "Baubau - Batara Guru",
+        "Bekasi - Agus Salim", "Bekasi - Bintara", "Bekasi - Cibubur", "Bekasi - Galaxy", "Bekasi - Galaxy Plus",
+        "Bekasi - Grand Wisata Plus", "Bekasi - Harapan Indah", "Bekasi - Harapan Indah Plus", "Bekasi - Jatiasih",
+        "Bekasi - Jatibening", "Bekasi - Mustika Jaya", "Bekasi - Summarecon", "Bekasi - Summarecon Plus",
+        "Bekasi - Tambun", "Bengkulu - Argamakmur", "Bengkulu - Curup", "Bengkulu - Kepahiang", "Bengkulu - Manna",
+        "Bengkulu - S. Parman", "Bengkulu - Selebar", "Berau - Ramania", "Bima - Gajah Mada", "Binjai - Veteran",
+        "Bireuen - Kota Juang", "Bitung - Girian", "Blitar - Bung Karno", "Bogor - Air Mancur Plus",
+        "Bogor - Baranangsiang", "Bogor - Braja Mustika", "Bogor - Kota Wisata", "Bogor - Kota Wisata Plus",
+        "Bogor - Metland Cileungsi", "Bogor - Pajajaran", "Bogor - Permata", "Bogor - Sawojajar",
+        "Bojonegoro - Dr. Cipto", "Bojonegoro - Padangan", "Bondowoso - Diponegoro", "Bone - Ahmad Yani",
+        "Bontang - Brigjen Katamso", "Boyolali - Merdeka", "Brebes - Sultan Agung", "Bukittinggi - Jambu Air",
+        "Bukittinggi - Manggis Ganting", "Bulukumba - Jend. Sudirman", "Ciamis - Samuji",
+        "Cianjur - Pangeran Hidayatullah", "Cibinong - Cikaret", "Cibinong - Karadenan", "Cibinong - Mayor Oking",
+        "Cibinong - Tegar Beriman Plus", "Cikarang - Cifest", "Cikarang - Cifest Plus", "Cikarang - Jababeka",
+        "Cilacap - S. Parman", "Cilacap - S. Parman Plus", "Cilegon - PCI", "Cilegon - PCI Plus",
+        "Cimahi - Amir Machmud Plus", "Cimahi - Cihanjuang", "Cirebon - CSB Mall", "Denpasar - Jimbaran",
+        "Denpasar - Mahendradatta", "Denpasar - Melati", "Denpasar - Renon Plus", "Denpasar - Sesetan",
+        "Depok - Cinere", "Depok - Cinere Plus", "Depok - Kelapa Dua", "Depok - Margonda Plus",
+        "Depok - Pancoran Mas", "Depok - Sawangan", "Depok - Siliwangi", "Depok - Sukmajaya",
+        "Dumai - Jendral Sudirman", "Duri - Hangtuah", "Ende - Kelimutu", "Garut - Perintis", "Gianyar - Dharma Giri",
+        "Gombong - Puring", "Gorontalo - Nani Wartabone", "Gowa - Sungguminasa", "Gresik - GKB", "Gresik - Usman Sadar",
+        "Grobogan - Purwodadi", "Gunungkidul - KH Agus Salim", "Indramayu - Sudirman", "Jakarta Barat - Cengkareng",
+        "Jakarta Barat - Citra Garden City", "Jakarta Barat - Kalideres", "Jakarta Barat - Kebon Jeruk",
+        "Jakarta Barat - Kemanggisan", "Jakarta Barat - Taman Anggrek Mall", "Jakarta Pusat - Cempaka Putih",
+        "Jakarta Selatan - Blok M", "Jakarta Selatan - Fatmawati", "Jakarta Selatan - Jagakarsa",
+        "Jakarta Selatan - Jagakarsa Plus", "Jakarta Selatan - Kebayoran Baru", "Jakarta Selatan - Pasar Minggu",
+        "Jakarta Selatan - Pejaten", "Jakarta Selatan - Petukangan", "Jakarta Selatan - Tebet",
+        "Jakarta Selatan - Tebet Plus", "Jakarta Selatan - Veteran", "Jakarta Timur - Buaran",
+        "Jakarta Timur - Ciracas", "Jakarta Timur - Condet", "Jakarta Timur - Duren Sawit", "Jakarta Timur - Jatinegara",
+        "Jakarta Timur - Pondok Gede", "Jakarta Timur - Rawamangun", "Jakarta Utara - Kelapa Gading Plus",
+        "Jakarta Utara - Koja", "Jakarta Utara - Pluit", "Jakarta Utara - Sunter", "Jambi - Bungo",
+        "Jambi - Muara Bulian", "Jambi - Sarolangun", "Jambi - Sipin", "Jambi - Sungai Penuh", "Jambi - Thehok",
+        "Jambi - Thehok Plus", "Jayapura - Padang Bulan", "Jember - Sumbersari", "Jembrana - Jenderal Sudirman",
+        "Jepara - Pemuda", "Jombang - Kapten Tendean", "Jombang - Mojoagung", "Kabanjahe - Jamin Ginting",
+        "Karanganyar - Tegalgede", "Karangasem - Ahmad Yani", "Karawang - Cikampek", "Karawang - Resinda Park Mall",
+        "Karawang - Tuparev", "Kayu Agung - Pahlawan", "Kebumen - Kusuma", "Kediri - Hasanudin", "Kendal - Rakese",
+        "Kendari - Abdullah Silondae", "Kendari - Malaka Square", "Kendari - MT Haryono", "Ketapang - R. Suprapto",
+        "Kisaran - Dr. Wahidin", "Klaten - Merbabu", "Kolaka - Pramuka", "Kroya - Jenderal Sudirman",
+        "Kuburaya - Serdam", "Kudus - Dersalam", "Kuningan - Siliwangi", "Kupang - Frans Seda", "Lahat - Lembayung",
+        "Lamongan - Veteran", "Lampung - Kalianda", "Lampung - Liwa", "Langkat - Stabat", "Langsa - Ahmad Yani",
+        "Lebak - Rangkasbitung", "Lhokseumawe - Merdeka", "Lubuk Linggau - Taba Koji",
+        "Lubuk Pakam - Tengku Raja Muda", "Lumajang - Tompokersan", "Luwuk Banggai - Moh. Hatta", "Madiun - Caruban",
+        "Madiun - Sutomo", "Magelang - Diponegoro", "Magelang - Mertoyudan", "Magelang - Muntilan",
+        "Magetan - Samudra", "Majalengka - Abdul Halim", "Makassar - Baruga", "Makassar - Cendrawasih",
+        "Makassar - Hertasning", "Makassar - Hertasning Plus", "Makassar - Perintis", "Makassar - Sudiang",
+        "Malang - Dieng Plus", "Malang - Kepanjen", "Malang - Klojen", "Malang - Lawang", "Malang - Sawojajar",
+        "Mamuju - Sultan Hasanuddin", "Manado - Sario", "Manado - Wenang Selatan", "Mataram - Pendidikan",
+        "Medan - Iskandar Muda Plus", "Medan - Johor", "Medan - Letda Sujono", "Medan - S. Parman",
+        "Medan - Sisingamangaraja", "Medan - Yos Sudarso", "Merangin - Bangko", "Metro - Sudirman",
+        "Meulaboh - Johan Pahlawan", "Mojokerto - Airlangga", "Mojokerto - Jayanegara", "Mojokerto - Letkol Sumarjo",
+        "Muara Enim - Sudirman", "Nganjuk - Megantara", "Ngawi - Gading", "Pacitan - Baleharjo", "Padang - Gajah Mada",
+        "Padang - S. Parman", "Padang - Sutomo", "Padang - Tarandam", "Padang - Ujung Gurun",
+        "Padang Sidempuan - Sudirman", "Painan - Pagaruyung", "Palangkaraya - Ahmad Yani", "Palangkaraya - RTA Milono",
+        "Palembang - Basuki Rahmat", "Palembang - Bukit Lama", "Palembang - Kenten", "Palembang - Rajawali Plus",
+        "Palembang - Seberang Ulu", "Palembang - Sukarami", "Palopo - Andi Kambo", "Palu - Jenderal Sudirman",
+        "Palu - Jenderal Sudirman Plus", "Pandan - Nauli", "Pangkal Pinang - Depati Hamza",
+        "Pangkalan Bun - Pakunegara", "Pangkalan Kerinci - Maharaja Indra", "Pangkep - Sultan Hasanuddin",
+        "Pare - Sudirman", "Parepare - Mattirotasi", "Parigi Moutong - Trans Sulawesi",
+        "Pasir Pengaraian - Tuanku Tambusai", "Pasuruan - Bangil", "Pasuruan - Panglima Sudirman",
+        "Pati - Jend. Sudirman", "Payakumbuh - Simpang Benteng", "Pekalongan - Diponegoro", "Pekanbaru - Ahmad Yani Plus",
+        "Pekanbaru - Imam Munandar", "Pekanbaru - Mustika", "Pekanbaru - Panam", "Pekanbaru - Soekarno Hatta",
+        "Pematangsiantar - Sudirman", "Pematangsiantar - Sutomo", "Perawang - KM5", "Pinrang - Jend. Sudirman",
+        "Polewali Mandar - Andi Depu", "Ponorogo - Bhayangkara", "Pontianak - Ayani Megamal Plus",
+        "Pontianak - MT Haryono", "Pontianak - Wahid Hasyim", "Prabumulih - Padat Karya", "Praya - Jenderal Sudirman",
+        "Pringsewu - Ahmad Yani", "Probolinggo - Kraksaan", "Probolinggo - Slamet Riyadi", "Purbalingga - Letkol Isdiman",
+        "Purwakarta - Martadinata", "Purwokerto - Kombas", "Purworejo - Tentara Pelajar", "Raha - Gatot Subroto",
+        "Rantau Prapat - Ahmad Yani", "Rembang - RA Kartini", "Rengat - R. Suprapto", "Sabang - Teuku Umar",
+        "Salatiga - Moh. Yamin", "Samarinda - Pahlawan", "Sampit - D.I Panjaitan", "Sangatta - Yos Sudarso",
+        "Selong - Ahmad Dahlan", "Semarang - Banyumanik", "Semarang - Karangayu", "Semarang - Majapahit",
+        "Semarang - Pandanaran", "Semarang - Ungaran", "Serang - Ahmad Yani", "Serang - Kebon Jahe",
+        "Sibolga - Sisingamangaraja", "Sidikalang - FL Tobing", "Sidoarjo - Pondok Jati",
+        "Sidoarjo - Pondok Mutiara Plus", "Sidoarjo - Trunojoyo", "Sigli - A Majid Ibrahim", "Singaraja - Ahmad Yani",
+        "Situbondo - Basuki Rahmat", "Sleman - Medari", "Solo - Adi Sucipto", "Solo - Adi Sucipto Plus",
+        "Solo - Gajahmada", "Solo - Serengan", "Solok - Pandan", "Soppeng - Lalabata", "Sorong - Pramuka",
+        "Sragen - Sukowati", "Subang - Otista", "Sukabumi - Sudirman", "Sukoharjo - Veteran",
+        "Sumedang - Prabu Geusan Ulun", "Surabaya - Gayungsari", "Surabaya - Jemursari", "Surabaya - Kusuma Bangsa",
+        "Surabaya - MERR Plus", "Surabaya - Ngagel", "Surabaya - Rungkut", "Surabaya - Wiyung",
+        "Surabaya - Wiyung Plus", "Tabanan - Ir. Soekarno", "Takengon - Lebe Kader", "Tana Toraja - Makale",
+        "Tangerang - Balaraja", "Tangerang - Ciledug", "Tangerang - Citra Raya", "Tangerang - Citymall",
+        "Tangerang - Daan Mogot", "Tangerang - Gading Serpong", "Tangerang - Gading Serpong Plus",
+        "Tangerang - Karawaci", "Tangerang - Sangiang", "Tangerang Selatan - Bintaro", "Tangerang Selatan - Bintaro Plus",
+        "Tangerang Selatan - BSD Boulevard", "Tangerang Selatan - BSD Golden Boulevard Plus",
+        "Tangerang Selatan - Ciputat Timur", "Tangerang Selatan - Golden Madrid", "Tangerang Selatan - Graha Raya Plus",
+        "Tangerang Selatan - Pamulang", "Tangerang Selatan - Pamulang Plus", "Tanjung Balai - Jenderal Sudirman",
+        "Tanjung Balai Karimun - Batu Lipai", "Tanjung Pandan - Sriwijaya", "Tanjung Pinang - Pamedan",
+        "Tarakan - Jendral Sudirman", "Tarutung - DI Panjaitan", "Tasikmalaya - Singaparna",
+        "Tasikmalaya - Tentara Pelajar", "Tebing Tinggi - Sudirman", "Tegal - Cokroaminoto",
+        "Teluk Kuantan - Beringin Taluk", "Temanggung - Tentara Pelajar", "Tembilahan - M Boya", "Ternate - Takoma",
+        "Toli-Toli - KH. Wahid Hasyim", "Tomohon - Matani", "Toraja Utara - Poros Bolu", "Trenggalek - Tugu",
+        "Tuban - KH Mustain", "Tulungagung - Boyolangu", "Tulungagung - Dr. Wahidin", "Wajo - Jend. Sudirman",
+        "Wonogiri - Gajahmungkur", "Yogyakarta - Sagan", "Yogyakarta - Taman Siswa", "Yogyakarta - Terban Plus",
+        "Yogyakarta - Wirobrajan"
+    ];
+
     const questions = [
         // --- Discovery 1 (Soal 1-5) ---
         {
@@ -401,6 +553,8 @@
     let studentName = "";
     let studentClass = "";
     let studentEmail = "";
+    let agentName = ""; // New
+    let branchName = ""; // New
     let minIndex = 0;
     let maxIndex = LEVEL_ORDER.length - 1;
     let currentLevelIndex = 0;
@@ -421,21 +575,35 @@
     window.onload = function() {
         minIndex = 0;
         maxIndex = LEVEL_ORDER.length - 1;
+        populateBranchList();
     };
+
+    function populateBranchList() {
+        const datalist = document.getElementById('branchList');
+        branches.forEach(branch => {
+            const option = document.createElement('option');
+            option.value = branch;
+            datalist.appendChild(option);
+        });
+    }
 
     window.saveNameAndContinue = function() {
         const name = document.getElementById('studentNameInput').value.trim();
         const cls = document.getElementById('studentClassInput').value;
         const email = document.getElementById('studentEmailInput').value.trim();
+        const agent = document.getElementById('agentNameInput').value.trim();
+        const branch = document.getElementById('branchInput').value.trim();
 
-        if (name && email) {
+        if (name && email && agent && branch) {
             studentName = name;
             studentClass = cls;
             studentEmail = email;
+            agentName = agent;
+            branchName = branch;
             document.getElementById('inputNameScreen').classList.remove('active');
             document.getElementById('startScreen').classList.add('active');
         } else {
-            alert("Silakan lengkapi Nama dan Email kamu.");
+            alert("Harap lengkapi semua data (Nama Siswa, Email, Nama Agent, & Cabang) sebelum melanjutkan.");
         }
     };
 
@@ -517,8 +685,8 @@
             optionsContainer.appendChild(btn);
         });
 
-        if(window.renderMathInElement) {
-             renderMathInElement(document.getElementById('gameScreen'), { delimiters: [
+        if(window.renderMathInElement) { 
+            renderMathInElement(document.getElementById('gameScreen'), { delimiters: [
                 {left: '$$', right: '$$', display: true},
                 {left: '$', right: '$', display: false},
                 {left: '\\(', right: '\\)', display: false},
@@ -639,6 +807,8 @@
         document.getElementById('timeUsed').innerText = timeString;
 
         generateReportCard();
+        
+        // KIRIM DATA REAL
         sendToGoogleSheet(timeString);
     }
 
@@ -651,23 +821,33 @@
         }
 
         const dataToSend = {
-            nama: studentName,
+            nama_siswa: studentName,
             kelas: studentClass,
             email: studentEmail,
-            level: bestLevelReached,
-            skor: totalCorrectAnswers,
+            nama_agent: agentName, 
+            cabang: branchName,    
+            level_akhir: bestLevelReached,
+            skor_total: totalCorrectAnswers,
             waktu: timeString,
-            laporan: laporanSalah
+            laporan_salah: laporanSalah
         };
 
         const btnReport = document.getElementById('btnReportToggle');
         const originalText = btnReport.innerText;
-        btnReport.innerText = "⏳ Menyimpan Nilai...";
+        
+        // Cek URL belum diganti
+        if(googleScriptURL.includes('PASTE_URL')) {
+            alert("URL Script belum diset! Data tidak akan terkirim. Mohon edit kode HTML.");
+            console.log("Data:", dataToSend);
+            return;
+        }
+
+        btnReport.innerText = "⏳ Menyimpan ke Server...";
         btnReport.disabled = true;
 
         fetch(googleScriptURL, {
             method: 'POST',
-            mode: 'no-cors',
+            mode: 'no-cors', // Penting untuk Apps Script
             cache: 'no-cache',
             headers: {
                 'Content-Type': 'application/json'
@@ -721,8 +901,8 @@
             list.appendChild(li);
         });
 
-        if(window.renderMathInElement) {
-             renderMathInElement(list);
+        if(window.renderMathInElement) { 
+            renderMathInElement(list);
         }
     }
 
