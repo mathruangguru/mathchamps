@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Menukar Ratusan ke Ribuan</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; -webkit-print-color-adjust: exact; }
+        .page-container { display: block; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 0.8cm 2cm; border: none; }
+        .page:last-child { page-break-after: avoid; }
+        .math-champs-header, .quote-box { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .math-champs-header img { height: 48px !important; width: auto !important; }
+      }
+
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      .h-separator {
+        width: 100%;
+        border-top: 1px solid #f1f5f9;
+        margin: 0.3cm 0;
+      }
+
+      .quote-box {
+        margin-top: auto;
+        margin-bottom: 10px;
+        text-align: center;
+        font-weight: 700;
+        font-style: italic;
+        color: #2563eb;
+        padding: 10px;
+        border-top: 1px dashed #cbd5e1;
+        font-size: 0.95rem;
+      }
+
+      /* --- MONEY STYLES --- */
+      .coin-silver { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.5; }
+      .coin-gold { fill: #fefce8; stroke: #eab308; stroke-width: 1.5; }
+      .coin-text-val { font-family: 'Noto Sans', sans-serif; font-weight: 800; text-anchor: middle; fill: #334155; }
+      .coin-text-sm { font-family: 'Noto Sans', sans-serif; font-weight: 600; text-anchor: middle; fill: #64748b; font-size: 8px; }
+
+      .bill {
+        width: 110px;
+        height: 55px;
+        border: 2px solid #666;
+        border-radius: 4px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Noto Sans', sans-serif;
+        margin: 2px;
+        box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+      }
+      .bill .rp-text { font-size: 9px; font-weight: 700; margin-bottom: -2px; }
+      .bill .val-text { font-size: 18px; font-weight: 900; }
+
+      .bill-1000 { background-color: #ecfccb; border-color: #84cc16; color: #3f6212; } 
+      .bill-2000 { background-color: #f1f5f9; border-color: #94a3b8; color: #1e293b; } 
+      .bill-5000 { background-color: #fefce8; border-color: #eab308; color: #854d0e; }
+
+      .input-line {
+        border-bottom: 1.5px solid #333;
+        display: inline-block;
+        min-height: 20px;
+        vertical-align: bottom;
+      }
+
+      .money-group {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 12px 0;
+      }
+
+      .soal-text {
+        font-weight: 600;
+        font-size: 1.05rem;
+        color: #1e293b;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Uang</div>
+                    <div class="text-[10px] text-black font-medium">Menukar Ratusan ke Ribuan (Grouping)</div>
+                    <div class="text-[10px] text-black font-medium">Kode : D4-S285</div>
+                </div>
+            </div>
+            <div class="w-full border-b-2 border-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-8 mt-4">
+                <h1 class="text-xl font-black uppercase tracking-wider text-gray-800">
+                    MENUKAR RATUSAN KE RIBUAN
+                </h1>
+            </div>
+
+            <div class="space-y-10">
+                <!-- Soal 1 -->
+                <div class="soal">
+                    <div class="flex gap-4">
+                        <span class="font-bold text-lg text-purple-600">1.</span>
+                        <div class="w-full">
+                            <p class="soal-text">Berapa lembar uang <b>Rp1.000</b> yang didapat dari menukar koin di bawah ini?</p>
+                            <div class="money-group">
+                                <div class="flex gap-1 flex-wrap max-w-[300px]">
+                                    <svg width="45" height="45" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                    <svg width="45" height="45" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                    <svg width="45" height="45" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                    <svg width="45" height="45" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                    <svg width="45" height="45" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                    <svg width="45" height="45" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                    <svg width="45" height="45" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                    <svg width="45" height="45" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                    <svg width="45" height="45" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                    <svg width="45" height="45" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                </div>
+                                <span class="text-2xl font-bold">→</span>
+                                <div class="bill bill-1000"><span class="rp-text">Rp</span><span class="val-text">1.000</span></div>
+                            </div>
+                            <div class="mt-4 font-bold flex items-end">
+                                <span>Jawaban:</span>
+                                <div class="input-line ml-2 w-48"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 2 -->
+                <div class="soal">
+                    <div class="flex gap-4">
+                        <span class="font-bold text-lg text-purple-600">2.</span>
+                        <div class="w-full">
+                            <p class="soal-text">Apakah nilai <b>5 keping koin Rp200</b> cukup ditukar dengan <b>1 lembar Rp1.000</b>?</p>
+                            <div class="money-group">
+                                <svg width="55" height="55" viewBox="0 0 70 70"><circle cx="35" cy="35" r="30" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">200</text></svg>
+                                <svg width="55" height="55" viewBox="0 0 70 70"><circle cx="35" cy="35" r="30" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">200</text></svg>
+                                <svg width="55" height="55" viewBox="0 0 70 70"><circle cx="35" cy="35" r="30" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">200</text></svg>
+                                <svg width="55" height="55" viewBox="0 0 70 70"><circle cx="35" cy="35" r="30" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">200</text></svg>
+                                <svg width="55" height="55" viewBox="0 0 70 70"><circle cx="35" cy="35" r="30" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">200</text></svg>
+                            </div>
+                            <div class="mt-4 font-bold flex items-end">
+                                <span>Jawaban:</span>
+                                <div class="input-line ml-2 w-48"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 3 -->
+                <div class="soal">
+                    <div class="flex gap-4">
+                        <span class="font-bold text-lg text-purple-600">3.</span>
+                        <div class="w-full">
+                            <p class="soal-text">Tuliskan nilai dari <b>2 keping koin Rp500</b> dalam bentuk angka!</p>
+                            <div class="money-group">
+                                <svg width="60" height="60" viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="coin-gold" /><text x="40" y="46" class="coin-text-val" font-size="20">500</text></svg>
+                                <svg width="60" height="60" viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="coin-gold" /><text x="40" y="46" class="coin-text-val" font-size="20">500</text></svg>
+                                <span class="text-2xl font-bold">=</span>
+                                <span class="text-xl font-bold">Rp...</span>
+                            </div>
+                            <div class="mt-4 font-bold flex items-end">
+                                <span>Jawaban:</span>
+                                <div class="input-line ml-2 w-48"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 4 -->
+                <div class="soal">
+                    <div class="flex gap-4">
+                        <span class="font-bold text-lg text-purple-600">4.</span>
+                        <div class="w-full">
+                            <p class="soal-text">Berapa lembar uang <b>Rp1.000</b> yang didapat jika kamu menukar <b>10 keping koin Rp200</b>?</p>
+                            <div class="mt-4 font-bold flex items-end">
+                                <span>Jawaban:</span>
+                                <div class="input-line ml-2 w-48"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 5 -->
+                <div class="soal">
+                    <div class="flex gap-4">
+                        <span class="font-bold text-lg text-purple-600">5.</span>
+                        <div class="w-full">
+                            <p class="soal-text">Apakah <b>20 keping koin Rp100</b> nilainya sama dengan barang seharga <b>Rp2.000</b>?</p>
+                            <div class="mt-4 font-bold flex items-end">
+                                <span>Jawaban:</span>
+                                <div class="input-line ml-2 w-48"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">DISCOVERY 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Uang</div>
+                    <div class="text-[10px] text-black font-medium">Kode : D4-S285</div>
+                </div>
+            </div>
+            <div class="w-full border-b-2 border-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="space-y-10 pt-4">
+                <!-- Soal 6 -->
+                <div class="soal">
+                    <div class="flex gap-4">
+                        <span class="font-bold text-lg text-purple-600">6.</span>
+                        <div class="w-full">
+                            <p class="soal-text">Kelompokkan koin-koin di bawah ini menjadi kelompok seribu (setiap 10 koin). Ada berapa kelompok yang kamu dapatkan?</p>
+                            <div class="money-group max-w-[500px]">
+                                <!-- 20 coins of 100 -->
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                                <svg width="40" height="40" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" class="coin-silver" /><text x="35" y="40" class="coin-text-val" font-size="18">100</text></svg>
+                            </div>
+                            <div class="mt-4 font-bold flex items-end">
+                                <span>Jawaban:</span>
+                                <div class="input-line ml-2 w-48"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 7 -->
+                <div class="soal">
+                    <div class="flex gap-4">
+                        <span class="font-bold text-lg text-purple-600">7.</span>
+                        <div class="w-full">
+                            <p class="soal-text">Apakah <b>6 keping koin Rp500</b> cukup untuk membayar barang seharga <b>Rp3.000</b>?</p>
+                            <div class="mt-4 font-bold flex items-end">
+                                <span>Jawaban:</span>
+                                <div class="input-line ml-2 w-48"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 8 -->
+                <div class="soal">
+                    <div class="flex gap-4">
+                        <span class="font-bold text-lg text-purple-600">8.</span>
+                        <div class="w-full">
+                            <p class="soal-text">Berapa lembar uang <b>Rp1.000</b> yang didapat dari menukar <b>4 keping koin Rp500</b>?</p>
+                            <div class="mt-4 font-bold flex items-end">
+                                <span>Jawaban:</span>
+                                <div class="input-line ml-2 w-48"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 9 -->
+                <div class="soal">
+                    <div class="flex gap-4">
+                        <span class="font-bold text-lg text-purple-600">9.</span>
+                        <div class="w-full">
+                            <p class="soal-text">Manakah yang nilainya lebih besar?</p>
+                            <div class="mt-2 space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold w-4">A:</span>
+                                    <span>15 koin Rp100</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold w-4">B:</span>
+                                    <span>1 lembar Rp1.000 dan 2 koin Rp200</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 font-bold flex items-end">
+                                <span>Jawaban:</span>
+                                <div class="input-line ml-2 w-48"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 10 -->
+                <div class="soal">
+                    <div class="flex gap-4">
+                        <span class="font-bold text-lg text-purple-600">10.</span>
+                        <div class="w-full">
+                            <p class="soal-text">Apakah total dari <b>25 keping koin Rp200</b> pas berjumlah <b>Rp5.000</b>? Buktikan dengan menghitung!</p>
+                            <div class="mt-4 font-bold flex items-end">
+                                <span>Jawaban:</span>
+                                <div class="input-line ml-2 w-48"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quote-box">
+                Keren banget! Dua jempol buat kamu!
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
