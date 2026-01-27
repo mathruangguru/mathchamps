@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Quantity Relationships</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 1cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 1cm 2cm; }
+        .page:last-child { page-break-after: avoid; }
+        
+        .math-champs-header,
+        .print-color,
+        .bar-remainder,
+        .worked-example-box,
+        .equivalency-bar {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      .math-champs-header {
+        background-color: white; 
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black; 
+      }
+
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1cm 1cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        margin-bottom: 1rem;
+      }
+
+      .ans-line {
+        border-bottom: 1px solid black;
+        width: 80px;
+        display: inline-block;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.5cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+      }
+      
+      .no-break { page-break-inside: avoid; }
+
+      /* --- Custom for Equivalence Bars --- */
+      .equivalency-container {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin: 15px 0;
+        width: 100%;
+        max-width: 450px;
+      }
+      .equivalency-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .equivalency-label {
+        width: 90px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-align: right;
+      }
+      .equivalency-bar-group {
+        flex-grow: 1;
+        display: flex;
+        border: 2px solid black;
+        height: 30px;
+      }
+      .equivalency-unit {
+        flex: 1;
+        border-right: 1px solid black;
+        background-color: #e0f2fe; /* light blue */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: bold;
+      }
+      .equivalency-unit.target {
+        background-color: #fef3c7; /* light yellow */
+      }
+      .equivalency-unit:last-child {
+        border-right: none;
+      }
+      
+      .worked-example-box {
+        background-color: #f9fafb;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1: Worked Example -->
+      <section class="page">
+        <!-- HEADER PAGE 1 -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0">High Skill - Multiplication & Division</div>
+                    <div class="text-[10px] text-black font-medium">Finding amounts based on equivalence relationships</div>
+                    <div class="text-[10px] text-black font-medium">Code: E2-S146</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-6 mt-4">
+                <h1 class="text-2xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                    QUANTITY EQUIVALENCE
+                </h1>
+                <p class="text-sm italic text-gray-500">Calculating Item Values from Relationships of Other Items</p>
+            </div>
+
+            <!-- WORKED EXAMPLE -->
+            <div class="worked-example-box print-color">
+                <div class="font-bold text-lg mb-3 border-b border-gray-300 pb-2">Worked Example (Equivalence Method)</div>
+                <p class="text-base mb-4 text-gray-800 leading-relaxed">
+                    <strong>Problem:</strong> The weight of <strong>3</strong> red boxes is EQUAL TO the weight of <strong>2</strong> blue boxes. If one blue box weighs <strong>15 kg</strong>, what is the weight of one red box?
+                </p>
+                
+                <!-- Visual Visualization -->
+                <div class="equivalency-container mx-auto mb-6">
+                    <!-- Row 1: Known Item (Blue Box) -->
+                    <div class="equivalency-row">
+                        <div class="equivalency-label text-blue-800">2 Blue Boxes</div>
+                        <div class="equivalency-bar-group">
+                            <div class="equivalency-unit">15</div>
+                            <div class="equivalency-unit">15</div>
+                        </div>
+                    </div>
+                    <!-- Equal Sign or Arrow -->
+                    <div class="text-center text-xs font-bold text-gray-500 my-1 pl-20">= EQUAL TOTAL WEIGHT =</div>
+                    <!-- Row 2: Target Item (Red Box) -->
+                    <div class="equivalency-row">
+                        <div class="equivalency-label text-red-800">3 Red Boxes</div>
+                        <div class="equivalency-bar-group">
+                            <div class="equivalency-unit target">?</div>
+                            <div class="equivalency-unit target">?</div>
+                            <div class="equivalency-unit target">?</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 text-sm bg-white p-4 rounded border border-gray-200">
+                    <div>
+                        <strong class="text-blue-800 block mb-1">Step 1: Find the Total Value.</strong>
+                        <div class="text-xs text-gray-500 mb-1">Total = Number of Items × Unit Value</div>
+                        <div class="font-bold text-xl font-mono text-gray-800">2 × 15 = 30 kg</div>
+                        <div class="text-xs text-gray-500 mt-1">(This is the total weight of both sides)</div>
+                    </div>
+                    <div>
+                        <strong class="text-red-800 block mb-1">Step 2: Divide into Target Groups.</strong>
+                        <div class="text-xs text-gray-500 mb-1">Total ÷ Number of Red Boxes</div>
+                        <div class="font-bold text-xl font-mono text-gray-800">30 ÷ 3 = 10 kg</div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <span class="inline-block bg-green-100 border border-green-300 text-green-800 px-4 py-2 rounded font-bold">
+                        Answer: The weight of one red box is 10 kg.
+                    </span>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2: Practice Q1 & Q2 (Visual Scaffolding) -->
+      <section class="page">
+        <!-- HEADER PAGE 2 -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0">High Skill - Multiplication & Division</div>
+                    <div class="text-[10px] text-black font-medium">Finding amounts based on equivalence relationships</div>
+                    <div class="text-[10px] text-black font-medium">Code: E2-S146</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mb-6 text-base border-b-2 border-black inline-block">
+                Practice Questions with Visual Aid
+            </div>
+
+            <!-- Q1 -->
+            <div class="soal-item mb-10 no-break">
+                <div class="text-base mb-3 font-medium">
+                    1. The price of <strong>4</strong> exercise books is EQUAL TO the price of <strong>2</strong> pencil cases. If the price of one pencil case is <strong>Rp10.000</strong>, what is the price of one exercise book?
+                </div>
+                
+                <div class="equivalency-container mx-auto">
+                    <!-- Known -->
+                    <div class="equivalency-row">
+                        <div class="equivalency-label">2 Pencil Cases</div>
+                        <div class="equivalency-bar-group">
+                            <div class="equivalency-unit">10.000</div>
+                            <div class="equivalency-unit">10.000</div>
+                        </div>
+                    </div>
+                    <div class="text-center text-xs font-bold text-gray-400 my-1 w-full pl-20">= EQUAL VALUE =</div>
+                    <!-- Target -->
+                    <div class="equivalency-row">
+                        <div class="equivalency-label">4 Exercise Books</div>
+                        <div class="equivalency-bar-group">
+                            <div class="equivalency-unit target">?</div>
+                            <div class="equivalency-unit target">?</div>
+                            <div class="equivalency-unit target">?</div>
+                            <div class="equivalency-unit target">?</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right mt-4 text-base font-bold">
+                    Answer: Rp <div class="ans-line"></div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- Q2 -->
+            <div class="soal-item mb-8 no-break">
+                <div class="text-base mb-3 font-medium">
+                    2. <strong>5</strong> small bottles contain as much water as <strong>2</strong> large bottles. If one large bottle contains <strong>500 ml</strong>, what is the volume of one small bottle?
+                </div>
+                
+                <div class="equivalency-container mx-auto">
+                    <!-- Known -->
+                    <div class="equivalency-row">
+                        <div class="equivalency-label">2 Large Bottles</div>
+                        <div class="equivalency-bar-group">
+                            <div class="equivalency-unit">500</div>
+                            <div class="equivalency-unit">500</div>
+                        </div>
+                    </div>
+                    <div class="text-center text-xs font-bold text-gray-400 my-1 w-full pl-20">= EQUAL VOLUME =</div>
+                    <!-- Target -->
+                    <div class="equivalency-row">
+                        <div class="equivalency-label">5 Small Bottles</div>
+                        <div class="equivalency-bar-group">
+                            <div class="equivalency-unit target">?</div>
+                            <div class="equivalency-unit target">?</div>
+                            <div class="equivalency-unit target">?</div>
+                            <div class="equivalency-unit target">?</div>
+                            <div class="equivalency-unit target">?</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right mt-4 text-base font-bold">
+                    Answer: <div class="ans-line"></div> ml
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3: Questions 3-10 -->
+      <section class="page">
+        <!-- HEADER PAGE 3 -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0">High Skill - Multiplication & Division</div>
+                    <div class="text-[10px] text-black font-medium">Finding amounts based on equivalence relationships</div>
+                    <div class="text-[10px] text-black font-medium">Code: E2-S146</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mb-4 text-base border-b-2 border-black inline-block">
+                Problem Solving (Advanced Level)
+            </div>
+            
+            <div class="soal-grid text-sm">
+                
+                <!-- Q3 -->
+                <div class="soal-item no-break">
+                    <p class="mb-2">
+                        3. The weight of <strong>4</strong> bags of apples is the same as the weight of <strong>2</strong> bags of durians. If one bag of durians weighs <strong>6 kg</strong>, what is the weight of one bag of apples?
+                    </p>
+                    <div class="text-right text-xs font-bold">Ans: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="soal-item no-break">
+                    <p class="mb-2">
+                        4. The price of <strong>3</strong> pens is the same as the price of <strong>6</strong> pencils. If the price of one pen is <strong>Rp4.000</strong>, what is the price of one pencil?
+                    </p>
+                    <div class="text-right text-xs font-bold">Ans: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="soal-item no-break">
+                    <p class="mb-2">
+                        5. <strong>5</strong> glasses of orange juice are equivalent to <strong>2</strong> jugs of juice. If one jug contains <strong>1.000 ml</strong>, what is the volume of one glass of orange juice?
+                    </p>
+                    <div class="text-right text-xs font-bold">Ans: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="soal-item no-break">
+                    <p class="mb-2">
+                        6. The length of <strong>3</strong> red ribbons is the same as the length of <strong>9</strong> blue ribbons. If one red ribbon is <strong>30 cm</strong> long, what is the length of one blue ribbon?
+                    </p>
+                    <div class="text-right text-xs font-bold">Ans: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q7 -->
+                <div class="soal-item no-break">
+                    <p class="mb-2">
+                        7. <strong>4</strong> buckets of water can fill <strong>8</strong> large flower pots. If one bucket contains <strong>4 liters</strong> of water, what is the capacity of one flower pot?
+                    </p>
+                    <div class="text-right text-xs font-bold">Ans: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q8 -->
+                <div class="soal-item no-break">
+                    <p class="mb-2">
+                        8. The rental cost of <strong>2</strong> luxury cars is the same as the rental cost of <strong>5</strong> ordinary cars. If the rental of one luxury car is <strong>Rp500.000</strong>, what is the rental cost of one ordinary car?
+                    </p>
+                    <div class="text-right text-xs font-bold">Ans: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q9 -->
+                <div class="soal-item no-break">
+                    <p class="mb-2">
+                        9. The weight of <strong>6</strong> thick books is the same as the weight of <strong>3</strong> laptops. If one laptop weighs <strong>2 kg</strong> (2.000 grams), what is the weight of one thick book in grams?
+                    </p>
+                    <div class="text-right text-xs font-bold">Ans: <div class="ans-line"></div></div>
+                </div>
+
+                <!-- Q10 -->
+                <div class="soal-item no-break bg-blue-50 p-3 rounded border border-blue-200">
+                    <p class="mb-2 font-semibold text-blue-900">
+                        10. Challenge: <strong>3</strong> large boxes contain the same number of marbles as <strong>5</strong> small boxes. If one large box contains <strong>50</strong> marbles, how many are in one small box?
+                    </p>
+                    <div class="text-right text-xs font-bold">Ans: <div class="ans-line"></div></div>
+                </div>
+
+            </div>
+
+            <!-- RANDOM ENCOURAGEMENT FOOTER -->
+            <div class="mt-8 text-center py-4 border-t border-gray-200">
+                <p class="text-lg font-bold text-blue-600 italic font-handwriting">
+                    "Mistakes are part of the process—what matters is you keep going."
+                </p>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
