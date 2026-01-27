@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rise of Champions - Math & Logic Complete</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <style>
+        :root {
+            --primary-text: #111827;
+            --secondary-text: #4b5563;
+            
+            /* LEVEL 1 THEME (Emerald Green) - Numerical */
+            --lvl1-bg: #ecfdf5;
+            --lvl1-border: #059669;
+            --lvl1-header: #047857;
+            --lvl1-header-text: #ffffff;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: "Montserrat", sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: var(--primary-text);
+            background-color: #d1d5db;
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 30px; /* Jarak antar halaman di layar */
+        }
+
+        /* Kertas A4 */
+        .page {
+            background: white;
+            width: 210mm;
+            height: 297mm;
+            padding: 15mm 20mm;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden; /* Mencegah watermark keluar */
+        }
+
+        /* WATERMARK */
+        .page::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            background-image: url('https://imgix3.ruangguru.com/assets/miscellaneous/png_zekej2_3984.png');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.08; /* Transparansi watermark */
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .header-wrapper { flex-shrink: 0; margin-bottom: 25px; position: relative; z-index: 1; }
+        .content-wrapper { flex-grow: 1; display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 1; }
+        
+        /* FOOTER */
+        .footer-wrapper { 
+            flex-shrink: 0; 
+            border-top: 2px solid #e5e7eb; 
+            padding-top: 10px; 
+            font-size: 8pt; 
+            color: var(--secondary-text);
+            display: flex;
+            justify-content: space-between;
+            margin-top: auto;
+            position: relative; 
+            z-index: 1;
+        }
+
+        /* --- STYLING KHUSUS CETAK (PRINT) --- */
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background-color: white; padding: 0; margin: 0; -webkit-print-color-adjust: exact; }
+            .page-container { width: 100%; display: block; gap: 0; }
+            .page { 
+                width: 210mm; 
+                height: 296mm; 
+                margin: 0 auto; 
+                padding: 15mm 20mm;
+                box-shadow: none; 
+                page-break-after: always; 
+                border: none;
+            }
+            /* Paksa cetak warna */
+            .grid-header, .identity-box, .option-circle, .option-box:hover, .shape-circle, .shape-square, .coc-box, .stop-sign, .row-label, .col-label, .chain-box, .cube-face { 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+            }
+            /* Watermark cetak */
+            .page::before { opacity: 0.1 !important; -webkit-print-color-adjust: exact; }
+        }
+
+        /* --- UI COMPONENTS --- */
+        
+        .logo-container { display: flex; align-items: center; gap: 15px; }
+        .logo-icon { width: 60px; height: 60px; background-color: #fbbf24; border: 3px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        
+        .identity-container { display: grid; grid-template-columns: 1fr 120px; gap: 15px; border: 2px solid #000; padding: 12px 16px; margin-top: 15px; border-radius: 4px; }
+        .identity-main { display: flex; flex-direction: column; gap: 10px; }
+        .identity-row { display: flex; align-items: flex-end; gap: 10px; }
+        .identity-label { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: #374151; white-space: nowrap; width: 100px; }
+        .identity-line { flex-grow: 1; border-bottom: 2px dotted #9ca3af; height: 1.2em; }
+        .score-box { border-left: 2px dashed #9ca3af; padding-left: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .score-placeholder { width: 100%; height: 40px; border: 2px solid #d1d5db; background: #f9fafb; margin-top: 5px; border-radius: 4px; }
+
+        .grid-card { border: 2px solid var(--lvl1-border); border-radius: 12px; overflow: hidden; background-color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .grid-header { background-color: var(--lvl1-header); color: var(--lvl1-header-text); padding: 10px 20px; font-weight: 800; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: space-between; align-items: center; }
+        .grid-body { padding: 20px; background-color: var(--lvl1-bg); display: flex; flex-direction: column; align-items: center; }
+
+        .math-table { border-collapse: collapse; margin: 10px 0 25px 0; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .math-table td { border: 2px solid #1f2937; width: 50px; height: 50px; text-align: center; font-size: 1.4rem; font-weight: 700; font-family: 'Noto Sans', sans-serif; color: #111827; }
+
+        /* REVISI: Warna teks soal diseragamkan menjadi hitam */
+        .question-text { width: 100%; font-weight: 700; color: #000000; margin-bottom: 8px; font-size: 0.95rem; }
+        
+        .options-wrapper { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; width: 100%; }
+        .option-item { background-color: white; border: 2px solid #d1d5db; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; }
+        .option-item:hover { border-color: var(--lvl1-border); background-color: #f0fdf4; }
+        .option-bubble { width: 24px; height: 24px; border: 2px solid #9ca3af; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #6b7280; background: #f3f4f6; }
+        .option-item:hover .option-bubble { border-color: var(--lvl1-border); color: var(--lvl1-border); background: white; }
+        .option-text { font-weight: 600; font-size: 1.1rem; }
+
+        /* Logic Section Option Hover Override */
+        .page:has(.text-orange-600) .option-item:hover { border-color: #f97316; background-color: #fff7ed; }
+        .page:has(.text-orange-600) .option-item:hover .option-bubble { border-color: #f97316; color: #f97316; }
+
+
+        /* --- STYLES FOR NUMBER CHAINS / FLOWCHARTS --- */
+        .chain-container { width: 100%; background: white; border: 1px solid #d1d5db; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .chain-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; justify-content: center; }
+        .chain-box { background: #f3f4f6; border: 2px solid #4b5563; min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-family: 'Noto Sans', monospace; font-size: 1.2rem; padding: 0 10px;}
+        .chain-arrow-box { display: flex; flex-direction: column; align-items: center; }
+        .chain-arrow-label { font-size: 0.7rem; font-weight: bold; color: #059669; margin-bottom: -4px; }
+        .chain-arrow { color: #059669; font-weight: bold; font-size: 1.2rem; }
+        .chain-label { font-weight: 800; color: #047857; margin-right: 10px; width: 30px; font-size: 1.2rem; }
+
+        /* --- STYLES FOR MEMORY GAME (SHAPES) --- */
+        .coc-instruction { background-color: #dcfce7; border-left: 5px solid #15803d; padding: 10px; border-radius: 4px; margin-bottom: 20px; font-size: 0.9rem; }
+        .memory-table { width: 100%; max-width: 450px; margin: 40px auto; border-collapse: separate; border-spacing: 0; border: 3px solid #1f2937; box-shadow: 5px 5px 0px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
+        .memory-table td { border: 1px solid #e5e7eb; padding: 15px; text-align: center; vertical-align: middle; height: 90px; background: white; }
+        .row-label { font-weight: 900; font-size: 1.5rem; background-color: #f3f4f6 !important; width: 60px; color: #374151; }
+        .col-label { font-weight: 900; font-size: 1.2rem; background-color: #f3f4f6 !important; height: 40px !important; color: #374151; border-bottom: 2px solid #d1d5db !important; }
+        .corner-cell { background-color: transparent !important; border: none !important; height: 40px !important; }
+        .shape-circle { width: 60px; height: 60px; background-color: #fee2e2; border: 3px solid #991b1b; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.8rem; color: black; box-shadow: 2px 2px 0px rgba(0,0,0,0.2); }
+        .shape-square { width: 60px; height: 60px; background-color: #dbeafe; border: 3px solid #1e40af; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.8rem; color: black; box-shadow: 2px 2px 0px rgba(0,0,0,0.2); }
+        .stop-sign { margin-top: auto; border: 2px dashed #dc2626; background-color: #fef2f2; color: #dc2626; padding: 20px; text-align: center; font-weight: 800; font-size: 1.1rem; border-radius: 8px; text-transform: uppercase; }
+
+        /* MCQ Stack */
+        .exam-stack { display: flex; flex-direction: column; gap: 20px; }
+        .exam-item { break-inside: avoid; background: #fff; padding-bottom: 10px; border-bottom: 1px dashed #e5e7eb; }
+        .exam-item:last-child { border-bottom: none; }
+
+        /* --- SVG STYLES FOR SPATIAL --- */
+        .iso-top { fill: #bae6fd; stroke: #000; stroke-width: 1.5; stroke-linejoin: round; }
+        .iso-left { fill: #38bdf8; stroke: #000; stroke-width: 1.5; stroke-linejoin: round; }
+        .iso-right { fill: #0ea5e9; stroke: #000; stroke-width: 1.5; stroke-linejoin: round; }
+
+    </style>
+</head>
+<body>
+
+    <div class="page-container">
+        
+        <!-- ================= HALAMAN 1: NUMERICAL (Soal 1) ================= -->
+        <section class="page">
+            <!-- Header -->
+            <div class="header-wrapper">
+                <div class="flex justify-between items-start border-b-4 border-black pb-5">
+                    <div class="logo-container">
+                        <div class="logo-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-black uppercase tracking-tight leading-none text-black">Rise of<br>Champions</h1>
+                            <p class="text-xs font-bold tracking-widest uppercase mt-1 text-emerald-700 bg-emerald-100 px-2 py-0.5 inline-block rounded">School Level</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-right flex flex-col items-end">
+                        <div class="bg-black text-white px-4 py-1.5 font-bold text-lg uppercase tracking-wider mb-1">Kelas 1-2</div>
+                        <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Waktu: 60 Menit</div>
+                    </div>
+                </div>
+
+                <!-- Identitas Peserta -->
+                <div class="identity-container">
+                    <div class="identity-main">
+                        <div class="identity-row">
+                            <span class="identity-label">Nama Lengkap</span>
+                            <div class="identity-line"></div>
+                        </div>
+                        <div class="identity-row">
+                            <span class="identity-label">Asal Sekolah</span>
+                            <div class="identity-line"></div>
+                        </div>
+                    </div>
+                    <div class="score-box">
+                        <span class="text-xs font-bold uppercase text-gray-500">Nilai</span>
+                        <div class="score-placeholder"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="content-wrapper">
+                <div class="text-center py-2">
+                    <h2 class="text-2xl font-extrabold uppercase tracking-tight text-gray-800">Numerical</h2>
+                </div>
+                
+                <!-- SOAL 1: Matrix Sum -->
+                <div class="grid-card">
+                    <div class="grid-header">
+                        <span>Soal 1</span>
+                        <span class="text-xs bg-white text-emerald-800 px-2 py-0.5 rounded opacity-90">Grid 4x4</span>
+                    </div>
+                    <div class="grid-body">
+                        <div class="text-sm font-semibold mb-2">Jumlahkan seluruh bilangan di bawah ini:</div>
+                        <table class="math-table">
+                            <tr><td>1</td><td>2</td><td>3</td><td>4</td></tr>
+                            <tr><td>4</td><td>1</td><td>2</td><td>3</td></tr>
+                            <tr><td>3</td><td>4</td><td>1</td><td>2</td></tr>
+                            <tr><td>2</td><td>3</td><td>4</td><td>1</td></tr>
+                        </table>
+                        <div class="question-text">Hasil penjumlahannya adalah ....</div>
+                        <div class="options-wrapper">
+                            <label class="option-item"><div class="option-bubble">A</div><span class="option-text">36</span></label>
+                            <label class="option-item"><div class="option-bubble">B</div><span class="option-text">40</span></label>
+                            <label class="option-item"><div class="option-bubble">C</div><span class="option-text">41</span></label>
+                            <label class="option-item opacity-0 cursor-default"><div class="option-bubble"></div></label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex-grow"></div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer-wrapper">
+                <span><b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b><br>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+                <span class="self-end">Halaman 1 dari 8</span>
+            </div>
+        </section>
+
+        <!-- ================= HALAMAN 2: Soal 2 & Soal 3 ================= -->
+        <section class="page">
+            <div class="header-wrapper">
+                <div class="flex justify-between items-center border-b-2 border-gray-300 pb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-blue-500 rounded-full border border-black flex items-center justify-center text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                        </div>
+                        <span class="font-bold text-gray-700 uppercase tracking-widest">Arithmetic</span>
+                    </div>
+                    <div class="text-xs font-mono font-bold text-gray-400">KELAS 1-2</div>
+                </div>
+            </div>
+
+            <div class="content-wrapper">
+                <!-- SOAL 2: Flowchart Logic (Moved Here) -->
+                <div class="grid-card">
+                    <div class="grid-header">
+                        <span>Soal 2</span>
+                        <span class="text-xs bg-white text-emerald-800 px-2 py-0.5 rounded opacity-90">Alur Logika</span>
+                    </div>
+                    <div class="grid-body">
+                        <div class="text-sm font-semibold mb-4 w-full text-left">Perhatikan contoh dan soal yang diberikan (Working Backward):</div>
+                        
+                        <!-- Contoh -->
+                        <div class="flex flex-col gap-4 w-full mb-4">
+                            <div class="bg-gray-100 p-2 rounded border border-gray-300">
+                                <span class="text-xs font-bold text-gray-500 uppercase">Contoh :</span>
+                                <div class="chain-row" style="margin-bottom:0; justify-content: flex-start;">
+                                    <div class="chain-box text-sm" style="min-width:35px; height:35px;">1</div>
+                                    <div class="chain-arrow-box"><span class="chain-arrow-label">+2</span><span class="chain-arrow">&rarr;</span></div>
+                                    <div class="chain-box text-sm" style="min-width:35px; height:35px;">3</div>
+                                    <div class="chain-arrow-box"><span class="chain-arrow-label">+3</span><span class="chain-arrow">&rarr;</span></div>
+                                    <div class="chain-box text-sm" style="min-width:35px; height:35px;">6</div>
+                                    <div class="chain-arrow-box"><span class="chain-arrow-label">+4</span><span class="chain-arrow">&rarr;</span></div>
+                                    <div class="chain-box text-sm" style="min-width:35px; height:35px;">10</div>
+                                </div>
+                            </div>
+
+                            <!-- Soal -->
+                            <div class="bg-emerald-50 p-2 rounded border border-emerald-200">
+                                <span class="text-xs font-bold text-emerald-700 uppercase">Soal :</span>
+                                <div class="chain-row" style="margin-bottom:0; justify-content: flex-start;">
+                                    <div class="chain-box bg-white border-red-500 text-red-600 font-bold">?</div>
+                                    <div class="chain-arrow-box"><span class="chain-arrow-label">x2</span><span class="chain-arrow">&rarr;</span></div>
+                                    <div class="chain-box bg-white"></div>
+                                    <div class="chain-arrow-box"><span class="chain-arrow-label">+4</span><span class="chain-arrow">&rarr;</span></div>
+                                    <div class="chain-box bg-white"></div>
+                                    <div class="chain-arrow-box"><span class="chain-arrow-label">+5</span><span class="chain-arrow">&rarr;</span></div>
+                                    <div class="chain-box bg-white">41</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="question-text">Angka yang tepat untuk mengisi kotak dengan tanda tanya adalah ....</div>
+                        <div class="options-wrapper">
+                            <label class="option-item"><div class="option-bubble">A</div><span class="option-text">14</span></label>
+                            <label class="option-item"><div class="option-bubble">B</div><span class="option-text">16</span></label>
+                            <label class="option-item"><div class="option-bubble">C</div><span class="option-text">18</span></label>
+                            <label class="option-item opacity-0 cursor-default"><div class="option-bubble"></div></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal 3 (Barisan Bilangan) -->
+                <div class="chain-container mt-4">
+                    <span class="chain-label">3.</span>
+                    <div class="question-text mb-2">Perhatikan barisan bilangan berikut ini:</div>
+                    <div class="flex justify-center gap-4 text-2xl font-bold font-mono my-4 text-gray-800 bg-gray-50 p-3 rounded border border-gray-200">
+                        <span>6,</span>
+                        <span>13,</span>
+                        <span>20,</span>
+                        <span>27,</span>
+                        <span>34,</span>
+                        <span>...</span>
+                    </div>
+                    <div class="question-text mt-3">Bilangan apakah yang ada pada urutan ke-12?</div>
+                    <div class="options-wrapper mt-3">
+                        <label class="option-item"><div class="option-bubble">A</div><span class="option-text">77</span></label>
+                        <label class="option-item"><div class="option-bubble">B</div><span class="option-text">83</span></label>
+                        <label class="option-item"><div class="option-bubble">C</div><span class="option-text">90</span></label>
+                        <label class="option-item opacity-0 cursor-default"><div class="option-bubble"></div></label>
+                    </div>
+                </div>
+                
+                <div class="flex-grow"></div>
+            </div>
+
+            <div class="footer-wrapper">
+                <span><b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b><br>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+                <span class="self-end">Halaman 2 dari 8</span>
+            </div>
+        </section>
+
+        <!-- ================= HALAMAN 3: Soal 4 & Soal 5 (NEW PAGE) ================= -->
+        <section class="page">
+            <div class="header-wrapper">
+                <div class="flex justify-between items-center border-b-2 border-gray-300 pb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-blue-500 rounded-full border border-black flex items-center justify-center text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                        </div>
+                        <span class="font-bold text-gray-700 uppercase tracking-widest">Arithmetic (Lanjutan)</span>
+                    </div>
+                    <div class="text-xs font-mono font-bold text-gray-400">KELAS 1-2</div>
+                </div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="bg-blue-50 border-l-4 border-blue-600 p-4 rounded text-sm mb-4">
+                    <p class="font-bold text-blue-900">Instruksi:</p>
+                    <p class="text-blue-800">Bacalah soal cerita dengan teliti.</p>
+                </div>
+
+                <!-- Soal 4 (Moved Here) -->
+                <div class="chain-container">
+                    <span class="chain-label">4.</span>
+                    <div class="question-text">Hari ini adalah hari <span class="text-blue-700">Jumat</span>.</div>
+                    <div class="question-text mt-1">16 hari setelah hari ini adalah hari ....</div>
+                    <div class="options-wrapper mt-4">
+                        <label class="option-item"><div class="option-bubble">A</div><span class="option-text text-sm">Jumat</span></label>
+                        <label class="option-item"><div class="option-bubble">B</div><span class="option-text text-sm">Sabtu</span></label>
+                        <label class="option-item"><div class="option-bubble">C</div><span class="option-text text-sm">Minggu</span></label>
+                        <label class="option-item opacity-0 cursor-default"><div class="option-bubble"></div></label>
+                    </div>
+                </div>
+
+                <!-- Soal 5 (Moved Here) -->
+                <div class="chain-container">
+                    <span class="chain-label">5.</span>
+                    <div class="question-text">Kakak memiliki 6 batang pensil.</div>
+                    <div class="question-text mt-1">Jumlah pensil adik <span class="text-red-600">2 batang lebih sedikit</span> dari jumlah pensil kakak.</div>
+                
+                    <div class="question-text">Berapa jumlah <b>seluruh</b> pensil kakak dan adik?</div>
+                    <div class="options-wrapper mt-3">
+                        <label class="option-item"><div class="option-bubble">A</div><span class="option-text">8</span></label>
+                        <label class="option-item"><div class="option-bubble">B</div><span class="option-text">10</span></label>
+                        <label class="option-item"><div class="option-bubble">C</div><span class="option-text">14</span></label>
+                        <label class="option-item opacity-0 cursor-default"><div class="option-bubble"></div></label>
+                    </div>
+                </div>
+                
+                <div class="flex-grow"></div>
+            </div>
+
+            <div class="footer-wrapper">
+                <span><b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b><br>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+                <span class="self-end">Halaman 3 dari 8</span>
+            </div>
+        </section>
+
+        <!-- ================= HALAMAN 4: MEMORY INSTRUCTION (Shifted) ================= -->
+        <section class="page">
+            <div class="header-wrapper">
+                <div class="flex justify-between items-center border-b-2 border-gray-300 pb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-purple-500 rounded-full border border-black flex items-center justify-center text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                            </svg>
+                        </div>
+                        <span class="font-bold text-gray-700 uppercase tracking-widest">Memory</span>
+                    </div>
+                    <div class="text-xs font-mono font-bold text-gray-400">KELAS 1-2</div>
+                </div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="coc-instruction">
+                    <h3 class="font-bold text-green-900 mb-1">INSTRUKSI (WAKTU: 60 DETIK)</h3>
+                    <ul class="list-disc pl-5 space-y-1 text-green-900">
+                        <li>Hafalkan seluruh <b>ANGKA</b> dan <b>BENTUK</b> yang ada di gambar tersebut.</li>
+                    </ul>
+                </div>
+
+                <div class="flex-grow flex flex-col justify-center">
+                    <div class="text-center mb-2 font-bold underline text-gray-700 tracking-widest uppercase">Area Hafalan</div>
+                    <table class="memory-table">
+                        <thead><tr><td class="corner-cell"></td><td class="col-label">1</td><td class="col-label">2</td></tr></thead>
+                        <tbody>
+                            <tr><td class="row-label">A</td><td><div class="shape-circle">3</div></td><td><div class="shape-square">7</div></td></tr>
+                            <tr><td class="row-label">B</td><td><div class="shape-square">5</div></td><td><div class="shape-circle">5</div></td></tr>
+                            <tr><td class="row-label">C</td><td><div class="shape-circle">1</div></td><td><div class="shape-square">9</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="stop-sign">
+                    <div>⚠️ BERHENTI! ⚠️</div>
+                    <div class="text-sm font-semibold text-gray-700 mt-2 normal-case">Hafalkan tabel di atas selama 60 detik.<br>Jangan membalik ke halaman berikutnya sebelum waktu habis.</div>
+                </div>
+            </div>
+
+            <div class="footer-wrapper">
+                <span><b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b><br>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+                <span class="self-end">Halaman 4 dari 8</span>
+            </div>
+        </section>
+
+        <!-- ================= HALAMAN 5: MEMORY TEST (Shifted) ================= -->
+        <section class="page">
+            <div class="header-wrapper">
+                <div class="flex justify-between items-center border-b-2 border-gray-300 pb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-red-600 rounded-full border border-black flex items-center justify-center text-white font-bold">!</div>
+                        <span class="font-bold text-gray-500 uppercase tracking-widest">Memory Test</span>
+                    </div>
+                    <div class="text-xs font-mono font-bold text-gray-400">JANGAN LIHAT HALAMAN SEBELUMNYA</div>
+                </div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="exam-stack">
+                    <div class="exam-item"><div class="question-text">6. Berapakah hasil penjumlahan A1 + A2?</div><div class="options-wrapper"><label class="option-item"><div class="option-bubble">A</div><span class="option-text">8</span></label><label class="option-item"><div class="option-bubble">B</div><span class="option-text">9</span></label><label class="option-item"><div class="option-bubble">C</div><span class="option-text">10</span></label><label class="option-item"><div class="option-bubble">D</div><span class="option-text">11</span></label></div></div>
+                    <div class="exam-item"><div class="question-text">7. Berapakah hasil penjumlahan B1 + B2?</div><div class="options-wrapper"><label class="option-item"><div class="option-bubble">A</div><span class="option-text">5</span></label><label class="option-item"><div class="option-bubble">B</div><span class="option-text">10</span></label><label class="option-item"><div class="option-bubble">C</div><span class="option-text">15</span></label><label class="option-item"><div class="option-bubble">D</div><span class="option-text">20</span></label></div></div>
+                    <div class="exam-item"><div class="question-text">8. Berapakah hasil penjumlahan C1 + C2?</div><div class="options-wrapper"><label class="option-item"><div class="option-bubble">A</div><span class="option-text">10</span></label><label class="option-item"><div class="option-bubble">B</div><span class="option-text">12</span></label><label class="option-item"><div class="option-bubble">C</div><span class="option-text">14</span></label><label class="option-item"><div class="option-bubble">D</div><span class="option-text">16</span></label></div></div>
+                    <div class="exam-item"><div class="question-text">9. Ada berapa banyak angka di dalam <span class="text-red-600">LINGKARAN</span>?</div><div class="options-wrapper"><label class="option-item"><div class="option-bubble">A</div><span class="option-text">2</span></label><label class="option-item"><div class="option-bubble">B</div><span class="option-text">3</span></label><label class="option-item"><div class="option-bubble">C</div><span class="option-text">4</span></label><label class="option-item"><div class="option-bubble">D</div><span class="option-text">5</span></label></div></div>
+                    <div class="exam-item"><div class="question-text">10. Angka berapakah yang ada di pojok kanan bawah?</div><div class="options-wrapper"><label class="option-item"><div class="option-bubble">A</div><span class="option-text">1</span></label><label class="option-item"><div class="option-bubble">B</div><span class="option-text">5</span></label><label class="option-item"><div class="option-bubble">C</div><span class="option-text">7</span></label><label class="option-item"><div class="option-bubble">D</div><span class="option-text">9</span></label></div></div>
+                    <div class="exam-item"><div class="question-text">11. Bentuk apakah yang memiliki angka 7 di dalamnya?</div><div class="options-wrapper"><label class="option-item"><div class="option-bubble">A</div><span class="option-text text-sm">Lingkaran</span></label><label class="option-item"><div class="option-bubble">B</div><span class="option-text text-sm">Kotak</span></label><label class="option-item"><div class="option-bubble">C</div><span class="option-text text-sm">Segitiga</span></label><label class="option-item"><div class="option-bubble">D</div><span class="option-text text-sm">Bintang</span></label></div></div>
+                </div>
+            </div>
+
+            <div class="footer-wrapper">
+                <span><b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b><br>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+                <span class="self-end">Halaman 5 dari 8</span>
+            </div>
+        </section>
+
+        <!-- ================= HALAMAN 6: SPATIAL (Shifted) ================= -->
+        <section class="page">
+            <div class="header-wrapper">
+                <div class="flex justify-between items-center border-b-2 border-gray-300 pb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-indigo-500 rounded-full border border-black flex items-center justify-center text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                        </div>
+                        <span class="font-bold text-gray-700 uppercase tracking-widest">Spatial</span>
+                    </div>
+                    <div class="text-xs font-mono font-bold text-gray-400">KELAS 1-2</div>
+                </div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="exam-stack">
+                    
+                    <!-- SOAL 12: EMBEDDED FIGURE -->
+                    <div class="exam-item">
+                        <div class="question-text mb-4">12. Carilah gambar alternatif yang memuat gambar (X) sebagai bagian di dalamnya.</div>
+                        <div class="flex flex-col items-center mb-6">
+                            <!-- Main Visual Row -->
+                            <div class="flex items-end gap-4 mb-2">
+                                <!-- Figure X -->
+                                <div class="flex flex-col items-center">
+                                    <svg width="60" height="60" viewBox="0 0 60 60" class="border-2 border-black bg-white">
+                                        <!-- Shape X: A specific pattern (e.g., vertical line with diagonal) -->
+                                        <path d="M30 10 V50 M30 30 L50 10" stroke="black" stroke-width="3" fill="none"/>
+                                    </svg>
+                                    <span class="font-bold text-sm mt-1">(X)</span>
+                                </div>
+                                <div class="h-16 border-r-2 border-gray-300 mx-2"></div>
+                                <!-- Options 1-4 -->
+                                <div class="flex gap-3">
+                                    <div class="flex flex-col items-center">
+                                        <svg width="60" height="60" viewBox="0 0 60 60" class="border border-gray-400 bg-white">
+                                            <!-- Fig 1: Random lines -->
+                                            <path d="M10 10 H50 M30 10 V50" stroke="black" stroke-width="2" fill="none"/>
+                                        </svg>
+                                        <span class="text-xs font-bold mt-1">(1)</span>
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <svg width="60" height="60" viewBox="0 0 60 60" class="border border-gray-400 bg-white">
+                                            <!-- Fig 2: The Correct One (Contains X) -->
+                                            <rect x="10" y="10" width="40" height="40" fill="none" stroke="black" stroke-width="1"/>
+                                            <path d="M30 10 V50 M30 30 L50 10" stroke="black" stroke-width="3"/> <!-- The X Shape Hidden -->
+                                            <path d="M10 50 L50 10" stroke="black" stroke-width="1"/> <!-- Distractor line -->
+                                        </svg>
+                                        <span class="text-xs font-bold mt-1">(2)</span>
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <svg width="60" height="60" viewBox="0 0 60 60" class="border border-gray-400 bg-white">
+                                            <!-- Fig 3: Triangle -->
+                                            <path d="M10 50 L30 10 L50 50 Z M30 10 V50" stroke="black" stroke-width="2" fill="none"/>
+                                        </svg>
+                                        <span class="text-xs font-bold mt-1">(3)</span>
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <svg width="60" height="60" viewBox="0 0 60 60" class="border border-gray-400 bg-white">
+                                            <!-- Fig 4: Zigzag -->
+                                            <path d="M10 10 L50 10 L10 50 L50 50" stroke="black" stroke-width="2" fill="none"/>
+                                        </svg>
+                                        <span class="text-xs font-bold mt-1">(4)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pilihan Ganda Mapping -->
+                        <div class="options-wrapper">
+                            <label class="option-item"><div class="option-bubble">A</div><span class="option-text">Gambar (1)</span></label>
+                            <label class="option-item"><div class="option-bubble">B</div><span class="option-text">Gambar (2)</span></label>
+                            <label class="option-item"><div class="option-bubble">C</div><span class="option-text">Gambar (3)</span></label>
+                            <label class="option-item"><div class="option-bubble">D</div><span class="option-text">Gambar (4)</span></label>
+                        </div>
+                    </div>
+
+                    <!-- SOAL 13: ANALOGI -->
+                    <div class="exam-item">
+                        <div class="question-text mb-4">13. Perhatikan pola perubahan gambar. Gambar apakah yang tepat untuk mengisi kotak tanda tanya?</div>
+                        <div class="flex justify-center mb-4">
+                            <svg width="300" height="140" viewBox="0 0 300 140">
+                                <!-- Frame -->
+                                <rect x="10" y="10" width="280" height="120" rx="10" fill="white" stroke="#374151" stroke-width="3"/>
+                                <line x1="150" y1="10" x2="150" y2="130" stroke="#374151" stroke-width="2"/>
+                                <line x1="10" y1="70" x2="290" y2="70" stroke="#374151" stroke-width="2"/>
+                                
+                                <!-- ROW 1 -->
+                                <!-- 1a. Square -->
+                                <rect x="50" y="25" width="30" height="30" fill="none" stroke="black" stroke-width="3"/>
+                                <!-- Arrow -->
+                                <path d="M95 40 h20 m-5 -5 l5 5 l-5 5" stroke="black" stroke-width="2" fill="none"/>
+                                <!-- 1b. Square + Cross -->
+                                <g transform="translate(180, 25)">
+                                    <rect x="0" y="0" width="30" height="30" fill="none" stroke="black" stroke-width="3"/>
+                                    <line x1="0" y1="0" x2="30" y2="30" stroke="black" stroke-width="2"/>
+                                    <line x1="30" y1="0" x2="0" y2="30" stroke="black" stroke-width="2"/>
+                                </g>
+
+                                <!-- ROW 2 -->
+                                <!-- 2a. Circle -->
+                                <circle cx="65" cy="100" r="16" fill="none" stroke="black" stroke-width="3"/>
+                                <!-- Arrow -->
+                                <path d="M95 100 h20 m-5 -5 l5 5 l-5 5" stroke="black" stroke-width="2" fill="none"/>
+                                <!-- 2b. Question Mark -->
+                                <text x="195" y="110" font-family="sans-serif" font-size="40" font-weight="bold" fill="#dc2626">?</text>
+                            </svg>
+                        </div>
+                        <div class="options-wrapper">
+                            <label class="option-item"><div class="option-bubble">A</div>
+                                <svg width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="none" stroke="black" stroke-width="2"/></svg>
+                            </label>
+                            <label class="option-item"><div class="option-bubble">B</div>
+                                <svg width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="none" stroke="black" stroke-width="2"/><path d="M15 3 v24 M3 15 h24" stroke="black" stroke-width="2"/></svg>
+                            </label>
+                            <label class="option-item"><div class="option-bubble">C</div>
+                                <svg width="30" height="30" viewBox="0 0 30 30">
+                                    <circle cx="15" cy="15" r="12" fill="none" stroke="black" stroke-width="2"/>
+                                    <path d="M6 6 L24 24 M24 6 L6 24" stroke="black" stroke-width="2"/>
+                                </svg>
+                            </label>
+                            <label class="option-item"><div class="option-bubble">D</div>
+                                <svg width="30" height="30" viewBox="0 0 30 30"><path d="M6 6 L24 24 M24 6 L6 24" stroke="black" stroke-width="2"/></svg>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- SOAL 14: ROTASI -->
+                    <div class="exam-item">
+                        <div class="question-text mb-4">14. Perhatikan urutan panah. Manakah gambar selanjutnya?</div>
+                        <div class="flex justify-center items-center gap-6 mb-8">
+                            <!-- Definition of Arrow Shape -->
+                            <svg width="0" height="0">
+                                <defs>
+                                    <path id="arrow-shape" d="M20 5 L35 20 H25 V35 H15 V20 H5 Z" />
+                                </defs>
+                            </svg>
+
+                            <!-- 1. Up Black -->
+                            <svg width="40" height="40" viewBox="0 0 40 40"><use href="#arrow-shape" fill="black"/></svg>
+                            <span class="text-2xl font-bold text-gray-400">&rarr;</span>
+                            
+                            <!-- 2. Right White (Rotated 90 deg) -->
+                            <svg width="40" height="40" viewBox="0 0 40 40"><use href="#arrow-shape" fill="white" stroke="black" stroke-width="3" transform="rotate(90, 20, 20)"/></svg>
+                            <span class="text-2xl font-bold text-gray-400">&rarr;</span>
+
+                            <!-- 3. Down Black (Rotated 180 deg) -->
+                            <svg width="40" height="40" viewBox="0 0 40 40"><use href="#arrow-shape" fill="black" transform="rotate(180, 20, 20)"/></svg>
+                            <span class="text-2xl font-bold text-gray-400">&rarr;</span>
+
+                            <!-- 4. Question Box -->
+                            <div class="w-12 h-12 border-2 border-dashed border-red-500 bg-red-50 flex items-center justify-center font-bold text-xl text-red-500 rounded">?</div>
+                        </div>
+
+                        <div class="options-wrapper">
+                            <label class="option-item"><div class="option-bubble">A</div>
+                                <!-- Left Black -->
+                                <svg width="30" height="30" viewBox="0 0 40 40"><use href="#arrow-shape" fill="black" transform="rotate(-90, 20, 20)"/></svg>
+                            </label>
+                            <label class="option-item"><div class="option-bubble">B</div>
+                                <!-- Up White -->
+                                <svg width="30" height="30" viewBox="0 0 40 40"><use href="#arrow-shape" fill="white" stroke="black" stroke-width="3"/></svg>
+                            </label>
+                            <label class="option-item"><div class="option-bubble">C</div>
+                                <!-- Left White (CORRECT) -->
+                                <svg width="30" height="30" viewBox="0 0 40 40"><use href="#arrow-shape" fill="white" stroke="black" stroke-width="3" transform="rotate(-90, 20, 20)"/></svg>
+                            </label>
+                            <label class="option-item"><div class="option-bubble">D</div>
+                                <!-- Right White -->
+                                <svg width="30" height="30" viewBox="0 0 40 40"><use href="#arrow-shape" fill="white" stroke="black" stroke-width="3" transform="rotate(90, 20, 20)"/></svg>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="footer-wrapper">
+                <span><b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b><br>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+                <span class="self-end">Halaman 6 dari 8</span>
+            </div>
+        </section>
+
+        <!-- ================= HALAMAN 7: LOGIC 1 (Shifted & Header Updated) ================= -->
+        <section class="page">
+            <div class="header-wrapper">
+                <div class="flex justify-between items-center border-b-2 border-gray-300 pb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-orange-500 rounded-full border border-black flex items-center justify-center text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                        </div>
+                        <span class="font-bold text-gray-700 uppercase tracking-widest">Logic & Math</span>
+                    </div>
+                    <!-- CHANGED: Gray text -->
+                    <div class="text-xs font-mono font-bold text-gray-400">KELAS 1-2</div>
+                </div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="exam-stack">
+                    
+                    <!-- SOAL 15: POLA GAMBAR -->
+                    <div class="exam-item">
+                        <div class="question-text mb-4">15. Perhatikan pola urutan gambar di bawah ini! Gambar apakah yang cocok untuk mengisi kotak tanda tanya?</div>
+                        <div class="flex justify-center items-center mb-6">
+                            <div class="flex items-center gap-2 p-4 border border-gray-300 rounded-lg bg-gray-50">
+                                <!-- Pola: Lingkaran, Segitiga, Segitiga, Lingkaran, Segitiga, ? -->
+                                <svg width="300" height="50" viewBox="0 0 300 50">
+                                    <!-- 1. Lingkaran Biru -->
+                                    <circle cx="25" cy="25" r="15" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/>
+                                    <!-- 2. Segitiga Kuning -->
+                                    <path d="M75 10 L90 40 L60 40 Z" fill="#fde047" stroke="#ca8a04" stroke-width="2"/>
+                                    <!-- 3. Segitiga Kuning -->
+                                    <path d="M125 10 L140 40 L110 40 Z" fill="#fde047" stroke="#ca8a04" stroke-width="2"/>
+                                    
+                                    <!-- 4. Lingkaran Biru -->
+                                    <circle cx="175" cy="25" r="15" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/>
+                                    <!-- 5. Segitiga Kuning -->
+                                    <path d="M225 10 L240 40 L210 40 Z" fill="#fde047" stroke="#ca8a04" stroke-width="2"/>
+                                    
+                                    <!-- 6. Kotak Tanya -->
+                                    <rect x="260" y="5" width="40" height="40" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4"/>
+                                    <text x="280" y="32" font-family="sans-serif" font-weight="bold" font-size="20" fill="#dc2626" text-anchor="middle">?</text>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="options-wrapper">
+                            <label class="option-item"><div class="option-bubble">A</div><span class="option-text">Lingkaran</span></label>
+                            <label class="option-item"><div class="option-bubble">B</div><span class="option-text">Segitiga</span></label>
+                            <label class="option-item"><div class="option-bubble">C</div><span class="option-text">Persegi</span></label>
+                            <label class="option-item"><div class="option-bubble">D</div><span class="option-text">Bintang</span></label>
+                        </div>
+                    </div>
+
+                    <!-- SOAL 16: LOGIKA TIMBANGAN -->
+                    <div class="exam-item">
+                        <div class="question-text mb-4">16. Perhatikan dua timbangan seimbang di bawah ini. Berapa banyak <b>Kotak</b> yang dibutuhkan agar seimbang dengan <b>1 Bola</b>?</div>
+                        
+                        <div class="flex flex-col gap-6 items-center mb-6">
+                            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_4vft6v_6162.png" alt="Soal Timbangan" class="max-w-full h-auto w-[450px]">
+                        </div>
+
+                        <div class="options-wrapper">
+                            <label class="option-item"><div class="option-bubble">A</div><span class="option-text">3 Kotak</span></label>
+                            <label class="option-item"><div class="option-bubble">B</div><span class="option-text">4 Kotak</span></label>
+                            <label class="option-item"><div class="option-bubble">C</div><span class="option-text">5 Kotak</span></label>
+                            <label class="option-item"><div class="option-bubble">D</div><span class="option-text">6 Kotak</span></label>
+                        </div>
+                    </div>
+
+                    <!-- SOAL 17: POSISI LARI -->
+                    <div class="exam-item">
+                        <div class="question-text">17. Dalam sebuah lomba lari, Andi berhasil menyalip pelari yang berada di posisi ke-2. Sekarang, Andi berada di posisi ke berapa?</div>
+                        <div class="options-wrapper">
+                            <label class="option-item"><div class="option-bubble">A</div><span class="option-text">Ke-1</span></label>
+                            <label class="option-item"><div class="option-bubble">B</div><span class="option-text">Ke-2</span></label>
+                            <label class="option-item"><div class="option-bubble">C</div><span class="option-text">Ke-3</span></label>
+                            <label class="option-item"><div class="option-bubble">D</div><span class="option-text">Ke-4</span></label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="footer-wrapper">
+                <span><b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b><br>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+                <span class="self-end">Halaman 7 dari 8</span>
+            </div>
+        </section>
+
+        <!-- ================= HALAMAN 8: LOGIC 2 (Shifted & Header Updated) ================= -->
+        <section class="page">
+            <div class="header-wrapper">
+                <div class="flex justify-between items-center border-b-2 border-gray-300 pb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-orange-500 rounded-full border border-black flex items-center justify-center text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                        </div>
+                        <span class="font-bold text-gray-700 uppercase tracking-widest">Logic & Math</span>
+                    </div>
+                    <!-- CHANGED: Gray text -->
+                    <div class="text-xs font-mono font-bold text-gray-400">KELAS 1-2</div>
+                </div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="exam-stack">
+                    
+                    <!-- SOAL 18: LOGIKA WARNA RUMAH -->
+                    <div class="exam-item">
+                        <div class="question-text">
+                            18. Ada 3 rumah berjajar dengan warna: <b>Merah</b>, <b>Kuning</b>, dan <b>Hijau</b>.<br>
+                            Petunjuk:
+                            <ul class="list-disc ml-5 mt-1 font-normal text-sm text-gray-700">
+                                <li>Rumah <b>Kuning</b> berada di tengah.</li>
+                                <li>Rumah <b>Merah</b> berada di sebelah kiri rumah Kuning.</li>
+                            </ul>
+                            <div class="mt-2">Rumah warna apakah yang berada di sebelah paling kanan?</div>
+                        </div>
+                        <div class="options-wrapper">
+                            <label class="option-item"><div class="option-bubble">A</div><span class="option-text">Merah</span></label>
+                            <label class="option-item"><div class="option-bubble">B</div><span class="option-text">Kuning</span></label>
+                            <label class="option-item"><div class="option-bubble">C</div><span class="option-text">Hijau</span></label>
+                            <label class="option-item"><div class="option-bubble">D</div><span class="option-text">Biru</span></label>
+                        </div>
+                    </div>
+
+                    <!-- SOAL 19: POLA WAKTU -->
+                    <div class="exam-item">
+                        <div class="question-text">
+                            19. Sebuah bus berangkat dari terminal setiap 30 menit sekali. Bus pertama berangkat pukul 08.00.<br>
+                            Pukul berapakah bus ke-4 berangkat?
+                        </div>
+                        <div class="options-wrapper">
+                            <label class="option-item"><div class="option-bubble">A</div><span class="option-text">09.00</span></label>
+                            <label class="option-item"><div class="option-bubble">B</div><span class="option-text">09.30</span></label>
+                            <label class="option-item"><div class="option-bubble">C</div><span class="option-text">10.00</span></label>
+                            <label class="option-item"><div class="option-bubble">D</div><span class="option-text">10.30</span></label>
+                        </div>
+                    </div>
+
+                    <!-- SOAL 20: LOGIKA PERBANDINGAN -->
+                    <div class="exam-item">
+                        <div class="question-text">
+                            20. Bu Guru mengukur tinggi badan 4 orang siswa: Siti, Ayu, Budi, dan Dedi.
+                            <ul class="list-disc ml-5 mt-1 font-normal text-sm text-gray-700">
+                                <li>Siti lebih tinggi dari Ayu.</li>
+                                <li>Budi lebih pendek dari Ayu.</li>
+                                <li>Dedi sama tingginya dengan Siti.</li>
+                            </ul>
+                            <div class="mt-2">Siapakah yang paling pendek?</div>
+                        </div>
+                        <div class="options-wrapper">
+                            <label class="option-item"><div class="option-bubble">A</div><span class="option-text">Siti</span></label>
+                            <label class="option-item"><div class="option-bubble">B</div><span class="option-text">Ayu</span></label>
+                            <label class="option-item"><div class="option-bubble">C</div><span class="option-text">Budi</span></label>
+                            <label class="option-item"><div class="option-bubble">D</div><span class="option-text">Dedi</span></label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="footer-wrapper">
+                <span><b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b><br>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+                <span class="self-end">Halaman 8 dari 8</span>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>
