@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Exploration 3 (E3-S253)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --primary-blue: #1e3a8a; /* blue-900 */
+        --secondary-blue: #dbeafe; /* blue-100 */
+        --accent-green: #16a34a; /* green-600 */
+        --alert-red: #dc2626;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 12px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .area-model,
+        .area-cell {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-green-50 { background-color: #f0fdf4 !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .bg-red-50 { background-color: #fef2f2 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- UTILITIES --- */
+      .input-box {
+        border: 2px solid #333;
+        min-width: 60px;
+        height: 32px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        padding: 0 5px;
+        border-radius: 4px;
+      }
+      
+      .input-line {
+        border-bottom: 2px solid #333;
+        min-width: 60px;
+        display: inline-block;
+        margin: 0 5px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .instruction-text {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #1e3a8a;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.8cm 0;
+      }
+
+      /* --- AREA MODEL STYLES --- */
+      .area-model {
+        display: grid;
+        grid-template-columns: 30px 1fr 1fr;
+        grid-template-rows: 30px 1fr 1fr;
+        gap: 2px;
+        margin-bottom: 1rem;
+      }
+      .area-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+      .area-cell {
+        border: 2px solid #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        font-size: 0.9rem;
+        background-color: white;
+        flex-direction: column;
+        text-align: center;
+      }
+      .area-cell.bg-blue { background-color: #eff6ff; }
+      .area-cell.bg-green { background-color: #f0fdf4; }
+      .area-cell.bg-yellow { background-color: #fefce8; }
+      .area-cell.bg-red { background-color: #fef2f2; }
+
+      /* --- Vertical Multiplication Styles --- */
+      .vertical-calc {
+        display: inline-block;
+        text-align: right;
+        font-family: monospace;
+        font-size: 1.2rem;
+        font-weight: bold;
+        line-height: 1.2;
+      }
+      .calc-digits {
+        letter-spacing: 0.3em;
+        margin-right: -0.3em; 
+      }
+
+      /* Choices */
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-left: 1.5rem;
+      }
+      .choice-box {
+        width: 20px;
+        height: 20px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        background: white;
+        border-radius: 2px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-2) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Four Operations of Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Multiplying 2-digit numbers by 2-digit numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : E3-S253</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <h2 class="font-bold text-lg mb-4 mt-4 text-blue-900">Multiplication of Whole Numbers (2-Digit &times; 2-Digit)</h2>
+
+            <div class="instruction-text">
+                Solve the problems below. Use the area model or vertical method to help you.
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        1. Area Model
+                    </div>
+                    <p class="mb-4 text-sm text-gray-700">
+                        Look at the area model diagram for the multiplication <strong>12 &times; 14</strong> below. The diagram breaks the numbers into tens and ones (10 + 2) and (10 + 4).
+                    </p>
+                    
+                    <div class="flex justify-center mb-4">
+                        <div class="area-model">
+                            <!-- Top Labels -->
+                            <div></div>
+                            <div class="area-label">10</div>
+                            <div class="area-label">4</div>
+                            
+                            <!-- Row 1 -->
+                            <div class="area-label">10</div>
+                            <div class="area-cell bg-blue-50">
+                                <div>10 &times; 10</div>
+                                <div class="font-bold text-lg">= 100</div>
+                            </div>
+                            <div class="area-cell bg-green-50">
+                                <div>10 &times; 4</div>
+                                <div class="font-bold text-lg">= 40</div>
+                            </div>
+                            
+                            <!-- Row 2 -->
+                            <div class="area-label">2</div>
+                            <div class="area-cell bg-yellow-50">
+                                <div>2 &times; 10</div>
+                                <div class="font-bold text-lg">= 20</div>
+                            </div>
+                            <div class="area-cell bg-red-50 relative">
+                                <div class="font-bold text-2xl text-red-600">?</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="mb-2 font-medium">What is the correct value to fill in the question mark (<strong>?</strong>) in the bottom right box?</p>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. 6</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. 8</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. 12</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. 14</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        2. Based on the diagram in question number 1, what is the final result of 12 &times; 14?
+                    </div>
+                    <p class="text-sm italic text-gray-500 mb-4">(Hint: Sum all the numbers inside the four boxes)</p>
+                    
+                    <div class="ml-4 font-bold text-lg">
+                        Answer: <span class="input-box w-32"></span>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 3-5) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Four Operations of Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Multiplying 2-digit numbers by 2-digit numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : E3-S253</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mb-6">
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        3. Completing the Area Model
+                    </div>
+                    <p class="mb-4 text-sm text-gray-700">Fill in the empty boxes for the multiplication <strong>23 &times; 15</strong>.</p>
+
+                    <div class="flex justify-center mb-4">
+                        <div class="area-model">
+                            <!-- Top Labels -->
+                            <div></div>
+                            <div class="area-label">20</div>
+                            <div class="area-label">3</div>
+                            
+                            <!-- Row 1 -->
+                            <div class="area-label">10</div>
+                            <div class="area-cell bg-blue-50"><div class="font-bold text-lg">200</div></div>
+                            <div class="area-cell bg-green-50"><div class="font-bold text-lg">30</div></div>
+                            
+                            <!-- Row 2 -->
+                            <div class="area-label">5</div>
+                            <div class="area-cell bg-yellow-50 relative">
+                                <div class="font-bold text-2xl text-red-600">A</div>
+                            </div>
+                            <div class="area-cell bg-red-50"><div class="font-bold text-lg">15</div></div>
+                        </div>
+                    </div>
+
+                    <p class="mb-2 font-medium">What is the value of <strong>A</strong> in the diagram above?</p>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. 25</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. 50</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. 100</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. 150</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        4. Conceptual Understanding
+                    </div>
+                    <p class="mb-2 text-sm">
+                        We want to calculate <strong>34 &times; 26</strong>. If we use the partial products method, which sum is CORRECT?
+                    </p>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. (30 &times; 20) + (4 &times; 6)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. (30 &times; 2) + (4 &times; 6)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. (30 &times; 20) + (30 &times; 6) + (4 &times; 20) + (4 &times; 6)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. (3 &times; 2) + (3 &times; 6) + (4 &times; 2) + (4 &times; 6)</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        5. Calculate the result of 45 &times; 22 using the method you like (vertical or area model).
+                    </div>
+                    <div class="mt-8 ml-4">
+                        <span class="font-bold">Answer:</span> <span class="input-box w-32"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 6-7) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Four Operations of Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Multiplying 2-digit numbers by 2-digit numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : E3-S253</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mt-6">
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        6. Error Analysis
+                    </div>
+                    <p class="mb-4 text-sm">
+                        Budi calculated <strong>18 &times; 15</strong> using the vertical method like this:
+                    </p>
+                    
+                    <div class="flex justify-center mb-6">
+                        <div class="vertical-calc border border-gray-300 p-4 bg-gray-50 rounded">
+                            <div class="calc-digits">18</div>
+                            <div class="calc-digits border-b-2 border-black pr-2">&times; 15</div>
+                            <div class="text-right pr-2 text-sm font-normal mb-1">40 <span class="text-gray-500 text-xs">(5 &times; 8)</span></div>
+                            <div class="text-right pr-2 text-sm font-normal mb-1">50 <span class="text-gray-500 text-xs">(5 &times; 10)</span></div>
+                            <div class="text-right pr-2 text-sm font-normal mb-1">80 <span class="text-gray-500 text-xs">(10 &times; 8)</span></div>
+                            <div class="flex justify-end items-center gap-1 pr-2 text-sm font-normal">
+                                <span class="font-bold">+</span> <span class="text-red-600 font-bold">10</span> <span class="text-gray-500 text-xs">(10 &times; 1)</span>
+                            </div>
+                            <div class="border-b-2 border-black w-full mb-1"></div>
+                        </div>
+                    </div>
+
+                    <p class="mb-2 text-sm">Wait, for the last row result Budi wrote the number <strong>10</strong>. Is 10 &times; 10 equal to 10?</p>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. Yes, Budi is correct.</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. No, it should be 10 &times; 10 = 100.</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. No, it should be 10 &times; 10 = 20.</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. No, it should be 10 &times; 1 = 1.</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. Word Problem
+                    </div>
+                    <p class="mb-2 text-sm">
+                        Mr. Tani has a rectangular garden. The length of the garden is 24 meters and the width is 18 meters. What is the area of Mr. Tani's garden?
+                    </p>
+                    <p class="text-xs text-gray-500 italic mb-4">(Area of Rectangle = Length &times; Width)</p>
+                    
+                    <div class="mt-4 ml-4">
+                        <span class="font-bold">Answer:</span> <span class="input-box w-32"></span> m<sup>2</sup>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 4 (Soal 8-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Four Operations of Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Multiplying 2-digit numbers by 2-digit numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : E3-S253</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mt-6">
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        8. A toy store bought 15 boxes of lego. Each box contains 32 lego pieces. What is the total number of lego pieces the store has?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. 47</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. 160</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. 450</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. 480</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        9. Estimation
+                    </div>
+                    <p class="mb-2 text-sm">
+                        Without calculating the exact result, which of the below is the most reasonable result for <strong>52 &times; 19</strong>?
+                    </p>
+                    <p class="text-xs text-gray-500 italic mb-4">(Hint: Round 52 to 50, and 19 to 20)</p>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. Around 100</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. Around 500</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. Around 1,000</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. Around 5,000</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 (Challenge) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-red-700">
+                        10. Challenge!
+                    </div>
+                    <p class="mb-4 text-sm">
+                        I am a number. If I am multiplied by 12, the result is 144. What number am I?
+                    </p>
+                    <div class="mt-4 ml-4">
+                        <span class="font-bold">Answer:</span> <span class="input-box w-32"></span>
+                    </div>
+                </div>
+
+                <!-- Kalimat Penyemangat -->
+                <div class="text-center italic text-sm font-semibold text-gray-600 mt-12 mb-4">
+                    "Great effort today. Quick check-through and you’re good."
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
