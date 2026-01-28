@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Exploration 2 (Pecahan)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for nice equations -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+        :root {
+            --primary-text: #333333;
+            --grey-text: #8d8e8d;
+            --bar-blue: #cceeff;     /* Warna untuk 'garis biru' */
+            --bar-red: #ffcccc;      /* Warna untuk 'bintik merah' */
+            --bar-gray: #f3f4f6;
+            --line-color: #000000;
+        }
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Montserrat", sans-serif;
+            font-size: 8.5pt;
+            line-height: 1.3;
+            color: var(--primary-text);
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 10px 0;
+        }
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .page {
+            background: white;
+            width: 21.0cm;
+            min-height: 29.7cm;
+            padding: 0.8cm 1.2cm;
+            margin-bottom: 0.5cm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .page-header {
+            width: 100%;
+            margin-bottom: 3px;
+        }
+        .math-champs-header {
+            background-color: white;
+            padding: 0.1rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: black;
+        }
+        .page-footer {
+            text-align: left;
+            font-size: 6pt;
+            color: var(--grey-text);
+            padding-top: 3px;
+            margin-top: auto;
+            border-top: 1.5px solid var(--grey-text);
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .answer-box {
+            border: 1px solid #999;
+            background: #fff;
+            padding: 1px 4px;
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+            min-width: 45px;
+            display: inline-block;
+            height: 20px;
+            vertical-align: middle;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        .strategy-box {
+            background-color: #f0fdf4;
+            border: 1.5px dashed #22c55e;
+            border-radius: 8px;
+            padding: 6px;
+            position: relative;
+        }
+        
+        /* Bar Model Styles */
+        .bar-model-container {
+            position: relative;
+            width: 100%;
+            height: 35px;
+            border: 1.5px solid black;
+            display: flex;
+            margin-top: 5px;
+            margin-bottom: 25px; /* Space for braces */
+            background-color: white;
+            overflow: hidden; /* Ensures grid doesn't spill out */
+        }
+        .bar-part {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.75rem;
+            /* Border handling moved to grid overlay for specific questions */
+            border-right: 1.5px solid black; 
+            z-index: 1;
+        }
+        .bar-part:last-child { border-right: none; }
+        
+        /* Grid Overlay System */
+        .grid-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            z-index: 5; /* Above colors, below text if z-indexed higher */
+            pointer-events: none;
+        }
+        .grid-cell {
+            flex: 1;
+            border-right: 1px solid rgba(0,0,0,0.4);
+            height: 100%;
+        }
+        .grid-cell:last-child { border-right: none; }
+
+        /* Pattern styles for fractions */
+        .pattern-blue {
+            background-color: var(--bar-blue);
+            background-image: linear-gradient(45deg, #99ccff 25%, transparent 25%, transparent 50%, #99ccff 50%, #99ccff 75%, transparent 75%, transparent);
+            background-size: 10px 10px;
+        }
+        .pattern-red {
+            background-color: var(--bar-red);
+            background-image: radial-gradient(#ff6666 15%, transparent 16%);
+            background-size: 8px 8px;
+        }
+
+        .brace-total {
+            position: absolute;
+            bottom: -22px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border-top: 1.5px solid black;
+            padding-top: 1px;
+        }
+        .brace-total::before, .brace-total::after {
+            content: ''; position: absolute; top: -4px; height: 4px; width: 1.5px; background: black;
+        }
+        .brace-total::before { left: 0; }
+        .brace-total::after { right: 0; }
+
+        .pie-chart {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 1.5px solid black;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background-color: white; padding: 0; font-size: 8.5pt; }
+            .page { width: 100%; border: none; box-shadow: none; margin: 0; page-break-after: always; padding: 0.8cm 1.2cm; min-height: 29.7cm; }
+            .page:last-child { page-break-after: avoid; }
+            .math-champs-header, .strategy-box, .pattern-blue, .pattern-red, .bar-part, .grid-cell { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- HALAMAN 1 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-8 md:h-10 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-xs font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[9px] text-black font-semibold mt-0.5">Pecahan Tingkat Tinggi</div>
+                        <div class="text-[8px] text-black font-medium">Penjumlahan Pecahan dan Soal Cerita</div>
+                        <div class="text-[9px] text-black font-bold">Kode : E2-S213</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-0.5"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="text-center mb-1 mt-1">
+                    <h1 class="text-sm font-black uppercase tracking-wider text-gray-800">LEMBAR KERJA SISWA</h1>
+                    <div class="flex justify-between text-[9px] mt-1 px-4 font-bold text-gray-700">
+                        <span>Nama: _________________________</span>
+                        <span>Nilai: _________</span>
+                    </div>
+                </div>
+
+                <div class="strategy-box mb-3">
+                    <h3 class="font-bold text-green-800 mb-0.5 text-center text-[10px] uppercase">Strategi Berpikir: Model Batang (Pecahan)</h3>
+                    <p class="text-[9px] text-center mb-2 text-gray-700 leading-tight">
+                        Gunakan model gambar untuk melihat bagian-bagian pecahan. Penjumlahan pecahan menjadi lebih mudah jika kita melihat kotaknya!
+                    </p>
+                    <div class="bg-white p-2 rounded border border-green-200">
+                        <div class="text-center font-bold text-[9px] mb-1">Contoh: \( \frac{2}{5} \) Bagian Biru + \( \frac{3}{5} \) Bagian Merah</div>
+                        <div class="px-8">
+                            <div class="bar-model-container mb-6">
+                                <!-- Background colors -->
+                                <div class="bar-part pattern-blue" style="width: 40%; border-right: none;">\(\frac{2}{5}\)</div>
+                                <div class="bar-part pattern-red" style="width: 60%; border-right: none;">\(\frac{3}{5}\)</div>
+                                <!-- Grid Overlay for 5 parts -->
+                                <div class="grid-overlay">
+                                    <div class="grid-cell"></div>
+                                    <div class="grid-cell"></div>
+                                    <div class="grid-cell"></div>
+                                    <div class="grid-cell"></div>
+                                    <div class="grid-cell"></div>
+                                </div>
+                                <div class="brace-total">Total = \(\frac{5}{5}\) (Satu Utuh)</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-center gap-4 text-[9px] text-gray-600">
+                            <div class="flex items-center gap-1">
+                                <div class="w-3 h-3 pattern-blue border border-gray-400"></div>
+                                <span>Biru</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <div class="w-3 h-3 pattern-red border border-gray-400"></div>
+                                <span>Merah</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-1">
+                    <h2 class="text-[10px] font-bold bg-blue-100 p-1 rounded text-blue-800 border-l-4 border-blue-500">Bagian A: Pemahaman Visual (Pilihan Ganda)</h2>
+                </div>
+
+                <!-- Soal 1 -->
+                <div class="bg-white border border-gray-200 p-2.5 mb-2 rounded-lg shadow-sm">
+                    <div class="flex items-start gap-2 mb-1">
+                        <div class="flex-none font-bold bg-gray-100 w-5 h-5 rounded flex items-center justify-center text-[9px]">1</div>
+                        <div class="flex-1 font-bold text-xs">Perhatikan model batang di bawah ini. Bagian biru adalah milik Budi, bagian merah milik Ani. Berapa jumlah gabungannya?</div>
+                    </div>
+                    <div class="px-8 py-2">
+                        <!-- 8 parts total: 2 blue, 3 red, 3 empty -->
+                        <div class="bar-model-container" style="margin-bottom: 5px; height: 30px;">
+                            <!-- Colors (2/8 and 3/8) -->
+                            <div class="bar-part pattern-blue" style="width: 25%; border-right: none;"></div>
+                            <div class="bar-part pattern-red" style="width: 37.5%; border-right: none;"></div>
+                            <div class="bar-part bg-white" style="width: 37.5%; border-right: none;"></div>
+                            
+                            <!-- Precise Grid Overlay: 8 Parts -->
+                            <div class="grid-overlay">
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                            </div>
+                        </div>
+                        <div class="text-center text-[8px] text-gray-500 italic">Total ada 8 kotak kecil</div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1 ml-7 text-[9px]">
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">a. \( \frac{3}{8} \)</div>
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">b. \( \frac{4}{8} \)</div>
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">c. \( \frac{5}{8} \)</div>
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">d. \( \frac{6}{8} \)</div>
+                    </div>
+                </div>
+
+                <!-- Soal 2 -->
+                <div class="bg-white border border-gray-200 p-2.5 mb-2 rounded-lg shadow-sm">
+                    <div class="flex items-start gap-2 mb-1">
+                        <div class="flex-none font-bold bg-gray-100 w-5 h-5 rounded flex items-center justify-center text-[9px]">2</div>
+                        <div class="flex-1 font-bold text-xs">Ibu memotong kue menjadi 6 bagian. Ayah makan \( \frac{1}{6} \) (biru) dan Adik makan \( \frac{2}{6} \) (merah). Berapa total yang dimakan?</div>
+                    </div>
+                    <div class="flex justify-center py-2">
+                        <!-- Pie Chart: 6 parts. 1 blue (60deg), 2 red (120deg) -->
+                        <div class="pie-chart" style="background: conic-gradient(
+                            #cceeff 0% 16.66%, 
+                            #ffcccc 16.66% 50%, 
+                            white 50% 100%
+                        );">
+                            <!-- Simple lines to simulate slices -->
+                            <div style="position: absolute; top:0; left: 40px; height: 80px; width: 1px; background: rgba(0,0,0,0.2);"></div>
+                            <div style="position: absolute; top:0; left: 40px; height: 80px; width: 1px; background: rgba(0,0,0,0.2); transform: rotate(60deg);"></div>
+                            <div style="position: absolute; top:0; left: 40px; height: 80px; width: 1px; background: rgba(0,0,0,0.2); transform: rotate(120deg);"></div>
+                            <div style="position: absolute; top:0; left: 40px; height: 80px; width: 1px; background: rgba(0,0,0,0.2); transform: rotate(180deg);"></div>
+                            <div style="position: absolute; top:0; left: 40px; height: 80px; width: 1px; background: rgba(0,0,0,0.2); transform: rotate(240deg);"></div>
+                            <div style="position: absolute; top:0; left: 40px; height: 80px; width: 1px; background: rgba(0,0,0,0.2); transform: rotate(300deg);"></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1 ml-7 text-[9px]">
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">a. \( \frac{2}{6} \)</div>
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">b. \( \frac{3}{6} \)</div>
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">c. \( \frac{4}{6} \)</div>
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">d. \( \frac{5}{6} \)</div>
+                    </div>
+                </div>
+
+                <!-- Soal 3 -->
+                <div class="bg-white border border-gray-200 p-2.5 mb-2 rounded-lg shadow-sm">
+                    <div class="flex items-start gap-2 mb-1">
+                        <div class="flex-none font-bold bg-gray-100 w-5 h-5 rounded flex items-center justify-center text-[9px]">3</div>
+                        <div class="flex-1 font-bold text-xs">Santi menggunakan \( \frac{2}{10} \) uangnya untuk menabung (biru) dan \( \frac{5}{10} \) untuk buku (merah). Berapa totalnya?</div>
+                    </div>
+                    <div class="px-8 py-2">
+                        <!-- 10 parts: 2 blue, 5 red -->
+                        <div class="bar-model-container" style="margin-bottom: 5px; height: 30px;">
+                            <div class="bar-part pattern-blue" style="width: 20%; border-right: none;"></div>
+                            <div class="bar-part pattern-red" style="width: 50%; border-right: none;"></div>
+                            <div class="bar-part bg-white" style="width: 30%; border-right: none;"></div>
+                            
+                            <!-- Precise Grid Overlay: 10 Parts -->
+                            <div class="grid-overlay">
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1 ml-7 text-[9px]">
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">a. \( \frac{7}{20} \)</div>
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">b. \( \frac{3}{10} \)</div>
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">c. \( \frac{7}{10} \)</div>
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">d. \( \frac{8}{10} \)</div>
+                    </div>
+                </div>
+
+                <!-- Soal 4 -->
+                <div class="bg-white border border-gray-200 p-2.5 mb-1 rounded-lg shadow-sm">
+                    <div class="flex items-start gap-2">
+                        <div class="flex-none font-bold bg-gray-100 w-5 h-5 rounded flex items-center justify-center text-[9px]">4</div>
+                        <div class="flex-1 font-bold text-xs">
+                            Cokelat dibagi 5 bagian. Andi makan 1 bagian. Budi makan 2 bagian lebih banyak dari Andi. Berapa total yang dimakan berdua?
+                            <br><span class="text-gray-500 font-normal italic text-[8px]">(Tips: Hitung bagian Budi dulu, lalu jumlahkan)</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1 ml-7 mt-2 text-[9px]">
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">a. \( \frac{3}{5} \)</div>
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">b. \( \frac{4}{5} \)</div>
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">c. \( \frac{5}{5} \)</div>
+                        <div class="border rounded px-2 py-1 hover:bg-gray-50 text-center">d. Salah Semua</div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <div>
+                    <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b><br>
+                    Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.
+                </div>
+                <div><i>Halaman 1 dari 2</i></div>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 2 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-8 md:h-10 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-xs font-extrabold text-black uppercase tracking-wide">Exploration 2</div>
+                        <div class="text-[9px] text-black font-semibold mt-0.5">Pecahan Tingkat Tinggi</div>
+                        <div class="text-[8px] text-black font-medium">Penjumlahan Pecahan dan Soal Cerita</div>
+                        <div class="text-[9px] text-black font-bold">Kode : E2-S213</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-0.5"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="mb-1">
+                    <h2 class="text-[10px] font-bold bg-purple-100 p-1 rounded text-purple-800 border-l-4 border-purple-500">Bagian B: Soal Cerita & Konsep Uang (Isian Singkat)</h2>
+                </div>
+
+                <!-- Soal 5 -->
+                <div class="bg-white border border-gray-200 p-2.5 mb-2 rounded-lg shadow-sm">
+                    <div class="flex items-start gap-2 mb-1">
+                        <div class="flex-none font-bold bg-gray-100 w-5 h-5 rounded flex items-center justify-center text-[9px]">5</div>
+                        <div class="flex-1 text-xs font-bold">Tono menggunakan \( \frac{2}{7} \) meter tali untuk kardus dan \( \frac{4}{7} \) meter untuk kerajinan. Berapa total panjang tali yang digunakan?</div>
+                    </div>
+                    <div class="px-16 py-1">
+                        <div class="bar-model-container" style="height: 25px;">
+                            <!-- Grid Overlay: 7 Parts -->
+                            <div class="grid-overlay">
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-1 ml-7 text-xs">Jawaban: <div class="answer-box"></div> meter</div>
+                </div>
+
+                <!-- Soal 6 -->
+                <div class="bg-white border border-gray-200 p-2.5 mb-2 rounded-lg shadow-sm">
+                    <div class="flex items-start gap-2 mb-1">
+                        <div class="flex-none font-bold bg-gray-100 w-5 h-5 rounded flex items-center justify-center text-[9px]">6</div>
+                        <div class="flex-1 text-xs font-bold">
+                            1 lembar Rp10.000 = 5 lembar Rp2.000. Jadi, 1 lembar Rp2.000 = \( \frac{1}{5} \) bagian. <br>
+                            Doni mengambil 1 lembar (permen) dan 2 lembar (es krim). Berapa pecahan total yang diambil?
+                        </div>
+                    </div>
+                    <div class="flex justify-center gap-2 my-2">
+                        <div class="bg-green-100 border border-green-600 px-2 py-1 text-[8px] rounded">Rp2.000</div>
+                        <div class="bg-green-100 border border-green-600 px-2 py-1 text-[8px] rounded">Rp2.000</div>
+                        <div class="bg-green-100 border border-green-600 px-2 py-1 text-[8px] rounded">Rp2.000</div>
+                        <div class="bg-green-100 border border-green-600 px-2 py-1 text-[8px] rounded">Rp2.000</div>
+                        <div class="bg-green-100 border border-green-600 px-2 py-1 text-[8px] rounded">Rp2.000</div>
+                    </div>
+                    <div class="mt-1 ml-7 text-xs">Jawaban: <div class="answer-box"></div></div>
+                </div>
+
+                <!-- Soal 7 -->
+                <div class="bg-white border border-gray-200 p-2.5 mb-2 rounded-lg shadow-sm">
+                    <div class="flex items-start gap-2 mb-1">
+                        <div class="flex-none font-bold bg-gray-100 w-5 h-5 rounded flex items-center justify-center text-[9px]">7</div>
+                        <div class="flex-1 font-medium text-xs">Isilah kotak kosong agar sesuai gambar: \( \frac{3}{9} + \frac{\dots}{9} = \frac{7}{9} \)</div>
+                    </div>
+                    <div class="px-16 py-3">
+                        <div class="bar-model-container">
+                            <div class="bar-part bg-gray-200" style="width: 33.3%; border-right:none;">\( \frac{3}{9} \)</div>
+                            <div class="bar-part bg-white text-blue-600" style="width: 44.4%; border-right:none;">?</div>
+                            <div class="bar-part bg-white" style="width: 22.2%; border-right:none;"></div>
+                            
+                            <!-- Precise Grid Overlay: 9 Parts -->
+                            <div class="grid-overlay">
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                            </div>
+                            
+                            <div class="brace-total" style="width: 77.7%;">Total = \( \frac{7}{9} \)</div>
+                        </div>
+                    </div>
+                    <div class="mt-1 ml-7 text-xs">Jawaban Angka: <div class="answer-box w-16"></div></div>
+                </div>
+
+                <!-- Soal 8 -->
+                <div class="bg-white border border-gray-200 p-2.5 mb-2 rounded-lg shadow-sm">
+                    <div class="flex items-start gap-2 mb-1">
+                        <div class="flex-none font-bold bg-gray-100 w-5 h-5 rounded flex items-center justify-center text-[9px]">8</div>
+                        <div class="flex-1 text-xs">
+                            Survei Warna Kesukaan Siswa:<br>
+                            Merah: \( \frac{2}{12} \), Biru: \( \frac{3}{12} \), Hijau: \( \frac{4}{12} \). <br>
+                            Berapa total pecahan siswa yang menyukai ketiga warna tersebut?
+                        </div>
+                    </div>
+                    <div class="mt-2 ml-7 text-xs font-bold">Jawaban: <div class="answer-box w-20"></div></div>
+                </div>
+
+                <!-- Soal 9 -->
+                <div class="bg-white border border-gray-200 p-2.5 mb-2 rounded-lg shadow-sm">
+                    <div class="flex items-start gap-2">
+                        <div class="flex-none font-bold bg-gray-100 w-5 h-5 rounded flex items-center justify-center text-[9px]">9</div>
+                        <div class="flex-1 text-xs">
+                            <b>Tantangan Logika:</b> Pizza dipotong 8 bagian. Sita makan 2 potong, Rara makan 3 potong. <br>
+                            Berapa potong <b>sisa pizza</b> yang belum dimakan dalam bentuk pecahan?
+                        </div>
+                    </div>
+                    <div class="mt-2 ml-7 text-xs">Jawaban: <div class="answer-box w-28"></div></div>
+                </div>
+
+                <!-- Soal 10 -->
+                <div class="bg-white border border-gray-200 p-2.5 rounded-lg shadow-sm">
+                    <div class="flex items-start gap-2">
+                        <div class="flex-none font-bold bg-gray-100 w-5 h-5 rounded flex items-center justify-center text-[9px]">10</div>
+                        <div class="flex-1 text-xs">
+                            <b>Tantangan Uang:</b> Ayah punya Rp100.000. Dibagi rata ke 4 anak (tiap anak \( \frac{1}{4} \)). <br>
+                            Jika uang anak pertama dan kedua digabung, berapa jumlahnya dalam <b>Rupiah</b>?
+                        </div>
+                    </div>
+                    <div class="mt-2 ml-7 text-xs font-bold">Jawaban: Rp <div class="answer-box w-32 border-purple-400 bg-purple-50"></div></div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <div>
+                    <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b><br>
+                    Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.
+                </div>
+                <div><i>Halaman 2 dari 2</i></div>
+            </footer>
+        </section>
+    </div>
+</body>
+</html>
