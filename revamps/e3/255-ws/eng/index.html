@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Exploration 3 (E3-S255)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --primary-blue: #1e3a8a; /* blue-900 */
+        --secondary-blue: #dbeafe; /* blue-100 */
+        --accent-green: #16a34a; /* green-600 */
+        --alert-red: #dc2626;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 12px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .disk,
+        .area-cell,
+        .long-div-container {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-200 { background-color: #e5e7eb !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- UTILITIES --- */
+      .input-box {
+        border: 2px solid #333;
+        min-width: 60px;
+        height: 32px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        padding: 0 5px;
+        border-radius: 4px;
+      }
+      
+      .input-line {
+        border-bottom: 2px solid #333;
+        min-width: 60px;
+        display: inline-block;
+        margin: 0 5px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .instruction-text {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #1e3a8a;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.8cm 0;
+      }
+
+      /* --- Custom Components --- */
+      
+      /* Discs */
+      .disk {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: bold;
+        margin: 2px;
+      }
+      .disk-1000 { background-color: #e5e7eb; } /* Gray */
+      .disk-100 { background-color: white; }
+
+      /* Area Model */
+      .area-model {
+        display: flex;
+        width: 100%;
+        max-width: 500px;
+        border: 2px solid #333;
+      }
+      .area-part {
+        border-right: 2px solid #333;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        position: relative;
+      }
+      .area-part:last-child { border-right: none; }
+      
+      /* Long Division */
+      .long-div {
+        font-family: monospace;
+        font-size: 1.2rem;
+        line-height: 1.2;
+        display: inline-block;
+        text-align: left;
+      }
+      .long-div-header {
+        border-bottom: 2px solid black;
+        padding: 0 5px;
+        display: inline-block;
+      }
+      .long-div-body {
+        border-left: 2px solid black;
+        padding: 2px 5px;
+        display: inline-block;
+      }
+
+      /* Choices */
+      .choice-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-left: 1.5rem;
+      }
+      .choice-box {
+        width: 20px;
+        height: 20px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        background: white;
+        border-radius: 2px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= PAGE 1 (Q 1-2) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Four Operations of Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Dividing 4-digit numbers by 1-digit numbers without remainder
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : E3-S255</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <h2 class="font-bold text-lg mb-4 mt-4 text-blue-900">Division of Whole Numbers (4-Digit &div; 1-Digit)</h2>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        1. We want to divide the number <strong>4,800</strong> by <strong>4</strong>.
+                    </div>
+                    <p class="mb-4 text-sm text-gray-700">
+                        Look at the place value discs picture below. We divide them into 4 equal groups.
+                    </p>
+                    
+                    <div class="flex flex-wrap justify-center gap-4 mb-6">
+                        <!-- Group 1 -->
+                        <div class="border-2 border-dashed border-gray-400 p-2 rounded-lg flex flex-col items-center">
+                            <div class="disk disk-1000 mb-2">1000</div>
+                            <div class="flex gap-1">
+                                <div class="disk disk-100">100</div>
+                                <div class="disk disk-100">100</div>
+                            </div>
+                            <div class="text-xs font-bold mt-2 text-gray-500">Group 1</div>
+                        </div>
+                        <!-- Group 2 -->
+                        <div class="border-2 border-dashed border-gray-400 p-2 rounded-lg flex flex-col items-center">
+                            <div class="disk disk-1000 mb-2">1000</div>
+                            <div class="flex gap-1">
+                                <div class="disk disk-100">100</div>
+                                <div class="disk disk-100">100</div>
+                            </div>
+                            <div class="text-xs font-bold mt-2 text-gray-500">Group 2</div>
+                        </div>
+                        <!-- Group 3 -->
+                        <div class="border-2 border-dashed border-gray-400 p-2 rounded-lg flex flex-col items-center">
+                            <div class="disk disk-1000 mb-2">1000</div>
+                            <div class="flex gap-1">
+                                <div class="disk disk-100">100</div>
+                                <div class="disk disk-100">100</div>
+                            </div>
+                            <div class="text-xs font-bold mt-2 text-gray-500">Group 3</div>
+                        </div>
+                        <!-- Group 4 -->
+                        <div class="border-2 border-dashed border-gray-400 p-2 rounded-lg flex flex-col items-center">
+                            <div class="disk disk-1000 mb-2">1000</div>
+                            <div class="flex gap-1">
+                                <div class="disk disk-100">100</div>
+                                <div class="disk disk-100">100</div>
+                            </div>
+                            <div class="text-xs font-bold mt-2 text-gray-500">Group 4</div>
+                        </div>
+                    </div>
+
+                    <p class="mb-2 font-medium">What is the total value in <strong>one</strong> group?</p>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. 1,100</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. 1,200</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. 1,400</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. 4,800</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        2. Calculate the division result of 3,600 &div; 3 using the following thinking method:
+                    </div>
+                    <ul class="list-disc ml-8 mb-4 text-sm text-gray-700">
+                        <li>3 thousands divided by 3 is 1 thousand.</li>
+                        <li>6 hundreds divided by 3 is <strong>...</strong> hundreds.</li>
+                    </ul>
+                    
+                    <p class="mb-2 font-medium">What is the final result?</p>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. 1,200</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. 1,300</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. 3,200</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. 1,020</label>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 2 (Q 3-5) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Four Operations of Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Dividing 4-digit numbers by 1-digit numbers without remainder
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : E3-S255</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mb-6">
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        3. The Area Model can also be used for division. If the total area of the rectangle is <strong>1,248</strong> and the width is <strong>4</strong>, we are finding the length (1,248 &div; 4).
+                    </div>
+
+                    <div class="flex items-center justify-center mb-6">
+                        <div class="font-bold text-xl mr-2">4</div>
+                        <div class="area-model">
+                            <div class="area-part flex-grow text-center">
+                                <div class="font-bold text-gray-500 mb-2">300</div>
+                                <div class="font-bold text-lg">1,200</div>
+                            </div>
+                            <div class="area-part w-24 text-center">
+                                <div class="font-bold text-gray-500 mb-2">10</div>
+                                <div class="font-bold text-lg">40</div>
+                            </div>
+                            <div class="area-part w-24 text-center">
+                                <div class="font-bold text-red-600 mb-2 text-xl">?</div>
+                                <div class="font-bold text-lg">8</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="mb-2 font-medium">What is the correct number to replace the question mark (<strong>?</strong>) above the last box (8 &div; 4)?</p>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. 2</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. 4</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. 8</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. 312</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        4. Look at the long division steps below for 5,205 &div; 5.
+                    </div>
+                    
+                    <div class="flex justify-center mb-6">
+                        <div class="bg-gray-50 p-4 border border-gray-300 rounded inline-block">
+                            <div class="long-div">
+                                <div>&nbsp;&nbsp;1 0 4 1</div>
+                                <div class="long-div-header">&nbsp;________</div>
+                                <div>5| 5 2 0 5</div>
+                                <div class="long-div-body">
+                                    <div>&nbsp;&nbsp;5</div>
+                                    <div style="border-top:1px solid black;">&nbsp;&nbsp;&nbsp;&nbsp;2</div>
+                                    <div>&nbsp;&nbsp;&nbsp;&nbsp;<strong class="text-red-600">0</strong> &larr; (Step A)</div>
+                                    <div style="border-top:1px solid black;">&nbsp;&nbsp;&nbsp;&nbsp;2 0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="mb-2 font-medium">In "Step A", why do we write the digit 0 below the digit 2?</p>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. Because 2 divided by 5 is 0 remainder 2.</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. Because we forgot to bring down the zero.</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. Because 5 times 1 is 5.</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. That is wrong, it should not be 0.</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        5. Calculate the result of 2,448 &div; 4.
+                    </div>
+                    <div class="mt-8 ml-4">
+                        <span class="font-bold">Answer:</span> <span class="input-box w-32"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 3 (Q 6-8) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Four Operations of Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Dividing 4-digit numbers by 1-digit numbers without remainder
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : E3-S255</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mt-6">
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        6. Budi divided 8,016 &div; 4. The answer he wrote was <strong>24</strong>.
+                    </div>
+                    <p class="mb-4 text-sm italic bg-gray-50 p-2 border-l-4 border-gray-400">
+                        "Eight thousand divided by 4 is 2 thousand. Sixteen divided by 4 is 4. So the answer is 24."
+                    </p>
+                    <p class="mb-2 font-medium">Where is Budi's mistake?</p>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. He forgot to divide the digit 8.</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. He forgot to place the digit 0 in the hundreds place (should be 2004).</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. He should have multiplied, not divided.</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. Budi's answer is already correct.</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        7. A factory produces 1,550 toys in 5 days. If the factory produces the same number of toys every day, how many toys are produced in one day?
+                    </div>
+                    
+                    <div class="mt-4 ml-4">
+                        <span class="font-bold">Answer:</span> <span class="input-box w-32"></span> toys
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        8. The Teacher has Rp8,400.00 (in play money) to be distributed equally to 4 groups of students as a prize. How much rupiah does each group receive?
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. Rp210.00</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. Rp2,010.00</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. Rp2,100.00</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. Rp4,200.00</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 4 (Q 9-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Four Operations of Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Dividing 4-digit numbers by 1-digit numbers without remainder
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : E3-S255</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="soal-grid mt-6">
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-4">
+                        9. Which method below is <strong>CORRECT</strong> to calculate 6,369 &div; 3 by decomposing the number?
+                    </div>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> A. (6,000 &div; 3) + (300 &div; 3) + (60 &div; 3) + (9 &div; 3)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> B. (6,000 &div; 3) + (3 &div; 3)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> C. (6 &div; 3) + (3 &div; 3) + (6 &div; 3) + (9 &div; 3)</label>
+                        <label class="flex items-center cursor-pointer group"><span class="choice-box"></span> D. (6,000 &div; 3) - (369 &div; 3)</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 (Challenge) -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2 text-red-700">
+                        10. I am a 4-digit number. If you multiply me by 6, the result is 6,636.
+                    </div>
+                    <p class="mb-4 text-sm font-medium">
+                        What number am I? (A &times; 6 = 6,636)
+                    </p>
+                    <div class="mt-4 ml-4">
+                        <span class="font-bold">Answer:</span> <span class="input-box w-32"></span>
+                    </div>
+                </div>
+
+                <!-- Kalimat Penyemangat -->
+                <div class="text-center italic text-sm font-semibold text-gray-600 mt-12 mb-4">
+                    "Small steps beat no steps."
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
