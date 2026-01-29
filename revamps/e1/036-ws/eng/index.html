@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Mission: Champion Level Multiplication</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        /* Warna Matematika Singapura */
+        --thou-color: #0072B2; 
+        --hund-color: #009E73; /* Ratusan (Hijau) */
+        --tens-color: #D55E00; /* Puluhan (Oranye/Merah) */
+        --ones-color: #F0E442; /* Satuan (Kuning) */
+        
+        --header-blue: #dce6f1;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* Lebar A4 */
+        min-height: 29.7cm; /* Tinggi A4 */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- STYLE HEADER --- */
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- STYLE FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1.5cm 2cm;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .math-champs-header,
+        .bg-thou, .bg-hund, .bg-tens, .bg-ones, .disk, .table-header, .multiplication-row, .carry-group {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        text-align: left;
+      }
+
+      /* --- GAYA KHUSUS MATEMATIKA --- */
+      .bg-hund { background-color: var(--hund-color); color: white; }
+      .bg-tens { background-color: var(--tens-color); color: white; }
+      .bg-ones { background-color: var(--ones-color); color: #333; }
+      
+      .disk {
+          width: 26px;
+          height: 26px;
+          flex-shrink: 0; 
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 9px;
+          font-weight: 800;
+          margin: 1px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+          border: 1px solid rgba(0,0,0,0.05);
+      }
+
+      /* Baris Perkalian */
+      .multiplication-row {
+          display: flex;
+          gap: 3px;
+          margin-bottom: 4px;
+          justify-content: center;
+          align-items: center;
+          flex-wrap: wrap; 
+      }
+
+      /* Simpanan */
+      .carry-section {
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 2px solid #e5e7eb;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.8cm 0;
+      }
+      
+      .table-header {
+        background-color: var(--header-blue);
+      }
+
+      .option-circle {
+          display: inline-block;
+          width: 20px;
+          font-weight: bold;
+      }
+
+      /* --- MATEMATIKA BERSUSUN DALAM TABEL --- */
+      .math-table {
+        border-collapse: collapse;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        font-size: 1.8rem;
+        line-height: 1.2;
+        margin: 0 auto;
+      }
+      .math-table td {
+        padding: 0 0.1em;
+        text-align: center;
+        width: 0.8em;
+      }
+      .math-table .operator {
+        text-align: left;
+        padding-right: 0.2em;
+      }
+      .math-row-line td {
+        border-bottom: 3px solid black;
+        padding-bottom: 4px;
+      }
+      .math-input-box {
+        margin-top: 8px;
+        border: 2px solid black;
+        height: 40px;
+        width: 100%;
+        background-color: white;
+        border-radius: 4px;
+      }
+      .number-cell {
+        min-width: 24px;
+        text-align: center;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 1</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Multiplication & Division
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Multiplying 2-digit numbers by 1-digit numbers with regrouping
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : E1-S036
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- Judul Halaman -->
+            <div class="text-center mb-8 mt-2">
+                <h1 class="text-xl font-black uppercase tracking-wider text-gray-800 inline-block">
+                    LET'S CALCULATE
+                </h1>
+            </div>
+
+            <!-- SOAL 1: 23 x 4 -->
+            <div class="mb-10">
+                <div class="font-bold mb-3 text-lg">1. Calculate 23 &times; 4</div>
+                
+                <div class="flex flex-col md:flex-row gap-6 items-stretch">
+                    
+                    <!-- KIRI: Tabel Visual (Gambar) -->
+                    <div class="flex-grow border-2 border-gray-300 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1">
+                        <img src="https://images2.imgbox.com/29/c3/rFjVT0Uv_o.png" alt="Multiplication Visualization" class="w-full h-auto object-contain">
+                    </div>
+
+                    <!-- KANAN: Operasi Matematika -->
+                    <div class="w-full md:w-auto md:flex-none min-w-[180px] flex items-center justify-center border-2 border-gray-300 rounded-lg bg-white p-6">
+                        <div class="w-full max-w-[120px]">
+                            <table class="math-table w-full">
+                                <tr>
+                                    <td></td>
+                                    <td class="number-cell">2</td>
+                                    <td class="number-cell">3</td>
+                                </tr>
+                                <tr class="math-row-line">
+                                    <td class="operator">&times;</td>
+                                    <td></td>
+                                    <td class="number-cell">4</td>
+                                </tr>
+                            </table>
+                            <div class="math-input-box"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SOAL 2: 32 x 6 -->
+            <div class="mb-10">
+                <div class="font-bold mb-3 text-lg">2. Calculate 32 &times; 6</div>
+                
+                <div class="flex flex-col md:flex-row gap-6 items-stretch">
+                    
+                    <!-- KIRI: Tabel Visual (Gambar) -->
+                    <div class="flex-grow border-2 border-gray-300 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1">
+                        <img src="https://images2.imgbox.com/55/6b/7mvm1PX3_o.png" alt="Multiplication Visualization 32 x 6" class="w-full h-auto object-contain">
+                    </div>
+
+                    <!-- KANAN: Operasi Matematika -->
+                    <div class="w-full md:w-auto md:flex-none min-w-[180px] flex items-center justify-center border-2 border-gray-300 rounded-lg bg-white p-6">
+                        <div class="w-full max-w-[120px]">
+                            <table class="math-table w-full">
+                                <tr>
+                                    <td></td>
+                                    <td class="number-cell">3</td>
+                                    <td class="number-cell">2</td>
+                                </tr>
+                                <tr class="math-row-line">
+                                    <td class="operator">&times;</td>
+                                    <td></td>
+                                    <td class="number-cell">6</td>
+                                </tr>
+                            </table>
+                            <div class="math-input-box"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SOAL 3-6 (Latihan) -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 mt-12">
+                <!-- Q3 -->
+                <div class="flex flex-col items-center">
+                    <div class="font-bold mb-3 text-lg w-full text-left">3. 38 &times; 4 = ....</div>
+                    <div class="p-4 border-2 border-gray-200 rounded-xl bg-gray-50 w-full flex justify-center">
+                        <div class="w-full max-w-[100px]">
+                            <table class="math-table w-full">
+                                <tr>
+                                    <td></td>
+                                    <td class="number-cell">3</td>
+                                    <td class="number-cell">8</td>
+                                </tr>
+                                <tr class="math-row-line">
+                                    <td class="operator">&times;</td>
+                                    <td></td>
+                                    <td class="number-cell">4</td>
+                                </tr>
+                            </table>
+                            <div class="math-input-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="flex flex-col items-center">
+                    <div class="font-bold mb-3 text-lg w-full text-left">4. 65 &times; 3 = ....</div>
+                    <div class="p-4 border-2 border-gray-200 rounded-xl bg-gray-50 w-full flex justify-center">
+                        <div class="w-full max-w-[100px]">
+                            <table class="math-table w-full">
+                                <tr>
+                                    <td></td>
+                                    <td class="number-cell">6</td>
+                                    <td class="number-cell">5</td>
+                                </tr>
+                                <tr class="math-row-line">
+                                    <td class="operator">&times;</td>
+                                    <td></td>
+                                    <td class="number-cell">3</td>
+                                </tr>
+                            </table>
+                            <div class="math-input-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="flex flex-col items-center">
+                    <div class="font-bold mb-3 text-lg w-full text-left">5. 74 &times; 5 = ....</div>
+                    <div class="p-4 border-2 border-gray-200 rounded-xl bg-gray-50 w-full flex justify-center">
+                        <div class="w-full max-w-[100px]">
+                            <table class="math-table w-full">
+                                <tr>
+                                    <td></td>
+                                    <td class="number-cell">7</td>
+                                    <td class="number-cell">4</td>
+                                </tr>
+                                <tr class="math-row-line">
+                                    <td class="operator">&times;</td>
+                                    <td></td>
+                                    <td class="number-cell">5</td>
+                                </tr>
+                            </table>
+                            <div class="math-input-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="flex flex-col items-center">
+                    <div class="font-bold mb-3 text-lg w-full text-left">6. 82 &times; 6 = ....</div>
+                    <div class="p-4 border-2 border-gray-200 rounded-xl bg-gray-50 w-full flex justify-center">
+                        <div class="w-full max-w-[100px]">
+                            <table class="math-table w-full">
+                                <tr>
+                                    <td></td>
+                                    <td class="number-cell">8</td>
+                                    <td class="number-cell">2</td>
+                                </tr>
+                                <tr class="math-row-line">
+                                    <td class="operator">&times;</td>
+                                    <td></td>
+                                    <td class="number-cell">6</td>
+                                </tr>
+                            </table>
+                            <div class="math-input-box"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 (Pilihan Ganda Soal Cerita) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 1</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Multiplication & Division
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Multiplying 2-digit numbers by 1-digit numbers with regrouping
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : E1-S036
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mb-6">
+                Multiple Choice
+            </div>
+
+            <!-- Ordered List 7-10 (Soal Cerita Semua) -->
+            <ol start="7" class="mb-8 space-y-6 px-2 list-decimal list-outside ml-5 font-bold text-gray-800">
+                <!-- Q7 -->
+                <li class="pl-2">
+                    <div class="mb-2">Mr. Doni has 4 chicken coops. Each coop contains 45 chickens. What is the total number of chickens?</div>
+                    <div class="grid grid-cols-2 gap-2 text-sm font-medium font-normal text-gray-700">
+                        <div><span class="option-circle">a.</span> 160</div>
+                        <div><span class="option-circle">b.</span> 180</div>
+                        <div><span class="option-circle">c.</span> 200</div>
+                    </div>
+                </li>
+
+                <!-- Q8 -->
+                <li class="pl-2">
+                    <div class="mb-2">A bookstore sold 3 packs of storybooks. If each pack contains 68 books, what is the total number of books sold?</div>
+                    <div class="grid grid-cols-2 gap-2 text-sm font-medium font-normal text-gray-700">
+                        <div><span class="option-circle">a.</span> 204</div>
+                        <div><span class="option-circle">b.</span> 184</div>
+                        <div><span class="option-circle">c.</span> 194</div>
+                    </div>
+                </li>
+                
+                <!-- Q9 -->
+                <li class="pl-2">
+                    <div class="mb-2">Mom made 5 trays of brownies. Each tray requires 45 chocolate chips. What is the total number of chocolate chips needed?</div>
+                    <div class="grid grid-cols-2 gap-2 text-sm font-medium font-normal text-gray-700">
+                        <div><span class="option-circle">a.</span> 225</div>
+                        <div><span class="option-circle">b.</span> 205</div>
+                        <div><span class="option-circle">c.</span> 215</div>
+                    </div>
+                </li>
+
+                <!-- Q10 -->
+                <li class="pl-2">
+                    <div class="mb-2">Mika ran around the field 4 times. If one lap is 75 meters, what is the total distance Mika ran?</div>
+                    <div class="grid grid-cols-2 gap-2 text-sm font-medium font-normal text-gray-700">
+                        <div><span class="option-circle">a.</span> 280</div>
+                        <div><span class="option-circle">b.</span> 300</div>
+                        <div><span class="option-circle">c.</span> 320</div>
+                    </div>
+                </li>
+            </ol>
+
+            <div class="h-separator"></div>
+
+            <div class="mt-8 text-center text-gray-500 italic font-medium">
+                "Mistakes are part of the process—what matters is you keep going."
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
