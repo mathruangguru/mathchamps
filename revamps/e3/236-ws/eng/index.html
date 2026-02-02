@@ -1,0 +1,508 @@
+<!DOCTYPE html> 
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Rounding Numbers</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659; /* Background luar abu-abu gelap agar kertas terlihat */
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER (Satu Baris) --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; /* Push ke paling bawah */
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1.5cm 2cm;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        /* Memaksa background color tercetak */
+        .math-champs-header,
+        .ten-frame-dot, 
+        .star-svg,
+        .heart-svg,
+        .square-block,
+        .number-line-bg,
+        .rounded-box-print {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white; 
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black; 
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1cm 2cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+      }
+
+      /* --- Visualisasi Objek --- */
+      .object-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 4px;
+        min-height: 40px;
+        align-items: center;
+      }
+
+      /* Input & Choices */
+      .input-line {
+        border: 1px solid #333;
+        width: 60px;
+        height: 35px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        font-family: inherit;
+        font-size: 1rem;
+        background: #f9fafb;
+      }
+      
+      .choice-container {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 6px;
+        font-weight: 500;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.8cm 0;
+      }
+
+      /* Bilingual Text Helper (Sekarang dipakai untuk teks utama Indonesia) */
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+      }
+      
+      /* Utilities */
+      .no-break {
+        page-break-inside: avoid;
+      }
+
+      /* --- CUSTOM SVG NUMBER LINE --- */
+      .number-line-container {
+        width: 100%;
+        margin: 10px 0;
+      }
+      
+      .rounded-box-print {
+          background-color: #f9fafb;
+          border: 1px solid #e5e7eb;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers up to 100,000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Rounding 3-digit numbers to the nearest ten
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code: E3-S236
+                    </div>
+                </div>
+            </div>
+            <!-- Garis pemisah header -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-6 mt-2">
+                <h1 class="text-2xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                    ROUNDING (TENS)
+                </h1>
+            </div>
+
+            <!-- Q1 & Q2: Visual Number Line (Concept) -->
+            <div class="instruction-text">
+                Look at the following number line. Which ten is the number closer to?
+            </div>
+            
+            <div class="soal-grid mb-5">
+                <!-- No 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">1.</div>
+                    <div class="number-line-container">
+                        <!-- Number Line 120 - 130, Arrow at 123 -->
+                        <svg viewBox="0 0 300 80" class="w-full">
+                            <!-- Main Line -->
+                            <line x1="20" y1="50" x2="280" y2="50" stroke="black" stroke-width="2" />
+                            <!-- Ticks -->
+                            <line x1="20" y1="45" x2="20" y2="55" stroke="black" stroke-width="2" /> <!-- 120 -->
+                            <line x1="150" y1="45" x2="150" y2="55" stroke="black" stroke-width="2" /> <!-- 125 -->
+                            <line x1="280" y1="45" x2="280" y2="55" stroke="black" stroke-width="2" /> <!-- 130 -->
+                            
+                            <!-- Labels -->
+                            <text x="20" y="70" text-anchor="middle" font-size="12" font-weight="bold">120</text>
+                            <text x="280" y="70" text-anchor="middle" font-size="12" font-weight="bold">130</text>
+                            
+                            <!-- Point & Arrow -->
+                            <circle cx="98" cy="50" r="4" fill="red" /> <!-- approx 123 -->
+                            <text x="98" y="30" text-anchor="middle" font-size="12" font-bold="true" fill="red">123</text>
+                            <path d="M 98 35 L 98 45" stroke="red" stroke-width="1" stroke-dasharray="2,2" />
+                        </svg>
+                    </div>
+                    <div class="text-sm mb-2">123 rounded to the nearest ten is...</div>
+                    <div class="choice-container">
+                        <span>(A) 120</span>
+                        <span>(B) 125</span>
+                        <span>(C) 130</span>
+                    </div>
+                </div>
+
+                <!-- No 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">2.</div>
+                    <div class="number-line-container">
+                         <!-- Number Line 450 - 460, Arrow at 458 -->
+                         <svg viewBox="0 0 300 80" class="w-full">
+                            <!-- Main Line -->
+                            <line x1="20" y1="50" x2="280" y2="50" stroke="black" stroke-width="2" />
+                            <!-- Ticks -->
+                            <line x1="20" y1="45" x2="20" y2="55" stroke="black" stroke-width="2" /> <!-- 450 -->
+                            <line x1="150" y1="45" x2="150" y2="55" stroke="black" stroke-width="2" /> <!-- 455 -->
+                            <line x1="280" y1="45" x2="280" y2="55" stroke="black" stroke-width="2" /> <!-- 460 -->
+                            
+                            <!-- Labels -->
+                            <text x="20" y="70" text-anchor="middle" font-size="12" font-weight="bold">450</text>
+                            <text x="280" y="70" text-anchor="middle" font-size="12" font-weight="bold">460</text>
+                            
+                            <!-- Point & Arrow -->
+                            <circle cx="228" cy="50" r="4" fill="red" /> <!-- approx 458 -->
+                            <text x="228" y="30" text-anchor="middle" font-size="12" font-bold="true" fill="red">458</text>
+                             <path d="M 228 35 L 228 45" stroke="red" stroke-width="1" stroke-dasharray="2,2" />
+                        </svg>
+                    </div>
+                    <div class="text-sm mb-2">458 is closer to...</div>
+                    <div class="choice-container">
+                        <span>(A) 450</span>
+                        <span>(B) 455</span>
+                        <span>(C) 460</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- Q3 & Q4: Direct Rounding -->
+            <div class="instruction-text">
+                Round the following numbers to the nearest ten.
+            </div>
+            
+            <div class="soal-grid mb-5">
+                <!-- No 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">3.</div>
+                    <div class="flex items-center gap-4 rounded-box-print p-4 rounded-lg">
+                        <span class="text-xl font-bold tracking-widest bg-white px-2 py-1 border border-black">234</span>
+                        <span class="text-2xl text-gray-400">→</span>
+                        <span class="text-lg font-semibold">?</span>
+                    </div>
+                    <div class="choice-container mt-2">
+                        <span>(A) 230</span>
+                        <span>(B) 235</span>
+                        <span>(C) 240</span>
+                    </div>
+                </div>
+
+                <!-- No 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">4.</div>
+                    <div class="flex items-center gap-4 rounded-box-print p-4 rounded-lg">
+                        <span class="text-xl font-bold tracking-widest bg-white px-2 py-1 border border-black">567</span>
+                        <span class="text-2xl text-gray-400">→</span>
+                        <span class="text-lg font-semibold">?</span>
+                    </div>
+                    <div class="choice-container mt-2">
+                        <span>(A) 560</span>
+                        <span>(B) 565</span>
+                        <span>(C) 570</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- Q5 & Q6: Fill in the blank -->
+            <div class="instruction-text">
+                Fill in the blanks with the correct answer.
+            </div>
+
+            <div class="soal-grid">
+                <!-- No 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">5.</div>
+                    <div class="mb-2">
+                        The number <strong>891</strong> is between 890 and 900.
+                    </div>
+                    <div class="mb-2">
+                        This number is closer to <input type="text" class="input-line mx-1">.
+                    </div>
+                </div>
+
+                <!-- No 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">6.</div>
+                    <div class="mb-2">
+                        If rounded to the nearest ten, <strong>345</strong> becomes <input type="text" class="input-line mx-1">.
+                        <br><span class="text-xs text-gray-500 italic">(Remember: If the ones digit is 5, round up)</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers up to 100,000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Rounding 3-digit numbers to the nearest ten
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code: E3-S236
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- Q7 & Q8: Logic / Reverse -->
+            <div class="instruction-text">
+                Choose the most appropriate answer.
+            </div>
+
+            <div class="soal-grid mb-6">
+                <!-- No 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">7.</div>
+                    <div class="mb-2">Which number becomes <strong>150</strong> when rounded to the nearest ten?</div>
+                    <div class="choice-container flex-col gap-2">
+                        <label class="flex items-center gap-2 cursor-pointer"><div class="w-4 h-4 border border-black rounded-full"></div> (A) 144</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><div class="w-4 h-4 border border-black rounded-full"></div> (B) 153</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><div class="w-4 h-4 border border-black rounded-full"></div> (C) 156</label>
+                    </div>
+                </div>
+
+                <!-- No 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">8.</div>
+                    <div class="mb-2">Which number does <strong>NOT</strong> become 280 when rounded to the nearest ten?</div>
+                    <div class="choice-container flex-col gap-2">
+                        <label class="flex items-center gap-2 cursor-pointer"><div class="w-4 h-4 border border-black rounded-full"></div> (A) 276</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><div class="w-4 h-4 border border-black rounded-full"></div> (B) 282</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><div class="w-4 h-4 border border-black rounded-full"></div> (C) 285</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- Q9: Word Problem -->
+            <div class="instruction-text">
+                9. Read the following word problem and answer the question.
+            </div>
+            <div class="flex items-start gap-4 p-4 border border-dashed border-gray-300 rounded-xl bg-yellow-50 mb-6 no-break">
+                <div class="text-3xl">📿</div>
+                <div class="w-full">
+                    <div class="mb-3 font-medium leading-relaxed">
+                        Ayu has <strong>418</strong> beads in a box.
+                        She wants to round the number of her beads to the nearest ten for the jar label.
+                        What number should Ayu write?
+                    </div>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span class="text-sm font-bold text-gray-700">Answer:</span>
+                        <input type="text" class="input-line">
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- Q10: Challenge / Higher Order Thinking -->
+            <div class="instruction-text">
+                10. Solve the following number riddle.
+            </div>
+            <div class="bg-blue-50 p-6 rounded-xl border border-blue-200 no-break">
+                <div class="mb-4">
+                    I am thinking of a number. <br>
+                    If rounded to the nearest ten, the number becomes <strong>300</strong>.<br>
+                    The greatest possible number I am thinking of is ...
+                </div>
+                
+                <div class="flex flex-col gap-4">
+                    <!-- Visualization Aid -->
+                    <div class="flex items-center justify-center gap-1">
+                        <div class="text-xs text-gray-500 text-center w-12">290</div>
+                        <div class="h-2 bg-gray-300 w-full rounded-full relative">
+                             <div class="absolute left-1/2 top-0 w-1 h-3 bg-black -mt-0.5"></div> <!-- 300 mark -->
+                        </div>
+                        <div class="text-xs text-gray-500 text-center w-12">310</div>
+                    </div>
+                    
+                    <div class="flex justify-end items-center gap-3">
+                        <span class="font-bold text-lg text-blue-900">Answer:</span>
+                        <input type="text" class="input-line" style="width: 80px; font-size: 1.2rem; border-color: #60a5fa;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center text-gray-500 italic">
+                The best learners review.
+            </div>
+
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
