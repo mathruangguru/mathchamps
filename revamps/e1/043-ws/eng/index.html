@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Part-Whole Model</title>
+    
+    <!-- Tailwind for internal components -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --thou-color: #0072B2;
+        --hund-color: #009E73;
+        --tens-color: #D55E00;
+        --ones-color: #F0E442;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        max-width: 100%;
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1.5cm 2cm;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .math-champs-header, .visual-item {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        text-align: left;
+        border-left: 4px solid var(--thou-color);
+      }
+
+      /* --- Custom Visuals --- */
+      .input-line {
+        border-bottom: 1.5px solid black;
+        display: inline-block;
+        text-align: center;
+        padding: 0 4px;
+        min-height: 1.2em;
+      }
+
+      /* Bar Model Styles */
+      .bar-block {
+        border: 2px solid #374151; /* Gray-700 */
+        background-color: #e5e7eb; /* Gray-200 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        height: 40px;
+        min-width: 40px;
+      }
+      
+      .bar-container {
+        display: flex;
+        margin-bottom: 4px;
+      }
+
+      .concept-box {
+        background-color: #f9fafb;
+        border: 2px solid #1f2937;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+      }
+
+      .mc-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 4px 0;
+      }
+      
+      .mc-option input[type="radio"] {
+        display: none;
+      }
+
+      .mc-label {
+        font-weight: 600;
+        min-width: 18px;
+        margin-top: 2px;
+      }
+
+      /* Layout Soal */
+      .question-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+      }
+
+      .q-number {
+          font-weight: 700;
+          font-size: 1.125rem;
+          line-height: 1.5;
+          min-width: 1.5rem;
+          text-align: left;
+          flex-shrink: 0;
+      }
+
+      .q-content {
+          width: 100%;
+          font-size: 0.95rem;
+          line-height: 1.6;
+          color: #1f2937;
+      }
+
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        
+        <!-- HALAMAN 1 (Konsep & Bagian A) -->
+        <section class="page">
+            <!-- HEADER -->
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 1</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Multiplication & Division</div>
+                        <div class="text-[11px] text-black font-medium mt-1">
+                            Using part-whole models to solve multiplication problems
+                        </div>
+                        <div class="text-[11px] text-black font-medium mt-1">Code : E1-S043</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-1"></div>
+            </header>
+
+            <div class="content-wrapper">
+                
+                <div class="text-center mb-8 mt-2">
+                    <h1 class="text-xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                        PART-WHOLE MODEL
+                    </h1>
+                </div>
+
+                <!-- Bagian A -->
+                <div class="instruction-text">
+                    Part A: Reading Models (Multiple Choice & Fill-in-the-blanks)
+                </div>
+                <div class="text-xs text-gray-500 italic mb-6 ml-1">
+                    Instruction: Observe the model and answer the questions.
+                </div>
+
+                <!-- SOAL 1 -->
+                <div class="question-row">
+                    <div class="q-number">1.</div>
+                    <div class="q-content">
+                        <div class="mb-3 font-medium">Fill in the blanks based on the model below.</div>
+                        
+                        <!-- Visual Model: 4 blocks of 12 -->
+                        <div class="flex flex-col items-center mb-4">
+                            <div class="bar-container">
+                                <div class="bar-block w-14">12</div>
+                                <div class="bar-block w-14">12</div>
+                                <div class="bar-block w-14">12</div>
+                                <div class="bar-block w-14">12</div>
+                            </div>
+                            <!-- Brace SVG -->
+                            <svg width="224" height="20" class="mt-1">
+                                <path d="M2,2 Q2,15 10,15 L102,15 Q112,15 112,20 Q112,15 122,15 L214,15 Q222,15 222,2" fill="none" stroke="black" stroke-width="1.5" />
+                                <text x="112" y="35" text-anchor="middle" font-size="12" font-weight="bold">?</text>
+                            </svg>
+                            <div class="mt-2 font-bold text-center">?</div>
+                        </div>
+
+                        <div class="font-bold text-lg text-center bg-gray-50 p-2 rounded">
+                            Mathematical Equation: <span class="input-line w-12"></span> &times; <span class="input-line w-12"></span> = ...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-px bg-gray-200 w-full mb-6"></div>
+
+                <!-- SOAL 2 -->
+                <div class="question-row">
+                    <div class="q-number">2.</div>
+                    <div class="q-content">
+                        <div class="mb-3 font-medium">Which model is correct for the mathematical equation: <strong>5 &times; 6</strong>?</div>
+                        
+                        <div class="grid gap-4">
+                            <!-- Option A -->
+                            <div class="mc-option">
+                                <span class="mc-label">a.</span>
+                                <div>
+                                    <div class="flex mb-1">
+                                        <div class="bar-block w-12 h-10 bg-white">5</div>
+                                        <div class="bar-block w-12 h-10 bg-white">6</div>
+                                    </div>
+                                    <div class="text-xs text-gray-500">(2 boxes: 5 and 6)</div>
+                                </div>
+                            </div>
+
+                            <!-- Option B -->
+                            <div class="mc-option">
+                                <span class="mc-label">b.</span>
+                                <div>
+                                    <div class="flex mb-1">
+                                        <div class="bar-block w-10 h-10 bg-white">6</div>
+                                        <div class="bar-block w-10 h-10 bg-white">6</div>
+                                        <div class="bar-block w-10 h-10 bg-white">6</div>
+                                        <div class="bar-block w-10 h-10 bg-white">6</div>
+                                        <div class="bar-block w-10 h-10 bg-white">6</div>
+                                    </div>
+                                    <div class="text-xs text-gray-500">(5 boxes of 6)</div>
+                                </div>
+                            </div>
+
+                            <!-- Option C -->
+                            <div class="mc-option">
+                                <span class="mc-label">c.</span>
+                                <div>
+                                    <div class="flex mb-1">
+                                        <div class="bar-block w-10 h-10 bg-white">5</div>
+                                        <div class="bar-block w-10 h-10 bg-white">5</div>
+                                        <div class="bar-block w-10 h-10 bg-white">5</div>
+                                        <div class="bar-block w-10 h-10 bg-white">5</div>
+                                        <div class="bar-block w-10 h-10 bg-white">5</div>
+                                        <div class="bar-block w-10 h-10 bg-white">5</div>
+                                    </div>
+                                    <div class="text-xs text-gray-500">(6 boxes of 5)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-px bg-gray-200 w-full mb-6"></div>
+
+                <!-- SOAL 3 -->
+                <div class="question-row">
+                    <div class="q-number">3.</div>
+                    <div class="q-content">
+                        <div class="mb-3 font-medium">Observe the following model. The correct mathematical equation is...</div>
+                        
+                        <!-- Visual Model: 4 blocks of 8 -->
+                        <div class="flex justify-center mb-4">
+                            <div class="bar-container">
+                                <div class="bar-block w-12 bg-blue-100 border-blue-800 text-blue-900">8</div>
+                                <div class="bar-block w-12 bg-blue-100 border-blue-800 text-blue-900">8</div>
+                                <div class="bar-block w-12 bg-blue-100 border-blue-800 text-blue-900">8</div>
+                                <div class="bar-block w-12 bg-blue-100 border-blue-800 text-blue-900">8</div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                            <div class="mc-option"><span class="mc-label">a.</span> <span>4 + 8 = 12</span></div>
+                            <div class="mc-option"><span class="mc-label">b.</span> <span>4 &times; 8 = 32</span></div>
+                            <div class="mc-option"><span class="mc-label">c.</span> <span>8 &times; 8 = 64</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SOAL 4 -->
+                <div class="question-row">
+                    <div class="q-number">4.</div>
+                    <div class="q-content">
+                        <div class="mb-2 font-medium">Calculate the total value from the model below.</div>
+                        
+                        <!-- Visual Model: 3 blocks of 15 -->
+                        <div class="flex flex-col items-center mb-3">
+                            <div class="bar-container">
+                                <div class="bar-block w-16">15</div>
+                                <div class="bar-block w-16">15</div>
+                                <div class="bar-block w-16">15</div>
+                            </div>
+                            <!-- Brace SVG -->
+                            <svg width="192" height="20" class="mt-1">
+                                <path d="M2,2 Q2,15 10,15 L86,15 Q96,15 96,20 Q96,15 106,15 L182,15 Q190,15 190,2" fill="none" stroke="black" stroke-width="1.5" />
+                            </svg>
+                            <div class="mt-1 text-sm font-bold">Total = ...</div>
+                        </div>
+
+                        <div class="font-bold">
+                            Answer: <span class="input-line w-24"></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 2 (Bagian B & C) -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 1</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Multiplication & Division</div>
+                        <div class="text-[11px] text-black font-medium mt-1">Part-Whole Model</div>
+                        <div class="text-[11px] text-black font-medium mt-1">Code : E1-S043</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-1"></div>
+            </header>
+
+            <div class="content-wrapper">
+                
+                <!-- Bagian B -->
+                <div class="instruction-text">
+                    Part B: Linking Stories with Models
+                </div>
+                <div class="text-xs text-gray-500 italic mb-6 ml-1">
+                    Instruction: Complete the model or choose the correct model.
+                </div>
+
+                <!-- Soal 5 -->
+                <div class="question-row">
+                    <div class="q-number">5.</div>
+                    <div class="q-content">
+                        <!-- Update: Kotak kuning dihapus -->
+                        <div class="mb-3 font-medium">
+                            "Father buys 3 boxes of nails. Each box contains 50 nails."
+                        </div>
+                        <div class="text-sm mb-3">Complete the model below by writing the correct numbers inside the boxes.</div>
+                        
+                        <div class="flex flex-col items-center mb-4">
+                            <div class="bar-container gap-1">
+                                <div class="bar-block w-16 bg-white h-12"></div>
+                                <div class="bar-block w-16 bg-white h-12"></div>
+                                <div class="bar-block w-16 bg-white h-12"></div>
+                            </div>
+                            <div class="text-xs font-bold mt-1">&uarr; Total Nails</div>
+                        </div>
+
+                        <div class="font-bold text-lg">
+                            Total Nails = <span class="input-line w-12"></span> &times; <span class="input-line w-12"></span> = <span class="input-line w-20"></span> nails.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal 6 -->
+                <div class="question-row">
+                    <div class="q-number">6.</div>
+                    <div class="q-content">
+                        <!-- Update: Kotak kuning dihapus, Nama Siti diganti Rania -->
+                        <div class="mb-3 font-medium">
+                            "Rania buys 4 bunches of flowers. Each bunch contains 10 flowers."
+                        </div>
+                        <div class="text-sm mb-3">Which bar model represents the story above?</div>
+                        
+                        <div class="grid gap-3">
+                            <div class="mc-option">
+                                <span class="mc-label">a.</span>
+                                <div class="flex">
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">10</div>
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">10</div>
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">10</div>
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">10</div>
+                                </div>
+                            </div>
+                            <div class="mc-option">
+                                <span class="mc-label">b.</span>
+                                <div class="flex">
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">4</div>
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">4</div>
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">4</div>
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">4</div>
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">4</div>
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">4</div>
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">4</div>
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">4</div>
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">4</div>
+                                    <div class="bar-block w-10 h-8 text-sm bg-white">4</div>
+                                </div>
+                            </div>
+                            <div class="mc-option">
+                                <span class="mc-label">c.</span>
+                                <div class="flex">
+                                    <div class="bar-block w-12 h-8 text-sm bg-white">4</div>
+                                    <div class="bar-block w-12 h-8 text-sm bg-white">10</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal 7 -->
+                <div class="question-row">
+                    <div class="q-number">7.</div>
+                    <div class="q-content">
+                        <div class="mb-3 font-medium">A building has 6 floors. Each floor has 5 windows.</div>
+                        <div class="text-sm mb-3">If we draw the model, how many boxes (groups) should we draw?</div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                            <div class="mc-option"><span class="mc-label">a.</span> <span>5 boxes</span></div>
+                            <div class="mc-option"><span class="mc-label">b.</span> <span>6 boxes</span></div>
+                            <div class="mc-option"><span class="mc-label">c.</span> <span>30 boxes</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-px bg-gray-200 w-full mb-8"></div>
+
+                <!-- Bagian C -->
+                <div class="instruction-text">
+                    Part C: Problem Solving
+                </div>
+                <div class="text-xs text-gray-500 italic mb-6 ml-1">
+                    Instruction: Solve the following word problems.
+                </div>
+
+                <div class="flex flex-col">
+                    <!-- Soal 8 -->
+                    <div class="question-row border-b border-gray-100 pb-6 mb-6">
+                        <div class="q-number">8.</div>
+                        <div class="q-content">
+                            <div class="mb-2">There are 4 bookshelves in the comic section. Each shelf holds 35 comic books. What is the total number of comic books?</div>
+                            <div class="font-bold">Answer: <span class="input-line w-24"></span> books.</div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 9 -->
+                    <div class="question-row border-b border-gray-100 pb-6 mb-6">
+                        <div class="q-number">9.</div>
+                        <div class="q-content">
+                            <!-- Update: Nama Andi diganti Fathan, Teks Model dihapus -->
+                            <div class="mb-2">Fathan has 5 pages in his sticker album. Each page has 12 stickers. How many stickers does Fathan have in total?</div>
+                            <div class="font-bold">Calculation: <span class="input-line w-16"></span> &times; <span class="input-line w-16"></span> = <span class="input-line w-24"></span> stickers.</div>
+                        </div>
+                    </div>
+
+                    <!-- Soal 10 -->
+                    <div class="question-row">
+                        <div class="q-number">10.</div>
+                        <div class="q-content">
+                            <!-- Update: Nama Pak Budi diganti Pak Bagas -->
+                            <div class="mb-3">Mr. Bagas picks apples into 6 baskets. Each basket contains 24 apples. How many apples did Mr. Bagas pick?</div>
+                            <div class="font-bold">Answer: <span class="input-line w-24"></span> apples.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 mb-4 text-center text-gray-500 italic font-medium">
+                    Practice makes progress.
+                </div>
+
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+    </div>
+</body>
+</html>
