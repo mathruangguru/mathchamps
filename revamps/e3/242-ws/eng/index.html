@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Exploration 3 - Estimating Differences</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA (TERKUNCI) --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--primary-text);
+        background-color: #525659; /* Background luar abu-abu gelap */
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        height: 29.7cm; /* Fixed A4 Height for visual accuracy */
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Prevent visual overflow on screen */
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER (Satu Baris) --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; /* Push ke paling bawah */
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          height: 29.7cm; /* Strict height */
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1.5cm 2cm;
+          overflow: hidden;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        /* Memaksa background color dan elemen visual tercetak */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1cm 2cm;
+        align-items: start;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+      }
+
+      /* Input & Choices */
+      .input-line {
+        border: 1px solid #333;
+        width: 80px;
+        height: 35px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        font-family: inherit;
+        font-size: 1rem;
+        background: #f9fafb;
+      }
+      
+      .choice-container {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 10px;
+        font-weight: 500;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #ccc;
+        margin: 0.8cm 0;
+      }
+
+      /* Bilingual/Instruction Text Helper */
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+      }
+      
+      /* Utilities */
+      .no-break {
+        page-break-inside: avoid;
+      }
+
+      /* --- CUSTOM VISUALS FOR ROUNDING (NUMBER LINE) --- */
+      .number-line-container {
+        position: relative;
+        width: 100%;
+        height: 50px;
+        margin: 10px 0;
+      }
+      .nl-line {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #333;
+      }
+      .nl-tick {
+        position: absolute;
+        top: 40%;
+        width: 2px;
+        height: 12px;
+        background-color: #333;
+      }
+      .nl-label {
+        position: absolute;
+        top: 70%;
+        transform: translateX(-50%);
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      .nl-point {
+        position: absolute;
+        top: 50%;
+        width: 12px;
+        height: 12px;
+        background-color: #ef4444; /* Red dot */
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+      }
+      .nl-arrow {
+        position: absolute;
+        top: 20%;
+        transform: translateX(-50%);
+        font-size: 1.2rem;
+        color: #ef4444;
+        font-weight: bold;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 (Soal 1-4) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers up to 100,000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Determining the difference between two numbers by rounding<br>to the nearest tens, hundreds, or thousands
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : E3-S242
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-6 mt-2">
+                <h1 class="text-2xl font-black uppercase tracking-wider text-gray-800" style="font-family: 'Montserrat', sans-serif;">
+                    ESTIMATING DIFFERENCES
+                </h1>
+                <p class="text-sm text-gray-600">Round the numbers first, then find the difference.</p>
+            </div>
+
+            <!-- SECTION 1: Rounding to Nearest Tens -->
+            <div class="instruction-text bg-blue-50 p-2 rounded border-l-4 border-blue-500 mb-4">
+                A. Rounding to the Nearest TENS
+            </div>
+
+            <div class="soal-grid mb-5">
+                <!-- No 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">1.</div>
+                    <div class="text-sm mb-2">Round 43 to the nearest ten.</div>
+                    
+                    <!-- Visual: Number Line 40-50 -->
+                    <div class="number-line-container">
+                        <div class="nl-line"></div>
+                        <!-- Ticks -->
+                        <div class="nl-tick" style="left: 0%;"></div>
+                        <div class="nl-tick" style="left: 50%;"></div>
+                        <div class="nl-tick" style="left: 100%;"></div>
+                        <!-- Labels -->
+                        <div class="nl-label" style="left: 0%;">40</div>
+                        <div class="nl-label" style="left: 50%;">45</div>
+                        <div class="nl-label" style="left: 100%;">50</div>
+                        <!-- Point at 43 (approx 30%) -->
+                        <div class="nl-point" style="left: 30%;"></div>
+                    </div>
+                    <div class="mt-4">
+                        43 is closer to <input type="text" class="input-line" style="width: 50px;">
+                    </div>
+                </div>
+
+                <!-- No 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">2.</div>
+                    <div class="text-sm mb-2">Estimate the result of <b>87 - 32</b> to the nearest ten.</div>
+                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm">
+                        <div class="flex justify-between items-center mb-2">
+                            <span>87 is rounded to:</span>
+                            <input type="text" class="input-line" style="width: 50px;">
+                        </div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span>32 is rounded to:</span>
+                            <input type="text" class="input-line" style="width: 50px;">
+                        </div>
+                        <div class="border-t border-gray-400 my-2"></div>
+                        <div class="flex justify-between items-center font-bold">
+                            <span>Estimated Difference:</span>
+                            <input type="text" class="input-line" style="width: 50px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SECTION 2: Rounding to Nearest Hundreds -->
+            <div class="instruction-text bg-yellow-50 p-2 rounded border-l-4 border-yellow-500 mb-4">
+                B. Rounding to the Nearest HUNDREDS
+            </div>
+
+            <div class="soal-grid mb-5">
+                <!-- No 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">3.</div>
+                    <div class="text-sm mb-2">Round 682 to the nearest hundred.</div>
+                    
+                    <!-- Visual: Number Line 600-700 -->
+                    <div class="number-line-container">
+                        <div class="nl-line"></div>
+                        <!-- Ticks -->
+                        <div class="nl-tick" style="left: 0%;"></div>
+                        <div class="nl-tick" style="left: 50%;"></div>
+                        <div class="nl-tick" style="left: 100%;"></div>
+                        <!-- Labels -->
+                        <div class="nl-label" style="left: 0%;">600</div>
+                        <div class="nl-label" style="left: 50%;">650</div>
+                        <div class="nl-label" style="left: 100%;">700</div>
+                        <!-- Point at 682 (approx 82%) -->
+                        <div class="nl-point" style="left: 82%;"></div>
+                    </div>
+                    <div class="mt-4 choice-container flex-col">
+                         <label class="flex items-center gap-2 cursor-pointer"><div class="w-4 h-4 border border-black rounded-full"></div> 600</label>
+                         <label class="flex items-center gap-2 cursor-pointer"><div class="w-4 h-4 border border-black rounded-full"></div> 700</label>
+                    </div>
+                </div>
+
+                <!-- No 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">4.</div>
+                    <div class="text-sm mb-2">Estimate the difference of <b>535 - 219</b>.</div>
+                    <div class="grid grid-cols-3 gap-2 items-center text-center mt-3 text-sm">
+                        <div>
+                            <div class="font-bold">535</div>
+                            <div class="text-xs text-gray-500">rounded</div>
+                            <input type="text" class="input-line w-full mt-1">
+                        </div>
+                        <div class="text-xl font-bold">-</div>
+                        <div>
+                            <div class="font-bold">219</div>
+                            <div class="text-xs text-gray-500">rounded</div>
+                            <input type="text" class="input-line w-full mt-1">
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <span class="font-bold mr-2">=</span>
+                        <input type="text" class="input-line" style="width: 80px;">
+                    </div>
+                </div>
+            </div>
+            <!-- END OF PAGE 1 CONTENT -->
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 (Soal 5-8) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers up to 100,000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Determining the difference between two numbers by rounding<br>to the nearest tens, hundreds, or thousands
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : E3-S242
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text text-gray-500 text-sm mb-2 italic">
+                Continued: Rounding to the Nearest Hundreds
+            </div>
+
+             <!-- No 5 -->
+            <div class="soal-item w-full mb-3">
+                <div class="font-bold mb-2">5.</div>
+                <div class="instruction-text font-normal">
+                    Which is the best estimation for <b>948 - 451</b> to the nearest hundred?
+                </div>
+                <!-- Reduced padding from p-4 to p-2 for compactness -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                    <div class="border border-gray-300 p-2 rounded text-center cursor-pointer hover:bg-gray-50">
+                        <div class="text-lg font-bold">900 - 400</div>
+                        <div class="text-sm text-gray-500">= 500</div>
+                    </div>
+                    <div class="border border-gray-300 p-2 rounded text-center cursor-pointer hover:bg-gray-50">
+                        <div class="text-lg font-bold">900 - 500</div>
+                        <div class="text-sm text-gray-500">= 400</div>
+                    </div>
+                    <div class="border border-gray-300 p-2 rounded text-center cursor-pointer hover:bg-gray-50">
+                        <div class="text-lg font-bold">1000 - 500</div>
+                        <div class="text-sm text-gray-500">= 500</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- SECTION 3: Rounding to Nearest Thousands -->
+            <div class="instruction-text bg-green-50 p-2 rounded border-l-4 border-green-500 mb-4">
+                C. Rounding to the Nearest THOUSANDS
+            </div>
+
+            <div class="soal-grid mb-3">
+                <!-- No 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">6.</div>
+                    <div class="text-sm mb-2">Where is <b>3,450</b> on the number line? Round to the nearest thousand.</div>
+                    
+                    <!-- Visual: Number Line 3000-4000 -->
+                    <div class="number-line-container">
+                        <div class="nl-line"></div>
+                        <div class="nl-tick" style="left: 0%;"></div>
+                        <div class="nl-tick" style="left: 50%;"></div>
+                        <div class="nl-tick" style="left: 100%;"></div>
+                        <div class="nl-label" style="left: 0%;">3,000</div>
+                        <div class="nl-label" style="left: 50%;">3,500</div>
+                        <div class="nl-label" style="left: 100%;">4,000</div>
+                        <!-- Point at 3450 (45%) -->
+                        <div class="nl-point" style="left: 45%;"></div>
+                    </div>
+                    <div class="mt-4">
+                        3,450 is closer to <input type="text" class="input-line" style="width: 80px;">
+                    </div>
+                </div>
+
+                <!-- No 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">7.</div>
+                    <div class="text-sm mb-2">Estimate: <b>8,725 - 2,190</b> (Thousands)</div>
+                    <div class="flex flex-col gap-2 mt-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-12 font-bold">8,725</span> 
+                            <span>&rarr;</span> 
+                            <input type="text" class="input-line w-20">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-12 font-bold">2,190</span> 
+                            <span>&rarr;</span> 
+                            <input type="text" class="input-line w-20">
+                        </div>
+                        <div class="w-40 border-b-2 border-black my-1"></div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-12 font-bold">Result</span> 
+                            <span>=</span> 
+                            <input type="text" class="input-line w-20">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+            <!-- No 8: Mixed Practice Table -->
+            <div class="soal-item w-full mb-4">
+                <div class="font-bold mb-2">8.</div>
+                <div class="instruction-text font-normal mb-2">
+                    Complete the following estimation table.
+                </div>
+                <!-- Reduced cell padding from p-3 to p-2 for compactness -->
+                <table class="w-full text-sm border-collapse border border-gray-400">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="border border-gray-400 p-2">Question</th>
+                            <th class="border border-gray-400 p-2">Rounding (to Hundreds)</th>
+                            <th class="border border-gray-400 p-2">Estimated Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border border-gray-400 p-2 text-center">785 - 215</td>
+                            <td class="border border-gray-400 p-2 text-center">800 - 200</td>
+                            <td class="border border-gray-400 p-2 text-center"><input class="input-line w-full"></td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 text-center">1,240 - 890</td>
+                            <td class="border border-gray-400 p-2 text-center"><input class="input-line w-20"> - <input class="input-line w-20"></td>
+                            <td class="border border-gray-400 p-2 text-center"><input class="input-line w-full"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 (Soal 9-10) -->
+      <section class="page">
+         <!-- HEADER -->
+         <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers up to 100,000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Determining the difference between two numbers by rounding<br>to the nearest tens, hundreds, or thousands
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : E3-S242
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- Word Problems -->
+            <div class="instruction-text bg-red-50 p-2 rounded border-l-4 border-red-500 mb-4">
+                D. Word Problems
+            </div>
+
+            <!-- No 9 -->
+            <div class="soal-item mb-3 no-break">
+                <div class="font-bold mb-2">9.</div>
+                <div class="text-sm leading-relaxed mb-2">
+                    A stadium has a capacity of <b>12,450</b> spectators. On Sunday's match, <b>9,820</b> tickets were sold. 
+                    <br><br>
+                    Estimate how many seats are <b>empty</b> by rounding to the <b>nearest thousand</b>.
+                </div>
+                <!-- Reduced padding from p-4 to p-3 -->
+                <div class="bg-gray-50 p-3 rounded-xl border border-dashed border-gray-400">
+                    <div class="flex items-center gap-4 mb-2">
+                        <span class="w-32">Total Capacity</span>: <span class="font-mono">12,450 &approx;</span> <input type="text" class="input-line">
+                    </div>
+                    <div class="flex items-center gap-4 mb-2">
+                        <span class="w-32">Tickets Sold</span>: <span class="font-mono">9,820 &nbsp;&approx;</span> <input type="text" class="input-line">
+                    </div>
+                    <div class="mt-4 pt-2 border-t border-gray-300">
+                        <span class="font-bold">Answer:</span> About <input type="text" class="input-line" style="width: 100px;"> seats.
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-separator"></div>
+
+             <!-- No 10: Challenge -->
+             <div class="instruction-text bg-purple-50 p-2 rounded border-l-4 border-purple-500 mb-4">
+                E. Concept Challenge
+            </div>
+
+            <!-- Reduced outer padding from p-5 to p-4 -->
+            <div class="soal-item w-full p-4 bg-white border-2 border-black rounded-xl shadow-sm">
+                <div class="font-bold mb-3 text-lg">10. Error Analysis</div>
+                <div class="text-sm mb-4 italic text-gray-600">
+                    Budi wants to estimate the result of <b>465 - 128</b> to the nearest hundred.
+                </div>
+                
+                <!-- FORCE FLEX ROW ALWAYS (Removed flex-col and md:flex-row) -->
+                <div class="flex flex-row gap-4">
+                    <!-- Budi's Work -->
+                    <div class="flex-1 bg-red-50 p-3 rounded border border-red-200">
+                        <div class="font-bold text-red-800 mb-2 border-b border-red-200 pb-1">Budi's Method:</div>
+                        <ul class="list-disc pl-5 text-sm space-y-1">
+                            <li>Budi calculated first: 465 - 128 = 337</li>
+                            <li>Then he rounded 337 to the nearest hundred.</li>
+                            <li>Budi's estimated result: <b>300</b></li>
+                        </ul>
+                    </div>
+
+                    <!-- Correct Method -->
+                    <div class="flex-1 bg-green-50 p-3 rounded border border-green-200">
+                        <div class="font-bold text-green-800 mb-2 border-b border-green-200 pb-1">The Correct Method:</div>
+                        <div class="text-sm mb-2">Round each number first, then subtract.</div>
+                        <div class="font-mono text-sm bg-white p-2 rounded border border-green-100">
+                            465 &rarr; <input class="input-line w-12 h-6 text-sm"><br>
+                            128 &rarr; <input class="input-line w-12 h-6 text-sm"><br>
+                            Difference &rarr; <input class="input-line w-12 h-6 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-sm">
+                    Is the final result different?
+                    <div class="choice-container gap-6 mt-1">
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q10"> Yes, it is different</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q10"> No, it is the same</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-12 text-center text-gray-500 italic">
+                Always remember: When estimating calculations, round the numbers first!
+            </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
