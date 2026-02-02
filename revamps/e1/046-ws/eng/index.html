@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Exploration 1 (Division Models)</title>
+    
+    <!-- Tailwind untuk layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    
+    <style>
+        /* --- CSS UTAMA --- */
+        :root {
+            --primary-text: #333333;
+            --secondary-text: #555555;
+            --grey-text: #8d8e8d;
+            /* Singapore Math Colors - Pastel */
+            --bar-blue: #cceeff;
+            --bar-pink: #ffccdd;
+            --bar-green: #ccffcc;
+            --bar-yellow: #ffffcc;
+            --bar-orange: #ffeebb;
+            --bar-purple: #e6ccff;
+            --line-color: #000000;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            /* SERAGAMKAN FONT: Montserrat untuk semuanya */
+            font-family: "Montserrat", sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: var(--primary-text);
+            background-color: #525659;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        /* Agar input juga mewarisi font Montserrat */
+        input, button, textarea {
+            font-family: inherit;
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .page {
+            background: white;
+            width: 21cm; /* A4 Width */
+            min-height: 29.7cm; /* A4 Height */
+            padding: 1.5cm 2cm;
+            margin-bottom: 1cm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-header {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        /* --- FOOTER --- */
+        .page-footer {
+            text-align: left;
+            font-size: 6pt;
+            color: var(--grey-text);
+            padding-top: 4px;
+            margin-top: auto;
+            border-top: 2px solid var(--grey-text);
+            width: 100%;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        /* --- STYLE KHUSUS PRINT --- */
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .page-container {
+                display: block;
+            }
+            .page {
+                width: 100%;
+                min-height: 29.7cm;
+                margin: 0;
+                box-shadow: none;
+                page-break-after: always;
+                padding: 1.5cm 2cm;
+            }
+            .page:last-child {
+                page-break-after: avoid;
+            }
+            .math-champs-header,
+            .instruction-text,
+            .mph-bar {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+
+        /* --- KOMPONEN HEADER --- */
+        .math-champs-header {
+            background-color: white;
+            padding: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: black;
+        }
+
+        .instruction-text {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            background-color: #f3f4f6;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.95rem;
+            text-align: left;
+            border-left: 4px solid #3B82F6;
+        }
+
+        /* --- INPUT BOXES --- */
+        .input-box {
+            border: 1px solid #999;
+            background: #fff;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+            transition: all 0.2s;
+            min-width: 40px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .input-box:focus {
+            border-color: #3B82F6;
+            outline: none;
+            background: #fdfdfd;
+        }
+
+        /* --- MPH STYLE BAR MODELS --- */
+        .mph-model-container {
+            width: 100%;
+            max-width: 400px; 
+            margin: 0 auto;
+        }
+
+        .mph-bar {
+            height: 40px;
+            border: 2px solid var(--line-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            position: relative;
+            border-radius: 0; 
+        }
+
+        /* Colors */
+        .fill-blue { background-color: var(--bar-blue); }
+        .fill-pink { background-color: var(--bar-pink); }
+        .fill-green { background-color: var(--bar-green); }
+        .fill-yellow { background-color: var(--bar-yellow); }
+        .fill-orange { background-color: var(--bar-orange); }
+        .fill-white { background-color: white; }
+
+        /* SVG Brace */
+        .svg-brace {
+            width: 100%;
+            height: 12px;
+            display: block;
+            overflow: visible;
+        }
+        .svg-brace path {
+            fill: none;
+            stroke: black;
+            stroke-width: 1.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .brace-label {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="page-container">
+        
+        <!-- HALAMAN 1 -->
+        <section class="page">
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 1</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Multiplication & Division</div>
+                        <!-- Satu baris deskripsi -->
+                        <div class="text-[11px] text-black font-medium whitespace-nowrap">Using part-whole models to solve division problems</div>
+                        <div class="text-[11px] text-black font-medium mt-1">Code : E1-S046</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="text-center mb-6 mt-2">
+                    <h1 class="text-xl font-black uppercase tracking-wider text-gray-800">
+                        CONCEPT REINFORCEMENT SHEET
+                    </h1>
+                </div>
+
+                <div class="instruction-text mb-6">
+                    Section A. Solve the problems below.
+                </div>
+
+                <!-- Soal 1 -->
+                <div class="bg-white border border-gray-200 rounded-none p-5 shadow-sm mb-6">
+                    <div class="flex items-start gap-3 font-medium text-gray-800 mb-6">
+                        <div class="flex-none font-bold">1.</div>
+                        <div class="flex-1">
+                            Keenan has 12 gold coins. He wants to share the coins among 3 friends equally. How many coins will each friend receive?
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center mb-12 mt-12">
+                        <div class="w-[300px] relative">
+                            <div class="absolute -top-10 left-0 w-full flex flex-col items-center">
+                                <div class="brace-label mb-1 font-bold text-gray-800 text-xs">Total = 12 Coins</div>
+                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                            </div>
+                            <div class="flex w-full">
+                                <div class="mph-bar fill-yellow w-1/3 border-r-0"></div>
+                                <div class="mph-bar fill-yellow w-1/3 border-r-0"></div>
+                                <div class="mph-bar fill-yellow w-1/3"></div>
+                            </div>
+                            <div class="absolute -bottom-14 left-0 w-1/3 flex flex-col items-center">
+                                <svg class="svg-brace transform rotate-180" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                <div class="brace-label mt-1 font-bold text-red-600 text-lg">?</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="flex items-center gap-2 text-lg">
+                            <span class="font-bold">12</span>
+                            <span>÷</span>
+                            <span class="font-bold">3</span>
+                            <span>=</span>
+                            <input type="text" class="input-box w-20 border-blue-500 text-center">
+                        </div>
+                        <div class="text-center">
+                            <span class="font-bold text-blue-800">Answer:</span> Each friend receives 
+                            <input type="text" class="input-box w-16 mx-1"> coins.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal 2 -->
+                <div class="bg-white border border-gray-200 rounded-none p-5 shadow-sm mb-6">
+                    <div class="flex items-start gap-3 font-medium text-gray-800 mb-6">
+                        <div class="flex-none font-bold">2.</div>
+                        <div class="flex-1">
+                            Naura is tidying up her 15 storybooks. She arranges the books into stacks. If each stack has 5 books, how many stacks does Naura make?
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center mb-24 mt-12">
+                        <div class="w-[300px] relative">
+                            <div class="absolute -top-10 left-0 w-full flex flex-col items-center">
+                                <div class="brace-label mb-1 font-bold text-gray-800 text-xs">Total = 15 Books</div>
+                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                            </div>
+                            <div class="flex w-full">
+                                <div class="mph-bar fill-blue w-[25%] border-r-0 border-black border-2"></div> 
+                                <div class="mph-bar fill-blue w-[25%] border-black border-2"></div>
+                                <div class="w-[25%] flex items-center justify-center font-bold text-gray-500 text-xl tracking-widest bg-white border-t-2 border-b-2 border-dashed border-black">...</div> 
+                                <div class="mph-bar fill-blue w-[25%] border-black border-2"></div> 
+                            </div>
+                            <div class="absolute -bottom-14 left-0 w-[25%] flex flex-col items-center">
+                                <svg class="svg-brace transform rotate-180" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                <div class="brace-label mt-1 font-bold text-gray-800 text-sm">5</div>
+                            </div>
+                            <div class="absolute -bottom-24 w-full text-center text-red-600 font-bold text-sm">
+                                How many stacks?
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-4 mt-8">
+                        <div class="flex items-center gap-2 text-lg">
+                            <span class="font-bold">15</span>
+                            <span>÷</span>
+                            <span class="font-bold">5</span>
+                            <span>=</span>
+                            <input type="text" class="input-box w-20 border-blue-500 text-center">
+                        </div>
+                        <div class="text-center">
+                            <span class="font-bold text-blue-800">Answer:</span> There are 
+                            <input type="text" class="input-box w-16 mx-1"> stacks of books.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal 3 -->
+                <div class="bg-white border border-gray-200 rounded-none p-5 shadow-sm mb-6">
+                    <div class="flex items-start gap-3 font-medium text-gray-800 mb-6">
+                        <div class="flex-none font-bold">3.</div>
+                        <div class="flex-1">
+                            Keyla picks 18 roses from the garden. She wants to put the flowers into 3 vases equally. How many roses are there in each vase?
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center mb-12 mt-12">
+                        <div class="w-[300px] relative">
+                            <div class="absolute -top-10 left-0 w-full flex flex-col items-center">
+                                <div class="brace-label mb-1 font-bold text-gray-800 text-xs">Total = 18</div>
+                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                            </div>
+                            <div class="flex w-full">
+                                <div class="mph-bar fill-white w-1/3 border-r-0"></div>
+                                <div class="mph-bar fill-white w-1/3 border-r-0"></div>
+                                <div class="mph-bar fill-white w-1/3"></div>
+                            </div>
+                            <div class="absolute -bottom-14 left-0 w-1/3 flex flex-col items-center">
+                                <svg class="svg-brace transform rotate-180" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                <div class="brace-label mt-1 font-bold text-red-600 text-lg">?</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="flex items-center gap-2 text-lg">
+                            <span class="font-bold">18</span>
+                            <span>÷</span>
+                            <span class="font-bold">3</span>
+                            <span>=</span>
+                            <input type="text" class="input-box w-20 border-blue-500 text-center">
+                        </div>
+                        <div class="text-center">
+                            <span class="font-bold text-blue-800">Answer:</span> There are 
+                            <input type="text" class="input-box w-16 mx-1"> flowers in each vase.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 2 -->
+        <section class="page">
+             <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 1</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Multiplication & Division</div>
+                        <div class="text-[11px] text-black font-medium whitespace-nowrap">Using part-whole models to solve division problems</div>
+                        <div class="text-[11px] text-black font-medium mt-1">Code : E1-S046</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                
+                <!-- Soal 4 -->
+                <div class="bg-white border border-gray-200 rounded-none p-5 shadow-sm mb-8">
+                    <div class="flex items-start gap-3 font-medium text-gray-800 mb-6">
+                        <div class="flex-none font-bold">4.</div>
+                        <div class="flex-1">
+                            Gavin has a collection of 20 toy cards. He gives 4 cards to each friend until the cards run out. How many of Gavin's friends receive cards?
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center mb-24 mt-12">
+                        <div class="w-[300px] relative">
+                            <div class="absolute -top-10 left-0 w-full flex flex-col items-center">
+                                <div class="brace-label mb-1 font-bold text-gray-800 text-xs">Total = 20</div>
+                                <svg class="svg-brace" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                            </div>
+                            <div class="flex w-full">
+                                <div class="mph-bar fill-white w-[20%] border-r-0 border-black border-2"></div>
+                                <div class="mph-bar fill-white w-[20%] border-black border-2"></div>
+                                <div class="w-[40%] flex items-center justify-center font-bold text-gray-500 text-xl tracking-widest bg-white border-t-2 border-b-2 border-dashed border-black">...</div>
+                                <div class="mph-bar fill-white w-[20%] border-black border-2"></div>
+                            </div>
+                            <div class="absolute -bottom-14 left-0 w-[20%] flex flex-col items-center">
+                                <svg class="svg-brace transform rotate-180" viewBox="0 0 100 15" preserveAspectRatio="none"><path d="M0,15 Q0,5 5,5 L45,5 Q50,5 50,0 Q50,5 55,5 L95,5 Q100,5 100,15" /></svg>
+                                <div class="brace-label mt-1 font-bold text-gray-800 text-sm">4</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-4 mt-6">
+                        <div class="flex items-center gap-2 text-lg">
+                            <span class="font-bold">20</span>
+                            <span>÷</span>
+                            <span class="font-bold">4</span>
+                            <span>=</span>
+                            <input type="text" class="input-box w-20 border-blue-500 text-center">
+                        </div>
+                        <div class="text-center">
+                            <span class="font-bold text-blue-800">Answer:</span> There are 
+                            <input type="text" class="input-box w-16 mx-1"> friends who receive cards.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="instruction-text mb-6">
+                    Section B. Solve the following word problems. You may draw bar models to help you.
+                </div>
+
+                <div class="grid grid-cols-1 gap-6">
+                    
+                    <!-- Soal 5 -->
+                    <div class="bg-white border border-gray-200 rounded-none p-5 shadow-sm">
+                        <div class="flex items-start gap-3 mb-2 font-medium text-gray-800">
+                            <div class="flex-none font-bold">5.</div>
+                            <div class="flex-1">
+                                Mikha buys 24 sweet candies. She shares all the candies among her 4 younger siblings equally. How many candies does each sibling get?
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 ml-6 text-sm mt-2">
+                            <span class="font-bold text-blue-600">Answer:</span>
+                            <input type="text" class="input-box w-20">
+                            <span>candies.</span>
+                        </div>
+                    </div>
+
+                    <!-- Soal 6 -->
+                    <div class="bg-white border border-gray-200 rounded-none p-5 shadow-sm">
+                        <div class="flex items-start gap-3 mb-2 font-medium text-gray-800">
+                            <div class="flex-none font-bold">6.</div>
+                            <div class="flex-1">
+                                Alvaro managed to collect 30 points in a quiz game. If one quiz round is worth 5 points, how many rounds has Alvaro won?
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 ml-6 text-sm mt-2">
+                            <span class="font-bold text-blue-600">Answer:</span>
+                            <input type="text" class="input-box w-20">
+                            <span>rounds.</span>
+                        </div>
+                    </div>
+
+                    <!-- Soal 7 -->
+                    <div class="bg-white border border-gray-200 rounded-none p-5 shadow-sm">
+                        <div class="flex items-start gap-3 mb-2 font-medium text-gray-800">
+                            <div class="flex-none font-bold">7.</div>
+                            <div class="flex-1">
+                                Zahra has a decorative ribbon that is 16 meters long. She cuts the ribbon into pieces that are each 2 meters long. How many pieces of ribbon does Zahra get?
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 ml-6 text-sm mt-2">
+                            <span class="font-bold text-blue-600">Answer:</span>
+                            <input type="text" class="input-box w-20">
+                            <span>pieces.</span>
+                        </div>
+                    </div>
+
+                    <!-- Soal 8 -->
+                    <div class="bg-white border border-gray-200 rounded-none p-5 shadow-sm">
+                        <div class="flex items-start gap-3 mb-2 font-medium text-gray-800">
+                            <div class="flex-none font-bold">8.</div>
+                            <div class="flex-1">
+                                There are 35 students in the class. The teacher wants to divide them into study groups. If each group consists of 5 students, how many groups are formed?
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 ml-6 text-sm mt-2">
+                            <span class="font-bold text-blue-600">Answer:</span>
+                            <input type="text" class="input-box w-20">
+                            <span>groups.</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+
+        <!-- HALAMAN 3 -->
+        <section class="page">
+             <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-14 w-auto object-contain">
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 1</div>
+                        <div class="text-[11px] text-black font-semibold mt-1">Multiplication & Division</div>
+                        <div class="text-[11px] text-black font-medium whitespace-nowrap">Using part-whole models to solve division problems</div>
+                        <div class="text-[11px] text-black font-medium mt-1">Code : E1-S046</div>
+                    </div>
+                </div>
+                <div class="w-full h-0.5 bg-black mt-2"></div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="grid grid-cols-1 gap-6">
+                    <!-- Soal 9 -->
+                    <div class="bg-white border border-gray-200 rounded-none p-5 shadow-sm">
+                        <div class="flex items-start gap-3 mb-2 font-medium text-gray-800">
+                            <div class="flex-none font-bold">9.</div>
+                            <div class="flex-1">
+                                Rayhan helps his father carry 40 kg of rice. The rice will be put into 8 small sacks with equal weight. What is the weight of rice in each sack?
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 ml-6 text-sm mt-2">
+                            <span class="font-bold text-blue-600">Answer:</span>
+                            <input type="text" class="input-box w-20">
+                            <span>kg.</span>
+                        </div>
+                    </div>
+
+                    <!-- Soal 10 -->
+                    <div class="bg-white border border-gray-200 rounded-none p-5 shadow-sm">
+                        <div class="flex items-start gap-3 mb-2 font-medium text-gray-800">
+                            <div class="flex-none font-bold">10.</div>
+                            <div class="flex-1">
+                                Arka successfully read 28 pages of a storybook in 7 days. If he read the same number of pages every day, how many pages did Arka read in one day?
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 ml-6 text-sm mt-2">
+                            <span class="font-bold text-blue-600">Answer:</span>
+                            <input type="text" class="input-box w-20">
+                            <span>pages.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+        </section>
+        
+        <div class="mt-8 text-center no-print pb-8">
+            <button onclick="window.print()" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:scale-105 flex items-center justify-center mx-auto gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Print Worksheet
+            </button>
+        </div>
+
+    </div>
+
+</body>
+</html>
