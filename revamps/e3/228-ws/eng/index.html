@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Numbers up to 100,000 (E3-S228)</title>
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax untuk rendering matematika -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        
+        /* Warna Cakram Pastel */
+        --disc-10000: #fca5a5; /* Merah Muda */
+        --disc-1000: #fdba74; /* Oranye */
+        --disc-100: #fde047; /* Kuning */
+        --disc-10: #86efac;   /* Hijau */
+        --disc-1: #93c5fd;    /* Biru */
+      }
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 1cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      .math-champs-header {
+        background-color: white; 
+        padding: 0.4rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black; 
+      }
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      
+      /* --- STYLE KONTEN --- */
+      .soal-item {
+        margin-bottom: 0.8rem;
+        break-inside: avoid;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.3rem;
+        font-size: 0.9rem;
+      }
+
+      /* Number Discs */
+      .num-disc {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1.5px solid #333;
+        font-size: 9px;
+        font-weight: bold;
+        background-color: white;
+        box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        margin: 1px;
+        white-space: nowrap;
+        color: #333;
+      }
+      .disc-10000 { background-color: var(--disc-10000); }
+      .disc-1000 { background-color: var(--disc-1000); }
+      .disc-100 { background-color: var(--disc-100); }
+      .disc-10 { background-color: var(--disc-10); }
+      .disc-1 { background-color: var(--disc-1); }
+
+      /* Place Value Table */
+      .pv-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 5px 0;
+      }
+      .pv-table th {
+        background-color: #f3f4f6;
+        border: 2px solid #333;
+        padding: 4px;
+        font-size: 0.8rem;
+        text-align: center;
+      }
+      .pv-table td {
+        border: 2px solid #333;
+        padding: 5px;
+        vertical-align: top;
+        height: 70px;
+        text-align: center;
+      }
+      .pv-header {
+        font-weight: bold;
+        font-size: 0.75rem;
+        padding: 6px;
+        text-align: center;
+        background-color: #f3f4f6;
+        border: 1px solid #333;
+      }
+      .pv-cell {
+          font-size: 1.2rem;
+          font-weight: bold;
+          padding: 8px;
+          border: 1px solid #333;
+          text-align: center;
+      }
+
+      /* Input & Choice */
+      .input-line {
+        border: none;
+        border-bottom: 1.5px solid #333;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        background: transparent;
+        outline: none;
+        font-family: inherit;
+        padding: 0 4px;
+      }
+      .choice-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        cursor: pointer;
+        margin-bottom: 6px;
+        font-size: 0.9rem;
+      }
+      .choice-box {
+        width: 20px;
+        height: 20px;
+        border: 1.5px solid #333;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-top: 2px;
+        background: white;
+      }
+
+      /* Identity Table Compact */
+      .identity-table td {
+        padding: 2px 0;
+        font-size: 10pt;
+        font-weight: 600;
+      }
+
+      /* --- PRINT --- */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 1cm; }
+        .page:last-child { page-break-after: avoid; }
+        .math-champs-header, .num-disc, .pv-table th, .bg-blue-50, .bg-yellow-50, .bg-red-50, .bg-green-50, .bg-gray-50, .bg-purple-50 {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+            
+      <!-- HALAMAN 1 (Soal 1-2) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                        Exploration 3
+                    </div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers up to 100,000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Writing numbers up to 100,000 in numerals and words
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : E3-S228
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- INFO SISWA -->
+            <div class="flex justify-between items-end mb-4 pb-2 border-b border-gray-300 font-semibold text-sm">
+                <div class="flex gap-2 w-3/4">
+                    <span>Name:</span>
+                    <div class="border-b border-dotted border-gray-400 flex-grow"></div>
+                </div>
+                <div class="flex gap-2 w-1/4">
+                    <span>Date:</span>
+                    <div class="border-b border-dotted border-gray-400 flex-grow"></div>
+                </div>
+            </div>
+
+            <div class="mb-2 mt-1">
+                <h3 class="font-bold text-md border-b-2 border-black inline-block uppercase">Section A: Place Value Table</h3>
+                <p class="text-xs mt-1 text-gray-600">Look at the place value table below. Write the numbers in numerals and words.</p>
+            </div>
+
+            <!-- Q1 -->
+            <div class="soal-item bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <div class="font-bold mb-2 text-sm">1.</div>
+                
+                <div class="grid grid-cols-5 border-2 border-black bg-white mb-4">
+                    <div class="pv-header">Ten Thousands</div>
+                    <div class="pv-header">Thousands</div>
+                    <div class="pv-header">Hundreds</div>
+                    <div class="pv-header">Tens</div>
+                    <div class="pv-header">Ones</div>
+                    
+                    <div class="pv-cell">4</div>
+                    <div class="pv-cell">2</div>
+                    <div class="pv-cell">5</div>
+                    <div class="pv-cell">1</div>
+                    <div class="pv-cell">8</div>
+                </div>
+
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="font-bold text-sm w-24">Numerals:</span>
+                    <input type="text" class="input-line w-40 text-lg">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="font-bold text-sm">In Words:</span>
+                    <input type="text" class="input-line w-full text-lg text-left">
+                </div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="soal-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div class="font-bold mb-2 text-sm">2.</div>
+                
+                <div class="grid grid-cols-5 border-2 border-black bg-white mb-4">
+                    <div class="pv-header">Ten Thousands</div>
+                    <div class="pv-header">Thousands</div>
+                    <div class="pv-header">Hundreds</div>
+                    <div class="pv-header">Tens</div>
+                    <div class="pv-header">Ones</div>
+                    
+                    <div class="pv-cell">7</div>
+                    <div class="pv-cell">0</div>
+                    <div class="pv-cell">0</div>
+                    <div class="pv-cell">5</div>
+                    <div class="pv-cell">3</div>
+                </div>
+
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="font-bold text-sm w-24">Numerals:</span>
+                    <input type="text" class="input-line w-40 text-lg">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="font-bold text-sm">In Words:</span>
+                    <input type="text" class="input-line w-full text-lg text-left">
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 (SOAL 3-5) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                        Exploration 3
+                    </div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers up to 100,000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Writing numbers up to 100,000 in numerals and words
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : E3-S228
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="mb-2">
+                <h3 class="font-bold text-md border-b-2 border-black inline-block uppercase">Section B: Multiple Choice</h3>
+                <p class="text-xs mt-1 text-gray-600">Choose the correct answer that expresses the numerals in words.</p>
+            </div>
+
+            <!-- Q3 -->
+            <div class="soal-item bg-white p-3 border-b border-gray-300">
+                <div class="font-bold mb-2 text-sm">
+                    3. How do you write <b>15,600</b> in words?
+                </div>
+                <div class="ml-4 flex flex-col gap-1 text-sm">
+                    <label class="choice-item"><div class="choice-box">a</div> <span>Fifteen thousand and six</span></label>
+                    <label class="choice-item"><div class="choice-box">b</div> <span>Fifteen thousand, six hundred</span></label>
+                    <label class="choice-item"><div class="choice-box">c</div> <span>Fifty-one thousand, six hundred</span></label>
+                    <label class="choice-item"><div class="choice-box">d</div> <span>One thousand, five hundred and sixty</span></label>
+                </div>
+            </div>
+
+            <!-- Q4 -->
+            <div class="soal-item bg-white p-3 border-b border-gray-300 mt-2">
+                <div class="font-bold mb-2 text-sm">
+                    4. Look at the expanded form: <b>80,000 + 4,000 + 20 + 9</b>. What is this number in words?
+                </div>
+                <div class="ml-4 flex flex-col gap-1 text-sm">
+                    <label class="choice-item"><div class="choice-box">a</div> <span>Eight four thousand, twenty-nine</span></label>
+                    <label class="choice-item"><div class="choice-box">b</div> <span>Eighty-four thousand, two hundred and nine</span></label>
+                    <label class="choice-item"><div class="choice-box">c</div> <span>Eighty-four thousand, twenty-nine</span></label>
+                    <label class="choice-item"><div class="choice-box">d</div> <span>Eight thousand, four hundred and twenty-nine</span></label>
+                </div>
+            </div>
+
+            <!-- Q5 -->
+            <div class="soal-item bg-white p-3 border-b border-gray-300 mt-2">
+                <div class="font-bold mb-2 text-sm">
+                    5. Choose the correct word form for the number <b>90,090</b>.
+                </div>
+                <div class="ml-4 flex flex-col gap-1 text-sm">
+                    <label class="choice-item"><div class="choice-box">a</div> <span>Ninety thousand and nine</span></label>
+                    <label class="choice-item"><div class="choice-box">b</div> <span>Nine thousand and ninety</span></label>
+                    <label class="choice-item"><div class="choice-box">c</div> <span>Ninety thousand, nine hundred</span></label>
+                    <label class="choice-item"><div class="choice-box">d</div> <span>Ninety thousand and ninety</span></label>
+                </div>
+            </div>
+            
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 (SOAL 6-10) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                        Exploration 3
+                    </div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers up to 100,000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Writing numbers up to 100,000 in numerals and words
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : E3-S228
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+            <div class="mb-2 mt-1">
+                <h3 class="font-bold text-md border-b-2 border-black inline-block uppercase">Section C: Short Answer</h3>
+                <p class="text-xs mt-1 text-gray-600">Write the following numbers in words. Watch your spelling.</p>
+            </div>
+
+            <!-- Q6-Q8 -->
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
+                <div class="mb-4">
+                    <div class="font-bold text-sm mb-1">6. 32,456</div>
+                    <div class="text-sm font-bold">Answer:</div>
+                    <input type="text" class="input-line w-full text-left">
+                </div>
+                <div class="mb-4">
+                    <div class="font-bold text-sm mb-1">7. 60,005</div>
+                    <div class="text-sm font-bold">Answer:</div>
+                    <input type="text" class="input-line w-full text-left">
+                </div>
+                <div>
+                    <div class="font-bold text-sm mb-1">8. 12,340</div>
+                    <div class="text-sm font-bold">Answer:</div>
+                    <input type="text" class="input-line w-full text-left">
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <h3 class="font-bold text-md border-b-2 border-black inline-block uppercase">Section D: Visual Problem Solving</h3>
+                <p class="text-xs mt-1 text-gray-600">Calculate the value of the number discs in the table and write the total sum in words.</p>
+            </div>
+
+            <!-- Q9: Number Discs -->
+            <div class="soal-item bg-purple-50 p-4 rounded-lg border border-purple-200 mb-4">
+                <div class="font-bold mb-3 text-sm">9. What is the value of these discs?</div>
+                
+                <div class="grid grid-cols-5 border-2 border-black bg-white">
+                    <div class="pv-header text-xs text-center border p-1 bg-gray-100 font-bold">10,000</div>
+                    <div class="pv-header text-xs text-center border p-1 bg-gray-100 font-bold">1,000</div>
+                    <div class="pv-header text-xs text-center border p-1 bg-gray-100 font-bold">100</div>
+                    <div class="pv-header text-xs text-center border p-1 bg-gray-100 font-bold">10</div>
+                    <div class="pv-header text-xs text-center border p-1 bg-gray-100 font-bold">1</div>
+
+                    <div class="border border-gray-300 p-2 flex flex-col items-center gap-1">
+                        <div class="num-disc disc-10000">10,000</div>
+                        <div class="num-disc disc-10000">10,000</div>
+                    </div>
+                    <div class="border border-gray-300 p-2 flex flex-col items-center gap-1">
+                        <div class="num-disc disc-1000">1,000</div>
+                    </div>
+                    <div class="border border-gray-300 p-2 flex flex-col items-center gap-1">
+                        <div class="num-disc disc-100">100</div>
+                        <div class="num-disc disc-100">100</div>
+                        <div class="num-disc disc-100">100</div>
+                    </div>
+                    <div class="border border-gray-300 p-2 flex flex-col items-center gap-1 min-h-[60px]"></div>
+                    <div class="border border-gray-300 p-2 flex flex-col items-center gap-1">
+                        <div class="num-disc disc-1">1</div>
+                        <div class="num-disc disc-1">1</div>
+                        <div class="num-disc disc-1">1</div>
+                        <div class="num-disc disc-1">1</div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col gap-1 mt-3">
+                    <span class="font-bold text-sm">Write the number in words:</span>
+                    <input type="text" class="input-line w-full text-lg text-left">
+                </div>
+            </div>
+
+            <!-- Q10: Riddle -->
+            <div class="soal-item bg-yellow-50 p-4 rounded-lg border border-yellow-200 mt-2">
+                <div class="font-bold mb-2 text-sm">10. Number Riddle</div>
+                <div class="bg-white p-3 rounded-lg border border-yellow-300 mb-3 shadow-sm italic text-sm">
+                    "I have <b>5</b> ten thousands, <b>0</b> thousands, <b>9</b> hundreds, <b>1</b> ten, and <b>2</b> ones."
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="font-bold text-sm">Write my number in words:</span>
+                    <input type="text" class="input-line w-full text-lg text-left">
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <p class="text-sm text-gray-700 font-medium">Proud of your effort. Consistency wins.</p>
+                <p class="text-xs text-gray-400 mt-1">--- End of Worksheet ---</p>
+            </div>
+            
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
