@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Numbers Up To 100,000 (E3-S229)</title>
+    <!-- Tailwind for internal components -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for math rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- MAIN CSS --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        
+        /* Pastel Disc Colors (Singapore Math Style) */
+        --disc-10000: #f5d0fe; /* Light Magenta - 10,000 */
+        --disc-1000: #dbeafe;  /* Light Blue - 1,000 */
+        --disc-100: #dcfce7;   /* Light Green - 100 */
+        --disc-10: #ffedd5;    /* Light Orange - 10 */
+        --disc-1: #fee2e2;     /* Light Red - 1 */
+      }
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 1cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      .math-champs-header {
+        background-color: white; 
+        padding: 0.4rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black; 
+      }
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      
+      /* --- CONTENT STYLE --- */
+      .soal-item {
+        margin-bottom: 0.5rem;
+        break-inside: avoid;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.3rem;
+        font-size: 0.9rem;
+      }
+
+      .soal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8cm;
+        align-items: stretch;
+      }
+
+      /* Number Discs */
+      .disc-container {
+          display: flex;
+          gap: 2px;
+          align-items: center;
+          justify-content: center;
+          flex-wrap: wrap;
+          min-height: 28px;
+      }
+      .num-disc {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          border: 1.5px solid #555;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 0.6rem; /* Small font for 10,000 */
+          box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+          color: #333;
+          flex-shrink: 0;
+      }
+      .disc-10000 { background-color: var(--disc-10000); width: 34px; height: 34px; font-size: 0.7rem; }
+      .disc-1000 { background-color: var(--disc-1000); width: 30px; height: 30px; font-size: 0.65rem; }
+      .disc-100 { background-color: var(--disc-100); }
+      .disc-10 { background-color: var(--disc-10); }
+      .disc-1 { background-color: var(--disc-1); }
+
+      /* Place Value Table */
+      .pv-table {
+          width: 100%;
+          border-collapse: collapse;
+          text-align: center;
+          background: white;
+          font-size: 0.85rem;
+          margin: 4px 0;
+      }
+      .pv-table th, .pv-table td {
+          border: 1px solid #333;
+          padding: 6px;
+          vertical-align: top;
+      }
+      .pv-table th {
+          background-color: #f3f4f6;
+          font-weight: 700;
+          font-size: 0.7rem;
+      }
+      .pv-table td {
+          height: 60px;
+          vertical-align: middle;
+      }
+
+      /* Input & Choice */
+      .input-line {
+        border: none;
+        border-bottom: 1.5px solid #333;
+        text-align: center;
+        font-weight: bold;
+        color: #2563eb;
+        background: transparent;
+        outline: none;
+        font-family: inherit;
+        padding: 0 4px;
+      }
+      .choice-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        cursor: pointer;
+        margin-bottom: 4px;
+        font-size: 0.9rem;
+      }
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1.5px solid #333;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-top: 2px;
+        background: white;
+      }
+
+      /* Bilingual text helper */
+      .bilingual-sub {
+        display: block;
+        font-size: 0.85em;
+        font-style: italic;
+        font-weight: normal;
+        color: #555;
+        margin-top: 1px;
+        line-height: 1.2;
+      }
+      
+      /* Identity Table Compact */
+      .identity-table td {
+        padding: 2px 0;
+        font-size: 10pt;
+        font-weight: 600;
+      }
+
+      /* --- PRINT --- */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background-color: white; padding: 0; }
+        .page-container { display: block; }
+        .page { width: 100%; min-height: 29.7cm; margin: 0; box-shadow: none; page-break-after: always; padding: 1cm; }
+        .page:last-child { page-break-after: avoid; }
+        .math-champs-header, .num-disc, .pv-table th, .bg-blue-50, .bg-yellow-50, .bg-red-50, .bg-green-50, .bg-gray-50, .bg-purple-50 {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+            
+      <!-- PAGE 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                        Exploration 3
+                    </div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers Up To 100,000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Counting forward up to one hundred thousand
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : E3-S229
+                    </div>
+                </div>
+            </div>
+            <!-- Black Line -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- STUDENT INFO -->
+            <div class="flex justify-between items-end mb-4 pb-2 border-b border-gray-300 font-semibold text-sm">
+                <div class="flex gap-2 w-1/3">
+                    <span>Name:</span>
+                    <div class="border-b border-dotted border-gray-400 flex-grow"></div>
+                </div>
+                <div class="flex gap-2 w-1/4">
+                    <span>Class:</span>
+                    <div class="border-b border-dotted border-gray-400 flex-grow"></div>
+                </div>
+                <div class="flex gap-2 w-1/4">
+                    <span>Date:</span>
+                    <div class="border-b border-dotted border-gray-400 flex-grow"></div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTIONS -->
+            <div class="bg-gray-100 border border-gray-400 p-3 rounded-lg shadow-sm mb-4">
+                <h3 class="font-bold text-sm mb-1">Instructions:</h3>
+                <div class="text-xs text-gray-700 leading-relaxed">
+                    Analyze the given visual models and patterns to answer the questions. Some questions are multiple choice, and some are short answer.
+                </div>
+            </div>
+
+            <!-- Q1: Count Discs -->
+            <div class="soal-item bg-white p-3 rounded-lg border border-gray-300 mb-2">
+                <div class="font-bold mb-2 text-sm">
+                    1. Count the number discs below. What number is represented?
+                </div>
+                
+                <div class="flex justify-center my-2 p-3 bg-gray-50 rounded-lg border border-dashed border-gray-300 gap-4 flex-wrap">
+                    <div class="flex flex-col items-center">
+                        <div class="flex gap-1 mb-1">
+                            <div class="num-disc disc-10000">10000</div>
+                            <div class="num-disc disc-10000">10000</div>
+                            <div class="num-disc disc-10000">10000</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="flex gap-1 mb-1">
+                            <div class="num-disc disc-1000">1000</div>
+                            <div class="num-disc disc-1000">1000</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="flex gap-1 mb-1">
+                            <div class="num-disc disc-100">100</div>
+                            <div class="num-disc disc-100">100</div>
+                            <div class="num-disc disc-100">100</div>
+                            <div class="num-disc disc-100">100</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="flex gap-1 mb-1">
+                            <div class="num-disc disc-10">10</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="flex gap-1 mb-1">
+                            <div class="num-disc disc-1">1</div>
+                            <div class="num-disc disc-1">1</div>
+                            <div class="num-disc disc-1">1</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2 mt-2 text-sm">
+                    <label class="choice-item"><div class="choice-box">A</div> 32,413</label>
+                    <label class="choice-item"><div class="choice-box">B</div> 30,243</label>
+                    <label class="choice-item"><div class="choice-box">C</div> 32,403</label>
+                    <label class="choice-item"><div class="choice-box">D</div> 32,513</label>
+                </div>
+            </div>
+
+            <!-- Q2: Place Value Table -->
+            <div class="soal-item bg-gray-50 p-3 rounded-lg border border-gray-200 mt-2">
+                <div class="font-bold mb-2 text-sm">
+                    2. Look at the following Place Value table. Write the number in numerals.
+                </div>
+                
+                <table class="pv-table">
+                    <thead>
+                        <tr>
+                            <th>Ten Thousands</th>
+                            <th>Thousands</th>
+                            <th>Hundreds</th>
+                            <th>Tens</th>
+                            <th>Ones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="flex flex-wrap justify-center gap-1">
+                                    <div class="num-disc disc-10000">10000</div>
+                                    <div class="num-disc disc-10000">10000</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex flex-wrap justify-center gap-1 w-16 mx-auto">
+                                    <div class="num-disc disc-1000">1000</div>
+                                    <div class="num-disc disc-1000">1000</div>
+                                    <div class="num-disc disc-1000">1000</div>
+                                    <div class="num-disc disc-1000">1000</div>
+                                    <div class="num-disc disc-1000">1000</div>
+                                </div>
+                            </td>
+                            <td></td>
+                            <td>
+                                <div class="flex flex-wrap justify-center gap-1">
+                                    <div class="num-disc disc-10">10</div>
+                                    <div class="num-disc disc-10">10</div>
+                                    <div class="num-disc disc-10">10</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex flex-wrap justify-center gap-1">
+                                    <div class="num-disc disc-1">1</div>
+                                    <div class="num-disc disc-1">1</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="mt-2 text-center">
+                    <b class="text-sm">Answer:</b> <input type="text" class="input-line w-32 text-lg text-center">
+                </div>
+            </div>
+
+            <!-- GRID FOR Q3 & Q4 -->
+            <div class="soal-grid mt-2">
+                <!-- Q3 -->
+                <div class="soal-item bg-white p-3 rounded-lg border border-gray-300">
+                    <div class="font-bold mb-2 text-sm">
+                        3. In the number <u><b>5</b></u>8,204, what is the value of the digit <b>5</b>?
+                    </div>
+                    <div class="flex flex-col gap-2 mt-auto text-sm">
+                        <label class="choice-item"><div class="choice-box">A</div> 50</label>
+                        <label class="choice-item"><div class="choice-box">B</div> 500</label>
+                        <label class="choice-item"><div class="choice-box">C</div> 5,000</label>
+                        <label class="choice-item"><div class="choice-box">D</div> 50,000</label>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="soal-item bg-white p-3 rounded-lg border border-gray-300">
+                    <div class="font-bold mb-2 text-sm">
+                        4. Complete the number pattern below.
+                    </div>
+                    <div class="flex items-center gap-1 mb-3 text-xs font-mono justify-center">
+                        <div class="border px-1.5 py-1 rounded">45,200</div>
+                        <span>→</span>
+                        <div class="border px-1.5 py-1 rounded">46,200</div>
+                        <span>→</span>
+                        <div class="border px-1.5 py-1 rounded">47,200</div>
+                        <span>→</span>
+                        <div class="border px-1.5 py-1 rounded border-dashed bg-gray-100 font-bold">?</div>
+                    </div>
+                    <div class="font-semibold text-xs mb-1">The missing number is:</div>
+                    <div class="flex flex-col gap-1 text-xs">
+                         <label class="choice-item"><div class="choice-box">A</div> 47,300</label>
+                         <label class="choice-item"><div class="choice-box">B</div> 48,200</label>
+                         <label class="choice-item"><div class="choice-box">C</div> 49,200</label>
+                         <label class="choice-item"><div class="choice-box">D</div> 57,200</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- PAGE 2 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-12 md:h-16 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">
+                        Exploration 3
+                    </div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Numbers Up To 100,000
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Counting forward up to one hundred thousand
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : E3-S229
+                    </div>
+                </div>
+            </div>
+            <!-- Black Line -->
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper" style="gap: 0.3rem;">
+            
+            <!-- Q5 -->
+             <div class="soal-item bg-purple-50 p-2 rounded-lg border border-purple-200">
+                <div class="font-bold mb-2 text-sm">
+                    5. Which of the following shows the number <b>"seventy-two thousand and five"</b>?
+                </div>
+                <div class="grid grid-cols-4 gap-2 text-sm">
+                    <label class="choice-item"><div class="choice-box">A</div> 72,005</label>
+                    <label class="choice-item"><div class="choice-box">B</div> 72,050</label>
+                    <label class="choice-item"><div class="choice-box">C</div> 72,500</label>
+                    <label class="choice-item"><div class="choice-box">D</div> 7,205</label>
+                </div>
+            </div>
+
+            <!-- Q6: Pattern Rule -->
+            <div class="soal-item bg-yellow-50 p-2 rounded-lg border border-yellow-200">
+                <div class="font-bold mb-2 text-sm">
+                    6. Look at the following number pattern. What is the rule of the pattern?
+                </div>
+                <div class="bg-white p-2 text-center rounded border border-yellow-300 text-lg font-bold font-mono mb-2 shadow-sm">
+                    98,500 &nbsp; 98,400 &nbsp; 98,300 &nbsp; 98,200
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <label class="choice-item"><div class="choice-box">A</div> Count forward by 10s</label>
+                    <label class="choice-item"><div class="choice-box">B</div> Count backward by 10s</label>
+                    <label class="choice-item"><div class="choice-box">C</div> Count forward by 100s</label>
+                    <label class="choice-item"><div class="choice-box">D</div> Count backward by 100s</label>
+                </div>
+            </div>
+
+            <!-- Q7: Expanded Form -->
+            <div class="soal-item bg-white p-2 rounded-lg border border-gray-300">
+                <div class="font-bold mb-2 text-sm">
+                    7. Write the missing number for the expanded form below.
+                </div>
+                <div class="flex flex-wrap items-center justify-center gap-1 text-lg font-bold font-mono py-1">
+                    <span>64,912 = </span>
+                    <span class="text-gray-500">60,000</span>
+                    <span>+</span>
+                    <input type="text" class="input-line w-20 text-center border-2 border-black rounded shadow-inner bg-gray-50">
+                    <span>+</span>
+                    <span class="text-gray-500">900</span>
+                    <span>+</span>
+                    <span class="text-gray-500">10</span>
+                    <span>+</span>
+                    <span class="text-gray-500">2</span>
+                </div>
+            </div>
+
+            <!-- Q8: Ordering -->
+            <div class="soal-item bg-white p-2 rounded-lg border border-gray-300">
+                <div class="font-bold mb-2 text-sm">
+                    8. Arrange the following numbers, starting from the <b>smallest</b>.
+                </div>
+                <div class="flex justify-center gap-3 my-2 text-lg font-bold">
+                    <div class="border-2 border-gray-500 p-1 rounded bg-gray-50">15,060</div>
+                    <div class="border-2 border-gray-500 p-1 rounded bg-gray-50">15,600</div>
+                    <div class="border-2 border-gray-500 p-1 rounded bg-gray-50">14,999</div>
+                </div>
+                <div class="text-center mt-1">
+                    <b class="text-sm mr-2">Answer:</b>
+                    <input type="text" class="input-line w-20 text-center"> , 
+                    <input type="text" class="input-line w-20 text-center"> , 
+                    <input type="text" class="input-line w-20 text-center">
+                </div>
+            </div>
+
+            <!-- Q9: Number Line -->
+            <div class="soal-item bg-green-50 p-2 rounded-lg border border-green-200">
+                <div class="font-bold mb-2 text-sm">
+                    9. Analyze the number line below. What is the value of <b>X</b>?
+                </div>
+                <div class="my-3 overflow-x-auto">
+                    <svg width="100%" height="45" viewBox="0 0 500 45">
+                        <!-- Line -->
+                        <line x1="20" y1="20" x2="480" y2="20" stroke="black" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow-rev)" />
+                        <!-- Ticks -->
+                        <line x1="60" y1="15" x2="60" y2="25" stroke="black" stroke-width="2" />
+                        <text x="60" y="40" text-anchor="middle" font-size="11" font-weight="bold">82,000</text>
+
+                        <line x1="150" y1="15" x2="150" y2="25" stroke="black" stroke-width="2" />
+
+                        <line x1="240" y1="10" x2="240" y2="30" stroke="black" stroke-width="3" />
+                        <text x="240" y="8" text-anchor="middle" font-size="13" font-weight="bold" fill="red">X</text>
+
+                        <line x1="330" y1="15" x2="330" y2="25" stroke="black" stroke-width="2" />
+
+                        <line x1="420" y1="15" x2="420" y2="25" stroke="black" stroke-width="2" />
+                        <text x="420" y="40" text-anchor="middle" font-size="11" font-weight="bold">86,000</text>
+                        
+                        <defs>
+                            <marker id="arrow" markerWidth="8" markerHeight="8" refX="0" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#000" /></marker>
+                            <marker id="arrow-rev" markerWidth="8" markerHeight="8" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M9,0 L9,6 L0,3 z" fill="#000" /></marker>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="grid grid-cols-4 gap-2 mt-1 text-sm">
+                    <label class="choice-item"><div class="choice-box">A</div> 83,000</label>
+                    <label class="choice-item"><div class="choice-box">B</div> 84,000</label>
+                    <label class="choice-item"><div class="choice-box">C</div> 85,000</label>
+                    <label class="choice-item"><div class="choice-box">D</div> 82,500</label>
+                </div>
+            </div>
+
+            <!-- Q10: Riddle -->
+            <div class="soal-item bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <div class="font-bold mb-2 text-sm">
+                    10. Number Riddle. I am a 5-digit number.
+                </div>
+                <div class="bg-white p-2 rounded border border-blue-300 text-xs mb-2 shadow-sm">
+                    <ul class="list-disc pl-5 space-y-0.5 text-gray-800">
+                        <li>My digit in the <i>ten thousands</i> place is 2.</li>
+                        <li>My digit in the <i>thousands</i> place is 3 more than the digit in the ten thousands place.</li>
+                        <li>My digit in the <i>hundreds</i> place is 0.</li>
+                        <li>The value of my digit in the <i>tens</i> place is 90.</li>
+                        <li>My digit in the <i>ones</i> place is 1.</li>
+                    </ul>
+                </div>
+                <div class="text-center">
+                    <b class="text-sm">What number am I?</b> <input type="text" class="input-line w-28 text-lg text-center font-bold">
+                </div>
+            </div>
+
+            <div class="mt-4 text-center font-bold text-blue-600">
+              Check your work, trust your growth.
+            </div>
+
+            <div class="mt-auto"></div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
