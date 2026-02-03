@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Exploration 3 (E3-S265)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MathJax untuk Formula Matematika -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        svg: {
+          fontCache: 'global'
+        },
+        startup: {
+          typeset: false
+        }
+      };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    </script>
+    <script>
+      window.addEventListener('load', function () {
+        if (MathJax.typesetPromise) {
+          MathJax.typesetPromise();
+        }
+      });
+    </script>
+
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --primary-blue: #1e3a8a; /* blue-900 */
+        --secondary-blue: #dbeafe; /* blue-100 */
+        --accent-green: #16a34a; /* green-600 */
+        --alert-red: #dc2626;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      /* Fix MathJax Layout - Mencegah turun baris */
+      mjx-container {
+        display: inline-block !important;
+        margin: 0 2px !important;
+        vertical-align: middle !important;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.6cm 1.8cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.6cm 1.8cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .fraction-disc {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- UTILITIES --- */
+      .input-box {
+        border: 2px solid #333;
+        min-width: 60px;
+        height: 28px;
+        display: inline-flex; /* Changed to inline-flex to sit nicely in line */
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #333;
+        background: white;
+        padding: 0 5px;
+        border-radius: 4px;
+        vertical-align: middle;
+      }
+      
+      .instruction-text {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.8rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.85rem;
+        border-left: 4px solid #1e3a8a;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.5rem 0;
+      }
+
+      /* Choices Grid System */
+      .choice-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem 1.5rem;
+        margin-left: 1rem;
+      }
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        white-space: nowrap; /* Prevent choices from wrapping internally */
+      }
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        background: white;
+        border-radius: 2px;
+        flex-shrink: 0;
+      }
+
+      /* Fraction Disc Styles */
+      .fraction-disc {
+        width: 80px;
+        height: 80px;
+        display: inline-block;
+      }
+      .fraction-label {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-top: 2px;
+        text-align: center;
+      }
+      
+      .fraction-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+      }
+
+      /* FORCE HORIZONTAL LAYOUTS */
+      .force-row {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 2rem;
+        width: 100%;
+      }
+      
+      /* New class for horizontal answer line - STRICT NO WRAP */
+      .answer-line {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.8rem;
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+        white-space: nowrap !important; /* Forces text to stay on one line */
+      }
+
+      .section-title {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #1e3a8a;
+      }
+    </style>
+
+    <!-- Script to draw Fraction Discs via SVG -->
+    <script>
+      function drawPieChart(svg, numerator, denominator) {
+        const radius = 45;
+        const cx = 50;
+        const cy = 50;
+        const startAngleOffset = -90; // Start at 12 o'clock
+
+        // Clear existing content
+        svg.innerHTML = '';
+
+        // Draw sectors (filled)
+        const anglePerSlice = 360 / denominator;
+        
+        for (let i = 0; i < numerator; i++) {
+          const startAngle = (i * anglePerSlice) + startAngleOffset;
+          const endAngle = ((i + 1) * anglePerSlice) + startAngleOffset;
+          
+          const x1 = cx + radius * Math.cos(startAngle * Math.PI / 180);
+          const y1 = cy + radius * Math.sin(startAngle * Math.PI / 180);
+          const x2 = cx + radius * Math.cos(endAngle * Math.PI / 180);
+          const y2 = cy + radius * Math.sin(endAngle * Math.PI / 180);
+
+          const largeArcFlag = anglePerSlice > 180 ? 1 : 0;
+
+          const pathData = [
+            `M ${cx} ${cy}`,
+            `L ${x1} ${y1}`,
+            `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+            `Z`
+          ].join(' ');
+
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", pathData);
+          path.setAttribute("fill", "#d1d5db"); // Tailwind gray-300
+          path.setAttribute("stroke", "none");
+          svg.appendChild(path);
+        }
+
+        // Draw spokes (lines)
+        for (let i = 0; i < denominator; i++) {
+            const angle = (i * anglePerSlice) + startAngleOffset;
+            const x2 = cx + radius * Math.cos(angle * Math.PI / 180);
+            const y2 = cy + radius * Math.sin(angle * Math.PI / 180);
+            
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", cx);
+            line.setAttribute("y1", cy);
+            line.setAttribute("x2", x2);
+            line.setAttribute("y2", y2);
+            line.setAttribute("stroke", "black");
+            line.setAttribute("stroke-width", "1");
+            svg.appendChild(line);
+        }
+
+        // Draw outer circle
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", cx);
+        circle.setAttribute("cy", cy);
+        circle.setAttribute("r", radius);
+        circle.setAttribute("fill", "none");
+        circle.setAttribute("stroke", "black");
+        circle.setAttribute("stroke-width", "2");
+        svg.appendChild(circle);
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const discs = document.querySelectorAll('.fraction-disc');
+        discs.forEach(disc => {
+          const n = parseInt(disc.dataset.n);
+          const d = parseInt(disc.dataset.d);
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("viewBox", "0 0 100 100");
+          svg.style.width = "100%";
+          svg.style.height = "100%";
+          disc.appendChild(svg);
+          drawPieChart(svg, n, d);
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-4) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Fractions</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Comparing Two Fractions
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : E3-S265</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <h2 class="section-title">Section A: Comparing Two Fractions</h2>
+            <div class="instruction-text">
+                Look at the fraction discs. Fill in the blanks with the signs <strong>&gt;</strong>, <strong>&lt;</strong>, or <strong>=</strong>.
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">1. Compare fractions \(\frac{1}{2}\) and \(\frac{1}{4}\).</div>
+                    
+                    <!-- Container Gambar Horizontal -->
+                    <div class="force-row">
+                        <div class="fraction-container">
+                            <div class="fraction-disc" data-n="1" data-d="2"></div>
+                            <div class="fraction-label">\(\frac{1}{2}\)</div>
+                        </div>
+                        <!-- Spacer visual -->
+                        <div class="w-12"></div>
+                        <div class="fraction-container">
+                            <div class="fraction-disc" data-n="1" data-d="4"></div>
+                            <div class="fraction-label">\(\frac{1}{4}\)</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Container Jawaban Horizontal (Force NO WRAP) -->
+                    <div class="answer-line">
+                        <span>Answer:</span>
+                        <span>\(\frac{1}{2}\)</span>
+                        <span class="input-box w-16"></span>
+                        <span>\(\frac{1}{4}\)</span>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">2. Compare fractions \(\frac{2}{3}\) and \(\frac{2}{6}\).</div>
+                    <div class="force-row">
+                        <div class="fraction-container">
+                            <div class="fraction-disc" data-n="2" data-d="3"></div>
+                            <div class="fraction-label">\(\frac{2}{3}\)</div>
+                        </div>
+                        <div class="w-12"></div>
+                        <div class="fraction-container">
+                            <div class="fraction-disc" data-n="2" data-d="6"></div>
+                            <div class="fraction-label">\(\frac{2}{6}\)</div>
+                        </div>
+                    </div>
+                    <div class="answer-line">
+                        <span>Answer:</span>
+                        <span>\(\frac{2}{3}\)</span>
+                        <span class="input-box w-16"></span>
+                        <span>\(\frac{2}{6}\)</span>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">3. Compare fractions \(\frac{3}{4}\) and \(\frac{6}{8}\).</div>
+                    <div class="force-row">
+                        <div class="fraction-container">
+                            <div class="fraction-disc" data-n="3" data-d="4"></div>
+                            <div class="fraction-label">\(\frac{3}{4}\)</div>
+                        </div>
+                        <div class="w-12"></div>
+                        <div class="fraction-container">
+                            <div class="fraction-disc" data-n="6" data-d="8"></div>
+                            <div class="fraction-label">\(\frac{6}{8}\)</div>
+                        </div>
+                    </div>
+                    <div class="answer-line">
+                        <span>Answer:</span>
+                        <span>\(\frac{3}{4}\)</span>
+                        <span class="input-box w-16"></span>
+                        <span>\(\frac{6}{8}\)</span>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">4. Which has a smaller shaded area? \(\frac{3}{5}\) or \(\frac{4}{5}\)?</div>
+                    <div class="force-row">
+                        <div class="fraction-container">
+                            <div class="fraction-disc" data-n="3" data-d="5"></div>
+                            <div class="fraction-label">\(\frac{3}{5}\)</div>
+                        </div>
+                        <div class="w-12"></div>
+                        <div class="fraction-container">
+                            <div class="fraction-disc" data-n="4" data-d="5"></div>
+                            <div class="fraction-label">\(\frac{4}{5}\)</div>
+                        </div>
+                    </div>
+                    <div class="answer-line">
+                        <span>The smaller fraction is</span>
+                        <span class="input-box w-32"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 5-7) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Fractions</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Comparing Two Fractions
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : E3-S265</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <h2 class="section-title">Section B: Multiple Choice</h2>
+            <div class="instruction-text">
+                Circle or select letter A, B, C, or D for the correct answer.
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. Look at the picture below.
+                    </div>
+                    <div class="flex justify-center gap-8 mb-2">
+                        <div class="fraction-disc" data-n="1" data-d="3"></div>
+                        <div class="fraction-disc" data-n="1" data-d="2"></div>
+                    </div>
+                    <p class="mb-2">The correct statement based on the picture above is ...</p>
+                    <div class="choice-grid">
+                        <label class="choice-item"><span class="choice-box"></span> A. \(\frac{1}{3} > \frac{1}{2}\)</label>
+                        <label class="choice-item"><span class="choice-box"></span> B. \(\frac{1}{3} < \frac{1}{2}\)</label>
+                        <label class="choice-item"><span class="choice-box"></span> C. \(\frac{1}{3} = \frac{1}{2}\)</label>
+                        <label class="choice-item"><span class="choice-box"></span> D. \(\frac{1}{2} < \frac{1}{3}\)</label>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        6. Which fraction is <u>greater</u> than \(\frac{1}{4}\)?
+                    </div>
+                    <p class="text-sm italic text-gray-500 mb-2">(Visualize the fraction discs in your head)</p>
+                    <div class="choice-grid">
+                        <label class="choice-item"><span class="choice-box"></span> A. \(\frac{1}{8}\)</label>
+                        <label class="choice-item"><span class="choice-box"></span> B. \(\frac{1}{6}\)</label>
+                        <label class="choice-item"><span class="choice-box"></span> C. \(\frac{1}{5}\)</label>
+                        <label class="choice-item"><span class="choice-box"></span> D. \(\frac{1}{2}\)</label>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. If Andi ate \(\frac{2}{4}\) of a pizza and Budi ate \(\frac{3}{6}\) of a pizza of the same size. Who ate more pizza?
+                    </div>
+                    <div class="force-row mb-2">
+                        <div class="fraction-container">
+                            <div class="font-bold mb-1">Andi</div>
+                            <div class="fraction-disc" data-n="2" data-d="4" style="transform: scale(0.8)"></div>
+                            <div class="fraction-label">\(\frac{2}{4}\)</div>
+                        </div>
+                        <div class="fraction-container">
+                            <div class="font-bold mb-1">Budi</div>
+                            <div class="fraction-disc" data-n="3" data-d="6" style="transform: scale(0.8)"></div>
+                            <div class="fraction-label">\(\frac{3}{6}\)</div>
+                        </div>
+                    </div>
+                    <div class="choice-grid">
+                        <label class="choice-item"><span class="choice-box"></span> A. Andi ate more.</label>
+                        <label class="choice-item"><span class="choice-box"></span> B. Budi ate more.</label>
+                        <label class="choice-item"><span class="choice-box"></span> C. Ate the same amount.</label>
+                        <label class="choice-item"><span class="choice-box"></span> D. Cannot be determined.</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 8-10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 3</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Fractions</div>
+                    <div class="text-[10px] text-black font-medium max-w-[300px] leading-tight ml-auto">
+                        Comparing Two Fractions
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : E3-S265</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <h2 class="section-title">Section C: Exploration</h2>
+            <div class="instruction-text">
+                Answer the following questions carefully. Use pictures if needed.
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. Arrange the following fractions from <u>smallest</u> to <u>greatest</u>.
+                    </div>
+                    <div class="flex justify-center gap-8 mb-2">
+                        <div class="fraction-container">
+                            <div class="font-bold mb-1">(A)</div>
+                            <div class="fraction-disc" data-n="1" data-d="2"></div>
+                            <div class="fraction-label">\(\frac{1}{2}\)</div>
+                        </div>
+                        <div class="fraction-container">
+                            <div class="font-bold mb-1">(B)</div>
+                            <div class="fraction-disc" data-n="1" data-d="8"></div>
+                            <div class="fraction-label">\(\frac{1}{8}\)</div>
+                        </div>
+                        <div class="fraction-container">
+                            <div class="font-bold mb-1">(C)</div>
+                            <div class="fraction-disc" data-n="1" data-d="4"></div>
+                            <div class="fraction-label">\(\frac{1}{4}\)</div>
+                        </div>
+                    </div>
+                    <div class="answer-line">
+                        <span>Answer:</span>
+                        <span class="input-box w-16"></span>,
+                        <span class="input-box w-16"></span>,
+                        <span class="input-box w-16"></span>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. Fill in the missing denominator to make the comparison sign correct.
+                    </div>
+                    <div class="text-xl font-bold text-center mb-4">
+                        \(\frac{1}{3} > \frac{1}{?}\)
+                    </div>
+                    <div class="flex justify-center gap-12 mb-2 items-center">
+                        <div class="fraction-container">
+                            <div class="fraction-disc" data-n="1" data-d="3"></div>
+                            <div class="fraction-label">\(\frac{1}{3}\)</div>
+                        </div>
+                        <div class="text-4xl text-gray-400">&gt;</div>
+                        <div class="fraction-container">
+                            <div class="fraction-disc" data-n="1" data-d="4"></div>
+                            <div class="fraction-label text-gray-500 italic">(Example: \(\frac{1}{4}\))</div>
+                        </div>
+                    </div>
+                    <div class="answer-line">
+                        <span>Possible denominator:</span>
+                        <span class="input-box w-32"></span>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. Fraction \(\frac{3}{4}\) is equivalent to which picture?
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
+                        <!-- Option A -->
+                        <div class="flex flex-col items-center">
+                            <span class="font-bold mb-2">A.</span>
+                            <div class="fraction-disc" data-n="2" data-d="3" style="transform: scale(0.8)"></div>
+                        </div>
+                        <!-- Option B -->
+                        <div class="flex flex-col items-center">
+                            <span class="font-bold mb-2">B.</span>
+                            <div class="fraction-disc" data-n="6" data-d="8" style="transform: scale(0.8)"></div>
+                        </div>
+                        <!-- Option C -->
+                        <div class="flex flex-col items-center">
+                            <span class="font-bold mb-2">C.</span>
+                            <div class="fraction-disc" data-n="3" data-d="5" style="transform: scale(0.8)"></div>
+                        </div>
+                        <!-- Option D -->
+                        <div class="flex flex-col items-center">
+                            <span class="font-bold mb-2">D.</span>
+                            <div class="fraction-disc" data-n="1" data-d="2" style="transform: scale(0.8)"></div>
+                        </div>
+                    </div>
+                    <div class="answer-line">
+                        <span>Answer:</span>
+                        <span class="input-box w-32"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
