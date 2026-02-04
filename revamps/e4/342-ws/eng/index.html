@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Master Template System</title>
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+      /* --- GLOBAL VARIABLES & RESET --- */
+      :root {
+        --primary-text: #333333;
+        --bg-page: #525659;
+        /* Color Palette */
+        --theme-blue: #3b82f6; --theme-green: #22c55e;
+        --theme-orange: #f97316; --theme-purple: #a855f7;
+        --theme-red: #ef4444; --theme-gray: #e5e7eb;
+      }
+
+      body {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 10pt; /* Standard worksheet font size */
+        background-color: var(--bg-page);
+        margin: 0; padding: 20px;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* --- PAGE LAYOUT SYSTEM (DO NOT EDIT) --- */
+      #output-container { display: flex; flex-direction: column; align-items: center; gap: 30px; }
+      
+      .page {
+        background: white; width: 210mm; height: 297mm; /* A4 Fixed */
+        padding: 10mm 12mm; position: relative;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        display: flex; flex-direction: column;
+        overflow: hidden; box-sizing: border-box;
+      }
+
+      /* UPDATED HEADER STYLE */
+      .page-header { width: 100%; border-bottom: 3px solid #000; padding-bottom: 8px; margin-bottom: 15px; flex-shrink: 0; }
+      .math-champs-header { display: flex; justify-content: space-between; align-items: center; }
+      
+      /* Logo Size 60px */
+      .header-logo { height: 60px; object-fit: contain; }
+      
+      .header-right { text-align: right; font-family: "Montserrat", sans-serif; }
+      
+      /* Restored Font Sizes */
+      .header-level { font-size: 14px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 0.5px; }
+      .header-topic { font-size: 10px; font-weight: 600; color: #000; margin-top: 2px; }
+      .header-skill { font-size: 10px; font-weight: 500; color: #000; }
+      .header-code { font-size: 10px; font-weight: 500; color: #000; margin-top: 2px; }
+
+      .page-footer {
+        width: 100%; border-top: 1px solid #ccc; padding-top: 5px; margin-top: auto; 
+        font-size: 8pt; color: #888; flex-shrink: 0;
+      }
+
+      .page-content { flex-grow: 1; display: flex; flex-direction: column; gap: 15px; width: 100%; }
+
+      /* --- CONTENT COMPONENT STYLES --- */
+      .content-block { break-inside: avoid; width: 100%; } /* Wrapper wajib */
+
+      .section-label {
+        font-family: "Montserrat", sans-serif; font-size: 1rem; font-weight: 800; 
+        text-transform: uppercase; color: #1e3a8a; border-bottom: 2px solid #e5e7eb; 
+        padding-bottom: 2px; margin-bottom: 5px; margin-top: 5px;
+      }
+
+      .soal-item {
+        background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px;
+        display: flex; flex-direction: column; gap: 8px;
+        /* Ensure visual content fits nicely */
+      }
+
+      .visual-box {
+        background-color: white; border: 1px solid #e5e7eb; border-radius: 8px;
+        padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        overflow: visible;
+      }
+
+      .choice-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 5px; justify-content: flex-start; }
+      .choice-item { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+      .choice-box { width: 16px; height: 16px; border: 2px solid #666; border-radius: 50%; display: inline-block; background: white; }
+
+      /* Concept Box */
+      .concept-box {
+        background-color: #eff6ff; border-left: 4px solid #3b82f6;
+        padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem;
+      }
+      .instruction-box { 
+         background-color: #fefce8; border: 2px solid #fde047; border-radius: 0.75rem; 
+         padding: 1.5rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
+         margin-bottom: 1.5rem;
+      }
+
+      /* Grid for Question Layout (2 Cols) */
+      .grid-2-cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        width: 100%;
+      }
+      /* Fallback for print logic if grid fails in block detection */
+      .grid-wrapper {
+        display: flex; gap: 1.5rem; width: 100%;
+      }
+      .grid-item { flex: 1; }
+
+      /* --- MATH VISUALS UTILITIES (Bar Models, etc.) --- */
+      .bar-container {
+        display: flex; width: 100%; max-width: 300px; height: 30px;
+        border: 2px solid #333; border-radius: 4px; overflow: hidden;
+        position: relative;
+      }
+      .bar-part {
+        height: 100%; display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 0.8rem; color: white;
+        border-right: 2px solid white;
+      }
+      .bar-part:last-child { border-right: none; }
+      
+      .brace-label {
+        width: 100%; max-width: 300px;
+        display: flex; flex-direction: column; align-items: center;
+        margin-top: 2px;
+      }
+      .brace-visual {
+        width: 100%; height: 8px;
+        border-bottom: 2px solid #666; border-left: 2px solid #666; border-right: 2px solid #666;
+        border-radius: 0 0 4px 4px; position: relative;
+      }
+      .brace-visual::after {
+        content: ""; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+        width: 2px; height: 6px; background-color: #666;
+      }
+      .total-text { font-weight: bold; color: #1e3a8a; margin-top: 4px; font-size: 0.9rem; }
+
+      /* Colors */
+      .bg-blue { background-color: #3b82f6; }
+      .bg-green { background-color: #22c55e; }
+      .bg-orange { background-color: #f97316; } 
+      .bg-purple { background-color: #a855f7; }
+      .bg-red { background-color: #ef4444; }
+
+      .price-tag {
+        background-color: #fef08a; border: 1px solid #facc15; border-radius: 4px;
+        padding: 2px 6px; font-size: 10px; font-weight: bold; color: #854d0e;
+        display: inline-block; transform: rotate(-5deg); margin: 0 4px;
+      }
+
+      /* --- PRINT CONFIGURATION --- */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { margin: 0; padding: 0; background: white; }
+        #output-container { gap: 0; }
+        .page { margin: 0; page-break-after: always; box-shadow: none; break-after: page; }
+        .page:last-child { page-break-after: auto; break-after: auto; }
+        #raw-content { display: none !important; }
+        
+        /* Force background colors */
+        .bg-blue { background-color: #3b82f6 !important; }
+        .bg-green { background-color: #22c55e !important; }
+        .bg-orange { background-color: #f97316 !important; } 
+        .bg-purple { background-color: #a855f7 !important; }
+        .bg-red { background-color: #ef4444 !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-green-50 { background-color: #f0fdf4 !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .bg-purple-50 { background-color: #faf5ff !important; }
+        .bg-orange-50 { background-color: #fff7ed !important; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- 1. SOURCE CONTENT (Hidden) -->
+    <div id="raw-content" style="display: none;">
+        
+        <!-- --- Start Editing Content Here --- -->
+
+        <!-- Instruction Block -->
+        <div class="content-block instruction-box">
+            <h1 class="text-2xl font-bold uppercase tracking-wide text-gray-800 font-montserrat mb-2">
+                Solving Real-World Problems
+            </h1>
+            <p class="text-base text-gray-600 font-medium">
+                Use <b>Bar Models</b> to help you visualize the word problems.
+            </p>
+        </div>
+
+        <!-- Concept Block -->
+        <div class="content-block concept-box flex flex-col items-start gap-4 shadow-md border border-blue-200">
+            <div class="w-full border-b border-blue-200 pb-2 mb-2">
+                <h3 class="font-extrabold text-lg text-blue-700 mb-1">PART-WHOLE MODEL</h3>
+                <p class="text-gray-700">
+                    If you combine two items, the total length/weight/price is the sum of the two parts.
+                </p>
+            </div>
+            <div class="w-full bg-white p-6 rounded-lg border border-gray-300 flex flex-col md:flex-row items-center justify-around gap-6">
+                <div class="w-full md:w-1/2 text-sm text-gray-700">
+                    <p class="mb-2"><b>Example:</b></p>
+                    <p class="mb-2">A Book costs <b>$2.50</b> and a Pencil costs <b>$1.20</b>.</p>
+                    <p>What is the total price of both?</p>
+                    <div class="mt-4 font-mono font-bold bg-gray-100 p-2 rounded w-fit">
+                        2.50 + 1.20 = 3.70
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2 flex flex-col items-center">
+                    <div class="bar-container">
+                        <div class="bar-part bg-blue" style="width: 60%;">Book ($2.50)</div>
+                        <div class="bar-part bg-orange" style="width: 40%;">Pencil ($1.20)</div>
+                    </div>
+                    <div class="brace-label">
+                        <div class="brace-visual"></div>
+                        <div class="total-text">Total = ?</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 1 -->
+        <div class="content-block section-label">Practice 1: Money & Price Problems</div>
+
+        <!-- Q1 & Q2 Row (Grid Wrapper) -->
+        <div class="content-block grid-wrapper">
+            <!-- Q1 -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-2 text-base">1. Stationery Shopping</div>
+                <div class="text-sm text-gray-600 mb-3">
+                    Andi bought an eraser for <span class="price-tag">Rp 0.50</span> and a ruler for <span class="price-tag">Rp 1.25</span> (thousands).
+                </div>
+                <div class="visual-box mb-2 py-4">
+                    <div class="bar-container" style="max-width: 250px;">
+                        <div class="bar-part bg-green" style="width: 30%;">0.50</div>
+                        <div class="bar-part bg-purple" style="width: 70%;">1.25</div>
+                    </div>
+                    <div class="brace-label" style="max-width: 250px;">
+                        <div class="brace-visual"></div>
+                        <div class="total-text text-xs">Total ?</div>
+                    </div>
+                </div>
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 1.30</label>
+                    <label class="choice-item"><div class="choice-box"></div> 1.75</label>
+                    <label class="choice-item"><div class="choice-box"></div> 1.85</label>
+                </div>
+            </div>
+            <!-- Q2 -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-2 text-base">2. Savings</div>
+                <div class="text-sm text-gray-600 mb-3">
+                    Today Siti saved <b>Rp 2.50</b>. Yesterday she saved <b>Rp 3.50</b>.
+                    What is the total?
+                </div>
+                <div class="visual-box mb-2 py-4">
+                    <div class="bar-container" style="max-width: 250px;">
+                        <div class="bar-part bg-blue" style="width: 40%;">2.50</div>
+                        <div class="bar-part bg-orange" style="width: 60%;">3.50</div>
+                    </div>
+                    <div class="brace-label" style="max-width: 250px;">
+                        <div class="brace-visual"></div>
+                        <div class="total-text text-xs">Total ?</div>
+                    </div>
+                </div>
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 5.00</label>
+                    <label class="choice-item"><div class="choice-box"></div> 6.00</label>
+                    <label class="choice-item"><div class="choice-box"></div> 5.50</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q3 Wide -->
+        <div class="content-block soal-item">
+            <div class="font-bold mb-2 text-base">3. Buying Snacks</div>
+            <div class="text-sm text-gray-600 mb-3">
+                The price of bread is <b>Rp 4.25</b>. The price of milk is <b>Rp 3.75</b>.
+                What is the total price of both?
+            </div>
+            <div class="visual-box mb-2 py-4">
+                    <div class="flex flex-col items-center w-full">
+                    <div class="bar-container" style="max-width: 400px;">
+                        <div class="bar-part bg-red" style="width: 55%;">Bread (4.25)</div>
+                        <div class="bar-part bg-blue" style="width: 45%;">Milk (3.75)</div>
+                    </div>
+                    <div class="brace-label" style="max-width: 400px;">
+                        <div class="brace-visual"></div>
+                        <div class="total-text">?</div>
+                    </div>
+                    </div>
+            </div>
+            <div class="choice-container justify-center gap-8">
+                <label class="choice-item"><div class="choice-box"></div> 7.90</label>
+                <label class="choice-item"><div class="choice-box"></div> 8.00</label>
+                <label class="choice-item"><div class="choice-box"></div> 7.00</label>
+            </div>
+        </div>
+
+        <!-- Force Break before Section 2 if needed by logic, but section label usually starts new topic -->
+        <div class="content-block section-label">Practice 2: Measurement Problems</div>
+
+        <!-- Q4 & Q5 Row -->
+        <div class="content-block grid-wrapper">
+            <!-- Q4 -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-4 text-base">4. Length of Ribbon</div>
+                <div class="text-sm text-gray-600 mb-2">
+                    Red Ribbon <b>1.5 m</b>. Blue Ribbon <b>0.8 m</b>.
+                    If joined, what is the total length?
+                </div>
+                <div class="visual-box py-6 bg-white/50">
+                    <div class="flex items-center justify-center w-full">
+                        <div class="h-4 bg-red-400 rounded-l flex items-center justify-center text-[10px] text-white font-bold" style="width: 60%">1.5m</div>
+                        <div class="h-4 bg-blue-400 rounded-r flex items-center justify-center text-[10px] text-white font-bold" style="width: 30%">0.8m</div>
+                    </div>
+                    <div class="w-[90%] border-t border-gray-400 mt-2 relative">
+                        <div class="absolute -top-1 left-0 w-px h-2 bg-gray-400"></div>
+                        <div class="absolute -top-1 right-0 w-px h-2 bg-gray-400"></div>
+                        <div class="text-center text-xs font-bold text-gray-500 mt-1">? Meters</div>
+                    </div>
+                </div>
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 2.3 m</label>
+                    <label class="choice-item"><div class="choice-box"></div> 2.2 m</label>
+                    <label class="choice-item"><div class="choice-box"></div> 1.13 m</label>
+                </div>
+            </div>
+            <!-- Q5 -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-4 text-base">5. Weight of Fruits</div>
+                <div class="text-sm text-gray-600 mb-2">
+                    Weight of Watermelon <b>2.4 kg</b>. Weight of Melon <b>1.8 kg</b>.
+                    What is the total weight of both fruits?
+                </div>
+                <div class="visual-box py-6 bg-white/50">
+                    <div class="bar-container">
+                        <div class="bar-part bg-green" style="width: 60%;">2.4</div>
+                        <div class="bar-part bg-yellow-400 text-yellow-900" style="width: 40%;">1.8</div>
+                    </div>
+                    <div class="brace-label">
+                        <div class="brace-visual"></div>
+                        <div class="total-text">? kg</div>
+                    </div>
+                </div>
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 4.2 kg</label>
+                    <label class="choice-item"><div class="choice-box"></div> 3.2 kg</label>
+                    <label class="choice-item"><div class="choice-box"></div> 4.12 kg</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q6 & Q7 Row -->
+        <div class="content-block grid-wrapper">
+            <!-- Q6 -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-4 text-base">6. Running Distance</div>
+                <div class="text-sm text-gray-600 mb-2">
+                    Budi ran <b>3.5 km</b> this morning and <b>2.7 km</b> this afternoon.
+                    What is Budi's total running distance?
+                </div>
+                <div class="visual-box py-4 bg-white/50">
+                    <div class="w-full h-1 bg-gray-300 relative mt-4 mb-8">
+                        <div class="absolute -top-2 left-0 w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <div class="absolute -top-6 left-0 text-xs font-bold">Start</div>
+                        
+                        <div class="absolute -top-2 left-[55%] w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <div class="absolute -top-6 left-[50%] text-xs font-bold text-blue-600">3.5 km</div>
+
+                        <div class="absolute -top-2 right-0 w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div class="absolute -top-6 right-0 text-xs font-bold text-green-600">Finish</div>
+                        
+                        <div class="absolute top-2 left-[55%] right-0 text-center text-xs text-gray-500 border-t border-gray-400">+ 2.7 km</div>
+                    </div>
+                </div>
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 6.2 km</label>
+                    <label class="choice-item"><div class="choice-box"></div> 5.2 km</label>
+                    <label class="choice-item"><div class="choice-box"></div> 6.12 km</label>
+                </div>
+            </div>
+            <!-- Q7 -->
+            <div class="soal-item grid-item">
+                <div class="font-bold mb-4 text-base">7. Bucket Capacity</div>
+                <div class="text-sm text-gray-600 mb-2">
+                    Bucket A contains <b>4.25 liters</b> of water. Bucket B contains <b>3.50 liters</b>.
+                    If combined, how many liters are there in total?
+                </div>
+                <div class="visual-box py-6 bg-white/50">
+                    <div class="bar-container">
+                        <div class="bar-part bg-blue" style="width: 55%;">4.25</div>
+                        <div class="bar-part bg-blue opacity-70" style="width: 45%;">3.50</div>
+                    </div>
+                    <div class="brace-label">
+                        <div class="brace-visual"></div>
+                        <div class="total-text">? liters</div>
+                    </div>
+                </div>
+                <div class="choice-container justify-center">
+                    <label class="choice-item"><div class="choice-box"></div> 7.75 L</label>
+                    <label class="choice-item"><div class="choice-box"></div> 7.85 L</label>
+                    <label class="choice-item"><div class="choice-box"></div> 7.70 L</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-block section-label">Practice 3: Logic Challenge</div>
+
+        <!-- Q8 Wide -->
+        <div class="content-block soal-item full-width bg-purple-50 border-purple-200" style="border-color: #e9d5ff;">
+            <div class="font-bold mb-2 text-base text-purple-900">8. Missing Number</div>
+            <div class="text-sm mb-4 text-purple-800 leading-relaxed">
+                I am thinking of a number. If I add <b>1.5</b> to that number, the result becomes <b>4.2</b>.
+                <br>What number am I thinking of?
+            </div>
+            <div class="visual-box w-full mb-4 bg-white/50 border-purple-200 p-4 flex flex-col items-center">
+                <div class="w-full max-w-sm border-2 border-purple-800 rounded h-10 flex relative">
+                    <div class="h-full bg-purple-200 flex items-center justify-center font-bold text-purple-900 border-r border-purple-800" style="width: 40%;">?</div>
+                    <div class="h-full bg-purple-400 flex items-center justify-center font-bold text-white" style="width: 60%;">1.5</div>
+                    <div class="absolute -top-6 w-full text-center text-xs font-bold text-purple-700">Total: 4.2</div>
+                </div>
+            </div>
+            <div class="choice-container justify-center gap-6">
+                <label class="choice-item"><div class="choice-box"></div> 2.7</label>
+                <label class="choice-item"><div class="choice-box"></div> 3.7</label>
+                <label class="choice-item"><div class="choice-box"></div> 5.7</label>
+            </div>
+        </div>
+
+        <!-- Q9 Wide -->
+        <div class="content-block soal-item full-width bg-orange-50 border-orange-200" style="border-color: #fed7aa;">
+            <div class="font-bold mb-2 text-base text-orange-900">9. Three Items</div>
+            <div class="text-sm mb-3 text-orange-800">
+                What is the total price of the following three items?
+            </div>
+            <div class="flex justify-center items-end gap-6 mb-4">
+                <div class="flex flex-col items-center">
+                    <div class="w-10 h-12 bg-blue-300 rounded-sm border border-blue-500 shadow-sm"></div>
+                    <span class="price-tag mt-2">2.5</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-12 h-8 bg-green-300 rounded-sm border border-green-500 shadow-sm"></div>
+                    <span class="price-tag mt-2">1.5</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 bg-red-300 rounded-full border border-red-500 shadow-sm"></div>
+                    <span class="price-tag mt-2">3.0</span>
+                </div>
+            </div>
+            <div class="choice-container justify-center gap-6">
+                <label class="choice-item"><div class="choice-box"></div> 6.0</label>
+                <label class="choice-item"><div class="choice-box"></div> 7.0</label>
+                <label class="choice-item"><div class="choice-box"></div> 8.0</label>
+            </div>
+        </div>
+
+        <!-- Q10 Wide -->
+        <div class="content-block soal-item full-width bg-green-50 border-green-200" style="border-color: #bbf7d0;">
+            <div class="font-bold mb-2 text-base text-green-900">10. Which is Longer?</div>
+            <div class="text-sm mb-4 text-green-800 leading-relaxed bg-white/60 p-3 rounded-lg border border-green-100">
+                Path A: 1.5 km + 2.6 km<br>
+                Path B: 2.2 km + 1.8 km<br>
+                <br>
+                Which path has a longer total distance?
+            </div>
+            <div class="choice-container flex-col gap-2">
+                <label class="choice-item"><div class="choice-box"></div> Path A (4.1 km)</label>
+                <label class="choice-item"><div class="choice-box"></div> Path B (4.0 km)</label>
+                <label class="choice-item"><div class="choice-box"></div> Both are the same length</label>
+            </div>
+        </div>
+
+        <!-- Encouragement (Added from list #18) -->
+        <div class="content-block text-center text-sm italic text-gray-500 mt-4">
+            Little by little, a little becomes a lot.
+        </div>
+
+        <!-- --- End Editing Content --- -->
+
+    </div> 
+
+    <!-- 2. OUTPUT CONTAINER (Auto-Generated) -->
+    <div id="output-container"></div>
+
+    <!-- 3. LOGIC SCRIPT -->
+    <script>
+      // --- KONFIGURASI HEADER ---
+      // Edit bagian ini untuk setiap worksheet baru
+      const SHEET_CONFIG = {
+        level: "Exploration 4",
+        topic: "Four Operations of Decimals",
+        skill: "Decimal Addition Word Problems",
+        code: "E4-S342"
+      };
+
+      // Jalankan saat DOM siap
+      document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(paginateContent, 100);
+      });
+
+      function paginateContent() {
+        const rawContent = document.getElementById('raw-content');
+        const items = Array.from(rawContent.children);
+        const output = document.getElementById('output-container');
+        
+        let currentPage = createNewPage();
+        let contentContainer = currentPage.querySelector('.page-content');
+
+        items.forEach((item, index) => {
+          // Clone item
+          const clone = item.cloneNode(true);
+          
+          // 1. Cek Manual Break (class="force-break")
+          if (clone.classList.contains('force-break') && contentContainer.children.length > 0) {
+              currentPage = createNewPage();
+              contentContainer = currentPage.querySelector('.page-content');
+          }
+
+          // 2. Masukkan item sementara
+          contentContainer.appendChild(clone);
+          
+          // 3. Deteksi Overflow Otomatis
+          // 5px buffer
+          if (currentPage.scrollHeight > currentPage.clientHeight + 5) {
+             // Undo append
+             contentContainer.removeChild(clone);
+             
+             // Buat page baru
+             currentPage = createNewPage();
+             contentContainer = currentPage.querySelector('.page-content');
+             
+             // Append ulang
+             contentContainer.appendChild(clone);
+          }
+        });
+
+        // Helper: Buat Struktur Halaman A4
+        function createNewPage() {
+          const page = document.createElement('div');
+          page.className = 'page';
+          
+          page.innerHTML = `
+            <header class="page-header">
+                <div class="math-champs-header">
+                    <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="header-logo">
+                    <div class="header-right">
+                        <div class="header-level">${SHEET_CONFIG.level}</div>
+                        <div class="header-topic">${SHEET_CONFIG.topic}</div>
+                        <div class="header-skill">${SHEET_CONFIG.skill}</div>
+                        <div class="header-code">${SHEET_CONFIG.code}</div>
+                    </div>
+                </div>
+            </header>
+            <div class="page-content"></div>
+            <footer class="page-footer">
+                <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+                <i class="block sm:inline">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+            </footer>
+          `;
+          
+          output.appendChild(page);
+          return page;
+        }
+      }
+    </script>
+  </body>
+</html>
