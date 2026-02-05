@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Tables and Line Graphs (E4-S372)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff; /* bg-blue-50 equivalent */
+        --path-color: #d1d5db; /* gray-300 */
+      }
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.5cm 2cm; /* Sedikit mengurangi padding atas */
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .page-header {
+        width: 100%;
+        margin-bottom: 6px;
+      }
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; /* Mendorong footer ke bawah */
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.5cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .concept-box,
+        .input-box,
+        .visual-shape {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-200 { background-color: #e5e7eb !important; }
+        .bg-gray-300 { background-color: #d1d5db !important; }
+      }
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem; /* Rapatkan gap antar soal */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 26px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 24px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .input-line {
+        border-bottom: 1.5px solid #333;
+        min-width: 100px;
+        display: inline-block;
+        vertical-align: bottom;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 3px; /* Rapatkan margin atas pilihan */
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.1cm 0; /* Rapatkan margin separator */
+      }
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.2rem;
+        background-color: #f3f4f6;
+        padding: 0.2rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+      /* --- CONCEPT BOX --- */
+      .concept-box {
+        border: 2px solid #60a5fa;
+        background-color: #eff6ff;
+        border-radius: 10px;
+        padding: 6px;
+        margin-bottom: 8px; /* Rapatkan margin bawah konsep */
+        font-size: 0.9rem;
+      }
+      
+      /* SVG Styles for Visual Math */
+      .visual-svg {
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .grid-line { stroke: #e5e7eb; stroke-width: 1; }
+      .axis-line { stroke: #333; stroke-width: 1.5; }
+      .data-line { fill: none; stroke-width: 2; }
+      .data-point { r: 3; stroke: white; stroke-width: 1; }
+      .axis-text { font-size: 8px; fill: #555; text-anchor: middle; }
+      .axis-title { font-size: 9px; fill: #000; font-weight: bold; text-anchor: middle; }
+    </style>
+  </head>
+  <body>
+    <svg style="display: none;">
+      <defs>
+        <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6" fill="none" stroke="#333" stroke-width="1" />
+        </marker>
+      </defs>
+    </svg>
+    <div class="page-container">
+      
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Tables and Line Graphs
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Data Interpretation
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : E4-S372
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-2 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: LINE GRAPH EXPLORATION
+                </h1>
+            </div>
+            <div class="concept-box">
+                <div class="font-bold text-blue-800 mb-1">Key Concept: Reading Line Graphs</div>
+                <div class="flex gap-4 items-center">
+                    <div class="flex-1 text-sm text-gray-700">
+                        <ul class="list-disc pl-4 space-y-1">
+                            <li><b>Horizontal Axis:</b> Usually shows time (days, months, hours).</li>
+                            <li><b>Vertical Axis:</b> Shows the measured value (temperature, number of books, etc).</li>
+                            <li><b>Upward Line:</b> Value increases. <b>Downward Line:</b> Value decreases.</li>
+                            <li><b>Flat Line:</b> Value stays the same (constant).</li>
+                        </ul>
+                    </div>
+                    <div class="w-32 text-center">
+                         <svg width="100" height="60" viewBox="0 0 100 60" class="visual-svg">
+                             <line x1="10" y1="50" x2="90" y2="50" class="axis-line" />
+                             <line x1="10" y1="50" x2="10" y2="10" class="axis-line" />
+                             <polyline points="10,40 30,20 50,20 70,30 90,10" fill="none" stroke="#2563eb" stroke-width="2" />
+                             <circle cx="10" cy="40" r="2" fill="#2563eb" />
+                             <circle cx="30" cy="20" r="2" fill="#2563eb" />
+                             <circle cx="50" cy="20" r="2" fill="#2563eb" />
+                             <circle cx="70" cy="30" r="2" fill="#2563eb" />
+                             <circle cx="90" cy="10" r="2" fill="#2563eb" />
+                         </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="instruction-text mb-1 py-1 text-sm">
+                Section A: Weekly Temperature Graph
+            </div>
+            <div class="mb-1 text-sm">
+                Look at the line graph below showing the air temperature during the day for 5 school days. Answer questions 1 to 5.
+            </div>
+            
+            <div class="flex justify-center mb-2">
+                <svg width="400" height="200" viewBox="0 0 400 200" class="visual-svg border bg-white rounded p-2">
+                    <line x1="50" y1="170" x2="350" y2="170" class="grid-line" /> <line x1="50" y1="140" x2="350" y2="140" class="grid-line" /> <line x1="50" y1="110" x2="350" y2="110" class="grid-line" /> <line x1="50" y1="80" x2="350" y2="80" class="grid-line" />  <line x1="50" y1="50" x2="350" y2="50" class="grid-line" />  <line x1="50" y1="20" x2="350" y2="20" class="grid-line" />  <line x1="50" y1="170" x2="380" y2="170" class="axis-line" marker-end="url(#arrow)" />
+                    <line x1="50" y1="170" x2="50" y2="10" class="axis-line" marker-end="url(#arrow)" />
+                    
+                    <text x="40" y="173" class="axis-text" text-anchor="end">24</text>
+                    <text x="40" y="143" class="axis-text" text-anchor="end">25</text>
+                    <text x="40" y="113" class="axis-text" text-anchor="end">26</text>
+                    <text x="40" y="83" class="axis-text" text-anchor="end">27</text>
+                    <text x="40" y="53" class="axis-text" text-anchor="end">28</text>
+                    <text x="40" y="23" class="axis-text" text-anchor="end">29</text>
+                    <text x="30" y="100" class="axis-title" transform="rotate(-90, 30, 100)">Temp (&deg;C)</text>
+                    
+                    <text x="100" y="185" class="axis-text">Mon</text>
+                    <text x="160" y="185" class="axis-text">Tue</text>
+                    <text x="220" y="185" class="axis-text">Wed</text>
+                    <text x="280" y="185" class="axis-text">Thu</text>
+                    <text x="340" y="185" class="axis-text">Fri</text>
+                    <text x="370" y="185" class="axis-title" text-anchor="start">Day</text>
+                    
+                    <polyline points="100,140 160,110 220,140 280,50 340,80" class="data-line" stroke="#2563eb" />
+                    
+                    <circle cx="100" cy="140" class="data-point" fill="#dc2626" />
+                    <circle cx="160" cy="110" class="data-point" fill="#dc2626" />
+                    <circle cx="220" cy="140" class="data-point" fill="#dc2626" />
+                    <circle cx="280" cy="50" class="data-point" fill="#dc2626" />
+                    <circle cx="340" cy="80" class="data-point" fill="#dc2626" />
+                </svg>
+            </div>
+            
+            <div class="soal-grid">
+                
+                <div class="soal-item">
+                    <div class="mb-1">
+                         <span class="font-bold">1.</span> What was the air temperature on <b>Tuesday</b>?
+                    </div>
+                    <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 24&deg;C</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 25&deg;C</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 26&deg;C</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 27&deg;C</label>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> On which day did the temperature reach the <b>highest</b> point?
+                    </div>
+                    <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. Tuesday</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. Wednesday</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. Thursday</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. Friday</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Tables and Line Graphs</div>
+                    <div class="text-[10px] text-black font-medium">Data Interpretation</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S372</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                <div class="soal-item">
+                    <div class="mb-1">
+                         <span class="font-bold">3.</span> What is the <b>difference</b> in temperature between Thursday and Wednesday? <br><small class="text-gray-500">(See Graph A on page 1)</small>
+                    </div>
+                    <div class="mt-1 ml-4">
+                        <b>Answer:</b> <span class="input-line"></span> &deg;C
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">4.</span> Between which days did a <b>decrease</b> in temperature occur? <br><small class="text-gray-500">(See Graph A on page 1)</small>
+                    </div>
+                    <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. Monday to Tuesday</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. Tuesday to Wednesday</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. Wednesday to Thursday</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. Monday to Wednesday</label>
+                    </div>
+                </div>
+                 
+                <div class="h-separator"></div>
+                 
+                 <div class="soal-item">
+                    <div class="mb-1">
+                         <span class="font-bold">5.</span> If the temperature on Saturday is predicted to rise by 2&deg;C from Friday, what is the temperature on Saturday?
+                    </div>
+                    <div class="mt-1 ml-4">
+                        <b>Answer:</b> <span class="input-line"></span> &deg;C
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-[2px] bg-gray-300 my-4"></div>
+            <div class="instruction-text mb-1 py-1 text-sm">
+                Section B: Book Sales Graph
+            </div>
+            <div class="mb-1 text-sm">
+                The following graph shows the number of storybooks sold at "Pintar" Bookstore from January to May.
+            </div>
+            
+            <div class="flex justify-center mb-2">
+                <svg width="400" height="200" viewBox="0 0 400 200" class="visual-svg border bg-white rounded p-2">
+                    <line x1="50" y1="170" x2="350" y2="170" class="grid-line" /> <line x1="50" y1="142" x2="350" y2="142" class="grid-line" /> <line x1="50" y1="114" x2="350" y2="114" class="grid-line" /> <line x1="50" y1="86" x2="350" y2="86" class="grid-line" />  <line x1="50" y1="58" x2="350" y2="58" class="grid-line" />  <line x1="50" y1="30" x2="350" y2="30" class="grid-line" />  <line x1="50" y1="170" x2="380" y2="170" class="axis-line" marker-end="url(#arrow)" />
+                    <line x1="50" y1="170" x2="50" y2="10" class="axis-line" marker-end="url(#arrow)" />
+                    
+                    <text x="40" y="173" class="axis-text" text-anchor="end">0</text>
+                    <text x="40" y="145" class="axis-text" text-anchor="end">10</text>
+                    <text x="40" y="117" class="axis-text" text-anchor="end">20</text>
+                    <text x="40" y="89" class="axis-text" text-anchor="end">30</text>
+                    <text x="40" y="61" class="axis-text" text-anchor="end">40</text>
+                    <text x="40" y="33" class="axis-text" text-anchor="end">50</text>
+                    <text x="30" y="100" class="axis-title" transform="rotate(-90, 30, 100)">Number of Books</text>
+                    
+                    <text x="100" y="185" class="axis-text">Jan</text>
+                    <text x="160" y="185" class="axis-text">Feb</text>
+                    <text x="220" y="185" class="axis-text">Mar</text>
+                    <text x="280" y="185" class="axis-text">Apr</text>
+                    <text x="340" y="185" class="axis-text">May</text>
+                    <text x="370" y="185" class="axis-title" text-anchor="start">Month</text>
+                    
+                    <polyline points="100,114 160,86 220,142 280,58 340,58" class="data-line" stroke="#f97316" />
+                    
+                    <circle cx="100" cy="114" class="data-point" fill="#000" />
+                    <circle cx="160" cy="86" class="data-point" fill="#000" />
+                    <circle cx="220" cy="142" class="data-point" fill="#000" />
+                    <circle cx="280" cy="58" class="data-point" fill="#000" />
+                    <circle cx="340" cy="58" class="data-point" fill="#000" />
+                    
+                    <line x1="50" y1="58" x2="340" y2="58" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4" />
+                </svg>
+            </div>
+            <div class="soal-grid">
+              <div class="soal-item">
+                  <div class="mb-1">
+                      <span class="font-bold">6.</span> How many books were sold in <b>February</b>?
+                  </div>
+                  <div class="choice-container ml-4 flex-col">
+                      <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 20 books</label>
+                      <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 30 books</label>
+                      <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 40 books</label>
+                      <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 50 books</label>
+                  </div>
+              </div>
+              <div class="h-separator"></div>
+              
+              <div class="soal-item">
+                  <div class="mb-1">
+                       <span class="font-bold">7.</span> In which month were book sales the <b>least</b>?
+                  </div>
+                  <div class="mt-1 ml-4">
+                      <b>Answer:</b> <span class="input-line"></span>
+                  </div>
+              </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Tables and Line Graphs</div>
+                    <div class="text-[10px] text-black font-medium">Data Interpretation</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S372</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                  <div class="soal-item">
+                      <div class="mb-1">
+                           <span class="font-bold">8.</span> What is the <b>total</b> number of books sold in January and April? <br><small class="text-gray-500">(See Graph B on page 2)</small>
+                      </div>
+                      <div class="choice-container ml-4 flex-col">
+                          <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 50 books</label>
+                          <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 60 books</label>
+                          <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 70 books</label>
+                          <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 80 books</label>
+                      </div>
+                  </div>
+                  <div class="h-separator"></div>
+                  <div class="soal-item">
+                      <div class="mb-1">
+                           <span class="font-bold">9.</span> What happened to book sales from March to April? <br><small class="text-gray-500">(See Graph B on page 2)</small>
+                      </div>
+                      <div class="choice-container ml-4 flex-col">
+                          <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. Sales stayed the same</label>
+                          <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. Sales decreased drastically</label>
+                          <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. Sales increased sharply</label>
+                          <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. No sales</label>
+                      </div>
+                  </div>
+                  <div class="h-separator"></div>
+                  <div class="soal-item">
+                      <div class="mb-1">
+                           <span class="font-bold">10.</span> In which two months was the number of book sales the <b>same</b>? <br><small class="text-gray-500">(See Graph B on page 2)</small>
+                      </div>
+                      <div class="mt-1 ml-4">
+                          <b>Answer:</b> <span class="input-line"></span>
+                      </div>
+                  </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
