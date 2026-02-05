@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Finding Path Area (E4-S366)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff; /* bg-blue-50 equivalent */
+        --path-color: #d1d5db; /* gray-300 */
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.6cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; /* Mendorong footer ke bawah */
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.6cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .concept-box,
+        .input-box,
+        .visual-shape {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-200 { background-color: #e5e7eb !important; }
+        .bg-gray-300 { background-color: #d1d5db !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 26px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 24px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 5px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0;
+      }
+      
+      /* Modifier for compact spacing on page 3 */
+      .h-separator-compact {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.1cm 0; /* Reduced margin */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.4rem;
+        background-color: #f3f4f6;
+        padding: 0.2rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CONCEPT BOX --- */
+      .concept-box {
+        border: 2px solid #60a5fa;
+        background-color: #eff6ff;
+        border-radius: 10px;
+        padding: 8px;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+      }
+      
+      /* SVG Styles for Visual Math */
+      .visual-svg {
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .path-fill { fill: #d1d5db; stroke: #333; stroke-width: 1.5; }
+      .inner-rect { fill: white; stroke: #333; stroke-width: 1.5; }
+      .dim-line { stroke: #333; stroke-width: 1; marker-end: url(#arrow); marker-start: url(#arrow); }
+      .arrow-marker { fill: #333; }
+    </style>
+  </head>
+  <body>
+    <!-- Define SVG Arrow Marker -->
+    <svg style="display: none;">
+      <defs>
+        <marker id="arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 L1,3 z" fill="#333" />
+        </marker>
+      </defs>
+    </svg>
+
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Area and Perimeter
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Finding Path Area
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : E4-S366
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-3 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: PATH AREA EXPLORATION
+                </h1>
+            </div>
+
+            <!-- CONCEPT SECTION -->
+            <div class="concept-box">
+                <div class="font-bold text-blue-800 mb-1">Key Concept: Path Area</div>
+                <div class="flex gap-4 items-center">
+                    <div class="flex-1 text-sm text-gray-700">
+                        <ul class="list-disc pl-4 space-y-1">
+                            <li>Think of the path area as the **difference** (subtraction).</li>
+                            <li>Formula: <b>Path Area = Area of Large Rectangle - Area of Small Rectangle</b>.</li>
+                            <li>Observe dimensions carefully: <br><i>Outer Length = Inner Length + (2 x Path Width)</i></li>
+                        </ul>
+                    </div>
+                    <div class="w-32 text-center">
+                        <svg width="80" height="60" viewBox="0 0 100 80" class="visual-svg">
+                            <rect x="5" y="5" width="90" height="70" class="path-fill" />
+                            <rect x="20" y="20" width="60" height="40" class="inner-rect" />
+                            <text x="50" y="45" font-size="8" text-anchor="middle" font-weight="bold">SMALL</text>
+                            <text x="50" y="15" font-size="8" text-anchor="middle" font-weight="bold">LARGE</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-2 py-1 text-sm">
+                Section A: Identifying Dimensions & Area
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="mb-2">
+                         <span class="font-bold">1.</span> A rectangular garden measures <b>10 m x 6 m</b>. A path of width <b>2 m</b> is made around the garden.
+                    </div>
+                    <div class="flex flex-col items-center mb-3">
+                        <svg width="200" height="140" viewBox="0 0 200 140" class="visual-svg">
+                            <!-- Outer Path -->
+                            <rect x="10" y="10" width="180" height="120" class="path-fill" />
+                            <!-- Inner Garden -->
+                            <rect x="40" y="30" width="120" height="80" class="inner-rect" />
+                            
+                            <!-- Dimensions Inner -->
+                            <text x="100" y="75" font-size="10" text-anchor="middle" font-weight="bold">GARDEN</text>
+                            <text x="100" y="60" font-size="8" text-anchor="middle">10m x 6m</text>
+                            
+                            <!-- Path Width Arrows -->
+                            <line x1="10" y1="70" x2="40" y2="70" stroke="black" marker-end="url(#arrow)" marker-start="url(#arrow)" />
+                            <text x="25" y="65" font-size="8" text-anchor="middle">2m</text>
+                            
+                            <line x1="160" y1="70" x2="190" y2="70" stroke="black" marker-end="url(#arrow)" marker-start="url(#arrow)" />
+                            <text x="175" y="65" font-size="8" text-anchor="middle">2m</text>
+                            
+                            <line x1="100" y1="10" x2="100" y2="30" stroke="black" marker-end="url(#arrow)" marker-start="url(#arrow)" />
+                            <text x="110" y="25" font-size="8">2m</text>
+                        </svg>
+                        <div class="text-sm font-semibold mt-1">What are the Total Length and Width (Large Rectangle)?</div>
+                    </div>
+                    
+                    <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. Length = 12 m, Width = 8 m</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. Length = 14 m, Width = 10 m</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. Length = 12 m, Width = 10 m</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. Length = 14 m, Width = 8 m</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> Using data from question 1, what is the area of the path (gray region)?
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 ml-4 text-sm space-y-2">
+                        <div>Step 1: Large Area = <span class="input-box"></span> x <span class="input-box"></span> = <span class="input-box" style="width: 60px;"></span> m²</div>
+                        <div>Step 2: Small Area = 10 x 6 = <b>60</b> m²</div>
+                        <div>Step 3: Path Area = Large Area - Small Area</div>
+                    </div>
+                    <div class="mt-2 ml-4">
+                        <b>Final Answer:</b> <span class="input-box" style="width: 80px"></span> m²
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Area and Perimeter
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Finding Path Area
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : E4-S366
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+                 <!-- SOAL 3 (Moved from Page 1) -->
+                 <div class="soal-item">
+                     <div class="mb-1">
+                        <span class="font-bold">3.</span> A swimming pool measures <b>20 m x 10 m</b>. Tiles of width <b>1 m</b> are installed around it. Which mathematical statement is correct to calculate the area of the tiles?
+                    </div>
+                    <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) (20 x 10) - (18 x 8)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) (21 x 11) - (20 x 10)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) (22 x 12) - (20 x 10)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) (22 x 12) + (20 x 10)</label>
+                    </div>
+                </div>
+                
+                <div class="h-separator"></div>
+                
+                  <!-- SOAL 4 -->
+                 <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">4.</span> A painting measuring <b>8 cm x 5 cm</b> is pasted on a cardboard. There is a remaining border of <b>2 cm</b> around the painting. What is the area of the cardboard <b>not</b> covered by the painting?
+                    </div>
+                    <div class="flex justify-center my-2">
+                        <svg width="180" height="120" viewBox="0 0 180 120" class="visual-svg">
+                            <rect x="10" y="10" width="160" height="100" fill="#f3f4f6" stroke="black" />
+                            <rect x="40" y="35" width="100" height="50" fill="white" stroke="black" />
+                            <text x="90" y="65" font-size="10" text-anchor="middle">Painting</text>
+                            <text x="90" y="25" font-size="10" text-anchor="middle">Cardboard</text>
+                            
+                            <!-- Dimension arrows -->
+                            <line x1="40" y1="90" x2="140" y2="90" stroke="black" stroke-width="0.5"/>
+                            <text x="90" y="100" font-size="8" text-anchor="middle">8 cm</text>
+                            
+                            <line x1="10" y1="60" x2="40" y2="60" stroke="black" marker-end="url(#arrow)" marker-start="url(#arrow)" />
+                            <text x="25" y="55" font-size="8" text-anchor="middle">2 cm</text>
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex items-center gap-2">
+                        Answer: <span class="input-box" style="width: 80px"></span> cm²
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                 <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">5.</span> Mr. Budi has a garden measuring <b>15 m x 10 m</b>. He makes a path of width <b>2 m</b> <b>INSIDE</b> the garden (along the inner edge).
+                        <div class="text-xs text-red-600 mt-1 italic">(Caution: This time the path is inside, so the middle area becomes smaller).</div>
+                    </div>
+                    
+                    <div class="flex justify-center my-2">
+                        <svg width="180" height="120" viewBox="0 0 180 120" class="visual-svg">
+                            <!-- Outer (Total Kebun) -->
+                            <rect x="0" y="0" width="180" height="120" fill="#e5e7eb" stroke="black" />
+                            <!-- Inner (Tanaman) -->
+                            <rect x="24" y="24" width="132" height="72" fill="#d1fae5" stroke="black" stroke-dasharray="4" />
+                            
+                            <text x="90" y="60" font-size="10" text-anchor="middle" font-weight="bold" fill="#065f46">Plant Area?</text>
+                            <text x="90" y="15" font-size="10" text-anchor="middle">Total: 15m x 10m</text>
+                            
+                            <line x1="0" y1="60" x2="24" y2="60" stroke="black" marker-end="url(#arrow)" marker-start="url(#arrow)" />
+                            <text x="12" y="55" font-size="8" text-anchor="middle">2m</text>
+                        </svg>
+                    </div>
+
+                    <div class="mb-2 ml-4 text-sm font-semibold">What are the length and width of the plant area in the middle?</div>
+                    <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. Length 13 m, Width 8 m</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. Length 11 m, Width 6 m</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. Length 17 m, Width 12 m</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. Length 13 m, Width 6 m</label>
+                    </div>
+                </div>
+                
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">6.</span> Based on question 5, what is the area of the path made by Mr. Budi?
+                    </div>
+                    <div class="ml-4 flex items-center gap-2 mt-2">
+                        Answer: <span class="input-box" style="width: 80px"></span> m²
+                    </div>
+                </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (COMPACT) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Area and Perimeter</div>
+                    <div class="text-[10px] text-black font-medium">Finding Path Area</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S366</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+                
+                <!-- SOAL 7 (Moved from Page 2) -->
+                <div class="soal-item">
+                    <div class="mb-1 text-sm">
+                        <span class="font-bold">7.</span> A <b>Square</b> (not a rectangle) has a side of <b>10 m</b>. A path of width <b>1 m</b> is made around the outside of the square. What is the area of the path?
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> A. 40 m²</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> B. 41 m²</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> C. 44 m²</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> D. 100 m²</label>
+                    </div>
+                </div>
+
+                <div class="h-separator-compact"></div>
+
+                <!-- INSTRUCTION B -->
+                <div class="instruction-text mb-1 py-1 text-sm">
+                    Section B: Exploration Challenge
+                </div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="mb-1 text-sm">
+                        <span class="font-bold">8.</span> Imagine we cut the path around the garden into 4 rectangles and 4 small squares at the corners.
+                        If the path width is <b>3 m</b>, what is the area of <b>one</b> small square at the corner?
+                    </div>
+                    <div class="flex items-center gap-4 ml-4 mt-1">
+                        <!-- FIX: Increased width and viewBox to prevent clipping of text -->
+                        <svg width="160" height="120" viewBox="0 0 160 120" class="visual-svg">
+                            <!-- Corner Square (The Answer Focus) -->
+                            <rect x="10" y="10" width="40" height="40" fill="#bfdbfe" stroke="black" stroke-width="2" />
+                            <text x="30" y="35" font-size="14" text-anchor="middle" font-weight="bold" fill="#1e3a8a">?</text>
+                            
+                            <!-- Horizontal Path Segment (Right of corner) -->
+                            <rect x="50" y="10" width="60" height="40" fill="#f3f4f6" stroke="#9ca3af" stroke-dasharray="4" />
+                            
+                            <!-- Vertical Path Segment (Below corner) -->
+                            <rect x="10" y="50" width="40" height="40" fill="#f3f4f6" stroke="#9ca3af" stroke-dasharray="4" />
+                            
+                            <!-- Labels -->
+                            <!-- Label for Vertical Height of Horizontal Path (which is the side of the square) -->
+                            <!-- Right side label -->
+                            <line x1="115" y1="10" x2="115" y2="50" stroke="black" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+                            <text x="120" y="35" font-size="10" alignment-baseline="middle">3m</text>
+                            
+                            <!-- Label for Horizontal Width of Vertical Path -->
+                            <!-- Bottom label -->
+                            <line x1="10" y1="95" x2="50" y2="95" stroke="black" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+                            <text x="30" y="110" font-size="10" text-anchor="middle">3m</text>
+                        </svg>
+                        <div class="flex items-center gap-2">
+                            Answer: <span class="input-box" style="width: 60px"></span> m²
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator-compact"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="mb-1 text-sm">
+                        <span class="font-bold">9.</span> Two rectangular carpets are placed on top of each other. The bottom carpet measures <b>6 m x 4 m</b>. The top carpet measures <b>4 m x 2 m</b> and is placed exactly in the center. What is the area of the bottom carpet that is <b>visible</b>?
+                    </div>
+                    <div class="flex justify-center my-1">
+                        <svg width="150" height="100" viewBox="0 0 150 100" class="visual-svg">
+                            <rect x="0" y="0" width="150" height="100" fill="#4b5563" />
+                            <rect x="37.5" y="25" width="75" height="50" fill="#fbbf24" stroke="white" />
+                            <text x="75" y="50" font-size="10" text-anchor="middle">Top Carpet</text>
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex items-center gap-2">
+                        Answer: <span class="input-box" style="width: 80px"></span> m²
+                    </div>
+                </div>
+
+                <div class="h-separator-compact"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="mb-1 text-sm">
+                        <span class="font-bold">10.</span> A wooden photo frame has a frame width of <b>5 cm</b>. The photo inside measures <b>20 cm x 30 cm</b>. What is the area of the wood needed to make the frame?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-1 mt-1">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 500 cm²</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 600 cm²</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 2400 cm²</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 1200 cm²</label>
+                    </div>
+                </div>
+                
+                <div class="mt-8 text-center text-sm font-semibold text-gray-600 italic">
+                    "Nice work finishing the set—seriously well done."
+                </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
