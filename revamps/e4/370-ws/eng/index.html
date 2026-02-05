@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Line Graphs (E4-S370)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff; /* bg-blue-50 equivalent */
+        --path-color: #d1d5db; /* gray-300 */
+      }
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.6cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; /* Mendorong footer ke bawah */
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.6cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .concept-box,
+        .input-box,
+        .visual-shape {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-200 { background-color: #e5e7eb !important; }
+        .bg-gray-300 { background-color: #d1d5db !important; }
+      }
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 26px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 24px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 5px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0;
+      }
+      
+      .h-separator-compact {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.1cm 0;
+      }
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.4rem;
+        background-color: #f3f4f6;
+        padding: 0.2rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+      /* --- CONCEPT BOX --- */
+      .concept-box {
+        border: 2px solid #60a5fa;
+        background-color: #eff6ff;
+        border-radius: 10px;
+        padding: 8px;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+      }
+      
+      /* SVG Styles for Visual Math */
+      .visual-svg {
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .grid-line { stroke: #e5e7eb; stroke-width: 1; }
+      .axis-line { stroke: #333; stroke-width: 1.5; }
+      .graph-line { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      .data-point { fill: white; stroke-width: 2; }
+      .axis-text { font-family: 'Noto Sans', sans-serif; font-size: 10px; fill: #666; }
+      .value-label { font-family: 'Noto Sans', sans-serif; font-size: 10px; font-weight: bold; fill: #111; }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Tables and Line Graphs
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Line Graphs
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : E4-S370
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-3 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: READING LINE GRAPHS
+                </h1>
+            </div>
+            <div class="concept-box">
+                <div class="font-bold text-blue-800 mb-1">Tips for Reading Line Graphs</div>
+                <div class="text-sm text-gray-700">
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li>Look at the <b>Vertical Axis</b> to see values (amount, temperature, height).</li>
+                        <li>Look at the <b>Horizontal Axis</b> to see time (days, weeks, months).</li>
+                        <li>Follow the data points to find the exact value.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="instruction-text mb-2 py-1 text-sm">
+                Section A: Weekly Air Temperature
+            </div>
+            
+            <div class="soal-grid">
+                
+                <div class="flex justify-center mb-2">
+                    <svg width="400" height="250" viewBox="0 0 400 250" class="visual-svg">
+                        <line x1="50" y1="200" x2="380" y2="200" class="grid-line" /> <line x1="50" y1="164" x2="380" y2="164" class="grid-line" /> <line x1="50" y1="128" x2="380" y2="128" class="grid-line" /> <line x1="50" y1="92" x2="380" y2="92" class="grid-line" />  <line x1="50" y1="56" x2="380" y2="56" class="grid-line" />  <line x1="50" y1="20" x2="380" y2="20" class="grid-line" />  <line x1="50" y1="20" x2="50" y2="200" class="axis-line" marker-start="url(#arrow)" />
+                        <line x1="50" y1="200" x2="380" y2="200" class="axis-line" marker-end="url(#arrow)" />
+                        
+                        <text x="45" y="200" text-anchor="end" class="axis-text" alignment-baseline="middle">20</text>
+                        <text x="45" y="164" text-anchor="end" class="axis-text" alignment-baseline="middle">24</text>
+                        <text x="45" y="128" text-anchor="end" class="axis-text" alignment-baseline="middle">28</text>
+                        <text x="45" y="92" text-anchor="end" class="axis-text" alignment-baseline="middle">32</text>
+                        <text x="45" y="56" text-anchor="end" class="axis-text" alignment-baseline="middle">36</text>
+                        <text x="45" y="20" text-anchor="end" class="axis-text" alignment-baseline="middle">40</text>
+                        <text x="30" y="110" text-anchor="middle" class="axis-text" transform="rotate(-90, 30, 110)" font-weight="bold">Temp (°C)</text>
+                        
+                        <text x="80" y="220" text-anchor="middle" class="axis-text">Mon</text>
+                        <text x="140" y="220" text-anchor="middle" class="axis-text">Tue</text>
+                        <text x="200" y="220" text-anchor="middle" class="axis-text">Wed</text>
+                        <text x="260" y="220" text-anchor="middle" class="axis-text">Thu</text>
+                        <text x="320" y="220" text-anchor="middle" class="axis-text">Fri</text>
+                        
+                        <polyline points="80,128 140,110 200,74 260,92 320,146" class="graph-line" stroke="#3b82f6" />
+                        
+                        <circle cx="80" cy="128" r="4" class="data-point" stroke="#ef4444" />
+                        <text x="80" y="120" text-anchor="middle" class="value-label">28°</text>
+                        
+                        <circle cx="140" cy="110" r="4" class="data-point" stroke="#ef4444" />
+                        <text x="140" y="102" text-anchor="middle" class="value-label">30°</text>
+                        
+                        <circle cx="200" cy="74" r="4" class="data-point" stroke="#ef4444" />
+                        <text x="200" y="66" text-anchor="middle" class="value-label">34°</text>
+                        
+                        <circle cx="260" cy="92" r="4" class="data-point" stroke="#ef4444" />
+                        <text x="260" y="84" text-anchor="middle" class="value-label">32°</text>
+                        
+                        <circle cx="320" cy="146" r="4" class="data-point" stroke="#ef4444" />
+                        <text x="320" y="138" text-anchor="middle" class="value-label">26°</text>
+                    </svg>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-2">
+                         <span class="font-bold">1.</span> What was the air temperature on Wednesday?
+                    </div>
+                    <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 28°C</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 30°C</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 32°C</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 34°C</label>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <span class="font-bold">2.</span> On which day did the air temperature reach its <b>lowest</b> point?
+                    </div>
+                    <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. Monday</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. Wednesday</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. Thursday</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. Friday</label>
+                    </div>
+                </div>
+                </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Tables and Line Graphs</div>
+                    <div class="text-[10px] text-black font-medium">Line Graphs</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S370</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            <div class="soal-item">
+                <div class="mb-2">
+                    <span class="font-bold">3.</span> What is the <b>difference</b> in temperature between the hottest day and the coldest day? (See Graph A on Page 1)
+                </div>
+                <div class="choice-container ml-4 flex-col">
+                    <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 4°C</label>
+                    <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 6°C</label>
+                    <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 8°C</label>
+                    <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 10°C</label>
+                </div>
+            </div>
+            <div class="h-separator"></div>
+            <div class="instruction-text mb-2 py-1 text-sm mt-4">
+                Section B: Mung Bean Plant Growth
+            </div>
+            
+            <div class="text-sm mb-2 px-2">
+                Grade 4 students conducted an experiment planting mung beans. The diagram below shows the plant height every week for 5 weeks.
+            </div>
+            
+            <div class="flex justify-center mb-4">
+                <svg width="400" height="250" viewBox="0 0 400 250" class="visual-svg">
+                    <line x1="50" y1="220" x2="380" y2="220" class="grid-line" /> <line x1="50" y1="180" x2="380" y2="180" class="grid-line" /> <line x1="50" y1="140" x2="380" y2="140" class="grid-line" /> <line x1="50" y1="100" x2="380" y2="100" class="grid-line" /> <line x1="50" y1="60" x2="380" y2="60" class="grid-line" />  <line x1="50" y1="20" x2="380" y2="20" class="grid-line" />  <line x1="50" y1="20" x2="50" y2="220" class="axis-line" marker-start="url(#arrow)" />
+                    <line x1="50" y1="220" x2="380" y2="220" class="axis-line" marker-end="url(#arrow)" />
+                    
+                    <text x="45" y="220" text-anchor="end" class="axis-text" alignment-baseline="middle">0</text>
+                    <text x="45" y="180" text-anchor="end" class="axis-text" alignment-baseline="middle">5</text>
+                    <text x="45" y="140" text-anchor="end" class="axis-text" alignment-baseline="middle">10</text>
+                    <text x="45" y="100" text-anchor="end" class="axis-text" alignment-baseline="middle">15</text>
+                    <text x="45" y="60" text-anchor="end" class="axis-text" alignment-baseline="middle">20</text>
+                    <text x="45" y="20" text-anchor="end" class="axis-text" alignment-baseline="middle">25</text>
+                    <text x="30" y="110" text-anchor="middle" class="axis-text" transform="rotate(-90, 30, 110)" font-weight="bold">Height (cm)</text>
+                    
+                    <text x="80" y="235" text-anchor="middle" class="axis-text">1</text>
+                    <text x="140" y="235" text-anchor="middle" class="axis-text">2</text>
+                    <text x="200" y="235" text-anchor="middle" class="axis-text">3</text>
+                    <text x="260" y="235" text-anchor="middle" class="axis-text">4</text>
+                    <text x="320" y="235" text-anchor="middle" class="axis-text">5</text>
+                    <text x="200" y="248" text-anchor="middle" class="axis-text" font-weight="bold">Week</text>
+                    
+                    <polyline points="80,204 140,172 200,124 260,60 320,44" class="graph-line" stroke="#16a34a" />
+                    
+                    <circle cx="80" cy="204" r="4" class="data-point" stroke="#000" />
+                    <text x="70" y="200" text-anchor="end" class="value-label">2</text>
+                    
+                    <circle cx="140" cy="172" r="4" class="data-point" stroke="#000" />
+                    <text x="130" y="168" text-anchor="end" class="value-label">6</text>
+                    
+                    <circle cx="200" cy="124" r="4" class="data-point" stroke="#000" />
+                    <text x="190" y="120" text-anchor="end" class="value-label">12</text>
+                    
+                    <circle cx="260" cy="60" r="4" class="data-point" stroke="#000" />
+                    <text x="250" y="56" text-anchor="end" class="value-label">20</text>
+                    
+                    <circle cx="320" cy="44" r="4" class="data-point" stroke="#000" />
+                    <text x="320" y="35" text-anchor="middle" class="value-label">22</text>
+                </svg>
+            </div>
+            
+            <div class="soal-item">
+                <div class="mb-1">
+                    <span class="font-bold">4.</span> What was the height of the plant in Week 3?
+                </div>
+                <div class="ml-4 flex items-center gap-2 mt-2">
+                    Answer: <span class="input-box" style="width: 100px"></span> cm
+                </div>
+            </div>
+            <div class="h-separator"></div>
+             
+            <div class="soal-item">
+                <div class="mb-1">
+                    <span class="font-bold">5.</span> How many cm did the plant height increase from Week 2 to Week 4?
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 ml-4 text-sm space-y-2 mt-2">
+                    <div>Height Week 4: <b>20</b> cm</div>
+                    <div>Height Week 2: <b>6</b> cm</div>
+                    <div>Difference: <span class="input-box"></span> - <span class="input-box"></span> = <span class="input-box"></span> cm</div>
+                </div>
+                <div class="ml-4 flex items-center gap-2 mt-2">
+                    <b>Answer:</b> <span class="input-box" style="width: 80px"></span> cm
+                </div>
+            </div>
+            </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Tables and Line Graphs</div>
+                    <div class="text-[10px] text-black font-medium">Line Graphs</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S370</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">6.</span> During which weekly interval did the plant experience the <b>fastest</b> growth? (See Graph B on Page 2).
+                    </div>
+                    
+                    <div class="choice-container ml-4 flex-col">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. Week 1 to 2</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. Week 2 to 3</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. Week 3 to 4</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. Week 4 to 5</label>
+                    </div>
+                </div>
+                
+                <div class="h-separator"></div>
+                
+                <div class="instruction-text mb-2 py-1 text-sm mt-4">
+                    Section C: Storybook Sales
+                </div>
+                <div class="text-sm mb-2 px-2">
+                    The graph below shows the number of storybooks sold at "Pintar" bookstore from January to June.
+                </div>
+                
+                <div class="flex justify-center mb-4">
+                    <svg width="400" height="250" viewBox="0 0 400 250" class="visual-svg">
+                        <line x1="50" y1="220" x2="380" y2="220" class="grid-line" /> <line x1="50" y1="190" x2="380" y2="190" class="grid-line" /> <line x1="50" y1="160" x2="380" y2="160" class="grid-line" /> <line x1="50" y1="130" x2="380" y2="130" class="grid-line" /> <line x1="50" y1="100" x2="380" y2="100" class="grid-line" /> <line x1="50" y1="70" x2="380" y2="70" class="grid-line" />  <line x1="50" y1="40" x2="380" y2="40" class="grid-line" />  <line x1="50" y1="30" x2="50" y2="220" class="axis-line" marker-start="url(#arrow)" />
+                        <line x1="50" y1="220" x2="380" y2="220" class="axis-line" marker-end="url(#arrow)" />
+                        
+                        <text x="45" y="220" text-anchor="end" class="axis-text" alignment-baseline="middle">0</text>
+                        <text x="45" y="190" text-anchor="end" class="axis-text" alignment-baseline="middle">10</text>
+                        <text x="45" y="160" text-anchor="end" class="axis-text" alignment-baseline="middle">20</text>
+                        <text x="45" y="130" text-anchor="end" class="axis-text" alignment-baseline="middle">30</text>
+                        <text x="45" y="100" text-anchor="end" class="axis-text" alignment-baseline="middle">40</text>
+                        <text x="45" y="70" text-anchor="end" class="axis-text" alignment-baseline="middle">50</text>
+                        <text x="45" y="40" text-anchor="end" class="axis-text" alignment-baseline="middle">60</text>
+                        <text x="30" y="110" text-anchor="middle" class="axis-text" transform="rotate(-90, 30, 110)" font-weight="bold">No. of Books</text>
+                        
+                        <text x="80" y="235" text-anchor="middle" class="axis-text">Jan</text>
+                        <text x="130" y="235" text-anchor="middle" class="axis-text">Feb</text>
+                        <text x="180" y="235" text-anchor="middle" class="axis-text">Mar</text>
+                        <text x="230" y="235" text-anchor="middle" class="axis-text">Apr</text>
+                        <text x="280" y="235" text-anchor="middle" class="axis-text">May</text>
+                        <text x="330" y="235" text-anchor="middle" class="axis-text">Jun</text>
+                        
+                        <polyline points="80,160 130,115 180,130 230,70 280,100 330,40" class="graph-line" stroke="#f97316" stroke-dasharray="5,2" />
+                        
+                        <circle cx="80" cy="160" r="4" class="data-point" stroke="#2563eb" />
+                        <text x="80" y="152" text-anchor="middle" class="value-label">20</text>
+                        
+                        <circle cx="130" cy="115" r="4" class="data-point" stroke="#2563eb" />
+                        <text x="130" y="107" text-anchor="middle" class="value-label">35</text>
+                        
+                        <circle cx="180" cy="130" r="4" class="data-point" stroke="#2563eb" />
+                        <text x="180" y="122" text-anchor="middle" class="value-label">30</text>
+                        
+                        <circle cx="230" cy="70" r="4" class="data-point" stroke="#2563eb" />
+                        <text x="230" y="62" text-anchor="middle" class="value-label">50</text>
+                        
+                        <circle cx="280" cy="100" r="4" class="data-point" stroke="#2563eb" />
+                        <text x="280" y="92" text-anchor="middle" class="value-label">40</text>
+                        
+                        <circle cx="330" cy="40" r="4" class="data-point" stroke="#2563eb" />
+                        <text x="330" y="32" text-anchor="middle" class="value-label">60</text>
+                    </svg>
+                </div>
+                
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">7.</span> What is the number of books sold in April?
+                    </div>
+                    <div class="ml-4 flex items-center gap-2 mt-2">
+                        Answer: <span class="input-box" style="width: 100px"></span> books
+                    </div>
+                </div>
+                
+                <div class="h-separator-compact"></div>
+                
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">8.</span> Did book sales increase or decrease from February to March?
+                    </div>
+                    <div class="ml-4 flex items-center gap-2 mt-2">
+                        Answer: <span class="input-box" style="width: 150px"></span>
+                    </div>
+                </div>
+                
+                <div class="h-separator-compact"></div>
+                
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">9.</span> What is the total number of books sold during the first 3 months (January, February, March)?
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 ml-4 text-sm space-y-2 mt-2">
+                         <div class="flex gap-2 items-center">
+                            Working: <span class="input-box"></span> + <span class="input-box"></span> + <span class="input-box"></span>
+                         </div>
+                    </div>
+                    <div class="ml-4 flex items-center gap-2 mt-2">
+                        Result: <span class="input-box" style="width: 80px"></span> books
+                    </div>
+                </div>
+                </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Tables and Line Graphs</div>
+                    <div class="text-[10px] text-black font-medium">Line Graphs</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S370</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+                
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">10.</span> Which month had the highest book sales?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-1 mt-1">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. February</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. April</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. May</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. June</label>
+                    </div>
+                </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
