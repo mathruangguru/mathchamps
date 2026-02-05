@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Finding the Side of a Rectangle (E4-S361)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff; /* bg-blue-50 equivalent */
+        --visual-green: #f0fdf4; /* bg-green-50 equivalent */
+        --visual-stroke: #000;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.5cm 2cm; /* Sedikit mengurangi padding atas/bawah */
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 5px; /* Margin header dikurangi */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; /* Mendorong footer ke bawah */
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.5cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .concept-box,
+        .input-box,
+        .visual-shape {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-green-50 { background-color: #f0fdf4 !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem; /* Mengurangi gap antar soal (default 0.8rem) */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 26px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 24px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+
+      .input-line {
+        border-bottom: 1.5px solid #333;
+        display: inline-block;
+        min-width: 60px;
+        text-align: center;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 3px; /* Mengurangi margin atas pilihan */
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.1cm 0; /* Mengurangi margin separator */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.3rem; /* Mengurangi margin bawah instruksi */
+        background-color: #f3f4f6;
+        padding: 0.2rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CONCEPT BOX --- */
+      .concept-box {
+        border: 2px solid #60a5fa;
+        background-color: #eff6ff;
+        border-radius: 10px;
+        padding: 6px 8px; /* Padding sedikit lebih rapat */
+        margin-bottom: 8px; /* Mengurangi margin bawah box konsep */
+        font-size: 0.9rem;
+      }
+      
+      /* SVG Styles for Visual Math */
+      .visual-svg {
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .shape-fill-blue { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; }
+      .shape-fill-green { fill: #f0fdf4; stroke: #16a34a; stroke-width: 2; }
+      .shape-line-dashed { stroke: #ef4444; stroke-width: 2; stroke-dasharray: 4, 3; }
+      .dim-line { stroke: #666; stroke-width: 1; }
+      .dim-text { font-size: 10px; fill: #666; font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Area and Perimeter
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Finding the Side of a Rectangle from Area
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code: E4-S361
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-1 mt-0">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: FINDING THE MISSING SIDE
+                </h1>
+                <p class="text-xs font-medium text-gray-500 italic">Visual Approach</p>
+            </div>
+
+
+
+            <!-- CONCEPT SECTION -->
+            <div class="concept-box">
+                <div class="font-bold text-blue-800 mb-0.5">Basic Concept</div>
+                <div class="mb-1 text-gray-700 leading-tight">
+                    Remember the Area of Rectangle formula: <b>Area = Length × Width</b><br>
+                    If the Area is known, we can find the missing side by division:
+                </div>
+                <div class="flex justify-center gap-8 items-center bg-white p-1 rounded border border-blue-200">
+                    <div class="text-center">
+                        <div class="font-bold text-base text-blue-600">? = Area ÷ Other Side</div>
+                        <div class="flex gap-4 text-[10px] text-gray-500 mt-0.5">
+                           <span>Width = Area ÷ Length</span>
+                           <span>Length = Area ÷ Width</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-1 py-1 text-sm">
+                Part A: Visual Understanding (Short Answer)
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                         <span class="font-bold">1.</span> Determine the length of the side marked with a question mark (?).
+                    </div>
+                    <div class="flex items-center gap-8 ml-4 mb-1">
+                        <div class="text-center relative">
+                            <!-- Visual Rectangle -->
+                            <!-- Menggeser elemen ke kanan (x+15) agar label kiri tidak terpotong/mepet -->
+                            <svg width="160" height="85" viewBox="0 0 160 90" class="visual-svg">
+                                <rect x="35" y="10" width="100" height="60" class="shape-fill-blue" />
+                                <!-- Labels -->
+                                <text x="85" y="45" text-anchor="middle" font-weight="bold" font-size="12">Area = 24 cm²</text>
+                                <text x="17" y="45" text-anchor="middle" class="dim-text">4 cm</text>
+                                <text x="85" y="85" text-anchor="middle" class="dim-text" font-size="14">?</text>
+                                <!-- Dimension lines -->
+                                <line x1="35" y1="75" x2="135" y2="75" class="dim-line" />
+                                <line x1="35" y1="72" x2="35" y2="78" class="dim-line" />
+                                <line x1="135" y1="72" x2="135" y2="78" class="dim-line" />
+                            </svg>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <b>Answer:</b> <span class="input-box"></span> cm
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                         <span class="font-bold">2.</span> Determine the missing width.
+                    </div>
+                    <div class="flex items-center gap-8 ml-4 mb-1">
+                        <div class="text-center relative">
+                            <!-- Visual Rectangle -->
+                            <svg width="160" height="75" viewBox="0 0 160 80" class="visual-svg">
+                                <rect x="10" y="20" width="120" height="50" class="shape-fill-green" />
+                                <!-- Labels -->
+                                <text x="70" y="50" text-anchor="middle" font-weight="bold" font-size="12">Area = 42 m²</text>
+                                <text x="70" y="15" text-anchor="middle" class="dim-text">7 m</text>
+                                <text x="140" y="50" text-anchor="middle" class="dim-text" font-size="14">?</text>
+                                <!-- Dimension lines -->
+                                <line x1="10" y1="18" x2="130" y2="18" class="dim-line" />
+                            </svg>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <b>Answer:</b> <span class="input-box"></span> m
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                     <div class="mb-1">
+                        <span class="font-bold">3.</span> A rectangle has an <b>Area of 64 cm²</b>. If one of its sides is <b>8 cm</b>, what is the other side?
+                    </div>
+                    <div class="ml-4 flex items-center gap-2">
+                         Draw the simple model here (optional):
+                         <div class="border border-dashed border-gray-400 w-32 h-16 bg-gray-50 rounded"></div>
+                    </div>
+                    <div class="mt-1 ml-4">
+                        <b>Answer:</b> <span class="input-box"></span> cm
+                    </div>
+                </div>
+                
+                <div class="h-separator"></div>
+
+                <!-- INSTRUCTION B -->
+                <div class="instruction-text mb-1 py-1 text-sm mt-2">
+                    Part B: Concept Exploration (Multiple Choice)
+                </div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                     <div class="mb-0.5">
+                        <span class="font-bold">4.</span> A rectangular carpet covers a floor area of <b>36 m²</b>. If the width of the carpet is <b>4 m</b>, what is the length of the carpet?
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> 8 m</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> 9 m</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> 12 m</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> 32 m</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                     <div class="mb-0.5">
+                        <span class="font-bold">5.</span> Mr. Budi has a vegetable garden with an area of <b>450 m²</b>. The length of the garden is <b>90 m</b>. What is the width of Mr. Budi's garden?
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> 5 m</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> 50 m</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> 40 m</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> 4 m</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Area and Perimeter
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Finding the Side of a Rectangle from Area
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code: E4-S361
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+                  
+                 <!-- SOAL 6 -->
+                 <div class="soal-item">
+                    <div class="mb-1">
+                       <span class="font-bold">6.</span> A piece of cardboard has an area of <b>100 cm²</b>. One of its sides has a length of <b>20 cm</b>. What is the length of the other side?
+                   </div>
+                   <div class="choice-container ml-4">
+                       <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> 5 cm</label>
+                       <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> 10 cm</label>
+                       <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> 80 cm</label>
+                       <label class="flex items-center cursor-pointer w-32"><span class="choice-box"></span> 2000 cm</label>
+                   </div>
+               </div>
+
+               <div class="h-separator"></div>
+
+               <!-- SOAL 7 -->
+               <div class="soal-item">
+                    <div class="mb-1">
+                       <span class="font-bold">7.</span> If the Area of a rectangle is <i>A</i>, and the length is <i>l</i>, the formula to find the width (<i>w</i>) is...
+                   </div>
+                   <div class="choice-container ml-4 flex-col gap-2">
+                       <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) w = A × l</label>
+                       <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) w = A + l</label>
+                       <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) w = A - l</label>
+                       <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) w = A ÷ l</label>
+                   </div>
+               </div>
+
+               <div class="h-separator"></div>
+
+                <!-- INSTRUCTION C -->
+                <div class="instruction-text mb-2 py-1 text-sm mt-4">
+                    Part C: Challenge & Application (Advanced Exploration)
+                </div>
+                
+                <!-- SOAL 8 -->
+                <div class="soal-item mb-4">
+                     <div class="mb-1">
+                        <span class="font-bold">8. Calculating Perimeter from Area</span><br>
+                        A swimming pool has an Area of <b>50 m²</b>. The length of the swimming pool is <b>10 m</b>.
+                    </div>
+                    <div class="ml-4 mt-2">
+                        <div class="mb-2">a) What is the width of the swimming pool?</div>
+                        <div class="mb-4">
+                             Answer: <span class="input-line"></span> m
+                        </div>
+                        <div class="mb-2">b) After finding the width, calculate the <b>Perimeter</b> of the swimming pool!</div>
+                        <div>
+                             Answer: <span class="input-line"></span> m
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item mb-4">
+                     <div class="mb-1">
+                        <span class="font-bold">9. Comparing Two Rectangles</span><br>
+                        Rectangle A has an area of 24 cm² with a width of 4 cm.<br>
+                        Rectangle B has an area of 24 cm² with a width of 6 cm.<br>
+                        Which rectangle has a "longer" shape? Explain with side calculations.
+                    </div>
+                    <div class="ml-4 mt-2">
+                        <textarea class="w-full border border-gray-300 rounded p-2 text-sm" rows="3" placeholder="Write your explanation here..."></textarea>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                       <span class="font-bold">10. Open Exploration</span><br>
+                       Imagine a room with an area of <b>36 m²</b>. The lengths of its sides are whole numbers (no decimals). List <b>3 possible</b> pairs of Length and Width that the room might have!
+                   </div>
+                   <div class="ml-4 mt-2 text-sm space-y-2">
+                       <div class="flex items-center gap-2">
+                           1. Length = <span class="input-line w-16"></span> m, Width = <span class="input-line w-16"></span> m
+                       </div>
+                       <div class="flex items-center gap-2">
+                           2. Length = <span class="input-line w-16"></span> m, Width = <span class="input-line w-16"></span> m
+                       </div>
+                       <div class="flex items-center gap-2">
+                           3. Length = <span class="input-line w-16"></span> m, Width = <span class="input-line w-16"></span> m
+                       </div>
+                   </div>
+               </div>
+
+               <div class="mt-8 text-center italic text-gray-500 text-sm font-medium">
+                   "Today’s effort is tomorrow’s confidence."
+               </div>
+
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
