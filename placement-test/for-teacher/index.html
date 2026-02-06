@@ -1,0 +1,896 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Math Champs - Teacher Assessment</title>
+    <!-- Font 'Nunito' & 'Noto Sans' -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <!-- KaTeX untuk Rumus Matematika Cantik -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        :root {
+            /* Warna sedikit lebih 'dewasa' untuk Guru tapi tetap cerah */
+            --primary: #2980b9; 
+            --primary-dark: #2c3e50;
+            --secondary: #27ae60;
+            --secondary-dark: #219150;
+            --accent: #E71D36;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --header-bg: #34495e;
+            --text-main: #2c3e50;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { height: 100%; }
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg-gradient);
+            margin: 0; padding: 0;
+            color: var(--text-main);
+            height: 100%;
+        }
+        .app-container {
+            display: flex; flex-direction: column; width: 100vw;
+            background-image: radial-gradient(#bdc3c7 1px, transparent 1px), radial-gradient(#bdc3c7 1px, transparent 1px);
+            background-position: 0 0, 25px 25px; background-size: 50px 50px; background-color: #f5f7fa;
+        }
+        header {
+            background: var(--header-bg); padding: 15px 30px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 50; position: relative; flex-shrink: 0; height: 80px;
+        }
+        .logo { height: 45px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); display: block; }
+        .status-bar { display: flex; gap: 15px; }
+        .status-item {
+            display: flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.15);
+            padding: 10px 20px; border-radius: 50px; font-weight: 800; color: white;
+            font-size: 1.2rem; border: 2px solid rgba(255,255,255,0.2);
+        }
+        @media (min-width: 769px) {
+            body { overflow: hidden; }
+            .app-container { height: 100vh; }
+            .game-stage {
+                flex: 1; overflow-y: auto; padding: 20px; display: flex; justify-content: center; scrollbar-width: thin;
+            }
+            .content-card {
+                margin: auto 0; max-width: 900px; background: rgba(255, 255, 255, 0.98);
+                border-radius: 16px; padding: 40px; box-shadow: 0 10px 40px rgba(44, 62, 80, 0.15);
+                animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 100%;
+                border: 1px solid #dfe6e9;
+            }
+            .feedback-container {
+                margin-top: 30px; display: none; flex-direction: column; align-items: center; animation: popIn 0.3s ease;
+            }
+        }
+        @media (max-width: 768px) {
+            body { overflow-y: auto; height: auto; }
+            html { height: auto; }
+            .app-container { height: auto; min-height: 100vh; background-size: 20px 20px; }
+            header { position: sticky; top: 0; padding: 12px 20px; justify-content: space-between; }
+            .game-stage { display: block; height: auto; padding: 0; overflow: visible; }
+            .content-card {
+                background: white; max-width: none; border-radius: 0; box-shadow: none; margin: 0;
+                min-height: calc(100vh - 80px); padding: 25px 20px 150px 20px;
+            }
+            h1 { font-size: 1.6rem !important; }
+            .question-box { font-size: 1.1rem !important; }
+            .feedback-container {
+                position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px;
+                box-shadow: 0 -5px 20px rgba(0,0,0,0.1); animation: slideUp 0.3s ease;
+                border-top: 1px solid #eee; display: none; flex-direction: column; align-items: center; z-index: 100;
+            }
+        }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        h1 { color: var(--primary); font-weight: 900; font-size: 2.2rem; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: -0.5px; }
+        h2 { color: #7f8c8d; font-weight: 600; margin: 0; }
+        .input-group { margin-bottom: 25px; text-align: left; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .input-label { display: block; font-weight: 700; margin-bottom: 10px; color: var(--dark); font-size: 1.0rem; }
+        .name-input {
+            width: 100%; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #bdc3c7; border-radius: 8px;
+            font-family: 'Nunito', sans-serif; outline: none; transition: border-color 0.2s; background: white;
+        }
+        .name-input:focus { border-color: var(--primary); }
+        
+        .progress-container {
+            background: #dfe6e9; height: 10px; border-radius: 50px; margin: 0 0 30px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: var(--primary); width: 0%;
+            border-radius: 50px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .question-box { font-size: 1.35rem; font-weight: 700; color: var(--dark); margin-bottom: 30px; line-height: 1.5; }
+        .q-img { max-width: 100%; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: 20px 0; border: 2px solid #eee; }
+        .opt-img { max-height: 80px; object-fit: contain; pointer-events: none; }
+        .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        @media (max-width: 600px) { .options-grid { grid-template-columns: 1fr; } }
+        .option-btn {
+            background: white; border: 1px solid #bdc3c7; border-bottom: 4px solid #bdc3c7; padding: 20px;
+            border-radius: 12px; font-size: 1.1rem; color: var(--text-main); font-weight: 700; cursor: pointer;
+            transition: all 0.15s ease; position: relative; font-family: 'Nunito', sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .option-btn:hover:not(:disabled) { border-color: var(--primary); border-bottom-color: var(--primary-dark); background: #f4f6f7; transform: translateY(-2px); }
+        .option-btn:active:not(:disabled) { transform: translateY(4px); border-bottom-width: 1px; margin-top: 4px; }
+        .option-btn:disabled { opacity: 0.7; cursor: default; background-color: #f8f9fa; }
+        .option-btn.correct { background: #d4edda; border-color: #28a745; border-bottom-color: #218838; color: #155724; }
+        .option-btn.wrong { background: #f8d7da; border-color: #dc3545; border-bottom-color: #c82333; color: #721c24; }
+        
+        .btn {
+            background: var(--primary); color: white; border: none; border-bottom: 4px solid var(--primary-dark);
+            padding: 16px 40px; font-size: 1.1rem; border-radius: 8px; font-weight: 700; cursor: pointer;
+            transition: all 0.1s; font-family: 'Nunito', sans-serif; text-transform: uppercase; letter-spacing: 1px;
+            display: inline-block; margin-top: 20px; width: 100%;
+        }
+        .btn:active { transform: translateY(3px); border-bottom-width: 1px; margin-top: 23px; }
+        .btn-next { background: var(--secondary); border-bottom: 4px solid var(--secondary-dark); }
+        .btn-report { background: white; color: var(--dark); border: 2px solid #ddd; border-bottom: 4px solid #ccc; margin-top: 15px; }
+        .btn-report:active { border-bottom-width: 2px; margin-top: 18px; }
+        .feedback-msg { font-size: 1.4rem; font-weight: 800; margin-bottom: 15px; }
+        
+        .checkpoint-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(44, 62, 80, 0.9); z-index: 200;
+            display: none; justify-content: center; align-items: center; flex-direction: column;
+            animation: fadeIn 0.3s ease; backdrop-filter: blur(5px);
+        }
+        .checkpoint-content {
+            background: white; padding: 40px; border-radius: 16px; text-align: center; max-width: 400px; width: 90%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; overflow: hidden;
+        }
+        .report-card {
+            display: none; margin-top: 30px; text-align: left; background: #fff; border-radius: 8px;
+            border: 1px solid #dfe6e9; overflow: hidden; animation: slideUp 0.3s ease;
+        }
+        .report-header { background: var(--dark); color: white; padding: 15px 20px; font-weight: 800; font-size: 1rem; }
+        .report-list { padding: 0; margin: 0; list-style: none; max-height: 500px; overflow-y: auto; }
+        .report-item { padding: 20px; border-bottom: 1px solid #ecf0f1; font-size: 0.95rem; }
+        .report-item:last-child { border-bottom: none; }
+        .report-meta { display: inline-block; background: #ecf0f1; color: #7f8c8d; padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-bottom: 10px; text-transform: uppercase; }
+        .report-q-text { margin-bottom: 15px; font-weight: 700; color: var(--dark); font-size: 1.0rem; }
+        
+        .screen { display: none; width: 100%; }
+        .screen.active { display: block; }
+        
+        .result-level { font-size: clamp(2rem, 8vw, 3rem); font-weight: 900; color: white; text-shadow: 2px 2px 0 rgba(0,0,0,0.1); word-wrap: break-word; line-height: 1.1; }
+        .result-card-inner {
+            background: linear-gradient(135deg, var(--primary), #3498db); padding: 40px; border-radius: 16px;
+            color: white; margin: 20px 0; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(41, 128, 185, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- HEADER -->
+    <header>
+        <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Brain Academy Teacher" class="logo">
+        <div class="status-bar" id="statusBar" style="visibility: hidden;">
+            <div class="status-item" style="display: none;">
+                <span>⏱️</span> <span id="timerDisplay">60:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN GAME STAGE -->
+    <div class="game-stage">
+        <div class="content-card">
+            
+            <!-- SCREEN 0: INPUT DATA -->
+            <div id="inputNameScreen" class="screen active" style="text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 10px;">👋</div>
+                <h1>Hello Teacher!</h1>
+                <h2 style="margin-bottom: 30px; font-weight: normal; color: #7f8c8d;">Silakan lengkapi data diri Anda</h2>
+
+                <!-- SECTION: DATA GURU -->
+                <div class="input-group">
+                    <label class="input-label">Nama Lengkap</label>
+                    <input type="text" id="teacherNameInput" class="name-input" placeholder="Nama Lengkap Anda" autocomplete="off">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Email</label>
+                    <input type="email" id="teacherEmailInput" class="name-input" placeholder="alamat@email.com" autocomplete="off">
+                </div>
+
+                <!-- Cabang Dropdown Searchable -->
+                <div class="input-group">
+                    <label class="input-label">Cabang Pelaksanaan Test</label>
+                    <input list="branchList" id="branchInput" class="name-input" placeholder="Ketik nama kota/cabang...">
+                    <datalist id="branchList">
+                        <!-- Populated by JS -->
+                    </datalist>
+                </div>
+
+                <button class="btn" onclick="saveNameAndContinue()">Masuk ke Tes</button>
+            </div>
+
+            <!-- SCREEN 1: START (Instruksi) -->
+            <div id="startScreen" class="screen" style="text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 10px;">📘</div>
+                <h1>MATH COMPETENCY TEST</h1>
+                <h2 style="margin-bottom: 30px;">Singapore Math Approach</h2>
+                
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; text-align: left; border: 1px solid #dfe6e9; margin-bottom: 30px;">
+                    <h3 style="margin: 0 0 15px 0; color: var(--primary);">Tentang Tes Ini:</h3>
+                    <ul style="margin: 0; padding-left: 20px; color: #5d4037; font-size: 1.05rem; line-height: 1.6;">
+                        <li>Tes menggunakan sistem <strong>Adaptive (Binary Search)</strong>.</li>
+                        <li>Anda akan dimulai dari level <strong>Exploration 2</strong>.</li>
+                        <li>Sistem akan menaikkan atau menurunkan tingkat kesulitan berdasarkan performa Anda per blok (5 soal).</li>
+                        <li>Gunakan konsep <em>Bar Model</em> atau logika jika diperlukan.</li>
+                    </ul>
+                </div>
+                <button class="btn" onclick="startGame()">MULAI TES 🚀</button>
+            </div>
+
+            <!-- SCREEN 2: GAME -->
+            <div id="gameScreen" class="screen">
+                <div class="progress-container">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+                <div class="question-box" id="questionText"></div>
+                <div class="options-grid" id="optionsContainer"></div>
+            </div>
+
+            <!-- SCREEN 3: RESULT -->
+            <div id="resultScreen" class="screen" style="text-align: center;">
+                <h1>Assessment Complete</h1>
+                <p style="font-size: 1.2rem; color: #7f8c8d;">Level Kompetensi Anda:</p>
+                
+                <div class="result-card-inner">
+                    <div class="result-level" id="finalPlacement">...</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px;">
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #dfe6e9;">
+                        <div style="font-size: 2rem; font-weight: 900; color: var(--dark);" id="finalScore">0</div>
+                        <div style="color: #95a5a6; font-size: 0.8rem; font-weight: 700;">TOTAL BENAR</div>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #dfe6e9;">
+                        <div style="font-size: 2rem; font-weight: 900; color: var(--dark);" id="timeUsed">00:00</div>
+                        <div style="color: #95a5a6; font-size: 0.8rem; font-weight: 700;">WAKTU</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-report" onclick="toggleReport()" id="btnReportToggle">📋 Lihat Detail Jawaban Salah</button>
+                
+                <div id="reportCard" class="report-card">
+                    <div class="report-header">
+                        <span>Analisis Kesalahan</span>
+                    </div>
+                    <ul id="reportList" class="report-list"></ul>
+                </div>
+            </div>
+
+            <!-- FEEDBACK AREA -->
+            <div class="feedback-container" id="feedbackArea">
+                <div class="feedback-msg" id="feedbackMessage">Jawaban Benar!</div>
+                <button class="btn btn-next" id="nextBtn">Lanjut ➔</button>
+            </div>
+
+            <!-- CHECKPOINT MODAL -->
+            <div id="checkpointModal" class="checkpoint-overlay">
+                <div class="checkpoint-content">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">⚖️</div>
+                    <h2 style="color: var(--primary); font-size: 1.5rem; margin-bottom: 10px;">Block Complete</h2>
+                    <p style="font-size: 1rem; color: #555;">Sistem sedang menyesuaikan tingkat kesulitan...</p>
+                    <p id="checkpointMsg" style="color: #27ae60; font-weight: bold; margin: 15px 0;">...</p>
+                    <button class="btn" onclick="closeCheckpoint()">LANJUT ▶</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- CONFIG ---
+    // [PENTING] PASTE URL WEB APP APPS SCRIPT DI SINI
+    // Contoh: 'https://script.google.com/macros/s/AKfycbx.../exec'
+    const googleScriptURL = 'https://script.google.com/macros/s/AKfycbw4Aa5WlZuNZfGxjFBRqSCp-zsPf417B48llnIXQ2uREcAFp0HXxBFJ3gAJOmubfe72Ug/exec';
+
+    // --- 0. DATA CABANG & SOAL ---
+    
+    // Data Cabang (FULL LIST)
+    const branches = [
+        "Atambua - Proklamasi", "Badung - Kapal", "Bagan Batu - Simpang Pujud", "Balige - Patuan Nagari",
+        "Balikpapan - Jendral Sudirman Plus", "Balikpapan - Sungai Ampal", "Banda Aceh - Jambo Tape",
+        "Banda Aceh - Merduati", "Banda Aceh - Teuku Nyak Arief", "Bandar Lampung - Gajah Mada Plus",
+        "Bandar Lampung - Rajabasa", "Bandar Lampung - Sumur Batu", "Bandar Lampung - Way Halim",
+        "Bandung - Antapani", "Bandung - Baleendah", "Bandung - Bengawan", "Bandung - Buahbatu",
+        "Bandung - Cibiru", "Bandung - Kopo", "Bandung - Kota Baru Parahyangan Plus", "Bandung - MTC",
+        "Bandung - MTC Plus", "Bandung - Padalarang", "Bandung - Pajajaran", "Bandung - Setiabudi",
+        "Bandung - Setiabudi Plus", "Bangkalan - Soekarno Hatta", "Bangkinang - Jenderal Sudirman",
+        "Banjar - Didi Kartasasmita", "Banjarbaru - Ahmad Yani", "Banjarmasin - Gatot Subroto",
+        "Banjarmasin - Gatot Subroto Plus", "Banjarmasin - Hasan Bashri", "Bantul - Gose", "Banyuwangi - Brawijaya",
+        "Banyuwangi - Genteng", "Batam - Batam Center", "Batam - Batam Center Plus", "Batam - Nagoya",
+        "Batang - Pemuda", "Batu - Agus Salim", "Baturaja - Ahmad Yani", "Baubau - Batara Guru",
+        "Bekasi - Agus Salim", "Bekasi - Bintara", "Bekasi - Cibubur", "Bekasi - Galaxy", "Bekasi - Galaxy Plus",
+        "Bekasi - Grand Wisata Plus", "Bekasi - Harapan Indah", "Bekasi - Harapan Indah Plus", "Bekasi - Jatiasih",
+        "Bekasi - Jatibening", "Bekasi - Mustika Jaya", "Bekasi - Summarecon", "Bekasi - Summarecon Plus",
+        "Bekasi - Tambun", "Bengkulu - Argamakmur", "Bengkulu - Curup", "Bengkulu - Kepahiang", "Bengkulu - Manna",
+        "Bengkulu - S. Parman", "Bengkulu - Selebar", "Berau - Ramania", "Bima - Gajah Mada", "Binjai - Veteran",
+        "Bireuen - Kota Juang", "Bitung - Girian", "Blitar - Bung Karno", "Bogor - Air Mancur Plus",
+        "Bogor - Baranangsiang", "Bogor - Braja Mustika", "Bogor - Kota Wisata", "Bogor - Kota Wisata Plus",
+        "Bogor - Metland Cileungsi", "Bogor - Pajajaran", "Bogor - Permata", "Bogor - Sawojajar",
+        "Bojonegoro - Dr. Cipto", "Bojonegoro - Padangan", "Bondowoso - Diponegoro", "Bone - Ahmad Yani",
+        "Bontang - Brigjen Katamso", "Boyolali - Merdeka", "Brebes - Sultan Agung", "Bukittinggi - Jambu Air",
+        "Bukittinggi - Manggis Ganting", "Bulukumba - Jend. Sudirman", "Ciamis - Samuji",
+        "Cianjur - Pangeran Hidayatullah", "Cibinong - Cikaret", "Cibinong - Karadenan", "Cibinong - Mayor Oking",
+        "Cibinong - Tegar Beriman Plus", "Cikarang - Cifest", "Cikarang - Cifest Plus", "Cikarang - Jababeka",
+        "Cilacap - S. Parman", "Cilacap - S. Parman Plus", "Cilegon - PCI", "Cilegon - PCI Plus",
+        "Cimahi - Amir Machmud Plus", "Cimahi - Cihanjuang", "Cirebon - CSB Mall", "Denpasar - Jimbaran",
+        "Denpasar - Mahendradatta", "Denpasar - Melati", "Denpasar - Renon Plus", "Denpasar - Sesetan",
+        "Depok - Cinere", "Depok - Cinere Plus", "Depok - Kelapa Dua", "Depok - Margonda Plus",
+        "Depok - Pancoran Mas", "Depok - Sawangan", "Depok - Siliwangi", "Depok - Sukmajaya",
+        "Dumai - Jendral Sudirman", "Duri - Hangtuah", "Ende - Kelimutu", "Garut - Perintis", "Gianyar - Dharma Giri",
+        "Gombong - Puring", "Gorontalo - Nani Wartabone", "Gowa - Sungguminasa", "Gresik - GKB", "Gresik - Usman Sadar",
+        "Grobogan - Purwodadi", "Gunungkidul - KH Agus Salim", "Indramayu - Sudirman", "Jakarta Barat - Cengkareng",
+        "Jakarta Barat - Citra Garden City", "Jakarta Barat - Kalideres", "Jakarta Barat - Kebon Jeruk",
+        "Jakarta Barat - Kemanggisan", "Jakarta Barat - Taman Anggrek Mall", "Jakarta Pusat - Cempaka Putih",
+        "Jakarta Selatan - Blok M", "Jakarta Selatan - Fatmawati", "Jakarta Selatan - Jagakarsa",
+        "Jakarta Selatan - Jagakarsa Plus", "Jakarta Selatan - Kebayoran Baru", "Jakarta Selatan - Pasar Minggu",
+        "Jakarta Selatan - Pejaten", "Jakarta Selatan - Petukangan", "Jakarta Selatan - Tebet",
+        "Jakarta Selatan - Tebet Plus", "Jakarta Selatan - Veteran", "Jakarta Timur - Buaran",
+        "Jakarta Timur - Ciracas", "Jakarta Timur - Condet", "Jakarta Timur - Duren Sawit", "Jakarta Timur - Jatinegara",
+        "Jakarta Timur - Pondok Gede", "Jakarta Timur - Rawamangun", "Jakarta Utara - Kelapa Gading Plus",
+        "Jakarta Utara - Koja", "Jakarta Utara - Pluit", "Jakarta Utara - Sunter", "Jambi - Bungo",
+        "Jambi - Muara Bulian", "Jambi - Sarolangun", "Jambi - Sipin", "Jambi - Sungai Penuh", "Jambi - Thehok",
+        "Jambi - Thehok Plus", "Jayapura - Padang Bulan", "Jember - Sumbersari", "Jembrana - Jenderal Sudirman",
+        "Jepara - Pemuda", "Jombang - Kapten Tendean", "Jombang - Mojoagung", "Kabanjahe - Jamin Ginting",
+        "Karanganyar - Tegalgede", "Karangasem - Ahmad Yani", "Karawang - Cikampek", "Karawang - Resinda Park Mall",
+        "Karawang - Tuparev", "Kayu Agung - Pahlawan", "Kebumen - Kusuma", "Kediri - Hasanudin", "Kendal - Rakese",
+        "Kendari - Abdullah Silondae", "Kendari - Malaka Square", "Kendari - MT Haryono", "Ketapang - R. Suprapto",
+        "Kisaran - Dr. Wahidin", "Klaten - Merbabu", "Kolaka - Pramuka", "Kroya - Jenderal Sudirman",
+        "Kuburaya - Serdam", "Kudus - Dersalam", "Kuningan - Siliwangi", "Kupang - Frans Seda", "Lahat - Lembayung",
+        "Lamongan - Veteran", "Lampung - Kalianda", "Lampung - Liwa", "Langkat - Stabat", "Langsa - Ahmad Yani",
+        "Lebak - Rangkasbitung", "Lhokseumawe - Merdeka", "Lubuk Linggau - Taba Koji",
+        "Lubuk Pakam - Tengku Raja Muda", "Lumajang - Tompokersan", "Luwuk Banggai - Moh. Hatta", "Madiun - Caruban",
+        "Madiun - Sutomo", "Magelang - Diponegoro", "Magelang - Mertoyudan", "Magelang - Muntilan",
+        "Magetan - Samudra", "Majalengka - Abdul Halim", "Makassar - Baruga", "Makassar - Cendrawasih",
+        "Makassar - Hertasning", "Makassar - Hertasning Plus", "Makassar - Perintis", "Makassar - Sudiang",
+        "Malang - Dieng Plus", "Malang - Kepanjen", "Malang - Klojen", "Malang - Lawang", "Malang - Sawojajar",
+        "Mamuju - Sultan Hasanuddin", "Manado - Sario", "Manado - Wenang Selatan", "Mataram - Pendidikan",
+        "Medan - Iskandar Muda Plus", "Medan - Johor", "Medan - Letda Sujono", "Medan - S. Parman",
+        "Medan - Sisingamangaraja", "Medan - Yos Sudarso", "Merangin - Bangko", "Metro - Sudirman",
+        "Meulaboh - Johan Pahlawan", "Mojokerto - Airlangga", "Mojokerto - Jayanegara", "Mojokerto - Letkol Sumarjo",
+        "Muara Enim - Sudirman", "Nganjuk - Megantara", "Ngawi - Gading", "Pacitan - Baleharjo", "Padang - Gajah Mada",
+        "Padang - S. Parman", "Padang - Sutomo", "Padang - Tarandam", "Padang - Ujung Gurun",
+        "Padang Sidempuan - Sudirman", "Painan - Pagaruyung", "Palangkaraya - Ahmad Yani", "Palangkaraya - RTA Milono",
+        "Palembang - Basuki Rahmat", "Palembang - Bukit Lama", "Palembang - Kenten", "Palembang - Rajawali Plus",
+        "Palembang - Seberang Ulu", "Palembang - Sukarami", "Palopo - Andi Kambo", "Palu - Jenderal Sudirman",
+        "Palu - Jenderal Sudirman Plus", "Pandan - Nauli", "Pangkal Pinang - Depati Hamza",
+        "Pangkalan Bun - Pakunegara", "Pangkalan Kerinci - Maharaja Indra", "Pangkep - Sultan Hasanuddin",
+        "Pare - Sudirman", "Parepare - Mattirotasi", "Parigi Moutong - Trans Sulawesi",
+        "Pasir Pengaraian - Tuanku Tambusai", "Pasuruan - Bangil", "Pasuruan - Panglima Sudirman",
+        "Pati - Jend. Sudirman", "Payakumbuh - Simpang Benteng", "Pekalongan - Diponegoro", "Pekanbaru - Ahmad Yani Plus",
+        "Pekanbaru - Imam Munandar", "Pekanbaru - Mustika", "Pekanbaru - Panam", "Pekanbaru - Soekarno Hatta",
+        "Pematangsiantar - Sudirman", "Pematangsiantar - Sutomo", "Perawang - KM5", "Pinrang - Jend. Sudirman",
+        "Polewali Mandar - Andi Depu", "Ponorogo - Bhayangkara", "Pontianak - Ayani Megamal Plus",
+        "Pontianak - MT Haryono", "Pontianak - Wahid Hasyim", "Prabumulih - Padat Karya", "Praya - Jenderal Sudirman",
+        "Pringsewu - Ahmad Yani", "Probolinggo - Kraksaan", "Probolinggo - Slamet Riyadi", "Purbalingga - Letkol Isdiman",
+        "Purwakarta - Martadinata", "Purwokerto - Kombas", "Purworejo - Tentara Pelajar", "Raha - Gatot Subroto",
+        "Rantau Prapat - Ahmad Yani", "Rembang - RA Kartini", "Rengat - R. Suprapto", "Sabang - Teuku Umar",
+        "Salatiga - Moh. Yamin", "Samarinda - Pahlawan", "Sampit - D.I Panjaitan", "Sangatta - Yos Sudarso",
+        "Selong - Ahmad Dahlan", "Semarang - Banyumanik", "Semarang - Karangayu", "Semarang - Majapahit",
+        "Semarang - Pandanaran", "Semarang - Ungaran", "Serang - Ahmad Yani", "Serang - Kebon Jahe",
+        "Sibolga - Sisingamangaraja", "Sidikalang - FL Tobing", "Sidoarjo - Pondok Jati",
+        "Sidoarjo - Pondok Mutiara Plus", "Sidoarjo - Trunojoyo", "Sigli - A Majid Ibrahim", "Singaraja - Ahmad Yani",
+        "Situbondo - Basuki Rahmat", "Sleman - Medari", "Solo - Adi Sucipto", "Solo - Adi Sucipto Plus",
+        "Solo - Gajahmada", "Solo - Serengan", "Solok - Pandan", "Soppeng - Lalabata", "Sorong - Pramuka",
+        "Sragen - Sukowati", "Subang - Otista", "Sukabumi - Sudirman", "Sukoharjo - Veteran",
+        "Sumedang - Prabu Geusan Ulun", "Surabaya - Gayungsari", "Surabaya - Jemursari", "Surabaya - Kusuma Bangsa",
+        "Surabaya - MERR Plus", "Surabaya - Ngagel", "Surabaya - Rungkut", "Surabaya - Wiyung",
+        "Surabaya - Wiyung Plus", "Tabanan - Ir. Soekarno", "Takengon - Lebe Kader", "Tana Toraja - Makale",
+        "Tangerang - Balaraja", "Tangerang - Ciledug", "Tangerang - Citra Raya", "Tangerang - Citymall",
+        "Tangerang - Daan Mogot", "Tangerang - Gading Serpong", "Tangerang - Gading Serpong Plus",
+        "Tangerang - Karawaci", "Tangerang - Sangiang", "Tangerang Selatan - Bintaro", "Tangerang Selatan - Bintaro Plus",
+        "Tangerang Selatan - BSD Boulevard", "Tangerang Selatan - BSD Golden Boulevard Plus",
+        "Tangerang Selatan - Ciputat Timur", "Tangerang Selatan - Golden Madrid", "Tangerang Selatan - Graha Raya Plus",
+        "Tangerang Selatan - Pamulang", "Tangerang Selatan - Pamulang Plus", "Tanjung Balai - Jenderal Sudirman",
+        "Tanjung Balai Karimun - Batu Lipai", "Tanjung Pandan - Sriwijaya", "Tanjung Pinang - Pamedan",
+        "Tarakan - Jendral Sudirman", "Tarutung - DI Panjaitan", "Tasikmalaya - Singaparna",
+        "Tasikmalaya - Tentara Pelajar", "Tebing Tinggi - Sudirman", "Tegal - Cokroaminoto",
+        "Teluk Kuantan - Beringin Taluk", "Temanggung - Tentara Pelajar", "Tembilahan - M Boya", "Ternate - Takoma",
+        "Toli-Toli - KH. Wahid Hasyim", "Tomohon - Matani", "Toraja Utara - Poros Bolu", "Trenggalek - Tugu",
+        "Tuban - KH Mustain", "Tulungagung - Boyolangu", "Tulungagung - Dr. Wahidin", "Wajo - Jend. Sudirman",
+        "Wonogiri - Gajahmungkur", "Yogyakarta - Sagan", "Yogyakarta - Taman Siswa", "Yogyakarta - Terban Plus",
+        "Yogyakarta - Wirobrajan"
+    ];
+
+    const questions = [
+        // --- Discovery 1 (Soal 1-5) ---
+        {
+            level: "Discovery 1",
+            text: "Perhatikan gambar di bawah ini.<br><img src='https://mathruangguru.github.io/gambar/bola_1.png' class='q-img' alt='Gambar Bola Basket dan Voli'><br>Pilih jawaban yang sesuai dengan gambar di atas.",
+            options: ["Jumlah bola basket 2 lebih banyak dari jumlah bola voli", "Jumlah bola voli 2 lebih banyak dari jumlah bola basket", "Jumlah bola basket dan bola voli adalah 9", "Jumlah bola basket lebih sedikit dari jumlah bola voli"],
+            answer: 0
+        },
+        {
+            level: "Discovery 1",
+            text: "Pada sebuah antrean, Ron berada di posisi kelima dari depan. Juan tepat berada di belakang Ron. Juan berada di posisi ke-berapa dari depan?",
+            options: ["Ke-5", "Ke-6", "Ke-7", "Ke-10"],
+            answer: 1
+        },
+        {
+            level: "Discovery 1",
+            text: "Gambar-gambar di bawah ini menunjukkan ikatan bilangan (number bonds).<br><img src='https://mathruangguru.github.io/gambar/bonda_3.png' class='q-img' alt='Contoh Number Bonds'><br>Diberikan ikatan bilangan berantai di bawah ini.<br><img src='https://mathruangguru.github.io/gambar/bondb_3.png' class='q-img' alt='Soal Number Bonds'><br>Berapakah nilai dari ☆?",
+            options: ["4", "3", "2", "1"],
+            answer: 2
+        },
+        {
+            level: "Discovery 1",
+            text: "Berikut ini adalah gambar 4 buah penjepit.<br><img src='https://mathruangguru.github.io/gambar/paperclip_4.png' class='q-img'><br>Selisih panjang penjepit terpanjang dengan penjepit terpendek adalah ___ satuan.",
+            options: ["1", "2", "3", "4"],
+            answer: 3
+        },
+        {
+            level: "Discovery 1",
+            text: "Rara memiliki <strong>2 balon lebih banyak</strong> dari Riri. Jumlah semua balon Rara dan Riri adalah <strong>8 balon</strong>. Berapa balon Riri?",
+            options: ["3 balon", "4 balon", "5 balon", "6 balon"],
+            answer: 0
+        },
+
+        // --- Discovery 2 (Soal 6-10) ---
+        { level: "Discovery 2", text: "Pilih gambar atau angka yang menunjukkan jumlah <strong>terbanyak</strong>.", options: ["<img src='https://mathruangguru.github.io/gambar/barA_6.png' class='opt-img'>", "<img src='https://mathruangguru.github.io/gambar/tenB_6.png' class='opt-img'>", "23", "2 puluhan, 5 satuan"], answer: 3 },
+        { level: "Discovery 2", text: "Joan membeli 3 ekor ikan hias.<br>Robin membeli 2 ekor ikan hias <strong>lebih banyak</strong> dari Joan.<br>Berapa banyak <strong>jumlah semua</strong> ikan hias milik Joan dan Robin?", options: ["5 ekor", "8 ekor", "12 ekor", "13 ekor"], answer: 1 },
+        {
+            level: "Discovery 2",
+            text: "Beni sedang sakit. Ia tertidur dan terbangun pada jam yang ditunjukkan pada gambar di bawah ini.<br><img src='https://mathruangguru.github.io/gambar/jam_8.png' class='q-img' alt='Gambar Jam'><br>Berapa jam Beni tertidur?",
+            options: ["4 jam", "5 jam", "6 jam", "7 jam"],
+            answer: 1
+        },
+        { level: "Discovery 2", text: "Pilih satu yang <strong>hasilnya berbeda</strong>.", options: ["\\( 2 \\times 3 \\)", "\\( 4 + 3 \\)", "\\( 9 - 3 \\)", "\\( 12 \\div 2 \\)"], answer: 1 },
+        { level: "Discovery 2", text: "Grafik berikut menunjukkan jumlah bintang yang dikumpulkan 3 orang siswa dalam satu semester.<br><img src='https://mathruangguru.github.io/gambar/diag_10.png' class='q-img'><br>Setiap bintang (\\(\\star\\)) mewakili 5 poin. Jumlah total poin yang didapatkan oleh <strong>Evelyn</strong> adalah...", options: ["10 poin", "15 poin", "20 poin", "30 poin"], answer: 1 },
+
+        // --- Discovery 3 (Soal 11-15) ---
+        { level: "Discovery 3", text: "Perhatikan dua gambar di bawah ini.<br><img src='https://mathruangguru.github.io/gambar/blocks_11.png' class='q-img'><br>Berapa <strong>selisih jumlah kubus</strong> dari kedua gambar di atas?", options: ["4", "40", "136", "100"], answer: 2 },
+        { level: "Discovery 3", text: "Di lapangan ada 17 anak-anak, baik laki-laki dan perempuan. Jumlah anak laki-laki <strong>5 lebih sedikit</strong> dari jumlah anak perempuan. Ada berapa anak perempuan yang sedang berada di lapangan?", options: ["5 anak", "6 anak", "11 anak", "12 anak"], answer: 2 },
+        { level: "Discovery 3", text: "Tinggi kakak 1 meter, 8 centimeter.<br>Tinggi adik 91 centimeter.<br>Berapa <strong>selisih</strong> tinggi kakak dan adik?", options: ["15 cm", "16 cm", "17 cm", "18 cm"], answer: 2 },
+        { level: "Discovery 3", text: "Perhatikan pola berikut:<br>△ ▢ ☆ ◯ △ ▢ ☆ ◯ △ ▢ ☆ ◯ △ ...<br>Gambar apakah yang ada di <strong>urutan ke-27</strong>?", options: ["△ (Segitiga)", "▢ (Persegi)", "☆ (Bintang)", "◯ (Lingkaran)"], answer: 2 },
+        { level: "Discovery 3", text: "Cari hasil pembagian berikut.<br>\\[ 25 \\div 6 = \\dots \\]", options: ["3", "4", "3 sisa 5", "4 sisa 1"], answer: 3 },
+
+        // --- Discovery 4 (Soal 16-20) ---
+        { level: "Discovery 4", text: "Perhatikan gambar di bawah ini. Manakah gambar yang menunjukkan <strong>pecahan yang berbeda</strong> dari yang lain?<br><img src='https://mathruangguru.github.io/gambar/fracs_16.png' class='q-img'>", options: ["Gambar A", "Gambar B", "Gambar C", "Gambar D"], answer: 3 },
+        { level: "Discovery 4", text: "Perhatikan sekumpulan bilangan di bawah ini.<br>\\[ 14 + 28 + 12 + 7 + 16 + 13 = \\dots \\]<br>Jumlah dari seluruh bilangan di atas adalah...", options: ["88", "89", "90", "91"], answer: 2 },
+        { level: "Discovery 4", text: "Berapa <strong>selisih</strong> jumlah <strong>sisi</strong> dengan jumlah <strong>titik sudut</strong> pada sebuah limas segiempat?<br><img src='https://mathruangguru.github.io/gambar/limas_18.png' class='q-img'>", options: ["4", "3", "1", "0"], answer: 3 },
+        { level: "Discovery 4", text: "Tuliskan bilangan yang tepat untuk melengkapi kalimat matematika di bawah ini.<br>\\[ 16 + 2 - \\_\\_ = 12 \\]", options: ["5", "6", "7", "8"], answer: 1 },
+        { level: "Discovery 4", text: "Hendro menggunakan 1 lembar Rp50.000 untuk membayar pembelian mobil-mobilan. Penjual memberi kembalian 2 lembar Rp5.000 dan 1 lembar Rp2.000. Berapakah <strong>harga mobil-mobilan</strong> tersebut?", options: ["10.000", "12.000", "24.000", "38.000"], answer: 3 },
+
+        // --- Exploration 1 (Soal 21-25) ---
+        { level: "Exploration 1", text: "Diberikan 4 angka berikut ini: 6, 1, 8, 5.<br>Berapakah <strong>bilangan genap 3 digit terbesar</strong> yang dapat dibentuk dari angka-angka yang diberikan di atas?", options: ["865", "861", "856", "816"], answer: 2 },
+        { level: "Exploration 1", text: "Tuliskan bilangan yang tepat untuk melengkapi kalimat matematika di bawah ini.<br>\\[ \\_\\_ + 4 \\times 3 = 15 \\]", options: ["3", "1", "7", "5"], answer: 0 },
+        { level: "Exploration 1", text: "Panjang sebuah jalan raya adalah 60 m. Ibu walikota berencana untuk menanamkan pohon dari satu ujung jalan ke ujung jalan yang lain. Jika <strong>jarak antar pohon</strong> adalah 5 meter, ada berapa pohon yang ditanam oleh ibu walikota?", options: ["10 pohon", "11 pohon", "12 pohon", "13 pohon"], answer: 3 },
+        { level: "Exploration 1", text: "Tuliskan bilangan yang tepat untuk melengkapi kalimat matematika di bawah ini.<br>\\[ 3 \\times 8 : \\_\\_ = 4 \\]", options: ["4", "5", "6", "8"], answer: 2 },
+        { level: "Exploration 1", text: "Perhatikan diagram batang (tidak lengkap) di bawah ini.<br><img src='https://mathruangguru.github.io/gambar/laptop_25.png' class='q-img'><br>Diketahui bahwa:<br>Laptop yang terjual pada bulan Februari dua kali lebih banyak dibandingkan dengan laptop yang terjual pada bulan Januari.<br>Penjualan pada bulan Maret 20 laptop lebih sedikit dari bulan Februari.<br>Berapakah jumlah laptop yang terjual pada <strong>bulan Januari</strong>?", options: ["10", "20", "30", "40"], answer: 2 },
+
+        // --- Exploration 2 (Soal 26-30) ---
+        { level: "Exploration 2", text: "Jumlah penonton konser adalah 4.582 orang. Panitia konser mencatat jumlah penonton konser tersebut dengan <strong>pembulatan ke ratusan terdekat</strong>. Tuliskan lambang bilangan yang dicatat oleh panitia konser.", options: ["4.500", "4.600", "4.580", "5.000"], answer: 1 },
+        { level: "Exploration 2", text: "Tuliskan bilangan yang tepat untuk melengkapi kalimat matematika di bawah ini.<br>\\[ \\frac{1}{3} + \\frac{1}{2} = \\dots \\]", options: ["\\(\\frac{1}{6}\\)", "\\(\\frac{5}{6}\\)", "\\(\\frac{2}{3}\\)", "\\(\\frac{2}{5}\\)"], answer: 1 },
+        { level: "Exploration 2", text: "Keliling sebuah persegi adalah 24 cm. <strong>Luas</strong> persegi tersebut adalah ... \\( \\text{cm}^2 \\).", options: ["18", "24", "30", "36"], answer: 3 },
+        { level: "Exploration 2", text: "Kelas 3A terdiri dari 27 siswa. Jika \\(\\frac{2}{3}\\) dari seluruh kelas adalah penggemar Shakira, berapa siswa kelas 3A yang adalah <strong>penggemar</strong> Shakira?", options: ["9 siswa", "12 siswa", "18 siswa", "21 siswa"], answer: 2 },
+        { level: "Exploration 2", text: "Perhatikan diagram batang di bawah ini.<br><img src='https://mathruangguru.github.io/gambar/mal_30.png' class='q-img'><br>Dari data yang diberikan, berapa <strong>jumlah pengunjung harian paling sedikit</strong>?", options: ["120 orang", "130 orang", "140 orang", "160 orang"], answer: 3 },
+
+        // --- Exploration 3 (Soal 31-35) ---
+        { level: "Exploration 3", text: "Aku adalah <strong>bilangan genap dua digit terbesar</strong> yang <strong>habis dibagi 3</strong>. Berapakah aku?", options: ["99", "98", "96", "93"], answer: 2 },
+        { level: "Exploration 3", text: "Hitung hasil operasi bilangan di bawah ini.<br>\\[ 32 \\times 14 + 16 \\times 12 + 8 \\times 20 = \\dots \\]", options: ["750", "800", "850", "900"], answer: 1 },
+        { level: "Exploration 3", text: "Nena membeli kelereng dari dua toko: Toko A dan Toko B.<br>Toko A menjual kelereng dalam satuan kodi (20 buah).<br>Toko B menjual kelereng dalam satuan lusin (12 buah).<br>Nena membeli 3 kodi dari toko A dan 4 lusin dari toko B.<br>Berapa <strong>jumlah kelereng</strong> yang Nena beli?", options: ["100 butir", "108 butir", "112 butir", "120 butir"], answer: 1 },
+        { level: "Exploration 3", text: "Dari beberapa perhitungan di bawah ini, cari yang <strong>hasil perhitungannya berbeda</strong> dari yang lain.", options: ["\\( 18 \\times 25 \\)", "\\( 35 \\times 12 \\)", "\\( 70 \\times 6 \\)", "\\( 140 \\times 3 \\)"], answer: 0 },
+        { level: "Exploration 3", text: "Terdapat 360 kaleng minuman ringan. Kaleng-kaleng tersebut dimasukkan ke dalam dus-dus kecil dengan kapasitas 12 kaleng. Kemudian, dus-dus kecil tersebut dimasukkan ke dalam dus besar yang memuat 6 dus kecil. Ada berapa <strong>dus besar</strong> yang berisi dus-dus kecil yang terisi penuh dengan kaleng?", options: ["5 dus besar", "6 dus besar", "7 dus besar", "8 dus besar"], answer: 0 },
+
+        // --- Exploration 4 (Soal 36-40) ---
+        { level: "Exploration 4", text: "Pilih hasil yang tepat untuk operasi bilangan pecahan di bawah ini.<br>\\[ \\frac{1}{2} + \\frac{1}{3} - \\frac{1}{4} - \\frac{1}{5} = \\dots \\]", options: ["\\(\\frac{7}{20}\\)", "\\(\\frac{23}{60}\\)", "\\(\\frac{5}{12}\\)", "\\(\\frac{3}{4}\\)"], answer: 1 },
+        { level: "Exploration 4", text: "Perhatikan gambar di bawah ini.<br><img src='https://mathruangguru.github.io/gambar/ungu_37.png' class='q-img'><br>Pilih bentuk penulisan bilangan yang <strong>tidak sesuai</strong> dengan gambar di atas.", options: ["\\( 2\\frac{1}{3} \\)", "\\( \\frac{7}{3} \\)", "7 pertiga", "2,33"], answer: 3 },
+        { level: "Exploration 4", text: "Juno sedang mengukur massa sebungkus jeruk dengan neraca. Neraca seimbang ketika Juno menempatkan:<br><ul><li>2 bandul 1 kg</li><li>1 bandul 500 g</li><li>3 bandul 100 g</li></ul><br>Ada 8 jeruk dalam bungkusan tersebut. Jika massa jeruk dianggap sama, berapa <strong>massa 1 jeruk</strong> dalam satuan kilogram dibulatkan ke persepuluhan terdekat?", options: ["0,3 kg", "0,4 kg", "0,35 kg", "3,5 kg"], answer: 1 },
+        { level: "Exploration 4", text: "Manakah gambar yang menunjukkan <strong>segitiga tumpul sembarang</strong>?", options: ["<img src='https://mathruangguru.github.io/gambar/triA_39.png' class='opt-img'>", "<img src='https://mathruangguru.github.io/gambar/triB_39.png' class='opt-img'>", "<img src='https://mathruangguru.github.io/gambar/triC_39.png' class='opt-img'>", "<img src='https://mathruangguru.github.io/gambar/triD_39.png' class='opt-img'>"], answer: 2 },
+        { level: "Exploration 4", text: "Diagram garis di bawah ini menunjukkan suhu udara harian di kota Zula.<br><img src='https://mathruangguru.github.io/gambar/suhu_40.png' class='q-img'><br><strong>Kenaikan suhu terbesar</strong> terjadi dari tanggal ...", options: ["21 ke 22 Maret", "22 Maret ke 23 Maret", "23 Maret ke 24 Maret", "25 Maret ke 26 Maret"], answer: 3 },
+
+        // --- Mastery 1 (Soal 41-45) ---
+        { level: "Mastery 1", text: "Cari hasil operasi bilangan di bawah ini.<br>\\[ 88 \\times 125 - 18 \\times 50 - 24 \\times 25 - 2 \\times 100 = \\dots \\]", options: ["9.100", "9.200", "9.300", "9.400"], answer: 2 },
+        { level: "Mastery 1", text: "Lina mempunyai \\(3\\frac{1}{4}\\) meter pita merah di rumahnya. Dia membeli tambahan \\(2\\frac{2}{3}\\) meter lagi untuk mendekorasi kelasnya. Pita merah yang terpakai untuk mendekorasi kelas adalah \\(4\\frac{5}{6}\\) meter. Berapa meter sisa pita merah yang ia miliki?", options: ["1 meter", "\\(\\frac{13}{12}\\) meter", "\\(2\\frac{1}{12}\\) meter", "3 meter"], answer: 1 },
+        { level: "Mastery 1", text: "Perhatikan dua kubus di bawah ini.<br><img src='https://mathruangguru.github.io/gambar/cube_43.png' class='q-img'><br>Diketahui panjang sisi kubus B <strong>3 kali lebih panjang</strong> dari panjang sisi kubus A. Jika volume kubus A adalah \\( 5~\\text{cm}^3 \\), volume kubus B adalah ... \\(\\text{cm}^3\\).", options: ["15", "45", "135", "375"], answer: 2 },
+        { level: "Mastery 1", text: "Ibu membuat sejumlah kue. \\(\\frac{1}{2}\\) dari seluruh kue diberikan kepada nenek. \\(\\frac{2}{3}\\) dari sisanya diberikan kepada bibi. Jika jumlah kue yang tersisa adalah 5, berapakah jumlah kue yang ibu buat?", options: ["20 kue", "25 kue", "30 kue", "35 kue"], answer: 2 },
+        { level: "Mastery 1", text: "Cari kecepatan yang <strong>berbeda</strong> dari yang lain.", options: ["\\( 60~\\text{km/jam} \\)", "\\( 1~\\text{km/menit} \\)", "\\( 16\\frac{2}{3}~\\text{m/detik} \\)", "\\( 1000~\\text{km/menit} \\)"], answer: 3 },
+
+        // --- Mastery 2 (Soal 46-50) ---
+        { level: "Mastery 2", text: "Hitunglah hasil dari: \\( 20 - 12 : 4 + 3 \\times 2 = \\dots \\)", options: ["10", "16", "23", "25"], answer: 2 },
+        { level: "Mastery 2", text: "Ali membelanjakan uangnya <strong>5 kali lebih banyak</strong> daripada Baba di sebuah toko. Ali membayar dengan selembar uang 20 ribuan dan menerima kembalian 2 ribu rupiah. Berapa banyak yang dibelanjakan Baba?", options: ["Rp 3.000", "Rp 3.600", "Rp 4.000", "Rp 4.500"], answer: 1 },
+        { level: "Mastery 2", text: "Pilih gambar dengan <strong>luas yang berbeda</strong>.", options: ["<img src='https://mathruangguru.github.io/gambar/luasA_48.png' class='opt-img'>", "<img src='https://mathruangguru.github.io/gambar/luasB_48.png' class='opt-img'>", "<img src='https://mathruangguru.github.io/gambar/luasC_48.png' class='opt-img'>", "<img src='https://mathruangguru.github.io/gambar/luasD_48.png' class='opt-img'>"], answer: 2 },
+        { level: "Mastery 2", text: "Sebuah bak mandi berbentuk balok akan terisi penuh dengan 450 liter air. Jika panjang bak mandi adalah 1 m dan lebar bak mandi 60 cm, berapakah tinggi bak mandi tersebut?", options: ["50 cm", "60 cm", "75 cm", "80 cm"], answer: 2 },
+        { level: "Mastery 2", text: "Tabel di bawah ini menunjukkan nilai ujian akhir matematika dari 5 orang siswa.<br><img src='https://mathruangguru.github.io/gambar/tabel_50.png' class='q-img'><br>Ada berapa anak yang nilainya <strong>di atas rata-rata</strong> dari kelima siswa tersebut?", options: ["2 orang", "3 orang", "4 orang", "5 orang"], answer: 1 },
+
+        // --- Mastery 3 (Soal 51-55) ---
+        { level: "Mastery 3", text: "Diketahui:<br>\\( A : B = 1 : 3 \\)<br>\\( B : C = 4 : 9 \\)<br>\\( C = 81 \\)<br>Cari nilai A.", options: ["9", "12", "15", "18"], answer: 1 },
+        { level: "Mastery 3", text: "\\(\\frac{1}{3}\\) uang Andi sama dengan \\(\\frac{2}{5}\\) uang Budi. Jika selisih uang mereka Rp5.000, berapa total uang keduanya?", options: ["Rp5.000", "Rp25.000", "Rp30.000", "Rp55.000"], answer: 3 },
+        { level: "Mastery 3", text: "Sebuah segitiga sama kaki memiliki dua sudut yang sama besar dan satu sudut lain yang berbeda. Sudut yang berbeda itu merupakan sudut terbesar segitiga dan besarnya \\(70^{\\circ}\\). Berapakah hasil penjumlahan kedua sudut yang lain?", options: ["\\( 100^{\\circ} \\)", "\\( 110^{\\circ} \\)", "\\( 120^{\\circ} \\)", "\\( 140^{\\circ} \\)"], answer: 1 },
+        { level: "Mastery 3", text: "Harga mainan kesukaan kakak <strong>naik 20%</strong> dibandingkan dengan harga sebelumnya. Jika harga sekarang adalah Rp72.000, berapa harga mainan tersebut sebelum mengalami kenaikan?", options: ["Rp 57.600", "Rp 60.000", "Rp 64.000", "Rp 65.000"], answer: 1 },
+        { level: "Mastery 3", text: "Rata-rata dari 4 bilangan adalah 9. Jika salah satu bilangan dibuang, rata-ratanya menjadi 8. Berapakah <strong>bilangan yang dibuang</strong> tersebut?", options: ["8", "10", "12", "14"], answer: 2 },
+
+        // --- Mastery 4 (Soal 56-60) ---
+        { level: "Mastery 4", text: "Perhatikan perhitungan berbagai bilangan pecahan di bawah ini.<br>\\[ \\frac{2}{3} + \\frac{3}{4} \\times \\frac{6}{7} - \\frac{3}{4} \\div \\frac{3}{2} = \\frac{a}{b} \\]<br>Jika hasil akhirnya adalah dalam bentuk yang paling sederhana, \\( a + b \\) adalah ...", options: ["19", "38", "45", "57"], answer: 1 },
+        { level: "Mastery 4", text: "Merisa menggunakan \\(\\frac{3}{4}\\) uangnya untuk membeli sebuah buku. Kemudian, ia menggunakan \\(\\frac{1}{2}\\) dari sisanya untuk membeli sebuah kalkulator. Jika harga buku Rp30.000 lebih mahal dari harga kalkulator, berapakah harga buku tersebut?", options: ["Rp30.000", "Rp36.000", "Rp60.000", "Rp75.000"], answer: 1 },
+        { level: "Mastery 4", text: "Perhatikan gambar di bawah ini.<br><img src='https://mathruangguru.github.io/gambar/shape_58.png' class='q-img'><br>Gambar di atas terbentuk dari sebuah persegi dengan panjang sisi 10 cm dan seperempat lingkaran. Berapakah <strong>luas daerah yang diarsir</strong>? Gunakan pendekatan \\(\\pi \\approx 3,14\\).", options: ["\\(21,5~\\text{cm}^2\\)", "\\(22~\\text{cm}^2\\)", "\\(22,5~\\text{cm}^2\\)", "\\(23~\\text{cm}^2\\)"], answer: 0 },
+        { level: "Mastery 4", text: "Pada pk. 07.00, seorang anak bersepeda dari rumah ke perpustakaan dengan kecepatan \\(18~\\text{km/jam}.\\) Setelah 20 menit berselang, ibunya menyusul dengan sepeda listrik dengan kecepatan \\(24~\\text{km/jam}.\\) Jika jalan dari rumah ke perpustakaan lurus dan kecepatan mereka konstan, pada pukul berapa ibu tersebut akan menyusul anaknya?", options: ["08.00", "08.10", "08.20", "08.30"], answer: 2 },
+        { level: "Mastery 4", text: "Pada suatu kelas olahraga, diketahui 24% peserta mengikuti permainan voli. Sudut pembentuk juring bertuliskan SEPAKBOLA pada diagram lingkaran adalah 144°. Jika jumlah seluruh peserta kelas olahraga adalah 50 orang, berapa <strong>peserta yang mengikuti permainan basket</strong>?<br><img src='https://mathruangguru.github.io/gambar/pie_60.png' class='q-img'>", options: ["12 orang", "15 orang", "18 orang", "20 orang"], answer: 2 }
+    ];
+
+    // 2. STATE
+    const LEVEL_ORDER = [
+        "Discovery 1", "Discovery 2", "Discovery 3", "Discovery 4",
+        "Exploration 1", "Exploration 2", "Exploration 3", "Exploration 4",
+        "Mastery 1", "Mastery 2", "Mastery 3", "Mastery 4"
+    ];
+    
+    // User Data
+    let teacherName = "";
+    let teacherEmail = "";
+    let branchName = "";
+    
+    // Logic Variables
+    let minIndex = 0;
+    let maxIndex = LEVEL_ORDER.length - 1;
+    let currentLevelIndex = 0;
+    let startLevelOverride = null; // We will use this
+
+    let questionsInCurrentLevel = [];
+    let currentQuestionPointer = 0;
+    let currentLevelScore = 0;
+    let currentLevelWrong = 0;
+    let totalCorrectAnswers = 0;
+    let timeRemaining = 3600; // 60 mins
+    let timerInterval;
+    let isAnswering = true;
+    let wrongAnswers = [];
+    let bestLevelReached = "N/A";
+
+    // --- MAIN FUNCTIONS ---
+    window.onload = function() {
+        populateBranchList();
+    };
+
+    function populateBranchList() {
+        const datalist = document.getElementById('branchList');
+        branches.forEach(branch => {
+            const option = document.createElement('option');
+            option.value = branch;
+            datalist.appendChild(option);
+        });
+    }
+
+    window.saveNameAndContinue = function() {
+        const name = document.getElementById('teacherNameInput').value.trim();
+        const email = document.getElementById('teacherEmailInput').value.trim();
+        const branch = document.getElementById('branchInput').value.trim();
+
+        if (name && email && branch) {
+            teacherName = name;
+            teacherEmail = email;
+            branchName = branch;
+            
+            document.getElementById('inputNameScreen').classList.remove('active');
+            document.getElementById('startScreen').classList.add('active');
+        } else {
+            alert("Harap lengkapi Nama, Email, dan Cabang.");
+        }
+    };
+
+    window.startGame = function() {
+        document.getElementById('startScreen').classList.remove('active');
+        document.getElementById('gameScreen').classList.add('active');
+        document.getElementById('statusBar').style.visibility = 'visible';
+
+        // --- FORCED START AT EXPLORATION 2 ---
+        // Array Index:
+        // 0:Disc1, 1:Disc2, 2:Disc3, 3:Disc4, 4:Exp1, 5:Exp2
+        startLevelOverride = 5; 
+
+        minIndex = 0;
+        maxIndex = LEVEL_ORDER.length - 1;
+        totalCorrectAnswers = 0;
+        wrongAnswers = [];
+        bestLevelReached = "Start";
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+            if(timeRemaining >= 0) {
+                let m = Math.floor(timeRemaining / 60);
+                let s = timeRemaining % 60;
+                document.getElementById('timerDisplay').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+            }
+            if (timeRemaining <= 0) finishGame();
+        }, 1000);
+
+        startNextLevelBlock();
+    };
+
+    function startNextLevelBlock() {
+        if (minIndex > maxIndex) {
+            finishGame();
+            return;
+        }
+
+        if (startLevelOverride !== null) {
+            currentLevelIndex = startLevelOverride;
+            startLevelOverride = null;
+        } else {
+            currentLevelIndex = Math.floor((minIndex + maxIndex) / 2);
+        }
+
+        const levelName = LEVEL_ORDER[currentLevelIndex];
+        questionsInCurrentLevel = questions.filter(q => q.level === levelName);
+
+        currentQuestionPointer = 0;
+        currentLevelScore = 0;
+        currentLevelWrong = 0;
+
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        document.getElementById('feedbackArea').style.display = 'none';
+        isAnswering = true;
+
+        const progress = (currentQuestionPointer / questionsInCurrentLevel.length) * 100;
+        document.getElementById('progressBar').style.width = `${progress}%`;
+
+        const q = questionsInCurrentLevel[currentQuestionPointer];
+        // Render soal
+        document.getElementById('questionText').innerHTML = `<div style="font-size:0.8em; color:#7f8c8d; margin-bottom:10px; text-transform:uppercase;">${q.level} - Soal ${currentQuestionPointer + 1}/5</div>` + q.text;
+
+        const optionsContainer = document.getElementById('optionsContainer');
+        optionsContainer.innerHTML = '';
+        
+        // Layout grid
+        optionsContainer.style.gridTemplateColumns = (window.innerWidth > 600 && q.options.length !== 5) ? "repeat(2, 1fr)" : "1fr";
+
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsContainer.appendChild(btn);
+        });
+
+        // Re-render Math with KaTeX
+        if(window.renderMathInElement) {
+             renderMathInElement(document.getElementById('gameScreen'), { delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+            ]});
+        }
+
+        // Scroll top
+        if(window.innerWidth < 768) window.scrollTo({top:0, behavior:'smooth'});
+        else document.querySelector('.game-stage').scrollTo({top:0, behavior:'smooth'});
+    }
+
+    function checkAnswer(selectedIndex, btnElement) {
+        if (!isAnswering) return;
+        isAnswering = false;
+
+        const q = questionsInCurrentLevel[currentQuestionPointer];
+        document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+
+        const feedbackMessage = document.getElementById('feedbackMessage');
+        const feedbackArea = document.getElementById('feedbackArea');
+
+        if (selectedIndex === q.answer) {
+            btnElement.classList.add('correct');
+            feedbackMessage.innerText = "Benar! 🎉";
+            feedbackMessage.style.color = "#27ae60";
+            currentLevelScore++;
+            totalCorrectAnswers++;
+        } else {
+            btnElement.classList.add('wrong');
+            feedbackMessage.innerText = "Kurang Tepat";
+            feedbackMessage.style.color = "#c0392b";
+            currentLevelWrong++;
+
+            const questionNumber = questions.indexOf(q) + 1;
+            wrongAnswers.push({
+                qNum: questionNumber,
+                level: q.level,
+                text: q.text,
+                options: q.options,
+                userIndex: selectedIndex,
+                correctIndex: q.answer
+            });
+        }
+
+        feedbackArea.style.display = 'flex';
+        document.getElementById('nextBtn').onclick = nextQuestionLogic;
+    }
+
+    function nextQuestionLogic() {
+        currentQuestionPointer++;
+        if (currentQuestionPointer >= questionsInCurrentLevel.length) {
+            evaluateLevelBlock();
+        } else {
+            loadQuestion();
+        }
+    }
+
+    function evaluateLevelBlock() {
+        const isPassed = currentLevelScore >= 4; // Threshold 4/5
+        const currentLevelName = LEVEL_ORDER[currentLevelIndex];
+        
+        if (isPassed) {
+            // Naik level: batas bawah naik
+            bestLevelReached = currentLevelName;
+            minIndex = currentLevelIndex + 1;
+        } else {
+            // Turun level: batas atas turun
+            maxIndex = currentLevelIndex - 1;
+        }
+
+        let titleMsg = isPassed ? "Excellent!" : "Keep Trying!";
+        let bodyMsg = isPassed 
+            ? `Anda menjawab ${currentLevelScore}/5 benar. Level dinaikkan.`
+            : `Anda menjawab ${currentLevelScore}/5 benar. Level disesuaikan.`;
+
+        if (minIndex > maxIndex) {
+            // Loop selesai, hasil ditemukan
+            titleMsg = "Tes Selesai";
+            bodyMsg = "Menghitung hasil akhir...";
+        }
+
+        const checkpointMsg = document.getElementById('checkpointMsg');
+        checkpointMsg.innerText = isPassed ? "LEVEL UP ⬆️" : "ADJUSTING ⬇️";
+        checkpointMsg.style.color = isPassed ? "#27ae60" : "#f39c12";
+
+        if (minIndex > maxIndex) {
+            checkpointMsg.style.display = 'none';
+        } else {
+            checkpointMsg.style.display = 'block';
+        }
+
+        document.querySelector('.checkpoint-content h2').innerText = titleMsg;
+        document.querySelector('.checkpoint-content p:nth-of-type(2)').innerHTML = bodyMsg;
+        document.getElementById('checkpointModal').style.display = 'flex';
+    }
+
+    window.closeCheckpoint = function() {
+        document.getElementById('checkpointModal').style.display = 'none';
+        startNextLevelBlock();
+    };
+
+    function finishGame() {
+        clearInterval(timerInterval);
+        document.getElementById('gameScreen').classList.remove('active');
+        document.getElementById('resultScreen').classList.add('active');
+        document.getElementById('statusBar').style.visibility = 'hidden';
+        document.getElementById('feedbackArea').style.display = 'none';
+
+        let timeUsedSeconds = 3600 - timeRemaining;
+        let m = Math.floor(timeUsedSeconds / 60);
+        let s = timeUsedSeconds % 60;
+        let timeString = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+
+        if (bestLevelReached === "Start" && maxIndex < 0) {
+            bestLevelReached = LEVEL_ORDER[0];
+        }
+
+        document.getElementById('finalPlacement').innerText = bestLevelReached.toUpperCase();
+        document.getElementById('finalScore').innerText = totalCorrectAnswers;
+        document.getElementById('timeUsed').innerText = timeString;
+
+        generateReportCard();
+        
+        // --- KIRIM KE SHEET ---
+        // Jika URL masih placeholder/kosong, ingatkan user
+        if (!googleScriptURL || googleScriptURL === 'PASTE_URL_HERE') {
+            alert('PENTING: Data belum tersimpan. Harap masukkan URL Google Apps Script ke variabel "googleScriptURL" di dalam kode.');
+            console.log("Data:", {
+                nama: teacherName,
+                email: teacherEmail,
+                cabang: branchName,
+                level: bestLevelReached,
+                skor: totalCorrectAnswers,
+                waktu: timeString
+            });
+        } else {
+            sendToGoogleSheet(timeString);
+        }
+    }
+
+    function sendToGoogleSheet(timeString) {
+        const btnReport = document.getElementById('btnReportToggle');
+        const originalText = btnReport.innerText;
+        btnReport.innerText = "⏳ Menyimpan Data ke Server...";
+        btnReport.disabled = true;
+
+        const finalData = {
+            nama: teacherName,
+            email: teacherEmail,
+            cabang: branchName,
+            level: bestLevelReached,
+            skor: totalCorrectAnswers,
+            waktu: timeString,
+            detail_salah: wrongAnswers
+        };
+
+        fetch(googleScriptURL, {
+            method: 'POST',
+            mode: 'no-cors', 
+            cache: 'no-cache',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(finalData)
+        })
+        .then(() => {
+            // Karena no-cors, kita asumsikan berhasil jika tidak ada network error
+            btnReport.innerText = "✅ Data Tersimpan! " + originalText;
+            btnReport.disabled = false;
+            setTimeout(() => {
+                btnReport.innerText = originalText;
+            }, 3000);
+            console.log("Request sent to Google Sheet.");
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            btnReport.innerText = "⚠️ Gagal Simpan (Cek Koneksi)";
+            btnReport.disabled = false;
+        });
+    }
+
+    function generateReportCard() {
+        const list = document.getElementById('reportList');
+        list.innerHTML = '';
+
+        if (wrongAnswers.length === 0) {
+            list.innerHTML = '<li class="report-item" style="text-align:center; color:#27ae60;">Perfect Score! No errors found.</li>';
+            return;
+        }
+
+        wrongAnswers.forEach((item, idx) => {
+            const li = document.createElement('li');
+            li.className = 'report-item';
+
+            let gridHtml = `<div class="report-grid">`;
+            item.options.forEach((opt, optIdx) => {
+                let statusClass = '';
+                if (optIdx === item.correctIndex) statusClass = 'correct';
+                else if (optIdx === item.userIndex) statusClass = 'wrong';
+
+                gridHtml += `<div class="option-btn report-variant ${statusClass}">${opt}</div>`;
+            });
+            gridHtml += `</div>`;
+
+            li.innerHTML = `
+                <div class="report-meta">No. ${item.qNum} • ${item.level}</div>
+                <div class="report-q-text">${item.text}</div>
+                ${gridHtml}
+            `;
+            list.appendChild(li);
+        });
+
+        if(window.renderMathInElement) {
+             renderMathInElement(list);
+        }
+    }
+
+    window.toggleReport = function() {
+        const rc = document.getElementById('reportCard');
+        const btn = document.getElementById('btnReportToggle');
+
+        if (rc.style.display === 'block') {
+            rc.style.display = 'none';
+            btn.innerText = '📋 Lihat Detail Jawaban Salah';
+        } else {
+            rc.style.display = 'block';
+            btn.innerText = '🔼 Tutup Detail';
+            setTimeout(() => rc.scrollIntoView({ behavior: 'smooth' }), 100);
+        }
+    };
+</script>
+</body>
+</html>
