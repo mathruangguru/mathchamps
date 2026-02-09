@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Time (E4-S374)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff; /* bg-blue-50 equivalent */
+        --path-color: #d1d5db; /* gray-300 */
+      }
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.5cm 2cm; 
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .page-header {
+        width: 100%;
+        margin-bottom: 5px; 
+      }
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; 
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.5cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .concept-box,
+        .input-box,
+        .visual-svg,
+        .data-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+      }
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; 
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 24px; 
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 22px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .input-line {
+        border: none;
+        border-bottom: 1px solid #333;
+        min-width: 100px;
+        display: inline-block;
+        height: 18px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 5px; 
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem; 
+        background-color: #f3f4f6;
+        padding: 0.25rem 0.6rem; 
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+      /* SVG Styles */
+      .visual-svg {
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .clock-face { fill: white; stroke: #333; stroke-width: 2; }
+      .clock-tick { stroke: #333; stroke-width: 2; }
+      .clock-tick-small { stroke: #333; stroke-width: 1; }
+      .hand-hour { stroke: #333; stroke-width: 3; stroke-linecap: round; }
+      .hand-minute { stroke: #333; stroke-width: 2; stroke-linecap: round; }
+      .hand-second { stroke: #ef4444; stroke-width: 1.5; stroke-linecap: round; }
+      .clock-center { fill: #333; }
+      .bar-rect { fill: white; stroke: #333; stroke-width: 1.5; }
+      .bar-label { font-family: 'Noto Sans', sans-serif; font-size: 10px; font-weight: bold; }
+      .brace-line { fill: none; stroke: #333; stroke-width: 1; }
+    </style>
+  </head>
+  <body>
+    <svg style="display: none;">
+      <defs>
+        <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 L1,3 z" fill="#333" />
+        </marker>
+        <marker id="arrow-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 L1,3 z" fill="#ef4444" />
+        </marker>
+      </defs>
+    </svg>
+    <div class="page-container">
+      
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Time
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Measuring Time in Seconds
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : E4-S374
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-2 mt-4">
+                 <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: MEASURING TIME
+                </h1>
+            </div>
+            <div class="instruction-text mb-4 text-sm mt-6">
+                Section A: Reading Seconds (Clock Visualization)
+            </div>
+            
+            <div class="text-sm mb-4">Look at the clock or stopwatch pictures below to answer the questions.</div>
+            <div class="soal-grid">
+                
+                <div class="soal-item">
+                    <div class="mb-2">
+                         <span class="font-bold">1.</span> Look at the analog clock below. The red hand shows the seconds. How many seconds does it show?
+                    </div>
+                    <div class="flex justify-center mb-2">
+                        <svg width="150" height="150" viewBox="0 0 100 100" class="visual-svg">
+                            <circle cx="50" cy="50" r="45" class="clock-face" />
+                            <g transform="translate(50,50)">
+                                <line y1="-40" y2="-45" class="clock-tick" transform="rotate(0)" /> <line y1="-40" y2="-45" class="clock-tick" transform="rotate(30)" />
+                                <line y1="-40" y2="-45" class="clock-tick" transform="rotate(60)" />
+                                <line y1="-40" y2="-45" class="clock-tick" transform="rotate(90)" /> <line y1="-40" y2="-45" class="clock-tick" transform="rotate(120)" />
+                                <line y1="-40" y2="-45" class="clock-tick" transform="rotate(150)" /> <line y1="-40" y2="-45" class="clock-tick" transform="rotate(180)" /> <line y1="-40" y2="-45" class="clock-tick" transform="rotate(210)" />
+                                <line y1="-40" y2="-45" class="clock-tick" transform="rotate(240)" />
+                                <line y1="-40" y2="-45" class="clock-tick" transform="rotate(270)" /> <line y1="-40" y2="-45" class="clock-tick" transform="rotate(300)" />
+                                <line y1="-40" y2="-45" class="clock-tick" transform="rotate(330)" />
+                                
+                                <text x="0" y="-32" font-size="8" text-anchor="middle" font-weight="bold">12</text>
+                                <text x="16" y="-28" font-size="8" text-anchor="middle" font-weight="bold">1</text>
+                                <text x="28" y="-14" font-size="8" text-anchor="middle" font-weight="bold">2</text>
+                                <text x="32" y="3" font-size="8" text-anchor="middle" font-weight="bold">3</text>
+                                <text x="28" y="20" font-size="8" text-anchor="middle" font-weight="bold">4</text>
+                                <text x="16" y="30" font-size="8" text-anchor="middle" font-weight="bold">5</text>
+                                <text x="0" y="38" font-size="8" text-anchor="middle" font-weight="bold">6</text>
+                                <text x="-16" y="30" font-size="8" text-anchor="middle" font-weight="bold">7</text>
+                                <text x="-28" y="20" font-size="8" text-anchor="middle" font-weight="bold">8</text>
+                                <text x="-32" y="3" font-size="8" text-anchor="middle" font-weight="bold">9</text>
+                                <text x="-28" y="-14" font-size="8" text-anchor="middle" font-weight="bold">10</text>
+                                <text x="-16" y="-28" font-size="8" text-anchor="middle" font-weight="bold">11</text>
+                                <line x1="0" y1="0" x2="0" y2="-25" class="hand-hour" transform="rotate(-30)" />
+                                <line x1="0" y1="0" x2="0" y2="-35" class="hand-minute" transform="rotate(60)" />
+                                <line x1="0" y1="0" x2="0" y2="-38" class="hand-second" transform="rotate(150)" marker-end="url(#arrow-red)" />
+                                
+                                <circle cx="0" cy="0" r="2" class="clock-center" />
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 5 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 20 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 25 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 30 seconds</label>
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <span class="font-bold">2.</span> A stopwatch shows a runner's time. The hand points exactly to the number 45.
+                    </div>
+                    <div class="flex justify-center mb-2">
+                         <svg width="120" height="120" viewBox="0 0 100 100" class="visual-svg">
+                             <rect x="45" y="0" width="10" height="5" fill="#ccc" />
+                            <circle cx="50" cy="55" r="45" fill="#f3f4f6" stroke="#333" stroke-width="2" />
+                            <g transform="translate(50,55)">
+                                <line y1="-40" y2="-45" class="clock-tick" transform="rotate(0)" /> <line y1="-40" y2="-45" class="clock-tick" transform="rotate(90)" /> <line y1="-40" y2="-45" class="clock-tick" transform="rotate(180)" /> <line y1="-40" y2="-45" class="clock-tick" transform="rotate(270)" /> <text x="0" y="-30" font-size="8" text-anchor="middle">60</text>
+                                <text x="30" y="3" font-size="8" text-anchor="middle">15</text>
+                                <text x="0" y="35" font-size="8" text-anchor="middle">30</text>
+                                <text x="-30" y="3" font-size="8" text-anchor="middle">45</text>
+                                <line x1="0" y1="0" x2="0" y2="-38" class="hand-second" transform="rotate(270)" marker-end="url(#arrow-red)" />
+                                <circle cx="0" cy="0" r="2" class="clock-center" />
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        How many seconds is the time taken by the runner?<br>
+                        Answer: <span class="input-box" style="width: 80px;"></span> seconds.
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">3.</span> If the second hand moves from number 12 to number 3, how many seconds have passed?
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 3 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 12 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 15 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 60 seconds</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Time</div>
+                    <div class="text-[10px] text-black font-medium">Measuring Time in Seconds</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S374</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            <div class="instruction-text mb-4 mt-2 text-sm">
+                Section B: Converting Minutes and Seconds (Bar Model)
+            </div>
+            <div class="text-sm mb-4">Use the bar model to help with the conversion.</div>
+            <div class="soal-grid">
+                
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <span class="font-bold">4.</span> Look at the model below.
+                    </div>
+                    <div class="flex justify-center mb-2">
+                        <svg width="300" height="60" viewBox="0 0 300 60" class="visual-svg">
+                            <rect x="10" y="10" width="100" height="40" class="bar-rect" />
+                            <text x="60" y="35" text-anchor="middle" class="bar-label">1 Minute</text>
+                            <text x="130" y="35" text-anchor="middle" font-size="14" font-weight="bold">=</text>
+                            <rect x="150" y="10" width="100" height="40" class="bar-rect" />
+                            <text x="200" y="35" text-anchor="middle" class="bar-label">... Seconds</text>
+                        </svg>
+                    </div>
+                    <div class="mb-1">What is the correct value to fill in the box on the right?</div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 10 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 30 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 60 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 100 seconds</label>
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <span class="font-bold">5.</span> How many seconds are in 3 minutes? Complete the model below:
+                    </div>
+                    <div class="flex justify-center mb-4">
+                        <svg width="250" height="80" viewBox="0 0 250 80" class="visual-svg">
+                            <rect x="10" y="10" width="70" height="40" class="bar-rect" />
+                            <text x="45" y="35" text-anchor="middle" font-size="10">60 sec</text>
+                            
+                            <rect x="80" y="10" width="70" height="40" class="bar-rect" />
+                            <text x="115" y="35" text-anchor="middle" font-size="10">60 sec</text>
+                            
+                            <rect x="150" y="10" width="70" height="40" class="bar-rect" />
+                            <text x="185" y="35" text-anchor="middle" font-size="10">60 sec</text>
+                            <path d="M10,55 Q10,65 15,65 L110,65 Q115,65 115,70 Q115,65 120,65 L215,65 Q220,65 220,55" fill="none" stroke="black" />
+                            <text x="115" y="78" text-anchor="middle" font-size="10" font-weight="bold">Total = ... seconds</text>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        Answer: <span class="input-box" style="width: 80px;"></span> seconds.
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <span class="font-bold">6.</span> Convert <span class="font-bold">2 minutes 10 seconds</span> entirely into seconds.
+                    </div>
+                    <div class="flex justify-center mb-2">
+                        <svg width="250" height="80" viewBox="0 0 250 80" class="visual-svg">
+                             <rect x="10" y="10" width="70" height="40" class="bar-rect" />
+                            <text x="45" y="35" text-anchor="middle" font-size="9">1 Minute</text>
+                            <text x="45" y="65" text-anchor="middle" font-size="10" font-weight="bold">60</text>
+                             <rect x="80" y="10" width="70" height="40" class="bar-rect" />
+                            <text x="115" y="35" text-anchor="middle" font-size="9">1 Minute</text>
+                            <text x="115" y="65" text-anchor="middle" font-size="10" font-weight="bold">60</text>
+                             <rect x="150" y="10" width="30" height="40" fill="#e5e7eb" stroke="black" stroke-width="1.5" />
+                            <text x="165" y="30" text-anchor="middle" font-size="8">10</text>
+                            <text x="165" y="40" text-anchor="middle" font-size="8">Sec</text>
+                            <text x="165" y="65" text-anchor="middle" font-size="10" font-weight="bold">10</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 70 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 120 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 130 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 210 seconds</label>
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">7.</span> Andi has 1 minute 30 seconds. He has already used 50 seconds. How much time does he have left in seconds?
+                    </div>
+                    <div class="ml-4 mt-2">
+                        Answer: <span class="input-box" style="width: 80px;"></span> seconds.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Time</div>
+                    <div class="text-[10px] text-black font-medium">Measuring Time in Seconds</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S374</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            <div class="instruction-text mb-4 mt-2 text-sm">
+                Section C: Timeline & Problem Solving
+            </div>
+            <div class="text-sm mb-4">Use the timeline to see duration.</div>
+            <div class="soal-grid">
+                
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <span class="font-bold">8.</span> Budi started drinking water at the 10th second and finished at the 35th second. How long did Budi drink for?
+                    </div>
+                    <div class="flex justify-center mb-2">
+                        <svg width="300" height="60" viewBox="0 0 300 60" class="visual-svg">
+                            <line x1="10" y1="40" x2="290" y2="40" stroke="black" stroke-width="2" marker-end="url(#arrow)" />
+                            
+                            <line x1="50" y1="35" x2="50" y2="45" stroke="black" stroke-width="2" />
+                            <text x="50" y="55" text-anchor="middle" font-size="10">10s</text>
+                            
+                            <line x1="200" y1="35" x2="200" y2="45" stroke="black" stroke-width="2" />
+                            <text x="200" y="55" text-anchor="middle" font-size="10">35s</text>
+                            <path d="M50,30 Q50,20 55,20 L120,20 Q125,20 125,15 Q125,20 130,20 L195,20 Q200,20 200,30" fill="none" stroke="black" />
+                            <text x="125" y="12" text-anchor="middle" font-size="12" font-weight="bold">?</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 15 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 25 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 35 seconds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 45 seconds</label>
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <span class="font-bold">9.</span> Siti ran for <span class="font-bold">100 seconds</span>. Dayu ran for <span class="font-bold">1 minute 50 seconds</span>. Who ran longer?
+                    </div>
+                    <div class="bg-blue-50 p-2 rounded border border-blue-200 text-sm w-3/4 mb-2">
+                        <i>Hint: Convert Dayu's time into seconds first.</i><br>
+                        1 minute 50 seconds = <span class="input-box" style="width: 50px;"></span> seconds.
+                    </div>
+                    <div class="ml-4">
+                        Answer: <span class="input-box" style="width: 150px;"></span> ran longer.
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <span class="font-bold">10.</span> A traffic light is green for 45 seconds, yellow for 5 seconds, and red for 70 seconds. What is the total time for one cycle of the traffic light?
+                    </div>
+                    <div class="flex justify-center mb-2">
+                        <svg width="300" height="50" viewBox="0 0 300 50" class="visual-svg">
+                             <rect x="10" y="10" width="100" height="30" fill="#bbf7d0" stroke="black" />
+                            <text x="60" y="28" text-anchor="middle" font-size="9">Green (45)</text>
+                             
+                             <rect x="110" y="10" width="20" height="30" fill="#fef08a" stroke="black" />
+                            <text x="120" y="28" text-anchor="middle" font-size="9">Y</text>
+                             
+                             <rect x="130" y="10" width="140" height="30" fill="#fecaca" stroke="black" />
+                            <text x="200" y="28" text-anchor="middle" font-size="9">Red (70)</text>
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex flex-col gap-2">
+                        <div>Total seconds = <span class="input-box" style="width: 80px;"></span> seconds.</div>
+                        <div>Convert to minutes and seconds = <span class="input-box" style="width: 120px;"></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
