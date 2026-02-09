@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Solving Relationship Problems (E4-S378)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- CSS UTAMA (DARI SOURCE UI/UX) --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff; /* bg-blue-50 equivalent */
+        --path-color: #d1d5db; /* gray-300 */
+      }
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.5cm 2cm; 
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .page-header {
+        width: 100%;
+        margin-bottom: 5px; 
+      }
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto; 
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.5cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .concept-box,
+        .input-box,
+        .visual-svg,
+        .data-box,
+        .bar-rect {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+      }
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem; 
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 24px; 
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 22px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 5px; 
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem; 
+        background-color: #f3f4f6;
+        padding: 0.25rem 0.6rem; 
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+      /* --- Translation Text Style --- */
+      .trans {
+        font-weight: normal;
+        font-style: italic;
+        color: #666;
+        font-size: 0.9em;
+        display: block;
+        margin-top: 2px;
+        margin-bottom: 8px;
+      }
+      /* --- Bar Model SVG Specifics --- */
+      .visual-svg {
+        display: block;
+        margin: 10px auto;
+        max-width: 100%;
+        overflow: visible;
+      }
+      .bar-rect {
+        fill: #f3f4f6;
+        stroke: #333;
+        stroke-width: 1.5;
+      }
+      .bar-rect-pattern {
+        fill: url(#diagonalHatch);
+        stroke: #333;
+        stroke-width: 1.5;
+      }
+      .bar-text {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        fill: #333;
+      }
+      .bar-label {
+        font-family: "Montserrat", sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        text-anchor: end;
+        dominant-baseline: middle;
+        fill: #333;
+      }
+      .brace-path {
+        fill: none;
+        stroke: #333;
+        stroke-width: 1.5;
+      }
+      
+      /* Identity Table Minimalist */
+      .identity-box {
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .identity-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .dotted-line {
+        border-bottom: 1.5px dotted #999;
+        flex-grow: 1;
+        position: relative;
+        top: -4px;
+      }
+    </style>
+  </head>
+  <body>
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <defs>
+            <pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="4" height="4">
+            <path d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2" style="stroke:#333; stroke-width:1" />
+            </pattern>
+        </defs>
+    </svg>
+    <div class="page-container">
+      
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Advanced Whole Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Solving Relationship Problems
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : E4-S378
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-6">
+                 <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    Solving Relationship Problems
+                </h1>
+                <span class="block text-sm font-medium italic text-gray-600 normal-case mt-1">(Using Bar Models)</span>
+            </div>
+            <div class="bg-gray-50 border-2 border-gray-800 rounded-lg p-4 mb-6 shadow-sm">
+                <div class="instruction-text mb-2">Worked Example: Comparison Model</div>
+                <div class="text-sm mb-1">
+                    <strong>Problem:</strong> Seth has <strong>$50</strong>. Anna has <strong>$20</strong> more than Seth. How much money do they have <strong>altogether</strong>?
+                </div>
+                
+                <div class="flex justify-center my-4">
+                    <svg width="350" height="100" viewBox="0 0 350 100" class="visual-svg">
+                        <text x="50" y="30" class="bar-label">Seth</text>
+                        <rect x="60" y="15" width="100" height="30" class="bar-rect" />
+                        <text x="110" y="30" class="bar-text">50</text>
+                        
+                        <text x="50" y="75" class="bar-label">Anna</text>
+                        <rect x="60" y="60" width="100" height="30" class="bar-rect" />
+                        <text x="110" y="75" class="bar-text">50</text>
+                        <rect x="160" y="60" width="40" height="30" class="bar-rect-pattern" />
+                        <text x="180" y="45" class="bar-text" style="font-size: 10px;">+20</text>
+                        
+                        <path d="M210,15 Q220,15 220,25 L220,45 Q220,55 225,55 Q220,55 220,65 L220,80 Q220,90 210,90" class="brace-path" />
+                        <text x="230" y="55" class="bar-text" style="text-anchor: start;">Total = ?</text>
+                    </svg>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm bg-white p-2 rounded border border-gray-200">
+                    <div>
+                        <strong>Step 1: Find Anna's amount.</strong><br>
+                        <div class="mt-1 font-mono font-bold">50 + 20 = 70</div>
+                    </div>
+                    <div>
+                        <strong>Step 2: Find the Total.</strong><br>
+                        <div class="mt-1 font-mono font-bold">50 + 70 = 120</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S378 (Continued)</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            <div class="soal-grid mt-4">
+                
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">1.</span> Alice has 145 stickers. Ben has 35 more stickers than Alice. How many stickers do they have <strong>altogether</strong>?
+                    </div>
+                    
+                    <div class="flex justify-center my-3">
+                        <svg width="400" height="100" viewBox="0 0 400 100" class="visual-svg">
+                            <text x="60" y="30" class="bar-label">Alice</text>
+                            <rect x="70" y="15" width="120" height="30" class="bar-rect" />
+                            <text x="130" y="30" class="bar-text">145</text>
+                            <text x="60" y="75" class="bar-label">Ben</text>
+                            <rect x="70" y="60" width="120" height="30" class="bar-rect" />
+                            <rect x="190" y="60" width="40" height="30" class="bar-rect-pattern" />
+                            <text x="210" y="45" class="bar-text" style="font-size: 10px;">+35</text>
+                            <path d="M240,15 Q250,15 250,25 L250,45 Q250,55 255,55 Q250,55 250,65 L250,80 Q250,90 240,90" class="brace-path" />
+                            <text x="260" y="55" class="bar-text" style="text-anchor: start;">Total = ?</text>
+                        </svg>
+                    </div>
+                    <div class="mt-2 ml-4">
+                        Answer: <span class="input-box" style="width: 150px;"></span>
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> A blue box weighs 240 grams. A red box weighs 3 times as much as the blue box. What is the <strong>total weight</strong> of both boxes?
+                    </div>
+                    
+                    <div class="flex justify-center my-3">
+                        <svg width="400" height="100" viewBox="0 0 400 100" class="visual-svg">
+                            <text x="60" y="30" class="bar-label">Blue</text>
+                            <rect x="70" y="15" width="60" height="30" class="bar-rect" />
+                            <text x="100" y="30" class="bar-text">240</text>
+                            <text x="60" y="75" class="bar-label">Red</text>
+                            <rect x="70" y="60" width="60" height="30" class="bar-rect" />
+                            <rect x="130" y="60" width="60" height="30" class="bar-rect" />
+                            <rect x="190" y="60" width="60" height="30" class="bar-rect" />
+                        </svg>
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 720 g</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 480 g</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 960 g</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 240 g</label>
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">3.</span> Tom has $1,250. Jerry has $450 fewer than Tom. How much money do they have <strong>altogether</strong>?
+                    </div>
+                    
+                    <div class="text-gray-500 text-xs italic mb-1 mt-3 ml-4">(Draw your bar model here)</div>
+                    <div class="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 mb-4 mx-auto w-[90%]"></div>
+                    
+                    <div class="mt-2 ml-4">
+                        Answer: <span class="input-box" style="width: 150px;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S378 (Continued)</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            <div class="soal-grid mt-4">
+                
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">4.</span> A factory produced 2,100 toys in Month A. In Month B, the factory produced 4 times as many as Month A. What is the <strong>total</strong> number of toys produced?
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 8,400</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 10,500</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 6,300</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 12,100</label>
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">5.</span> Logic Puzzle: One "unit" represents 350 meters. Runner A runs 1 unit. Runner B runs 5 units. What is the total distance?
+                    </div>
+                    <div class="mt-2 ml-4">
+                        Answer: <span class="input-box" style="width: 150px;"></span>
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">6.</span> Mary has 120 beads. Nancy has twice as many as Mary. Olivia has 50 more than Nancy. What is the total number of their beads?
+                    </div>
+                    
+                    <div class="flex justify-center my-2">
+                        <svg width="400" height="150" viewBox="0 0 400 150" class="visual-svg">
+                            <text x="60" y="30" class="bar-label">Mary</text>
+                            <rect x="70" y="15" width="50" height="30" class="bar-rect" />
+                            
+                            <text x="60" y="75" class="bar-label">Nancy</text>
+                            <rect x="70" y="60" width="50" height="30" class="bar-rect" />
+                            <rect x="120" y="60" width="50" height="30" class="bar-rect" />
+                            <text x="60" y="120" class="bar-label">Olivia</text>
+                            <rect x="70" y="105" width="50" height="30" class="bar-rect" />
+                            <rect x="120" y="105" width="50" height="30" class="bar-rect" />
+                            <rect x="170" y="105" width="30" height="30" style="fill:none; stroke:#333; stroke-dasharray: 4;" />
+                            <text x="185" y="120" class="bar-text" style="font-size: 9px;">+50</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 240</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 590</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 650</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 710</label>
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">7.</span> Group X collected 2,400 cans. Group Y collected 3 times as many as Group X. Group Z collected half as many as Group X. Find the total.
+                    </div>
+                    <div class="mt-2 ml-4">
+                        Answer: <span class="input-box" style="width: 150px;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S378 (Continued)</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            <div class="soal-grid mt-4">
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">8.</span> Mr. Tan sold 1,500 apples. He sold 250 fewer oranges than apples. He sold 3 times as many pears as oranges. What is the total number of fruits sold?
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 5,250</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 6,500</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 4,000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> 3,750</label>
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <span class="bg-black text-white text-[10px] font-bold px-2 py-1 rounded tracking-wider">HIGH ABILITY</span>
+                    </div>
+                    <div class="mb-1">
+                        <span class="font-bold">9.</span> A library has 3 shelves.
+                    </div>
+                    <ul class="list-disc ml-8 mt-1 text-sm text-gray-700">
+                        <li>Shelf A has 450 books.</li>
+                        <li>Shelf B has 120 more books than Shelf A.</li>
+                        <li>Shelf C has twice the number of books as Shelf B.</li>
+                    </ul>
+                    <div class="mt-2 italic text-sm text-gray-600">Complete the total calculation.</div>
+                    
+                    <div class="mt-4 space-y-3 bg-gray-50 p-4 rounded border border-gray-200 text-sm">
+                        <div class="flex justify-between border-b border-gray-300 pb-2">
+                            <span>Books on Shelf B =</span>
+                            <span class="input-box" style="width: 150px;"></span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-300 pb-2">
+                            <span>Books on Shelf C =</span>
+                            <span class="input-box" style="width: 150px;"></span>
+                        </div>
+                        <div class="flex justify-between pt-1 font-bold">
+                            <span>Total =</span>
+                            <span class="input-box" style="width: 150px;"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <span class="bg-black text-white text-[10px] font-bold px-2 py-1 rounded tracking-wider">CHALLENGE</span>
+                    </div>
+                    <div class="mb-1">
+                        <span class="font-bold">10.</span> Sarah and Tim have a total of $500. Sarah has $100. If Tim gives $50 to Sarah, how much money do they have <strong>altogether</strong>?
+                    </div>
+                    <p class="text-xs italic text-gray-500 mt-2 bg-yellow-50 p-2 rounded border border-yellow-200 inline-block">
+                        (Hint: Think carefully about the relationship and the logic of the total!)
+                    </p>
+                    <div class="mt-4 ml-4">
+                        Answer: <span class="input-box" style="width: 150px;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
