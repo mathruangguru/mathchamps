@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Volume & Rounding (E4-S379)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff;
+        --path-color: #d1d5db;
+      }
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm 2cm; 
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px; 
+      }
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+      /* --- FOOTER (Diperbaiki ke gaya awal) --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 5px;
+        margin-top: auto; 
+        border-top: 2.5px solid var(--grey-text);
+        width: 100%;
+        display: block; /* Memastikan block display */
+      }      .page-footer b {
+          display: block;
+          margin-bottom: 2px;
+      }
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .instruction-text, .concept-box, .identity-box, .choice-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+      }
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        color: black;
+      }
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem; 
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        margin-bottom: 1rem;
+      }
+      /* Pilihan Ganda Styles */
+      .choice-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        margin-left: 1rem;
+        font-size: 0.9rem;
+      }
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 3px;
+        background: white;
+      }
+      /* Input boxes */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 100px;
+        height: 28px; 
+        display: inline-block;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        margin-left: 5px;
+      }
+      
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem; 
+        background-color: #f3f4f6;
+        padding: 0.4rem 0.8rem; 
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+      .rounding-instruction {
+          font-size: 0.8em;
+          font-weight: 700;
+          color: #d946ef; /* Fuchsia-500 */
+          display: block;
+          margin-top: 2px;
+          margin-bottom: 8px;
+          font-style: italic;
+      }
+      /* --- SVG Styles (Bar Model) --- */
+      .bar-svg-container {
+        display: block;
+        margin: 10px auto;
+        overflow: visible;
+      }
+      .bar-rect {
+        fill: #f3f4f6; /* gray-100 */
+        stroke: #000;
+        stroke-width: 1.5;
+      }
+      .bar-rect-pattern {
+        fill: url(#diagonalHatch);
+        stroke: #000;
+        stroke-width: 1.5;
+      }
+      .bar-text {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        fill: #000;
+      }
+      .bar-label {
+        font-family: "Montserrat", sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        text-anchor: end;
+        dominant-baseline: middle;
+        fill: #333;
+      }
+      .brace-path {
+        fill: none;
+        stroke: #000;
+        stroke-width: 1.2;
+      }
+      
+      /* Worked Example Box */
+      .worked-example {
+        background-color: #f9fafb;
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="4" height="4">
+            <path d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2" style="stroke:black; stroke-width:1" />
+            </pattern>
+        </defs>
+    </svg>
+    <div class="page-container">
+      
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Advanced Whole Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Volume and Rounding
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : E4-S379
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-5 mt-4">
+                 <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: VOLUME & ROUNDING
+                </h1>
+            </div>
+            <div class="worked-example">
+                <div class="font-bold text-lg mb-2 border-b border-gray-300 pb-1">Worked Example</div>
+                <p class="text-sm mb-2">
+                    <strong>Problem:</strong> A large bottle contains 3 times as much water as a small cup. If the cup contains <strong>250 ml</strong>, what is the total volume of both? Round to the nearest hundred.
+                </p>
+                
+                <div class="w-full flex justify-center my-4">
+                    <svg width="350" height="110" viewBox="0 0 350 110" class="bar-svg-container">
+                        <text x="50" y="30" class="bar-label">Cup</text>
+                        <rect x="60" y="15" width="50" height="30" class="bar-rect" />
+                        <text x="85" y="30" class="bar-text">250</text>
+                        
+                        <text x="50" y="75" class="bar-label">Bottle</text>
+                        <rect x="60" y="60" width="50" height="30" class="bar-rect" />
+                        <rect x="110" y="60" width="50" height="30" class="bar-rect" />
+                        <rect x="160" y="60" width="50" height="30" class="bar-rect" />
+                        
+                        <path d="M215,15 Q225,15 225,35 L225,50 Q225,60 230,60 Q225,60 225,70 L225,80 Q225,100 215,100" class="brace-path" />
+                        <text x="235" y="60" class="bar-text" style="text-anchor: start;">Total = ?</text>
+                    </svg>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm bg-white p-3 rounded border border-gray-200">
+                    <div>
+                        <strong>Step 1: Find Volume of Bottle.</strong><br>
+                        <div class="mt-1 font-mono bg-gray-50 p-1 rounded inline-block">250 × 3 = 750 ml</div>
+                    </div>
+                    <div>
+                        <strong>Step 2: Find Total & Round.</strong><br>
+                        <div class="mt-1 font-mono bg-gray-50 p-1 rounded inline-block">250 + 750 = 1,000 ml</div>
+                        <div class="mt-1 text-xs text-fuchsia-600 font-bold">Round to nearest hundred: 1,000 ml</div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-center font-medium text-yellow-800">
+                Instruction: Section A contains Multiple Choice questions. Section B contains Short Answer questions that require calculation.
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S379</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            <div class="instruction-text mb-4">Section A: Multiple Choice</div>
+            
+            <div class="soal-grid">
+                
+                <div class="soal-item">
+                    <div class="mb-1">
+                         <span class="font-bold">1.</span> Tank A contains 1,450 ml of water. Tank B contains 845 ml more water than Tank A. What is the total volume of water in both tanks if rounded to the nearest hundred ml?
+                    </div>
+                    
+                    <div class="w-full flex justify-center my-3">
+                        <svg width="450" height="120" viewBox="0 0 450 120" class="bar-svg-container">
+                            <text x="60" y="30" class="bar-label">Tank A</text>
+                            <rect x="70" y="15" width="100" height="30" class="bar-rect" />
+                            <text x="120" y="30" class="bar-text">1,450</text>
+                            
+                            <text x="60" y="80" class="bar-label">Tank B</text>
+                            <rect x="70" y="65" width="100" height="30" class="bar-rect" />
+                            <text x="120" y="80" class="bar-text">1,450</text>
+                            <rect x="170" y="65" width="60" height="30" class="bar-rect-pattern" />
+                            <text x="200" y="50" class="bar-text" style="font-size: 10px;">+845</text>
+                            
+                            <path d="M235,15 Q245,15 245,35 L245,50 Q245,60 250,60 Q245,60 245,70 L245,85 Q245,105 235,105" class="brace-path" />
+                            <text x="255" y="60" class="bar-text" style="text-anchor: start;">Total?</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 2,300 ml</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 3,700 ml</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 3,745 ml</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 3,800 ml</label>
+                    </div>
+                </div>
+                <div class="w-full h-px bg-gray-200 my-2"></div>
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> A large barrel holds 4 times more oil than a small canister. If the small canister holds 2,125 ml of oil, what is the total combined volume? (Round to the nearest thousand).
+                    </div>
+                    
+                    <div class="w-full flex justify-center my-3">
+                        <svg width="450" height="130" viewBox="0 0 450 130" class="bar-svg-container">
+                            <text x="60" y="30" class="bar-label">Canister</text>
+                            <rect x="70" y="15" width="50" height="30" class="bar-rect" />
+                            <text x="95" y="30" class="bar-text">2,125</text>
+                            
+                            <text x="60" y="80" class="bar-label">Barrel</text>
+                            <rect x="70" y="65" width="50" height="30" class="bar-rect" />
+                            <rect x="120" y="65" width="50" height="30" class="bar-rect" />
+                            <rect x="170" y="65" width="50" height="30" class="bar-rect" />
+                            <rect x="220" y="65" width="50" height="30" class="bar-rect" />
+                            
+                            <path d="M70,105 Q70,115 150,115 T230,115 Q270,115 270,105" fill="none" stroke="black" stroke-width="1.5" />
+                            <text x="170" y="125" class="bar-text">Total?</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 10,000 ml</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 10,600 ml</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 11,000 ml</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 12,000 ml</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S379</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">3.</span> An aquarium has a capacity of 15,000 ml. It currently contains 8,340 ml of water. A child adds 2,450 ml more water. How much more water is needed to fill the aquarium? (Round to the nearest ten).
+                    </div>
+                    
+                    <div class="text-gray-500 text-xs italic mb-1 mt-2">Draw your bar model in the box below (optional):</div>
+                    <div class="w-full h-20 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 mb-2"></div>
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 4,200 ml</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 4,210 ml</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 4,250 ml</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 6,660 ml</label>
+                    </div>
+                </div>
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+                
+                <div class="instruction-text mt-4 mb-2">Section B: Short Answer</div>
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">4.</span> 5 identical jugs can hold a total of 12,250 ml of juice. How much juice can 3 of those jugs hold?
+                        <span class="rounding-instruction">Round your answer to the nearest hundred ml.</span>
+                    </div>
+                    <div class="w-full h-16 border border-gray-200 rounded bg-white mt-2 mb-2 p-2">
+                        <span class="text-gray-400 text-xs italic">Working:</span>
+                    </div>
+                    <div class="mt-2 flex items-baseline justify-end">
+                        <span class="font-bold mr-2">Answer:</span>
+                        <div class="border-b-2 border-black w-40 h-6"></div>
+                    </div>
+                </div>
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">5.</span> Container X contains 3,200 ml. Container Y contains half the volume of Container X. Container Z contains 450 ml less than Container Y. Find the volume of Container Z.
+                        <span class="rounding-instruction">Round your answer to the nearest ten ml.</span>
+                    </div>
+                    <div class="mt-4 flex items-baseline justify-end">
+                        <span class="font-bold mr-2">Answer:</span>
+                        <div class="border-b-2 border-black w-40 h-6"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+      <section class="page">
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S379</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+        <div class="content-wrapper">
+            <div class="soal-grid" style="gap: 0.8rem;">
+                <div class="soal-item" style="margin-bottom: 0;">
+                    <div class="mb-1">
+                        <span class="font-bold">6.</span> Pail A and Pail B contain a total of 5,000 ml. Pail A contains 800 ml more than Pail B. How much water is in Pail B?
+                        <span class="rounding-instruction">Round your answer to the nearest hundred ml.</span>
+                    </div>
+                    <div class="w-full flex justify-center my-1">
+                        <svg width="400" height="120" viewBox="0 0 400 120" class="bar-svg-container">
+                            <text x="60" y="30" class="bar-label">Pail B</text>
+                            <rect x="70" y="15" width="100" height="30" class="bar-rect" />
+                            <text x="120" y="30" class="bar-text">?</text>
+                            
+                            <text x="60" y="75" class="bar-label">Pail A</text>
+                            <rect x="70" y="60" width="100" height="30" class="bar-rect" />
+                            <rect x="170" y="60" width="50" height="30" class="bar-rect-pattern" />
+                            <text x="195" y="45" class="bar-text" style="font-size: 10px;">+800</text>
+                            
+                            <path d="M230,15 Q240,15 240,35 L240,50 Q240,60 245,60 Q240,60 240,70 L240,85 Q240,105 230,105" class="brace-path" />
+                            <text x="250" y="60" class="bar-text" style="text-anchor: start;">5,000</text>
+                        </svg>
+                    </div>
+                    <div class="mt-1 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Answer:</span>
+                        <div class="border-b-2 border-black w-32 h-4"></div>
+                    </div>
+                </div>
+                <div class="soal-item" style="margin-bottom: 0;">
+                    <div class="mb-1">
+                        <span class="font-bold">7.</span> A factory produces 8,025 liters of milk. The milk is poured into 2-liter bottles. The rest is poured into a cup. What is the total volume in the full bottles only?
+                        <span class="rounding-instruction">Round your answer to the nearest thousand liters.</span>
+                    </div>
+                    <div class="mt-1 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Answer:</span>
+                        <div class="border-b-2 border-black w-32 h-4"></div>
+                    </div>
+                </div>
+                <div class="soal-item" style="margin-bottom: 0;">
+                    <div class="mb-1">
+                        <span class="font-bold">8.</span> Cylinder A contains 560 ml. Cylinder B contains 1,240 ml. How much liquid must be poured from B to A so that both cylinders have the same amount?
+                        <span class="rounding-instruction">Round your answer to the nearest ten ml.</span>
+                    </div>
+                    <div class="mt-1 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Answer:</span>
+                        <div class="border-b-2 border-black w-32 h-4"></div>
+                    </div>
+                </div>
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+                <div class="soal-item" style="margin-bottom: 0;">
+                     <div class="instruction-text mb-1 py-0.5 text-xs bg-blue-50 border-blue-800 text-blue-900">
+                        High Ability Question
+                    </div>
+                    <div class="mb-1">
+                        <span class="font-bold">9.</span> A bathtub can hold 120 liters. A tap flows water at a rate of 8 liters per minute. After 9 minutes, how much more water is needed to fill the bathtub completely?
+                        <span class="rounding-instruction">Round your answer to the nearest ten liters.</span>
+                    </div>
+                    
+                    <div class="mt-2 space-y-1 pl-4 border-l-2 border-gray-200 ml-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span>Water after 9 minutes =</span>
+                            <span class="border-b border-gray-400 w-32 inline-block"></span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm font-bold">
+                            <span>Water needed =</span>
+                            <span class="border-b-2 border-black w-32 inline-block"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="soal-item mt-2">
+                     <div class="instruction-text mb-1 py-0.5 text-xs bg-red-50 border-red-600 text-red-900">
+                        Challenge
+                    </div>
+                    <div class="mb-1">
+                        <span class="font-bold">10.</span> The total volume of 2 bottles and 3 cups is 4,500 ml. The volume of 1 bottle is equal to the volume of 3 cups. Find the volume of 1 cup.
+                        <span class="rounding-instruction">Round your answer to the nearest hundred ml.</span>
+                    </div>
+                    <p class="text-xs italic text-gray-500 mt-1">(Hint: Substitute bottles with cups!)</p>
+                    
+                    <div class="mt-2 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Answer:</span>
+                        <div class="border-b-2 border-black w-32 h-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
