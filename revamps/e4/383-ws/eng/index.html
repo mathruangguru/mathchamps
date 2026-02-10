@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Total & Absolute Quantities (E4-S383)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff;
+        --path-color: #d1d5db;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm 2cm; 
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px; 
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 5px;
+        margin-top: auto; 
+        border-top: 2.5px solid var(--grey-text);
+        width: 100%;
+        display: block;
+      }
+      .page-footer b {
+          display: block;
+          margin-bottom: 2px;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .instruction-text, .concept-box, .identity-box, .choice-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-red-50 { background-color: #fef2f2 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem; 
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        margin-bottom: 1rem;
+      }
+
+      /* Pilihan Ganda Styles */
+      .choice-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        margin-left: 1rem;
+        font-size: 0.9rem;
+      }
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 3px;
+        background: white;
+      }
+
+      /* Input boxes */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 100px;
+        height: 28px; 
+        display: inline-block;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        margin-left: 5px;
+      }
+      
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem; 
+        background-color: #f3f4f6;
+        padding: 0.4rem 0.8rem; 
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      .rounding-instruction {
+          font-size: 0.8em;
+          font-weight: 700;
+          color: #d946ef; /* Fuchsia-500 */
+          display: block;
+          margin-top: 2px;
+          margin-bottom: 8px;
+          font-style: italic;
+      }
+
+      /* --- SVG Styles (Bar Model) --- */
+      .bar-svg-container {
+        display: block;
+        margin: 10px auto;
+        overflow: visible;
+      }
+      .bar-rect {
+        fill: #f3f4f6; /* gray-100 */
+        stroke: #000;
+        stroke-width: 1.5;
+      }
+      .bar-rect-pattern {
+        fill: url(#diagonalHatch);
+        stroke: #000;
+        stroke-width: 1.5;
+      }
+      .bar-text {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        fill: #000;
+      }
+      .bar-label {
+        font-family: "Montserrat", sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        text-anchor: end;
+        dominant-baseline: middle;
+        fill: #333;
+      }
+      .brace-path {
+        fill: none;
+        stroke: #000;
+        stroke-width: 1.2;
+      }
+      
+      /* Worked Example Box */
+      .worked-example {
+        background-color: #f9fafb;
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+      }
+
+    </style>
+  </head>
+  <body>
+    <!-- Define SVG Pattern -->
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="4" height="4">
+            <path d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2" style="stroke:black; stroke-width:1" />
+            </pattern>
+        </defs>
+    </svg>
+
+    <div class="page-container">
+      
+      <!-- ================= PAGE 1: EXAMPLE ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Advanced Whole Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Total Quantities and Absolute Quantities
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : E4-S383
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-5 mt-4"> 
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: PROBLEM SOLVING
+                </h1>
+            </div>
+
+            <!-- WORKED EXAMPLE -->
+            <div class="worked-example">
+                <div class="font-bold text-lg mb-2 border-b border-gray-300 pb-1">Worked Example</div>
+                <p class="text-sm mb-2">
+                    <strong>Problem:</strong> The sum of red and blue marbles is 80. There are 20 more red marbles than blue marbles. How many blue marbles are there?
+                </p>
+                
+                <!-- Visual Model -->
+                <div class="w-full flex justify-center my-4">
+                    <svg width="350" height="110" viewBox="0 0 350 110" class="bar-svg-container">
+                        <!-- Biru -->
+                        <text x="50" y="30" class="bar-label">Blue</text>
+                        <rect x="60" y="15" width="100" height="30" class="bar-rect" />
+                        <text x="110" y="30" class="bar-text">?</text>
+
+                        <!-- Merah -->
+                        <text x="50" y="75" class="bar-label">Red</text>
+                        <rect x="60" y="60" width="100" height="30" class="bar-rect" />
+                        <rect x="160" y="60" width="40" height="30" class="bar-rect-pattern" />
+                        <text x="180" y="75" class="bar-text">+20</text>
+
+                        <!-- Brace -->
+                        <path d="M210,15 Q220,15 220,35 L220,50 Q220,60 225,60 Q220,60 220,70 L220,80 Q220,100 210,100" class="brace-path" />
+                        <text x="230" y="60" class="bar-text" style="text-anchor: start;">Total = 80</text>
+                    </svg>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 text-sm bg-white p-3 rounded border border-gray-200">
+                    <div>
+                        <strong>Step 1: Subtract the Difference.</strong><br>
+                        <div class="mt-1 font-mono bg-gray-50 p-1 rounded inline-block">80 - 20 = 60</div>
+                        <p class="text-xs text-gray-500 mt-1">This is the sum of 2 equal parts.</p>
+                    </div>
+                    <div>
+                        <strong>Step 2: Divide by Two.</strong><br>
+                        <div class="mt-1 font-mono bg-gray-50 p-1 rounded inline-block">60 : 2 = 30</div>
+                        <div class="mt-1 text-xs text-fuchsia-600 font-bold">So, blue marbles = 30.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-center font-medium text-yellow-800">
+                Instruction: Section A contains Multiple Choice questions. Section B contains Short Answer questions requiring calculation. Use bar models to help you!
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 2: Q1-2 (MCQ) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S383</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mb-4">Section A: Multiple Choice</div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 (PG) -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                         <span class="font-bold">1.</span> Mr. Budi harvested a total of 1,250 mangoes and oranges. The number of mangoes is 250 more than the number of oranges. How many oranges did Mr. Budi harvest?
+                    </div>
+
+                    <!-- SVG Visual -->
+                    <div class="w-full flex justify-center my-3">
+                        <svg width="450" height="120" viewBox="0 0 450 120" class="bar-svg-container">
+                            <!-- Jeruk -->
+                            <text x="60" y="30" class="bar-label">Oranges</text>
+                            <rect x="70" y="15" width="100" height="30" class="bar-rect" />
+                            <text x="120" y="30" class="bar-text">?</text>
+                            
+                            <!-- Mangga -->
+                            <text x="60" y="80" class="bar-label">Mangoes</text>
+                            <rect x="70" y="65" width="100" height="30" class="bar-rect" />
+                            <rect x="170" y="65" width="60" height="30" class="bar-rect-pattern" />
+                            <text x="200" y="50" class="bar-text" style="font-size: 10px;">+250</text>
+                            
+                            <!-- Brace -->
+                            <path d="M235,15 Q245,15 245,35 L245,50 Q245,60 250,60 Q245,60 245,70 L245,85 Q245,105 235,105" class="brace-path" />
+                            <text x="255" y="60" class="bar-text" style="text-anchor: start;">Total = 1,250</text>
+                        </svg>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 500</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 750</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 1,000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 1,250</label>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-2"></div>
+
+                <!-- SOAL 2 (PG) -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> A bookstore sells a total of 480 stationery items consisting of pencils, pens, and erasers. The number of erasers is 120. The number of pencils is twice the number of pens. How many pencils are in the store?
+                    </div>
+
+                    <!-- SVG Visual -->
+                    <div class="w-full flex justify-center my-3">
+                        <svg width="450" height="130" viewBox="0 0 450 130" class="bar-svg-container">
+                            <!-- Penghapus -->
+                            <text x="70" y="30" class="bar-label">Erasers</text>
+                            <rect x="80" y="15" width="50" height="30" class="bar-rect" />
+                            <text x="105" y="30" class="bar-text">120</text>
+                            
+                            <!-- Sisa (Pensil & Pulpen) -->
+                            <text x="70" y="80" class="bar-label">Remainder</text>
+                            <rect x="80" y="65" width="50" height="30" class="bar-rect" />
+                            <text x="105" y="80" class="bar-text" style="font-size:8px;">Pens</text>
+                            
+                            <rect x="130" y="65" width="50" height="30" class="bar-rect" />
+                            <rect x="180" y="65" width="50" height="30" class="bar-rect" />
+                            <text x="155" y="55" class="bar-text" style="font-size:10px;">Pencils (2x)</text>
+                            
+                            <!-- Brace for total -->
+                            <path d="M80,105 Q80,115 155,115 T230,115" fill="none" stroke="none" /> <!-- Spacer -->
+                            <text x="300" y="60" class="bar-text" style="text-anchor: start;">Total = 480</text>
+                            <path d="M240,15 Q250,15 250,40 L250,55 Q250,65 255,65 Q250,65 250,75 L250,90 Q250,115 240,115" class="brace-path" />
+                        </svg>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 120 pencils</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 240 pencils</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 360 pencils</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 480 pencils</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 3: Q3-5 (Mix) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S383</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-grid">
+                
+                <!-- SOAL 3 (PG) -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">3.</span> Box A and Box B have a total of 200 marbles. If 30 marbles are moved from Box A to Box B, the number of marbles in both boxes becomes equal. What was the number of marbles in Box A at first?
+                    </div>
+                    
+                    <div class="text-gray-500 text-xs italic mb-1 mt-2">Draw your bar model in the box below (optional):</div>
+                    <div class="w-full h-20 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 mb-2"></div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 70 marbles</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 100 marbles</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 130 marbles</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 160 marbles</label>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+                
+                <div class="instruction-text mt-4 mb-2">Section B: Short Answer</div>
+
+                <!-- SOAL 4 (Isian Singkat) -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">4.</span> Sinta, Dewi, and Budi collected a total of 1,050 stamps. Sinta has 150 stamps. Dewi has 2 times as many stamps as Budi. How many stamps does Budi have?
+                    </div>
+
+                    <div class="w-full h-16 border border-gray-200 rounded bg-white mt-2 mb-2 p-2">
+                        <span class="text-gray-400 text-xs italic">Working Space:</span>
+                    </div>
+
+                    <div class="mt-2 flex items-baseline justify-end">
+                        <span class="font-bold mr-2">Answer:</span>
+                        <div class="border-b-2 border-black w-40 h-6"></div>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+
+                <!-- SOAL 5 (Isian Singkat) -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">5.</span> The price of a bag and a pair of shoes is Rp 450,000. The price of the shoes is Rp 50,000 more than the price of the bag. What is the price of 2 bags?
+                    </div>
+
+                    <div class="mt-4 flex items-baseline justify-end">
+                        <span class="font-bold mr-2">Answer:</span>
+                        <div class="border-b-2 border-black w-40 h-6"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 4: Q6-10 (Short Answer) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S383</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- PENTING: Style khusus untuk halaman 4 ini agar muat 1 halaman -->
+            <div class="soal-grid" style="gap: 0.8rem;">
+
+                <!-- SOAL 6 -->
+                <div class="soal-item" style="margin-bottom: 0;">
+                    <div class="mb-1">
+                        <span class="font-bold">6.</span> The total number of spectators in stands A, B, and C is 3,000. Stand A has 800 people. Stand B has 400 fewer spectators than Stand C. How many spectators are in Stand C?
+                    </div>
+
+                    <!-- SVG Visual -->
+                    <div class="w-full flex justify-center my-1">
+                        <svg width="400" height="120" viewBox="0 0 400 120" class="bar-svg-container">
+                            <!-- A -->
+                            <text x="60" y="25" class="bar-label">A (800)</text>
+                            <rect x="70" y="15" width="50" height="20" class="bar-rect" />
+                            
+                            <!-- B -->
+                            <text x="60" y="55" class="bar-label">B</text>
+                            <rect x="70" y="45" width="80" height="20" class="bar-rect" />
+                            
+                            <!-- C -->
+                            <text x="60" y="85" class="bar-label">C</text>
+                            <rect x="70" y="75" width="80" height="20" class="bar-rect" />
+                            <rect x="150" y="75" width="40" height="20" class="bar-rect-pattern" />
+                            <text x="170" y="65" class="bar-text" style="font-size: 10px;">+400</text>
+                            
+                            <!-- Brace -->
+                            <path d="M200,15 Q210,15 210,35 L210,50 Q210,55 215,55 Q210,55 210,60 L210,75 Q210,95 200,95" class="brace-path" />
+                            <text x="220" y="55" class="bar-text" style="text-anchor: start;">Total = 3,000</text>
+                        </svg>
+                    </div>
+
+                    <div class="mt-1 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Answer:</span>
+                        <div class="border-b-2 border-black w-32 h-4"></div>
+                    </div>
+                </div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item" style="margin-bottom: 0;">
+                    <div class="mb-1">
+                        <span class="font-bold">7.</span> There are chickens and goats on a farm. The total number of legs is 140. If there are 20 goats, how many chickens are there on the farm?
+                    </div>
+                    <div class="mt-1 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Answer:</span>
+                        <div class="border-b-2 border-black w-32 h-4"></div>
+                    </div>
+                </div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item" style="margin-bottom: 0;">
+                    <div class="mb-1">
+                        <span class="font-bold">8.</span> Three children (Ali, Badu, Cica) have a total of 126 marbles. Ali has the fewest marbles. Badu has 10 more marbles than Ali. Cica has 10 more marbles than Badu. How many marbles does Ali have?
+                    </div>
+                    <div class="mt-1 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Answer:</span>
+                        <div class="border-b-2 border-black w-32 h-4"></div>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+
+                <!-- SOAL 9 (High Ability) -->
+                <div class="soal-item" style="margin-bottom: 0;">
+                     <div class="instruction-text mb-1 py-0.5 text-xs bg-blue-50 border-blue-800 text-blue-900">
+                        High Ability Question
+                    </div>
+                    <div class="mb-1">
+                        <span class="font-bold">9.</span> Mother baked 500 cookies. 200 cookies were donated to an orphanage. The rest were put into small boxes. Each box holds 15 cookies. How many boxes are needed?
+                    </div>
+                    
+                    <div class="mt-2 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Answer:</span>
+                        <div class="border-b-2 border-black w-32 h-4"></div>
+                    </div>
+                </div>
+
+                <!-- SOAL 10 (Challenge) -->
+                <div class="soal-item mt-2">
+                     <div class="instruction-text mb-1 py-0.5 text-xs bg-red-50 border-red-600 text-red-900">
+                        Challenge
+                    </div>
+                    <div class="mb-1">
+                        <span class="font-bold">10.</span> The sum of two numbers is 215. The first number is 4 times the second number plus 15. Determine the values of both numbers!
+                    </div>
+                    
+                    <!-- SVG Visual -->
+                    <div class="w-full flex justify-center my-1">
+                        <svg width="400" height="90" viewBox="0 0 400 90" class="bar-svg-container">
+                            <!-- Bil 2 -->
+                            <text x="60" y="25" class="bar-label">2nd No.</text>
+                            <rect x="70" y="15" width="40" height="20" class="bar-rect" />
+                            
+                            <!-- Bil 1 -->
+                            <text x="60" y="55" class="bar-label">1st No.</text>
+                            <rect x="70" y="45" width="40" height="20" class="bar-rect" />
+                            <rect x="110" y="45" width="40" height="20" class="bar-rect" />
+                            <rect x="150" y="45" width="40" height="20" class="bar-rect" />
+                            <rect x="190" y="45" width="40" height="20" class="bar-rect" />
+                            <rect x="230" y="45" width="30" height="20" class="bar-rect-pattern" />
+                            <text x="245" y="35" class="bar-text" style="font-size: 10px;">+15</text>
+                            
+                            <!-- Brace -->
+                            <path d="M265,15 Q275,15 275,30 L275,35 Q275,40 280,40 Q275,40 275,45 L275,55 Q275,65 265,65" class="brace-path" />
+                            <text x="285" y="40" class="bar-text" style="text-anchor: start;">215</text>
+                        </svg>
+                    </div>
+
+                    <div class="mt-2 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Answer:</span>
+                        <div class="border-b-2 border-black w-32 h-4"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
