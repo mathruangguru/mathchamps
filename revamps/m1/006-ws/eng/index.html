@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Writing Numbers (M1-S006)</title>
+    
+    <!-- Tailwind for utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .icon-filled,
+        .icon-stroke,
+        .input-box,
+        .disc-fill,
+        .disc-stroke {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .border-orange-200 { border-color: #fed7aa !important; }
+        .table-header { background-color: #f3f4f6 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 100px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 28px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        flex-direction: column; /* Stack vertically for longer text */
+        gap: 0.5rem;
+        margin-top: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+
+      /* Grid for multiple choice when short options */
+      .choice-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.3cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem;
+        background-color: #f3f4f6;
+        padding: 0.4rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* Visual Math Singapore Specifics */
+      .disc-fill {
+        fill: #e0f2fe; 
+        stroke: #333;
+        stroke-width: 1.2;
+      }
+      
+      .disc-text {
+        font-family: 'Noto Sans', sans-serif;
+        font-weight: 700;
+        font-size: 8px; /* Adjusted size for full numbers */
+        fill: #333;
+        text-anchor: middle;
+        dominant-baseline: central;
+      }
+
+      /* Tables for Place Value */
+      .pv-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+      }
+      .pv-table th {
+        background-color: #f3f4f6;
+        border: 1px solid #333;
+        padding: 6px;
+        text-align: center;
+        font-weight: 700;
+      }
+      .pv-table td {
+        border: 1px solid #333;
+        padding: 8px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 1.1rem;
+      }
+      .dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        background-color: #333;
+        border-radius: 50%;
+        margin: 1px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO (Placeholder) -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Whole Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Writing Numbers up to 10,000,000 in numerals
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : M1-S006
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-4 mt-2">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: WRITING NUMBERS IN MILLIONS
+                </h1>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-4 text-sm">
+                Section A: Pictorial Representation. Look at the pictures or place value charts, then write the numerals.
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        1. <span class="text-blue-700">Place Value Chart.</span> Look at the following chart. What number is formed?
+                    </div>
+                    
+                    <div class="mb-2">
+                        <table class="pv-table">
+                            <thead>
+                                <tr>
+                                    <th>Millions</th>
+                                    <th>Hundred<br>Thousands</th>
+                                    <th>Ten<br>Thousands</th>
+                                    <th>Thousands</th>
+                                    <th>Hundreds</th>
+                                    <th>Tens</th>
+                                    <th>Ones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>3</td>
+                                    <td>0</td>
+                                    <td>4</td>
+                                    <td>5</td>
+                                    <td>2</td>
+                                    <td>1</td>
+                                    <td>0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex items-center gap-2 text-md font-bold mt-2">
+                        <span>Answer: </span>
+                        <span class="input-box" style="width: 200px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        2. <span class="text-blue-700">Counting Dots.</span> Count the dots in the place value chart below and write the numerals.
+                    </div>
+                    
+                    <div class="mb-2">
+                        <table class="pv-table">
+                            <thead>
+                                <tr>
+                                    <th>Millions</th>
+                                    <th>Hundred<br>Thousands</th>
+                                    <th>Ten<br>Thousands</th>
+                                    <th>Thousands</th>
+                                    <th>Hundreds</th>
+                                    <th>Tens</th>
+                                    <th>Ones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="dot"></span><span class="dot"></span></td>
+                                    <td><span class="dot"></span><span class="dot"></span><span class="dot"></span></td>
+                                    <td></td>
+                                    <td><span class="dot"></span></td>
+                                    <td><span class="dot"></span><span class="dot"></span></td>
+                                    <td></td>
+                                    <td><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex items-center gap-2 text-md font-bold mt-2">
+                        <span>Answer: </span>
+                        <span class="input-box" style="width: 200px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                         3. <span class="text-blue-700">Number Discs.</span> Look at the following set of number discs. Write in numerals.
+                    </div>
+                    
+                    <div class="flex flex-wrap justify-center gap-2 mb-2 p-2 bg-gray-50 rounded border border-gray-100">
+                        <!-- 1 Juta x4 -->
+                        <svg width="220" height="50" viewBox="0 0 220 50">
+                             <g transform="translate(25, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">1,000,000</text></g>
+                             <g transform="translate(80, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">1,000,000</text></g>
+                             <g transform="translate(135, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">1,000,000</text></g>
+                             <g transform="translate(190, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">1,000,000</text></g>
+                        </svg>
+                        
+                        <!-- 100 Rb x2 -> 100.000 -->
+                         <svg width="110" height="50" viewBox="0 0 110 50">
+                             <g transform="translate(25, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">100,000</text></g>
+                             <g transform="translate(80, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">100,000</text></g>
+                        </svg>
+
+                        <!-- 10 Rb x1 -> 10.000 -->
+                         <svg width="55" height="50" viewBox="0 0 55 50">
+                             <g transform="translate(25, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">10,000</text></g>
+                        </svg>
+
+                        <!-- 1 Rb x3 -> 1.000 -->
+                         <svg width="165" height="50" viewBox="0 0 165 50">
+                             <g transform="translate(25, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">1,000</text></g>
+                             <g transform="translate(80, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">1,000</text></g>
+                             <g transform="translate(135, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">1,000</text></g>
+                        </svg>
+                    </div>
+
+                    <div class="flex items-center gap-2 text-md font-bold mt-2">
+                        <span>Answer: </span>
+                        <span class="input-box" style="width: 200px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                      <div class="font-bold mb-2">
+                          4. <span class="text-blue-700">Place Value Variation.</span> Determine the value of the number from the following discs.
+                    </div>
+                    
+                    <div class="flex flex-wrap justify-center gap-2 mb-2 p-2 bg-gray-50 rounded border border-gray-100">
+                        <!-- 1 Juta x2 -->
+                        <svg width="110" height="50" viewBox="0 0 110 50">
+                             <g transform="translate(25, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">1,000,000</text></g>
+                             <g transform="translate(80, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">1,000,000</text></g>
+                        </svg>
+
+                        <!-- 100 x4 -->
+                         <svg width="220" height="50" viewBox="0 0 220 50">
+                             <g transform="translate(25, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">100</text></g>
+                             <g transform="translate(80, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">100</text></g>
+                             <g transform="translate(135, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">100</text></g>
+                             <g transform="translate(190, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">100</text></g>
+                        </svg>
+
+                        <!-- 10 x2 -->
+                         <svg width="110" height="50" viewBox="0 0 110 50">
+                             <g transform="translate(25, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">10</text></g>
+                             <g transform="translate(80, 25)"><circle r="22" class="disc-fill"/><text x="0" y="0" class="disc-text">10</text></g>
+                        </svg>
+                    </div>
+                    
+                     <div class="flex items-center gap-2 text-md font-bold mt-2">
+                        <span>Answer: </span>
+                        <span class="input-box" style="width: 200px;"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Whole Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Writing Numbers up to 10,000,000 in numerals
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : M1-S006
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mb-4 mt-2 text-sm">
+                Section B: Multiple Choice & Concept Understanding. Choose the most appropriate answer.
+            </div>
+
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        5. <span class="text-blue-700">Reading Numbers.</span> The number <b>"Three million five hundred four thousand two hundred ten"</b> written in numerals is...
+                    </div>
+                    
+                    <div class="choice-grid choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 3,540,210</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 3,504,210</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 3,054,210</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 3,542,010</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. <span class="text-blue-700">Standard Form.</span> Which is the correct numeral for: <b>Six million twenty thousand five</b>?
+                    </div>
+                    
+                     <div class="choice-grid choice-container ml-4">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 6,200,005</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 6,020,005</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 6,020,050</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 6,205,000</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. <span class="text-blue-700">Number Composition.</span> Look at the following number composition:<br>
+                        <span class="bg-gray-100 px-2 py-1 rounded inline-block mt-1 font-mono text-xs md:text-sm">8 Millions + 4 Hundred Thousands + 0 Ten Thousands + 7 Thousands + 9 Hundreds</span>
+                    </div>
+
+                    <div class="choice-grid choice-container ml-4">
+                         <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 8,470,900</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 8,407,900</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 8,479,000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 8,047,900</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Section C Header -->
+                 <div class="instruction-text mb-3 mt-4 text-sm bg-blue-50 border-blue-800 text-blue-900">
+                    Section C: Short Answer & Problem Solving.
+                </div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. <span class="text-blue-700">Writing Numbers.</span> Write the numeral for:<br>
+                        <i class="text-gray-600">"Nine million one hundred twelve thousand six hundred fifty"</i>
+                    </div>
+
+                    <div class="flex items-center gap-2 ml-4">
+                         <span class="font-bold">Answer: </span>
+                         <span class="input-box" style="width: 250px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. <span class="text-blue-700">Completing the Equation.</span> Fill in the empty box below to make the equation true.
+                    </div>
+
+                    <div class="font-mono text-center bg-gray-50 p-2 rounded border border-gray-200 text-sm md:text-base">
+                        2,000,000 + <span class="input-box" style="width: 80px; height: 25px; line-height: 22px;"></span> + 50,000 + 3,000 + 400 = 2,753,400
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1 & 2) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Whole Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Writing Numbers up to 10,000,000 in numerals
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : M1-S006
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+             <!-- Lanjutan Bagian C -->
+             <div class="instruction-text mb-4 mt-2 text-sm bg-blue-50 border-blue-800 text-blue-900">
+                Section C (Continued): Short Answer & Problem Solving.
+            </div>
+
+            <div class="soal-grid mb-4">
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. <span class="text-blue-700">Logic Challenge (Who Am I?).</span> I am a 7-digit number.
+                    </div>
+                    
+                    <ul class="list-disc ml-8 text-sm space-y-1 mb-3">
+                        <li>The digit in the millions place is <b>6</b>.</li>
+                        <li>The digit in the hundred thousands place is <b>2 more than</b> the digit in the millions place.</li>
+                        <li>The digit in the ten thousands place is <b>0</b>.</li>
+                        <li>The digit in the thousands place is <b>half</b> of the digit in the hundred thousands place.</li>
+                        <li>The last three digits (hundreds, tens, ones) are zero.</li>
+                    </ul>
+
+                     <div class="flex items-center gap-2 ml-4">
+                         <span class="font-bold">I am the number: </span>
+                         <span class="input-box" style="width: 200px;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
