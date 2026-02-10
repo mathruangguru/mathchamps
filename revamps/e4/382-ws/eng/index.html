@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Bar Model (E4-S382)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+        --visual-blue: #eff6ff;
+        --path-color: #d1d5db;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 1cm 2cm; 
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px; 
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 5px;
+        margin-top: auto; 
+        border-top: 2.5px solid var(--grey-text);
+        width: 100%;
+        display: block;
+      }
+      .page-footer b {
+          display: block;
+          margin-bottom: 2px;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .instruction-text, .concept-box, .identity-box, .choice-box {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem; 
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+        margin-bottom: 1rem;
+      }
+
+      /* Pilihan Ganda Styles */
+      .choice-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        margin-left: 1rem;
+        font-size: 0.9rem;
+      }
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid #333;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 3px;
+        background: white;
+      }
+
+      /* Input boxes */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 100px;
+        height: 28px; 
+        display: inline-block;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        margin-left: 5px;
+      }
+      
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.8rem; 
+        background-color: #f3f4f6;
+        padding: 0.4rem 0.8rem; 
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- SVG Styles (Bar Model) --- */
+      .bar-svg-container {
+        display: block;
+        margin: 10px auto;
+        overflow: visible;
+      }
+      .bar-rect {
+        fill: #dbeafe; /* blue-100 */
+        stroke: #1e3a8a; /* blue-900 */
+        stroke-width: 1.5;
+      }
+      .bar-rect-yellow {
+        fill: #fef9c3; /* yellow-100 */
+        stroke: #854d0e; /* yellow-800 */
+        stroke-width: 1.5;
+      }
+      .bar-rect-gray {
+        fill: #f3f4f6;
+        stroke: #374151;
+        stroke-width: 1.5;
+      }
+      .bar-text {
+        font-family: "Noto Sans", sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        fill: #000;
+      }
+      .bar-label {
+        font-family: "Montserrat", sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        text-anchor: end;
+        dominant-baseline: middle;
+        fill: #333;
+      }
+      .brace-path {
+        fill: none;
+        stroke: #000;
+        stroke-width: 1.2;
+      }
+      
+      /* Worked Example Box */
+      .worked-example {
+        background-color: #f9fafb;
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+      }
+
+      .draw-area {
+        width: 100%; 
+        height: 80px; 
+        border: 2px dashed #d1d5db; 
+        border-radius: 8px; 
+        background-color: #f9fafb;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af;
+        font-size: 0.8rem;
+        font-style: italic;
+      }
+
+    </style>
+  </head>
+  <body>
+    <!-- Define SVG Pattern -->
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="4" height="4">
+            <path d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2" style="stroke:black; stroke-width:1" />
+            </pattern>
+        </defs>
+    </svg>
+
+    <div class="page-container">
+      
+      <!-- ================= PAGE 1: EXAMPLE ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Advanced Whole Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Bar Model
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : E4-S382
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-5 mt-4"> 
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: Comparison Models
+                </h1>
+            </div>
+
+            <!-- WORKED EXAMPLE -->
+            <div class="worked-example">
+                <div class="font-bold text-lg mb-2 border-b border-gray-300 pb-1">Concept Guide (Worked Example)</div>
+                <p class="text-sm mb-2">
+                    <strong>Problem:</strong> A has 3 times as much money as B. The difference in their money is Rp 20,000. What is the total amount of money they have?
+                </p>
+                
+                <!-- Visual Model -->
+                <div class="w-full flex justify-center my-4">
+                    <svg width="350" height="120" viewBox="0 0 350 120" class="bar-svg-container">
+                        <!-- Bar B -->
+                        <text x="50" y="30" class="bar-label">B</text>
+                        <rect x="60" y="15" width="50" height="30" class="bar-rect-yellow" />
+                        <text x="85" y="30" class="bar-text">1u</text>
+
+                        <!-- Bar A -->
+                        <text x="50" y="75" class="bar-label">A</text>
+                        <rect x="60" y="60" width="50" height="30" class="bar-rect" />
+                        <rect x="110" y="60" width="50" height="30" class="bar-rect" />
+                        <rect x="160" y="60" width="50" height="30" class="bar-rect" />
+
+                        <!-- Difference Brace -->
+                        <!-- Points: Start (110, 95) to End (210, 95) -->
+                        <path d="M110,95 Q110,105 135,105 L150,105 Q160,105 160,110 Q160,105 170,105 L185,105 Q210,105 210,95" class="brace-path" />
+                        <text x="160" y="118" class="bar-text" style="font-size: 10px;">Difference = 2 Units = 20,000</text>
+
+                        <!-- Total Brace -->
+                        <path d="M220,15 Q230,15 230,35 L230,50 Q230,60 235,60 Q230,60 230,70 L230,80 Q230,100 220,100" class="brace-path" />
+                        <text x="240" y="60" class="bar-text" style="text-anchor: start;">Total = ?</text>
+                    </svg>
+                </div>
+
+                <div class="grid grid-cols-1 gap-2 text-sm bg-white p-3 rounded border border-gray-200">
+                    <div>
+                        <strong>Step 1: Analyze the Model</strong><br>
+                        Difference in units = 3 units (A) - 1 unit (B) = <strong>2 units</strong>.
+                    </div>
+                    <div>
+                        <strong>Step 2: Find the Value of 1 Unit</strong><br>
+                        2 units = Rp 20,000 <br>
+                        1 unit = Rp 20,000 ÷ 2 = <strong>Rp 10,000</strong>
+                    </div>
+                    <div>
+                        <strong>Step 3: Calculate the Total</strong><br>
+                        Total units = 3 units (A) + 1 unit (B) = 4 units.<br>
+                        Total = 4 × Rp 10,000 = <strong>Rp 40,000</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-center font-medium text-yellow-800">
+                Instruction: Section A contains Multiple Choice questions. Section B contains Short Answer questions. Use the empty space to draw your bar models.
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 2: Q1-2 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S382</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mb-4">Section A: Multiple Choice</div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                         <span class="font-bold">1.</span> Andi has 3 times as many marbles as Budi. If Andi has 18 marbles more than Budi, what is the total number of marbles they have together?
+                    </div>
+
+                    <div class="draw-area"></div>
+
+                    <!-- Pilihan Ganda -->
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 27 marbles</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 36 marbles</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 45 marbles</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 54 marbles</label>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-2"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> A bookstore sells two types of pens. Red Pens sold 4 times as many as Blue Pens. If the difference in sales between the two pens is 24, what is the total number of pens sold?
+                    </div>
+
+                    <!-- SVG Hint -->
+                    <div class="w-full flex justify-center my-2">
+                        <svg width="300" height="80" viewBox="0 0 300 80" class="bar-svg-container">
+                            <!-- Biru -->
+                            <rect x="50" y="10" width="40" height="20" class="bar-rect-yellow" />
+                            <text x="30" y="20" class="bar-label">Blue</text>
+                            
+                            <!-- Merah -->
+                            <rect x="50" y="40" width="40" height="20" class="bar-rect" />
+                            <rect x="90" y="40" width="40" height="20" class="bar-rect" />
+                            <rect x="130" y="40" width="40" height="20" class="bar-rect" />
+                            <rect x="170" y="40" width="40" height="20" class="bar-rect" />
+                            <text x="30" y="50" class="bar-label">Red</text>
+
+                            <!-- Brace Diff -->
+                            <path d="M90,65 Q90,75 125,75 T160,75 Q180,75 210,75 Q210,65 210,65" fill="none" stroke="black" stroke-width="1" /> 
+                            <text x="150" y="78" class="bar-text" style="font-size: 12px; font-weight: bold;">24</text>
+                        </svg>
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 30 pens</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 32 pens</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 40 pens</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 48 pens</label>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-2"></div>
+
+                 <!-- SOAL 3 -->
+                 <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">3.</span> Father's age is 5 times Danu's age. If Father is 32 years older than Danu, what is the sum of their ages?
+                    </div>
+
+                    <div class="draw-area"></div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> A. 40 years</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> B. 48 years</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> C. 56 years</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> D. 60 years</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 3: Q4-6 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S382</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="instruction-text mt-2 mb-2">Section B: Short Answer</div>
+            <div class="soal-grid">
+                
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">4.</span> In a container, the number of green beads is 2 times the number of yellow beads. The number of red beads is 3 times the number of green beads. If there are 50 more red beads than yellow beads, what is the total number of all beads?
+                    </div>
+                    
+                    <div class="draw-area" style="height: 100px;"></div>
+
+                    <div class="mt-2 flex items-baseline justify-end">
+                        <span class="font-bold mr-2">Answer:</span>
+                        <div class="border-b-2 border-black w-40 h-6"></div>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+                
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">5.</span> The price of an exercise book is 3 times the price of a pencil. Sinta bought 1 exercise book and 2 pencils for a total price of Rp 15,000. What is the price of one exercise book?
+                    </div>
+
+                    <div class="w-full h-16 border border-gray-200 rounded bg-white mt-2 mb-2 p-2">
+                        <span class="text-gray-400 text-xs italic">Working Space:</span>
+                    </div>
+
+                    <div class="mt-2 flex items-baseline justify-end">
+                        <span class="font-bold mr-2">Answer:</span>
+                        <div class="border-b-2 border-black w-40 h-6"></div>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">6.</span> Rope A is 4 times as long as Rope B. If Rope A is cut by 36 meters, its length becomes equal to Rope B. What was the total length of both ropes at first?
+                    </div>
+
+                    <!-- SVG Visual -->
+                    <div class="w-full flex justify-center my-3">
+                        <svg width="400" height="100" viewBox="0 0 400 100" class="bar-svg-container">
+                            <!-- Tali B -->
+                            <text x="60" y="30" class="bar-label">Rope B</text>
+                            <rect x="70" y="15" width="50" height="30" class="bar-rect-yellow" />
+                            
+                            <!-- Tali A -->
+                            <text x="60" y="75" class="bar-label">Rope A</text>
+                            <rect x="70" y="60" width="50" height="30" class="bar-rect" />
+                            <rect x="120" y="60" width="50" height="30" class="bar-rect" />
+                            <rect x="170" y="60" width="50" height="30" class="bar-rect" />
+                            <rect x="220" y="60" width="50" height="30" class="bar-rect-gray" />
+                            
+                            <!-- Cut indication -->
+                            <line x1="120" y1="55" x2="270" y2="55" stroke="black" stroke-dasharray="4" />
+                            <text x="195" y="45" class="bar-text" style="font-size: 10px;">Cut 36 m</text>
+                        </svg>
+                    </div>
+
+                    <div class="mt-1 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Answer:</span>
+                        <div class="border-b-2 border-black w-32 h-4"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= PAGE 4: Q7-10 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Exploration 4</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Advanced Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium">Code : E4-S382</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- PENTING: Style khusus untuk halaman 4 ini agar muat 1 halaman -->
+            <div class="soal-grid" style="gap: 0.8rem;">
+
+                <!-- SOAL 7 -->
+                <div class="soal-item" style="margin-bottom: 0;">
+                    <div class="mb-1">
+                        <span class="font-bold">7.</span> Citra's savings are half of Dewi's savings. Dewi's savings are 3 times Eka's savings. If Citra has Rp 30,000, what is the difference between Dewi's and Eka's savings?
+                    </div>
+                    <div class="mt-1 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Answer:</span>
+                        <div class="border-b-2 border-black w-32 h-4"></div>
+                    </div>
+                </div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item" style="margin-bottom: 0;">
+                    <div class="mb-1">
+                        <span class="font-bold">8.</span> Mr. Budi harvested mangoes and oranges. The total weight of the harvest is 120 kg. The weight of mangoes is 3 times the weight of oranges. How many kg heavier are the mangoes compared to the oranges?
+                    </div>
+                    <div class="draw-area" style="height: 60px;"></div>
+                    <div class="mt-1 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Answer:</span>
+                        <div class="border-b-2 border-black w-32 h-4"></div>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-200 my-1"></div>
+
+                <!-- SOAL 9 (High Ability) -->
+                <div class="soal-item" style="margin-bottom: 0;">
+                     <div class="instruction-text mb-1 py-0.5 text-xs bg-blue-50 border-blue-800 text-blue-900">
+                        High Ability Question (Transfer)
+                    </div>
+                    <div class="mb-1">
+                        <span class="font-bold">9.</span> Box X contains 3 times as many balls as Box Y. If 8 balls are moved from Box X to Box Y, the number of balls in both boxes becomes equal. What was the number of balls in Box X at first?
+                    </div>
+                    
+                    <!-- Logic Area -->
+                    <div class="mt-2 space-y-1 pl-4 border-l-2 border-gray-200 ml-2 bg-gray-50 p-2 rounded">
+                        <div class="flex justify-between items-center text-sm">
+                            
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            
+                        </div>
+                        <div class="flex justify-between items-center text-sm font-bold mt-2">
+                             <span>Number of balls in Box X (At first):</span>
+                            <span class="border-b-2 border-black w-32 inline-block"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SOAL 10 (Challenge) -->
+                <div class="soal-item mt-2">
+                     <div class="instruction-text mb-1 py-0.5 text-xs bg-red-50 border-red-600 text-red-900">
+                        Challenge
+                    </div>
+                    <div class="mb-1">
+                        <span class="font-bold">10.</span> Number A is 4 times Number B. Number B is 2 times Number C. If the sum of A, B, and C is 132, find the value of Number A.
+                    </div>
+                    
+                    <div class="mt-2 flex items-baseline justify-end">
+                        <span class="font-bold mr-2 text-sm">Answer:</span>
+                        <div class="border-b-2 border-black w-32 h-4"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
