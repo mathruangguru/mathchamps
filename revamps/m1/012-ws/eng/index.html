@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Comparing Numbers (M1-S012)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .input-box,
+        .disc-fill,
+        .pv-table th,
+        .pv-table td,
+        .digit-card {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .border-orange-200 { border-color: #fed7aa !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem; /* Default gap */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 80px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 4px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 1.5rem; /* Indent choices */
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.5cm 0; /* Default margin */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        background-color: #f3f4f6;
+        padding: 0.25rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* Visual Math Singapore Specifics */
+      .disc-fill {
+        fill: #e0f2fe; /* cyan-100/50 mix equivalent */
+        stroke: #333;
+        stroke-width: 1.5;
+      }
+      
+      .disc-text {
+        font-family: 'Noto Sans', sans-serif;
+        font-weight: 700;
+        font-size: 8px; 
+        fill: #333;
+        text-anchor: middle;
+        dominant-baseline: central;
+      }
+
+      .digit-card {
+        width: 36px;
+        height: 48px;
+        border: 2px solid #333;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: 800;
+        background-color: #fff;
+        box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+      }
+
+      /* Place Value Table Styles */
+      .pv-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 0.85rem;
+      }
+      .pv-table th {
+        border: 1px solid #333;
+        background-color: #f3f4f6;
+        padding: 5px;
+        text-align: center;
+        font-weight: 700;
+        font-family: 'Noto Sans', sans-serif;
+      }
+      .pv-table td {
+        border: 1px solid #333;
+        padding: 8px;
+        text-align: center;
+        vertical-align: middle;
+        height: 30px;
+        font-weight: 600;
+      }
+      
+      .comparison-table {
+        width: auto;
+        margin: 0 auto;
+        border-collapse: collapse;
+      }
+      .comparison-table td {
+        padding: 4px 12px;
+        text-align: center;
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 1rem;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-2) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Comparing Numbers up to 1,000,000 Using Greater Than or Less Than
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : M1-S012</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-2 mt-0">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: WHOLE NUMBERS
+                </h1>
+            </div>
+
+
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-6 py-1.5 text-sm">
+                Section A: Multiple Choice. Choose the most appropriate answer.
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. <span class="text-blue-700">Place Value Chart.</span> Look at the place value charts for the following two numbers:
+                    </div>
+                    
+                    <div class="flex gap-4 my-2 text-sm justify-center">
+                        <div class="w-full">
+                            <div class="font-bold text-center mb-1">Number A</div>
+                            <table class="pv-table">
+                                <thead>
+                                    <tr>
+                                        <th>Hundred Thousands<br><span class="text-[9px] font-normal">(100,000)</span></th>
+                                        <th>Ten Thousands<br><span class="text-[9px] font-normal">(10,000)</span></th>
+                                        <th>Thousands<br><span class="text-[9px] font-normal">(1,000)</span></th>
+                                        <th>Hundreds<br><span class="text-[9px] font-normal">(100)</span></th>
+                                        <th>Tens<br><span class="text-[9px] font-normal">(10)</span></th>
+                                        <th>Ones<br><span class="text-[9px] font-normal">(1)</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>3</td><td>5</td><td>2</td><td>1</td><td>4</td><td>0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 my-2 text-sm justify-center">
+                        <div class="w-full">
+                            <div class="font-bold text-center mb-1">Number B</div>
+                            <table class="pv-table">
+                                <thead>
+                                    <tr>
+                                        <th>Hundred Thousands<br><span class="text-[9px] font-normal">(100,000)</span></th>
+                                        <th>Ten Thousands<br><span class="text-[9px] font-normal">(10,000)</span></th>
+                                        <th>Thousands<br><span class="text-[9px] font-normal">(1,000)</span></th>
+                                        <th>Hundreds<br><span class="text-[9px] font-normal">(100)</span></th>
+                                        <th>Tens<br><span class="text-[9px] font-normal">(10)</span></th>
+                                        <th>Ones<br><span class="text-[9px] font-normal">(1)</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>3</td><td>4</td><td>9</td><td>8</td><td>9</td><td>9</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="font-medium mb-1 ml-4 text-sm">
+                        Compare the digits in the <b>Ten Thousands</b> place. Which statement is true?
+                    </div>
+
+                    <div class="choice-container flex-col gap-1 ml-8">
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-0.5 flex-shrink-0"></span> <span class="leading-tight">a. Number A is smaller because the digit in the ones place is 0.</span></label>
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-0.5 flex-shrink-0"></span> <span class="leading-tight">b. Number A is greater because 50,000 > 40,000.</span></label>
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-0.5 flex-shrink-0"></span> <span class="leading-tight">c. Number B is greater because the digit in the thousands place is 9.</span></label>
+                        <label class="flex items-start cursor-pointer"><span class="choice-box mt-0.5 flex-shrink-0"></span> <span class="leading-tight">d. Both numbers are equal.</span></label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. <span class="text-blue-700">Position Analysis.</span> Given numbers <b>715,200</b> and <b>715,020</b>.
+                    </div>
+                    
+                    <div class="my-3 flex justify-center">
+                        <table class="comparison-table">
+                            <tr class="font-bold border-b border-gray-300 text-xs text-gray-500">
+                                <td></td><td>HTh</td><td>TTh</td><td>Th</td><td>H</td><td>T</td><td>O</td>
+                            </tr>
+                            <tr>
+                                <td class="text-right pr-2 font-semibold text-sm">Num 1:</td>
+                                <td>7</td><td>1</td><td>5</td><td class="font-black bg-yellow-50">2</td><td>0</td><td>0</td>
+                            </tr>
+                            <tr>
+                                <td class="text-right pr-2 font-semibold text-sm">Num 2:</td>
+                                <td>7</td><td>1</td><td>5</td><td class="font-black bg-yellow-50">0</td><td>2</td><td>0</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="font-medium mb-1 ml-4 text-sm">
+                        In which place value do we first find a difference in digits that determines which number is greater?
+                    </div>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. Thousands</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. Hundreds</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. Tens</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. Ones</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 3-6) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Comparing Numbers up to 1,000,000 Using Greater Than or Less Than
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : M1-S012</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- INSTRUCTION A CONTINUED -->
+            <div class="instruction-text mb-2 py-1.5 text-sm">
+                Continued Section A: Multiple Choice
+            </div>
+
+            <!-- Menggunakan style inline gap lebih kecil (0.6rem) untuk memadatkan -->
+            <div class="soal-grid mb-2" style="gap: 0.6rem;">
+                 
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1">
+                        3. <span class="text-blue-700">Comparison Sign.</span> Which sign is correct to fill in the box below?
+                    </div>
+                    
+                    <!-- Margin vertikal diperkecil (my-2) -->
+                    <div class="text-center my-2 font-black text-xl flex items-center justify-center gap-4">
+                        <span>845,192</span> 
+                        <span class="w-10 h-10 border-2 border-black rounded flex items-center justify-center bg-gray-50">?</span> 
+                        <span>854,192</span>
+                    </div>
+
+                    <div class="choice-container justify-center">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. > (greater than)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. < (less than)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. = (equal to)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. ≈ (approximately)</label>
+                    </div>
+                </div>
+
+                <!-- Margin separator diperkecil -->
+                <div class="h-separator" style="margin: 0.15cm 0;"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1">
+                        4. <span class="text-blue-700">Real World Application.</span> Here are the population numbers in four imaginary cities:
+                    </div>
+                    
+                    <!-- Margin vertikal diperkecil (my-1) -->
+                    <div class="grid grid-cols-2 gap-2 max-w-md mx-auto my-1 text-sm">
+                         <div class="bg-gray-50 p-2 rounded border border-gray-200">City A: <b>450,090</b></div>
+                         <div class="bg-gray-50 p-2 rounded border border-gray-200">City B: <b>405,900</b></div>
+                         <div class="bg-gray-50 p-2 rounded border border-gray-200">City C: <b>450,900</b></div>
+                         <div class="bg-gray-50 p-2 rounded border border-gray-200">City D: <b>405,099</b></div>
+                    </div>
+
+                    <div class="font-medium ml-4 text-sm">Which city has the <b>greatest</b> population?</div>
+                    
+                    <div class="choice-container">
+                         <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. City A</label>
+                         <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. City B</label>
+                         <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. City C</label>
+                         <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. City D</label>
+                    </div>
+                </div>
+
+                <!-- Margin separator diperkecil -->
+                <div class="h-separator" style="margin: 0.15cm 0;"></div>
+
+                 <!-- SOAL 5 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-1">
+                       5. <span class="text-blue-700">Expanded Form.</span> Look at the following comparison:
+                   </div>
+                   
+                   <!-- Margin vertikal diperkecil (my-1) -->
+                   <div class="text-center my-1 font-semibold text-gray-800">
+                       (600,000 + 40,000 + 3,000 + 50) <span class="mx-2">...</span> 643,005
+                   </div>
+                   
+                   <div class="font-medium ml-4 text-sm">The correct comparison sign is:</div>
+
+                   <div class="choice-container">
+                       <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. ></label>
+                       <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. <</label>
+                       <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. =</label>
+                       <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. ≥</label>
+                   </div>
+               </div>
+            </div>
+
+            <!-- Margin separator utama diperkecil -->
+            <div class="h-separator" style="margin: 0.2cm 0;"></div>
+
+            <!-- INSTRUCTION B -->
+            <div class="instruction-text mb-2 py-1.5 text-sm">
+                Section B: Short Answer. Fill in the blanks with the correct answer.
+            </div>
+
+            <div class="soal-grid mb-2">
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. <span class="text-blue-700">Arranging Numbers.</span> Use the following digit cards:
+                    </div>
+
+                    <!-- Visual Aid Cards -->
+                    <div class="flex justify-center items-center gap-3 mb-2 p-2 bg-gray-50 border rounded-lg">
+                        <div class="digit-card">3</div>
+                        <div class="digit-card">0</div>
+                        <div class="digit-card">8</div>
+                        <div class="digit-card">1</div>
+                        <div class="digit-card">9</div>
+                        <div class="digit-card">5</div>
+                    </div>
+
+                    <div class="ml-4 mb-2 text-sm font-medium">
+                        Arrange the <b>smallest number</b> possible from the six digits. (Use each digit exactly once, the digit 0 cannot be at the front).
+                    </div>
+
+                    <div class="flex items-center gap-2 ml-4">
+                        <span class="font-bold">Answer: </span>
+                        <span class="input-box" style="width: 200px;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 7-9) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Comparing Numbers up to 1,000,000 Using Greater Than or Less Than
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : M1-S012</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- INSTRUCTION B CONTINUED -->
+             <div class="instruction-text mb-4 py-1.5 text-sm">
+                Continued Section B: Short Answer
+            </div>
+
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. <span class="text-blue-700">Word vs Number Analysis.</span> Compare the following two numbers:
+                    </div>
+                    
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-4 my-2 text-sm">
+                        <div class="bg-gray-100 p-2 rounded font-bold text-center w-full md:w-auto">
+                            Nine hundred two thousand<br>fifty
+                        </div>
+                        <div class="font-black text-xl">...</div>
+                        <div class="bg-gray-100 p-2 rounded font-black text-lg text-center w-full md:w-auto min-w-[100px] flex items-center justify-center h-14">
+                            902,500
+                        </div>
+                    </div>
+
+                    <div class="ml-4 mb-2 text-sm font-medium">
+                        Write the correct <b>></b> or <b><</b> sign.
+                    </div>
+                    
+                    <div class="flex items-center gap-2 ml-4">
+                        <span class="font-bold">Answer: </span>
+                        <span class="input-box" style="width: 80px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. <span class="text-blue-700">Number Patterns.</span> Look at the number pattern below:
+                    </div>
+
+                    <div class="flex gap-4 justify-center my-3 font-bold text-lg text-gray-700">
+                        <span>215,000</span>
+                        <span>→</span>
+                        <span>225,000</span>
+                        <span>→</span>
+                        <span>235,000</span>
+                        <span>→</span>
+                        <span class="text-gray-400">?</span>
+                    </div>
+
+                    <div class="ml-4 mb-2 text-sm font-medium">
+                        Will the next number be <b>greater</b> or <b>smaller</b> than 230,000?
+                    </div>
+
+                    <div class="flex items-center gap-2 ml-4">
+                        <span class="font-bold">Answer: </span>
+                        <span class="input-box" style="width: 250px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. <span class="text-blue-700">Quick Practice.</span> Fill in the boxes with <b>></b>, <b><</b>, or <b>=</b> sign.
+                    </div>
+
+                    <div class="grid gap-3 ml-4 max-w-lg">
+                        <div class="flex items-center justify-between bg-white border border-gray-200 p-2 rounded shadow-sm">
+                            <span class="font-bold w-1/3 text-right">1,000,000</span>
+                            <span class="input-box w-12 h-8 mx-2"></span>
+                            <span class="font-bold w-1/3 text-left">999,999</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-white border border-gray-200 p-2 rounded shadow-sm">
+                            <span class="font-bold w-1/3 text-right">321,456</span>
+                            <span class="input-box w-12 h-8 mx-2"></span>
+                            <span class="font-bold w-1/3 text-left">321,465</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-white border border-gray-200 p-2 rounded shadow-sm">
+                            <span class="font-bold w-1/3 text-right text-sm">500,000 + 50</span>
+                            <span class="input-box w-12 h-8 mx-2"></span>
+                            <span class="font-bold w-1/3 text-left">500,050</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 4 (Soal 10) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">Whole Numbers</div>
+                    <div class="text-[10px] text-black font-medium max-w-[250px] leading-tight ml-auto">
+                        Comparing Numbers up to 1,000,000 Using Greater Than or Less Than
+                    </div>
+                    <div class="text-[10px] text-black font-medium mt-0.5">Code : M1-S012</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- INSTRUCTION B CONTINUED -->
+             <div class="instruction-text mb-4 py-1.5 text-sm">
+                Continued Section B: Short Answer
+            </div>
+
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. <span class="text-blue-700">Thinking Challenge.</span> Imagine two 6-digit numbers.
+                    </div>
+
+                    <div class="bg-yellow-50 border border-orange-200 rounded p-3 mb-2 mx-4 text-sm">
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li><b>Number A</b> has the digit <b>5</b> in the Hundred Thousands place.</li>
+                            <li><b>Number B</b> has the digit <b>3</b> in the Hundred Thousands place.</li>
+                        </ul>
+                    </div>
+
+                    <div class="ml-4 text-sm mb-2">
+                        Without knowing the other digits, which number is definitely greater? Explain your reasoning briefly.
+                    </div>
+
+                     <div class="flex flex-col gap-2 ml-4 mt-2">
+                         <div class="flex items-center gap-2">
+                            <span class="font-bold min-w-[80px]">Number: </span>
+                            <span class="input-box" style="width: 150px;"></span>
+                         </div>
+                         <div class="flex items-center gap-2">
+                            <span class="font-bold min-w-[80px]">Reason: </span>
+                            <div class="border-b border-black border-dashed w-full max-w-md h-6"></div>
+                         </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="text-center italic text-xs text-gray-500 mt-6">
+                "Accuracy beats speed—every time."
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
