@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Place Value (M1-S010)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .icon-filled,
+        .icon-stroke,
+        .input-box,
+        .disc-fill,
+        .disc-stroke,
+        .pv-table th,
+        .pv-table td {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+        .bg-yellow-50 { background-color: #fefce8 !important; }
+        .border-orange-200 { border-color: #fed7aa !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 100px;
+        height: 35px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 32px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 4px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        margin-left: 1.5rem; /* Indent choices */
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.2cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background-color: #f3f4f6;
+        padding: 0.25rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+      
+      /* Visual Math Singapore Specifics */
+      .disc-fill {
+        fill: #e0f2fe; /* cyan-100/50 mix equivalent */
+        stroke: #333;
+        stroke-width: 1.5;
+      }
+      
+      .disc-text {
+        font-family: 'Noto Sans', sans-serif;
+        font-weight: 700;
+        font-size: 8px; 
+        fill: #333;
+        text-anchor: middle;
+        dominant-baseline: central;
+      }
+
+      /* Place Value Table Styles */
+      .pv-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 0.85rem;
+      }
+      .pv-table th {
+        border: 1px solid #333;
+        background-color: #f3f4f6;
+        padding: 5px;
+        text-align: center;
+        font-weight: 700;
+      }
+      .pv-table td {
+        border: 1px solid #333;
+        padding: 8px;
+        text-align: center;
+        vertical-align: top;
+        height: 60px;
+      }
+      
+      .analysis-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 5px;
+      }
+      .analysis-table th, .analysis-table td {
+        border: 1px solid #ccc;
+        padding: 8px 12px;
+        text-align: left;
+      }
+      .analysis-table th {
+        background-color: #f9fafb;
+        font-weight: 600;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO (Placeholder) -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Whole Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Place Value of 6-Digit Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : M1-S010
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-2 mt-0">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: WHOLE NUMBERS
+                </h1>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-3 py-1.5 text-sm">
+                Section A: Multiple Choice. Answer the following questions carefully. Use a place value chart if necessary.
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        1. <span class="text-blue-700">Identify Position.</span> Look at the following number:
+                    </div>
+                    
+                    <div class="text-center my-3">
+                         <span class="text-3xl font-black tracking-widest text-gray-800">4.582.109</span>
+                    </div>
+
+                    <div class="font-medium mb-1 ml-4">
+                        The digit <b>5</b> in the number above is in the ... place
+                    </div>
+
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. Millions</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. Hundred Thousands</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. Ten Thousands</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. Thousands</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        2. <span class="text-blue-700">Value of Digits.</span> In the number <b>7.632.415</b>, what is the <i>value</i> of the digit <b>3</b>?
+                    </div>
+                    
+                    <div class="choice-container">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 300</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 3.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 30.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 300.000</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1">
+                        3. <span class="text-blue-700">Visual Representation.</span> Look at the following Place Value Chart. Which number is represented by the chart?
+                    </div>
+                    
+                    <div class="my-2">
+                        <table class="pv-table">
+                            <thead>
+                                <tr>
+                                    <th>Hundred Thousands</th>
+                                    <th>Ten Thousands</th>
+                                    <th>Thousands</th>
+                                    <th>Hundreds</th>
+                                    <th>Tens</th>
+                                    <th>Ones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <!-- 2 Discs of 100.000 -->
+                                        <div class="flex flex-col items-center gap-1">
+                                            <!-- FONT SIZE REDUCED to 3.5 -->
+                                            <svg width="28" height="28"><circle cx="14" cy="14" r="13" class="disc-fill" /><text x="14" y="14" class="disc-text" font-size="3.5">100.000</text></svg>
+                                            <svg width="28" height="28"><circle cx="14" cy="14" r="13" class="disc-fill" /><text x="14" y="14" class="disc-text" font-size="3.5">100.000</text></svg>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <!-- 3 Discs of 10.000 -->
+                                        <div class="flex flex-col items-center gap-1">
+                                            <div class="flex gap-1">
+                                                <!-- FONT SIZE REDUCED to 4 -->
+                                                <svg width="28" height="28"><circle cx="14" cy="14" r="13" class="disc-fill" /><text x="14" y="14" class="disc-text" font-size="4">10.000</text></svg>
+                                                <svg width="28" height="28"><circle cx="14" cy="14" r="13" class="disc-fill" /><text x="14" y="14" class="disc-text" font-size="4">10.000</text></svg>
+                                            </div>
+                                            <svg width="28" height="28"><circle cx="14" cy="14" r="13" class="disc-fill" /><text x="14" y="14" class="disc-text" font-size="4">10.000</text></svg>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <!-- Empty -->
+                                    </td>
+                                    <td>
+                                        <!-- 3 Discs of 100 -->
+                                        <div class="flex flex-col items-center gap-1">
+                                            <div class="flex gap-1">
+                                                <svg width="28" height="28"><circle cx="14" cy="14" r="13" class="disc-fill" /><text x="14" y="14" class="disc-text" font-size="6">100</text></svg>
+                                                <svg width="28" height="28"><circle cx="14" cy="14" r="13" class="disc-fill" /><text x="14" y="14" class="disc-text" font-size="6">100</text></svg>
+                                            </div>
+                                            <svg width="28" height="28"><circle cx="14" cy="14" r="13" class="disc-fill" /><text x="14" y="14" class="disc-text" font-size="6">100</text></svg>
+                                        </div>
+                                    </td>
+                                    <td>
+                                         <!-- 1 Disc of 10 -->
+                                         <div class="flex flex-col items-center gap-1">
+                                            <svg width="28" height="28"><circle cx="14" cy="14" r="13" class="disc-fill" /><text x="14" y="14" class="disc-text" font-size="6">10</text></svg>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <!-- 3 Discs of 1 -->
+                                        <div class="flex flex-col items-center gap-1">
+                                            <div class="flex gap-1">
+                                                <svg width="28" height="28"><circle cx="14" cy="14" r="13" class="disc-fill" /><text x="14" y="14" class="disc-text" font-size="6">1</text></svg>
+                                                <svg width="28" height="28"><circle cx="14" cy="14" r="13" class="disc-fill" /><text x="14" y="14" class="disc-text" font-size="6">1</text></svg>
+                                            </div>
+                                            <svg width="28" height="28"><circle cx="14" cy="14" r="13" class="disc-fill" /><text x="14" y="14" class="disc-text" font-size="6">1</text></svg>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="choice-container justify-center">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 23.031</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 230.313</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 230.310</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 203.313</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                     <div class="font-bold mb-1">
+                        4. <span class="text-blue-700">Expanded Form.</span> The expanded form of <b>9.045.602</b> is ...
+                    </div>
+                    
+                    <div class="flex flex-col gap-2 mt-1 ml-4 text-sm font-semibold">
+                        <label class="flex items-center cursor-pointer">
+                            <span class="choice-box flex-shrink-0"></span> 
+                            a. 9.000.000 + 400.000 + 5.000 + 600 + 2
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <span class="choice-box flex-shrink-0"></span> 
+                            b. 9.000.000 + 40.000 + 5.000 + 600 + 20
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <span class="choice-box flex-shrink-0"></span> 
+                            c. 9.000.000 + 40.000 + 5.000 + 600 + 2
+                        </label>
+                         <label class="flex items-center cursor-pointer">
+                            <span class="choice-box flex-shrink-0"></span> 
+                            d. 9.000.000 + 400.000 + 50.000 + 600 + 2
+                        </label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                 <!-- SOAL 5 -->
+                 <div class="soal-item">
+                    <div class="font-bold mb-1">
+                       5. <span class="text-blue-700">Comparing Values.</span> The digit <b>8</b> in the number 8.215.304 has a value ... times greater than the digit <b>8</b> in the number 4.820.111.
+                   </div>
+                   
+                   <div class="choice-container">
+                       <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a. 10</label>
+                       <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b. 100</label>
+                       <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c. 1.000</label>
+                       <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d. 10.000</label>
+                   </div>
+               </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Whole Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Place Value of 6-Digit Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : M1-S010
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="instruction-text mb-3 py-1.5 text-sm">
+                Section B: Short Answer. Solve the questions below correctly.
+            </div>
+
+            <div class="soal-grid mb-4">
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        6. <span class="text-blue-700">Reading Number Discs.</span> Write the numeral formed by the following set of number discs:
+                    </div>
+
+                    <!-- Visual Aid Box -->
+                    <div class="flex flex-wrap justify-center items-center gap-2 mb-3 p-3 bg-gray-50 border rounded-lg">
+                        <!-- 3x 1.000.000 - INCREASED SIZE to r=22 and font-size=8 -->
+                        <svg width="46" height="46"><circle cx="23" cy="23" r="22" class="disc-fill" /><text x="23" y="23" class="disc-text" font-size="8">1.000.000</text></svg>
+                        <svg width="46" height="46"><circle cx="23" cy="23" r="22" class="disc-fill" /><text x="23" y="23" class="disc-text" font-size="8">1.000.000</text></svg>
+                        <svg width="46" height="46"><circle cx="23" cy="23" r="22" class="disc-fill" /><text x="23" y="23" class="disc-text" font-size="8">1.000.000</text></svg>
+                        
+                        <div class="w-4"></div> <!-- Spacer -->
+
+                        <!-- 2x 10.000 - INCREASED SIZE -->
+                        <svg width="46" height="46"><circle cx="23" cy="23" r="22" class="disc-fill" /><text x="23" y="23" class="disc-text" font-size="8">10.000</text></svg>
+                        <svg width="46" height="46"><circle cx="23" cy="23" r="22" class="disc-fill" /><text x="23" y="23" class="disc-text" font-size="8">10.000</text></svg>
+
+                        <div class="w-4"></div> <!-- Spacer -->
+
+                        <!-- 4x 100 - INCREASED SIZE -->
+                        <svg width="46" height="46"><circle cx="23" cy="23" r="22" class="disc-fill" /><text x="23" y="23" class="disc-text" font-size="10">100</text></svg>
+                        <svg width="46" height="46"><circle cx="23" cy="23" r="22" class="disc-fill" /><text x="23" y="23" class="disc-text" font-size="10">100</text></svg>
+                        <svg width="46" height="46"><circle cx="23" cy="23" r="22" class="disc-fill" /><text x="23" y="23" class="disc-text" font-size="10">100</text></svg>
+                        <svg width="46" height="46"><circle cx="23" cy="23" r="22" class="disc-fill" /><text x="23" y="23" class="disc-text" font-size="10">100</text></svg>
+                    </div>
+
+                    <div class="flex items-center gap-2 ml-4">
+                         <span class="font-bold">Answer: </span>
+                         <span class="input-box" style="width: 200px;"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        7. <span class="text-blue-700">Number Analysis.</span> Fill in the blanks in the table below based on the number <b>3.702.158</b>:
+                    </div>
+                    
+                    <div class="mx-4 mb-2">
+                        <table class="analysis-table">
+                            <thead>
+                                <tr>
+                                    <th>Question</th>
+                                    <th>Answer</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>The digit in the <i>Millions</i> place</td>
+                                    <td><div class="w-full border-b border-dashed border-gray-400 h-6"></div></td>
+                                </tr>
+                                <tr>
+                                    <td>The value of the digit <b>7</b></td>
+                                    <td><div class="w-full border-b border-dashed border-gray-400 h-6"></div></td>
+                                </tr>
+                                <tr>
+                                    <td>The digit in the <i>Tens</i> place</td>
+                                    <td><div class="w-full border-b border-dashed border-gray-400 h-6"></div></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        8. <span class="text-blue-700">Number Puzzle.</span> I am a 6-digit number.
+                    </div>
+
+                    <div class="bg-yellow-50 border border-orange-200 rounded p-3 mb-2 mx-4 text-sm">
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>My digit in the <b>Hundred Thousands</b> place is 6.</li>
+                            <li>My digit in the <b>Thousands</b> place is 3 less than the Hundred Thousands digit.</li>
+                            <li>My digit in the <b>Ones</b> place is 9.</li>
+                            <li>All other digits are 0.</li>
+                        </ul>
+                    </div>
+
+                    <div class="flex items-center gap-2 ml-4">
+                        <span class="font-bold">What number am I? </span>
+                        <span class="input-box" style="width: 200px;"></span>
+                   </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        9. <span class="text-blue-700">Difference in Value.</span> What is the difference in value between the digit <b>5</b> and the digit <b>2</b> in the number <b>532.100</b>?
+                    </div>
+
+                    <div class="flex items-center gap-2 ml-4 mt-2">
+                        <span class="font-bold">Answer: </span>
+                        <span class="input-box" style="width: 200px;"></span>
+                   </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-2">
+                        10. <span class="text-blue-700">Place Value Logic.</span> If the digit <b>4</b> in the number 4.200.000 is moved to the <i>Hundred Thousands</i> place, and the digit <b>2</b> is moved to the <i>Millions</i> place, what new number is formed?
+                    </div>
+
+                     <div class="flex items-center gap-2 ml-4 mt-2">
+                         <span class="font-bold">Answer: </span>
+                         <span class="input-box" style="width: 200px;"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
