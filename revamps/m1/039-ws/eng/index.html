@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Mixed Operations with Parentheses (M1-S039)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3; /* Sedikit dirapatkan */
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.6cm 2cm; /* Padding atas-bawah dikurangi sedikit */
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 8px; /* Margin header dikurangi */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.6cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .concept-box,
+        .input-box,
+        .disc-fill,
+        .place-value-header {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+        .bg-orange-200 { background-color: #fed7aa !important; }
+        .bg-yellow-200 { background-color: #fef08a !important; }
+        .bg-green-200 { background-color: #bbf7d0 !important; }
+        .bg-cyan-200 { background-color: #a5f3fc !important; }
+        .bg-purple-200 { background-color: #e9d5ff !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem; /* Jarak antar soal dirapatkan */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 26px; /* Tinggi input box sedikit dikurangi */
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 24px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.2rem;
+        margin-top: 3px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.05cm 0; /* Separator margin dirapatkan */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.4rem; /* Margin bawah instruksi dirapatkan */
+        background-color: #f3f4f6;
+        padding: 0.2rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CONCEPT BOX --- */
+      .concept-box {
+        border: 2px solid #60a5fa;
+        background-color: #eff6ff;
+        border-radius: 10px;
+        padding: 8px; /* Padding dikurangi sedikit */
+        margin-bottom: 12px; /* Margin bawah dikurangi */
+        font-size: 0.9rem;
+      }
+      
+      /* Visual Math Specifics */
+      .arrow-line {
+        stroke: #2563eb; /* blue-600 */
+        stroke-width: 2;
+        fill: none;
+      }
+
+      .bar-model-text {
+        font-size: 11px;
+        font-weight: bold;
+        text-anchor: middle;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        4 Operations on Whole Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Mixed Operations with Parentheses
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S039
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-3 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: MIXED OPERATIONS
+                </h1>
+            </div>
+
+            <!-- CONCEPT SECTION -->
+            <div class="concept-box">
+                <div class="font-bold text-blue-800 mb-1">Concept: The Power of Parentheses</div>
+                <div class="mb-2 text-gray-700">
+                    In mixed operations, the part inside the <b>Parentheses ( )</b> must be done first.
+                </div>
+                <div class="flex justify-center gap-8">
+                    <!-- SVG Ilustrasi Konsep -->
+                    <!-- Height diperbesar menjadi 85 agar teks keterangan muat di bawah -->
+                    <svg width="250" height="85" viewBox="0 0 250 85">
+                        <rect x="0" y="10" width="250" height="40" rx="5" fill="#e9d5ff" stroke="none" />
+                        <text x="125" y="35" font-family="Montserrat" font-size="14" font-weight="bold" text-anchor="middle" fill="#333">
+                            8 × (5 + 4)
+                        </text>
+                        <!-- Text dikebawahkan ke y="70" supaya tidak nabrak kotak -->
+                        <text x="125" y="70" font-size="10" fill="#6b21a8" text-anchor="middle" font-weight="bold">(Do 5 + 4 first!)</text>
+                        <!-- Optional small arrow pointing up -->
+                         <path d="M 125 60 L 125 53" stroke="#6b21a8" stroke-width="1" marker-end="url(#arrowhead-purple)" />
+                    </svg>
+
+                    <svg width="250" height="85" viewBox="0 0 250 85">
+                         <text x="10" y="35" font-family="Montserrat" font-size="14" font-weight="bold" fill="#333">
+                            = 8 × 9
+                        </text>
+                        <text x="10" y="55" font-family="Montserrat" font-size="14" font-weight="bold" fill="#333">
+                            = 72
+                        </text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-2 py-1 text-sm">
+                Section A: Multiple Choice (Concept & Visual)
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                         <span class="font-bold">1.</span> Calculate the result of the following operation: <b>8 × (5 + 4)</b>
+                    </div>
+                    <div class="ml-4 mb-1">
+                        <!-- SVG Visual Soal 1 -->
+                        <!-- Width dan Viewbox diperbesar supaya teks kanan tidak terpotong -->
+                        <svg width="380" height="70" viewBox="0 0 380 70">
+                             <!-- Group 1 -->
+                             <rect x="0" y="0" width="40" height="40" fill="#f3f4f6" stroke="#333" stroke-width="1"/>
+                             <text x="20" y="25" class="bar-model-text">5</text>
+                             <rect x="40" y="0" width="30" height="40" fill="#e5e7eb" stroke="#333" stroke-width="1"/>
+                             <text x="55" y="25" class="bar-model-text">4</text>
+                             <!-- Brace Group 1 -->
+                             <path d="M 0 45 L 0 50 L 70 50 L 70 45" fill="none" stroke="#333" stroke-width="1"/>
+                             <text x="35" y="62" font-size="9" text-anchor="middle">1 Group</text>
+
+                             <!-- Ellipsis -->
+                             <text x="100" y="25" font-size="20" font-weight="bold">...</text>
+
+                             <!-- Group Last -->
+                             <rect x="140" y="0" width="40" height="40" fill="#f3f4f6" stroke="#333" stroke-width="1"/>
+                             <text x="160" y="25" class="bar-model-text">5</text>
+                             <rect x="180" y="0" width="30" height="40" fill="#e5e7eb" stroke="#333" stroke-width="1"/>
+                             <text x="195" y="25" class="bar-model-text">4</text>
+
+                             <!-- Teks Total digeser sedikit supaya aman -->
+                             <text x="240" y="25" font-size="11" font-style="italic" text-anchor="start">(Total 8 Groups)</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a) 44</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b) 72</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c) 49</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d) 36</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> Look at the bar model below. Which operation is suitable to find the value of <b>one small part</b>?
+                    </div>
+                    <div class="ml-4 mb-1">
+                        <!-- SVG Visual Soal 2 -->
+                        <svg width="350" height="80" viewBox="0 0 350 80">
+                            <!-- Whole Bar Outline -->
+                            <rect x="0" y="20" width="300" height="40" fill="none" stroke="#333" stroke-width="1.5"/>
+                            
+                            <!-- Total Label -->
+                            <text x="150" y="12" class="bar-model-text">Total = 40</text>
+                            
+                            <!-- Right Part (12) -->
+                            <rect x="220" y="20" width="80" height="40" fill="#fed7aa" stroke="#333" stroke-width="1"/>
+                            <text x="260" y="45" class="bar-model-text">12</text>
+                            
+                            <!-- Left Part (Divided) -->
+                            <rect x="0" y="20" width="55" height="40" fill="white" stroke="#333" stroke-width="1"/>
+                            <rect x="55" y="20" width="55" height="40" fill="white" stroke="#333" stroke-width="1"/>
+                            <rect x="110" y="20" width="55" height="40" fill="white" stroke="#333" stroke-width="1"/>
+                            <rect x="165" y="20" width="55" height="40" fill="white" stroke="#333" stroke-width="1"/>
+
+                            <!-- Brace below left part -->
+                            <path d="M 0 65 L 0 70 L 220 70 L 220 65" fill="none" stroke="#333" stroke-width="1"/>
+                            <text x="110" y="78" font-size="9" text-anchor="middle">Divided into 4 equal parts</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-1">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) (40 - 12) ÷ 4</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) 40 - (12 ÷ 4)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) (40 + 12) ÷ 4</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) 40 ÷ 4 - 12</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                     <div class="mb-1">
+                        <span class="font-bold">3.</span> Which statement is correct regarding the order of operations?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-1">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Do addition before multiplication.</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Do the operation inside the parentheses first.</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Do subtraction before division.</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Parentheses do not affect the final result.</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 1</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        4 Operations on Whole Numbers
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Mixed Operations with Parentheses
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Kode : M1-S039
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+             <div class="soal-grid mb-2">
+                 <!-- Lanjutan Soal Pilihan Ganda -->
+                 
+                 <!-- SOAL 4 (Moved here) -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">4.</span> Mother bought 3 boxes of cookies. Each box contains 6 chocolate cookies and 4 cheese cookies. What is the total number of cookies Mother bought?
+                    </div>
+                     <div class="ml-4 mb-1">
+                        <!-- SVG Visual Soal 4 -->
+                        <svg width="300" height="70" viewBox="0 0 300 70">
+                            <!-- Box 1 -->
+                            <rect x="0" y="0" width="60" height="50" fill="#bbf7d0" stroke="#333" stroke-width="1.5"/>
+                            <text x="30" y="20" class="bar-model-text" font-size="3">6 Chocolate</text>
+                            <text x="30" y="35" class="bar-model-text" font-size="3">4 Cheese</text>
+                            <text x="30" y="65" font-size="9" text-anchor="middle">Box 1</text>
+                            
+                            <text x="75" y="30" font-weight="bold">+</text>
+
+                            <!-- Box 2 -->
+                            <rect x="90" y="0" width="60" height="50" fill="#bbf7d0" stroke="#333" stroke-width="1.5"/>
+                             <text x="120" y="20" class="bar-model-text" font-size="3">6 Chocolate</text>
+                            <text x="120" y="35" class="bar-model-text" font-size="3">4 Cheese</text>
+                            <text x="120" y="65" font-size="9" text-anchor="middle">Box 2</text>
+
+                            <text x="165" y="30" font-weight="bold">+</text>
+
+                            <!-- Box 3 -->
+                            <rect x="180" y="0" width="60" height="50" fill="#bbf7d0" stroke="#333" stroke-width="1.5"/>
+                            <text x="210" y="20" class="bar-model-text" font-size="3">6 Chocolate</text>
+                            <text x="210" y="35" class="bar-model-text" font-size="3">4 Cheese</text>
+                            <text x="210" y="65" font-size="9" text-anchor="middle">Box 3</text>
+                        </svg>
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-1">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) 3 + 6 + 4 = 13</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) 3 × 6 + 4 = 22</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) 3 × (6 + 4) = 30</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) 6 × (4 + 3) = 42</label>
+                    </div>
+                </div>
+                
+                <div class="h-separator"></div>
+
+                 <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">5.</span> The result of <b>(100 - 40) ÷ (2 × 3)</b> is:
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a) 10</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b) 20</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c) 60</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d) 90</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                 <!-- INSTRUCTION B -->
+                 <div class="instruction-text mb-2 py-1 text-sm">
+                    Section B: Short Answer (Application & Problem Solving)
+                </div>
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="flex items-center gap-2 mb-1">
+                         <div class="font-bold text-base">6.</div>
+                         <div class="text-base">Calculate: 25 + (15 - 5) × 4 = ... </div>
+                    </div>
+                    <div class="ml-6 mb-1">
+                         <span class="input-box" style="width: 150px"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="font-bold mb-1">
+                        7. Andi has Rp50.000. He bought 2 notebooks that cost Rp5.000 each.
+                    </div>
+                    <div class="ml-4 text-sm">
+                        <div class="mb-1">a. Write the mathematical sentence using parentheses:</div>
+                        <div class="mb-2"><span class="input-box" style="width: 100%; text-align: left; padding-left:10px;"></span></div>
+                        
+                        <div class="mb-1">b. How much money does Andi have left?</div>
+                        <div><span class="input-box" style="width: 150px"></span></div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                     <div class="flex items-center gap-2 flex-wrap">
+                        <div class="font-bold text-base">8.</div>
+                        <div class="text-base">Complete the following equation to make it true:</div>
+                        <div class="text-base font-bold ml-2"> 5 × ( <span class="input-box" style="width: 50px">...</span> + 3 ) = 45 </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">9.</span> A bus carries 40 passengers. At the first stop, <b>(10 + 5)</b> people get off. At the second stop, <b>8</b> people get on.
+                    </div>
+                    <div class="ml-4 mb-1">
+                        <!-- SVG Visual Soal 9 -->
+                        <svg width="400" height="60" viewBox="0 0 400 60">
+                             <!-- Box Awal -->
+                             <rect x="0" y="10" width="60" height="40" fill="white" stroke="#333" stroke-width="1.5"/>
+                             <text x="30" y="35" class="bar-model-text">40</text>
+                             
+                             <!-- Arrow 1 -->
+                             <line x1="65" y1="30" x2="115" y2="30" stroke="#2563eb" stroke-width="2" marker-end="url(#arrowhead-blue)" />
+                             <text x="90" y="20" font-size="9" text-anchor="middle" fill="#2563eb">Get off (10+5)</text>
+
+                             <!-- Box Sisa -->
+                             <rect x="120" y="10" width="60" height="40" fill="white" stroke="#333" stroke-width="1.5" stroke-dasharray="4"/>
+                             <text x="150" y="35" class="bar-model-text">?</text>
+
+                              <!-- Arrow 2 -->
+                             <line x1="185" y1="30" x2="235" y2="30" stroke="#2563eb" stroke-width="2" marker-end="url(#arrowhead-blue)" />
+                             <text x="210" y="20" font-size="9" text-anchor="middle" fill="#2563eb">Get on 8</text>
+
+                             <!-- Box Akhir -->
+                             <rect x="240" y="10" width="60" height="40" fill="white" stroke="#333" stroke-width="1.5" stroke-dasharray="4"/>
+                             <text x="270" y="35" class="bar-model-text">?</text>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        How many passengers are there now? <span class="input-box" style="width: 80px"></span>
+                    </div>
+                </div>
+
+                 <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">10.</span> Compare the two following mathematical operations. Give the sign <b>&lt;</b>, <b>&gt;</b>, or <b>=</b>.
+                    </div>
+                     <div class="flex items-center gap-4 justify-center py-2 bg-gray-50 rounded mb-1">
+                        <span class="font-bold text-lg">20 × (4 + 6)</span>
+                        <span class="input-box" style="width: 50px; height: 34px; line-height: 32px;"></span>
+                        <span class="font-bold text-lg">(20 × 4) + 6</span>
+                    </div>
+                    <div class="ml-4 text-sm">
+                        Explain your reason briefly: <br>
+                         <span class="input-box" style="width: 100%; height: 26px; margin-top:5px; text-align: left;"></span>
+                    </div>
+                </div>
+
+                <!-- ENCOURAGEMENT SENTENCE -->
+                <div class="mt-4 text-center font-bold text-gray-800 text-sm italic">
+                    Today’s effort is tomorrow’s confidence.
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+    </div>
+
+    <!-- Hidden SVG Definitions for Arrowheads -->
+    <svg style="display: none;">
+        <defs>
+             <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb" />
+            </marker>
+             <marker id="arrowhead-purple" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+                <polygon points="0 0, 6 2, 0 4" fill="#6b21a8" />
+            </marker>
+        </defs>
+    </svg>
+  </body>
+</html>
