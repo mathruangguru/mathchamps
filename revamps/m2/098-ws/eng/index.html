@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Dividing by 1000 (M2-S098)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.3;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.6cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 6px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.6cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        .math-champs-header,
+        .choice-box,
+        .instruction-text,
+        .concept-box,
+        .input-box,
+        .bar-model-text,
+        .pv-table th, .pv-table td {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem; /* Dirapatkan dari 0.8rem */
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 26px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 24px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.2rem;
+        margin-top: 3px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.1cm 0; /* Dirapatkan dari 0.2cm */
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.3rem; /* Dirapatkan dari 0.5rem */
+        background-color: #f3f4f6;
+        padding: 0.2rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CONCEPT BOX --- */
+      .concept-box {
+        border: 2px solid #60a5fa;
+        background-color: #eff6ff;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 10px; /* Dirapatkan dari 15px */
+        font-size: 0.9rem;
+      }
+
+      /* Place Value Table Styles */
+      .pv-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0;
+        text-align: center;
+        font-family: 'Noto Sans', sans-serif;
+      }
+      .pv-table th {
+        border: 1px solid #9ca3af;
+        padding: 3px;
+        background-color: #e5e7eb;
+        font-size: 0.85rem;
+      }
+      .pv-table td {
+        border: 1px solid #d1d5db;
+        padding: 6px;
+        font-weight: bold;
+        background-color: white;
+      }
+      .pv-comma {
+        background-color: #f3f4f6 !important;
+        width: 30px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Decimals
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Dividing by 1000
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : M2-S098
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-3 mt-1">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: DECIMALS
+                </h1>
+ 
+            </div>
+
+            <!-- CONCEPT SECTION -->
+            <div class="concept-box">
+                <div class="font-bold text-blue-800 mb-1 text-lg">Visual Concept: Shifting Place Values</div>
+                <div class="mb-1 text-gray-700">
+                    When we divide a number by <b>1000</b>, each digit shifts <b>3 places to the right</b>.
+                    Its value becomes 1000 times smaller.
+                </div>
+                
+                <!-- Place Value Table Visualization -->
+                <div class="flex flex-col items-center">
+                    <table class="pv-table max-w-lg">
+                        <thead>
+                            <tr>
+                                <th>Tens</th>
+                                <th>Ones</th>
+                                <th class="pv-comma">.</th>
+                                <th>1/10</th>
+                                <th>1/100</th>
+                                <th>1/1000</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Original Number -->
+                            <tr class="text-gray-700">
+                                <td>2</td>
+                                <td>3</td>
+                                <td class="pv-comma">.</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <!-- Arrow Row -->
+                            <tr class="border-none bg-blue-50">
+                                <td colspan="6" class="border-none py-1 text-blue-600 font-bold text-[10px]">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span>&rarr; Shift 3 steps to the RIGHT (Divided by 1000) &rarr;</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Result Number -->
+                            <tr>
+                                <td class="bg-gray-100"></td>
+                                <td class="bg-yellow-50">0</td>
+                                <td class="pv-comma">.</td>
+                                <td class="bg-yellow-50">0</td>
+                                <td class="bg-yellow-50">2</td>
+                                <td class="bg-yellow-50">3</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-center font-bold text-gray-800 mt-1">
+                        Example: 23 &divide; 1000 = 0.023
+                    </div>
+                    <div class="text-[9pt] italic text-gray-600 mt-1 bg-white px-2 py-0.5 border rounded">
+                        Quick Tip: Move the decimal point 3 steps to the left.
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-2 py-1 text-sm">
+                Part A: Multiple Choice (Concepts & Calculation)
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">1.</span> What is the result of <b>4,500 &divide; 1000</b>?<br>
+                        <span class="text-[9pt] italic text-gray-500">(Note: 4,500 is read as four thousand five hundred)</span>
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a) 45</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b) 4.5</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c) 0.45</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d) 0.045</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">2.</span> Look at the place value table. The number <b>150</b> is to be divided by 1000.
+                        <div class="flex justify-start my-1">
+                            <table class="pv-table w-auto text-xs">
+                                <tr>
+                                    <th class="px-2">Hundreds</th><th class="px-2">Tens</th><th class="px-2">Ones</th>
+                                </tr>
+                                <tr>
+                                    <td>1</td><td class="bg-blue-100">5</td><td>0</td>
+                                </tr>
+                            </table>
+                        </div>
+                        In which position will the digit <b>5</b> be after dividing?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-0.5">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Ones</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Tenths (1/10)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Hundredths (1/100)</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Thousandths (1/1000)</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">3.</span> The result of <b>72.5 &divide; 1000</b> is ...
+                    </div>
+                    <div class="choice-container ml-4">
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> a) 0.725</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> b) 0.0725</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> c) 7.25</label>
+                        <label class="flex items-center cursor-pointer w-24"><span class="choice-box"></span> d) 0.00725</label>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">4.</span> Which number, when divided by 1000, results in <b>0.809</b>?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-0.5">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) 80.9</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) 809</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) 8,090</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) 8.09</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 ================= -->
+      <section class="page">
+        <!-- HEADER (Same as Page 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        Decimals
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Dividing by 1000
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : M2-S098
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-1"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <!-- INSTRUCTION B -->
+            <div class="instruction-text mb-3 py-1 text-sm mt-2">
+                Part B: Short Answer & Problem Solving
+            </div>
+
+            <div class="soal-grid">
+                
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="font-bold text-base">5.</div>
+                        <div class="text-base">Calculate: <b>6 &divide; 1000 = ...</b> </div>
+                    </div>
+                    <div class="ml-6 mb-1">
+                        <span class="input-box" style="width: 150px"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="font-bold text-base">6.</div>
+                        <div class="text-base">Complete: <b>_____ &divide; 1000 = 2.045</b> </div>
+                    </div>
+                    <div class="ml-6 mb-1">
+                        <span class="input-box" style="width: 150px"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">7.</span> Fill in the place value table to solve <b>314 &divide; 1000</b>.
+                    </div>
+                    <div class="flex justify-center my-2">
+                        <table class="pv-table w-3/4">
+                            <tr>
+                                <th>Hundreds</th><th>Tens</th><th>Ones</th><th>.</th><th>1/10</th><th>1/100</th><th>1/1000</th>
+                            </tr>
+                            <tr class="text-gray-500">
+                                <td>3</td><td>1</td><td>4</td><td>.</td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td></td><td></td><td class="font-bold">0</td><td>.</td>
+                                <td><span class="input-box" style="width:30px; border:1px solid #999"></span></td>
+                                <td><span class="input-box" style="width:30px; border:1px solid #999"></span></td>
+                                <td><span class="input-box" style="width:30px; border:1px solid #999"></span></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="ml-6 flex items-center gap-2">
+                        <span>So, 314 &divide; 1000 = </span>
+                        <span class="input-box" style="width: 120px"></span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">8.</span> <b>Unit Conversion:</b> The length of a road is <b>1,250 meters</b>. What is the length of the road in kilometers? <br>
+                        <span class="text-xs italic text-gray-500">(Remember: 1 km = 1,000 m, so divide meters by 1,000)</span>
+                    </div>
+                    <div class="ml-6 mt-2 flex items-center gap-2">
+                        <span>Answer:</span>
+                        <span class="input-box" style="width: 120px"></span>
+                        <span>km</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="mb-1">
+                        <span class="font-bold">9.</span> A factory produces <b>5,675 liters</b> of orange juice. The juice is shared equally into <b>1,000 bottles</b>. How many liters are in each bottle?
+                    </div>
+                    <div class="ml-6 flex items-center gap-2 mt-2">
+                        <span>Answer:</span>
+                        <span class="input-box" style="width: 120px"></span>
+                        <span>liters</span>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 (Mastery) -->
+                <div class="soal-item bg-orange-50 p-2 rounded border border-orange-200">
+                    <div class="mb-1">
+                        <span class="font-bold text-orange-800">10. Challenge (Mastery):</span><br>
+                        I am a number.<br>
+                        If I am <b>multiplied by 10</b>, the result is <b>45</b>.<br>
+                        If I (the original number) am <b>divided by 1000</b>, what is the result?
+                    </div>
+                    <div class="ml-4 mt-2">
+                        <span class="input-box" style="width: 150px"></span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-8 text-center italic text-gray-500 text-xs">
+                "Progress, not perfection."
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
