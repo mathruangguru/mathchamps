@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Spending & Remainder (M2-S153)</title>
+    
+    <!-- Tailwind untuk utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm; /* A4 Width */
+        min-height: 29.7cm; /* A4 Height */
+        padding: 0.8cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 6pt;
+        color: var(--grey-text);
+        padding-top: 4px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        
+        /* ATURAN TEGAS AGAR WARNA & GARIS TIDAK HILANG */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 0.8cm 2cm;
+          border: none;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        
+        /* LOGO FIX FOR PRINT: Force height to match screen display (h-12 = 3rem) */
+        .math-champs-header img {
+            height: 3rem !important; 
+            width: auto !important;
+            max-width: none !important;
+        }
+
+        /* Paksa background warna tetap muncul */
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+
+        /* FORCE SVG STROKES */
+        path, rect, line, circle, polygon {
+            stroke: #000 !important;
+            stroke-opacity: 1 !important;
+        }
+        rect[fill="#93c5fd"] { fill: #93c5fd !important; stroke: #000 !important; }
+        rect[fill="#bfdbfe"] { fill: #bfdbfe !important; stroke: #000 !important; }
+        rect[fill="#fca5a5"] { fill: #fca5a5 !important; stroke: #000 !important; }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.2rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL --- */
+      .soal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .soal-item {
+        break-inside: avoid;
+        position: relative;
+        width: 100%;
+      }
+
+      /* Input & Choices */
+      .input-box {
+        border: 1.5px solid #333;
+        min-width: 45px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        vertical-align: middle;
+        line-height: 28px;
+        background: white;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      
+      .choice-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-top: 5px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+      }
+
+      .choice-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+      
+      /* Menggunakan Border untuk garis pemisah */
+      .h-separator {
+        width: 100%;
+        height: 0;
+        border-top: 1px solid #e5e7eb;
+        margin: 0.1cm 0;
+      }
+
+      .instruction-text {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.6rem;
+        background-color: #f3f4f6;
+        padding: 0.3rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        border-left: 4px solid #333;
+      }
+
+      /* --- CONCEPT BOX --- */
+      .concept-box {
+        border: 2px solid #60a5fa;
+        background-color: #eff6ff;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+      }
+      
+      /* Visual Math Specifics */
+      .bracket-line {
+        stroke: #333;
+        stroke-width: 1.5;
+        fill: none;
+      }
+      
+      .label-text {
+        font-size: 11px;
+        font-weight: bold;
+        text-anchor: middle;
+        fill: #333;
+      }
+
+      /* --- QUOTE BOX --- */
+      .quote-box {
+        margin-top: 20px;
+        margin-bottom: 10px;
+        text-align: center;
+        padding: 10px;
+        font-style: italic;
+        color: #2563eb;
+        font-weight: 600;
+        border-top: 1px dashed #ccc;
+        border-bottom: 1px dashed #ccc;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- ================= HALAMAN 1 (Soal 1-3) ================= -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        High Ability - Whole Numbers (Money)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Spending & Quantity Relationships
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : M2-S153
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam Header -->
+            <div class="w-full mt-1 border-t-2 border-black"></div>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <div class="text-center mb-4 mt-2">
+                <h1 class="text-lg font-black uppercase tracking-wider text-gray-800">
+                    WORKSHEET: SPENDING & REMAINDER
+                </h1>
+            </div>
+
+            <!-- CONCEPT SECTION -->
+            <div class="concept-box">
+                <div class="font-bold text-blue-800 mb-1">Visual Approach: Part-Whole Model</div>
+                <div class="mb-2 text-gray-700 text-sm">
+                    Use a Bar Model to separate the <b>Initial Money</b> into <b>Spending</b> and <b>Remainder</b> parts. Pay attention to the multiple relationship between them.
+                </div>
+                <div class="flex justify-center my-2">
+                    <!-- SVG Bar Model Spending (LAYOUT: SIDE-BY-SIDE WITH WIDE MARGINS & LEFT ALIGN FIX) -->
+                    <svg width="700" height="200" viewBox="0 0 700 200">
+                        
+                        <!-- 1. HEADER DESCRIPTION (FIXED: Left aligned, Safe margin) -->
+                        <text x="20" y="25" class="label-text" style="text-anchor: start;" font-weight="bold" fill="#333" font-size="12">Example:</text>
+                        <!-- Geser teks deskripsi ke x=90 agar aman -->
+                        <text x="90" y="25" class="label-text" style="text-anchor: start;" fill="#333" font-size="12">Siti spends Rp20.000 on snacks. Her remaining money is 3 times her spending.</text>
+
+                        <!-- 2. DIAGRAM BATANG (Left Side) -->
+                        <!-- Group digeser ke bawah (y=60) -->
+                        <g transform="translate(60, 60)">
+                            
+                            <!-- Label Top Left -->
+                            <text x="0" y="-10" style="text-anchor: start;" font-weight="bold" font-size="11" fill="#555">Bar Model:</text>
+
+                            <!-- Bar Pengeluaran (1 Unit) -->
+                            <rect x="0" y="0" width="80" height="40" fill="#fca5a5" stroke="#dc2626" stroke-width="2"/>
+                            <text x="40" y="25" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">Spending</text>
+                            
+                            <!-- Label Nilai Jajan (Bawah) -->
+                            <text x="40" y="55" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="bold">Rp20.000</text>
+
+                            <!-- Bar Sisa (3 Unit - Menempel di kanan) -->
+                            <rect x="80" y="0" width="80" height="40" fill="#93c5fd" stroke="#2563eb" stroke-width="2"/>
+                            <rect x="160" y="0" width="80" height="40" fill="#93c5fd" stroke="#2563eb" stroke-width="2"/>
+                            <rect x="240" y="0" width="80" height="40" fill="#93c5fd" stroke="#2563eb" stroke-width="2"/>
+                            
+                            <!-- Label Sisa -->
+                            <text x="200" y="25" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">Remaining Money (3 Units)</text>
+
+                            <!-- Bracket Total (Atas) -->
+                            <path d="M 0 0 L 0 -5 L 320 -5 L 320 0" class="bracket-line" />
+                            <text x="160" y="-15" text-anchor="middle" font-weight="bold" font-size="12" fill="#333">Initial Money (Total)</text>
+                        </g>
+
+                        <!-- 3. LOGIKA PENGERJAAN (Right Side) -->
+                        <!-- Diposisikan di x=450 (Jarak LEGA dari diagram) -->
+                        <g transform="translate(450, 60)">
+                            <!-- Panah Penghubung -->
+                            <path d="M -40 20 L -10 20" stroke="#ef4444" stroke-width="2" marker-end="url(#arrowhead-red)"/>
+
+                            <text x="0" y="0" font-size="11" fill="#333" style="text-anchor: start;">
+                                 <tspan x="0" dy="5" font-weight="bold" fill="#2563eb" text-decoration="underline">Logic:</tspan>
+                                 
+                                 <tspan x="0" dy="25">1. Spending = 1 Unit = Rp20.000</tspan>
+                                 
+                                 <tspan x="0" dy="25">2. Remainder = 3 Units</tspan>
+                                 <tspan x="15" dy="18" font-family="monospace" fill="#555">3 x 20.000 = 60.000</tspan>
+                                 
+                                 <tspan x="0" dy="25">3. Total = 1 Unit + 3 Units</tspan>
+                                 <tspan x="15" dy="18" font-family="monospace" fill="#555">= 4 Units = 4 x 20.000</tspan>
+                                 <tspan x="15" dy="18" font-family="monospace" fill="#555" font-weight="bold">= Rp80.000</tspan>
+                            </text>
+                        </g>
+
+                        <!-- Marker Defs -->
+                        <defs>
+                             <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION A -->
+            <div class="instruction-text mb-4 py-1.5 text-sm">
+                Section A: Short Answer (Pay attention to the unit relationships)
+            </div>
+            
+            <div class="soal-grid">
+                
+                <!-- SOAL 1 -->
+                <div class="soal-item">
+                    <div class="text-base mb-1">
+                        <b>1.</b> Budi buys a toy for <b>Rp15.000</b>. His remaining money is <b>2 times</b> the price of the toy.
+                    </div>
+                    <div class="ml-4 mt-2 text-sm text-gray-700">
+                        a) How much is Budi's remaining money? (2 x 15.000) = Rp<span class="input-box" style="width: 80px"></span><br>
+                        b) How much money did Budi have at first? (15.000 + Remainder) = Rp<span class="input-box" style="width: 80px"></span>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 2 -->
+                <div class="soal-item">
+                    <div class="text-base mb-1">
+                        <b>2.</b> Clara spends <b>Rp10.000</b> on snacks. The money left in her wallet is <b>4 times</b> her spending.
+                    </div>
+                    <div class="ml-4 mt-2 text-sm text-gray-700">
+                         Calculate Clara's total money at first!
+                    </div>
+                    <div class="ml-4 mt-2">
+                         Answer: Rp<span class="input-box" style="width: 100px"></span>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 3 -->
+                <div class="soal-item">
+                     <div class="text-base mb-1">
+                        <b>3.</b> Doni has some money. He buys a book for <b>Rp25.000</b>. Doni's remaining money is the same as the price of the book (1 time).
+                    </div>
+                     <div class="ml-4 mt-2 text-sm text-gray-700">
+                        How much money did Doni have before buying the book?
+                    </div>
+                    <div class="ml-4 mt-2">
+                         Answer: Rp<span class="input-box" style="width: 100px"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 2 (Soal 4-7) ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        High Ability - Whole Numbers (Money)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Spending & Quantity Relationships
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : M2-S153
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam Header -->
+            <div class="w-full mt-1 border-t-2 border-black"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+             <!-- Lanjutan Bagian A -->
+             <div class="soal-grid mb-4">
+                <!-- SOAL 4 -->
+                <div class="soal-item">
+                    <div class="text-base mb-1">
+                        <b>4.</b> Eka saves <b>Rp50.000</b>. The rest of her pocket money that is not saved is <b>half</b> of the saved money. (Meaning Remainder = Rp25.000).
+                    </div>
+                    <div class="ml-4 mt-2 text-sm text-gray-700">
+                        How much is Eka's total pocket money?
+                    </div>
+                    <div class="ml-4 mt-2">
+                         Answer: Rp<span class="input-box" style="width: 100px"></span>
+                    </div>
+                </div>
+                 <div class="h-separator"></div>
+
+                <!-- SOAL 5 -->
+                <div class="soal-item">
+                    <div class="text-base mb-1">
+                        <b>5.</b> Fani buys a gift for <b>Rp40.000</b>. Her remaining money is <b>3 times</b> the price of the gift.
+                    </div>
+                    <div class="ml-4 mt-2 text-sm text-gray-700">
+                         How much money did Fani have at first?
+                    </div>
+                    <div class="ml-4 mt-2">
+                         Answer: Rp<span class="input-box" style="width: 100px"></span>
+                    </div>
+                </div>
+             </div>
+
+             <!-- INSTRUCTION B -->
+             <div class="instruction-text mb-4 py-1.5 text-sm">
+                Section B: Multiple Choice (Choose the most correct answer)
+            </div>
+
+             <div class="soal-grid mb-4">
+                
+                <!-- SOAL 6 -->
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <b>6.</b> Gina buys a bag for <b>Rp100.000</b>. Gina's remaining money is <b>2 times</b> the price of the bag. How much was Gina's total money before buying the bag?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Rp200.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Rp250.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Rp300.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Rp350.000</label>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 7 -->
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <b>7.</b> Hendi spends <b>1 unit</b> of his money on a meal for Rp12.000. He still has <b>4 units</b> of money left. How much is Hendi's total money?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Rp48.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Rp50.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Rp60.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Rp72.000</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+      <!-- ================= HALAMAN 3 (Soal 8-10) ================= -->
+      <section class="page">
+        <!-- HEADER (Sama seperti Halaman 1) -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-12 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 2</div>
+                    <div class="text-[10px] text-black font-semibold mt-0.5">
+                        High Ability - Whole Numbers (Money)
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Spending & Quantity Relationships
+                    </div>
+                    <div class="text-[10px] text-black font-medium">
+                        Code : M2-S153
+                    </div>
+                </div>
+            </div>
+            <!-- Garis Hitam Header -->
+            <div class="w-full mt-1 border-t-2 border-black"></div>
+        </header>
+
+        <div class="content-wrapper">
+             
+             <div class="soal-grid mb-4">
+                <!-- SOAL 8 -->
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <b>8.</b> Indah donates <b>Rp30.000</b> to an orphanage. The money she has left is <b>5 times</b> the donated money. How much money did Indah have at first?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Rp150.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Rp160.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Rp180.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Rp200.000</label>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 9 -->
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <b>9.</b> Joko buys shoes. He pays with <b>1 part</b> of his money amounting to Rp150.000. There are still <b>3 equal parts</b> left in his savings. What is Joko's total savings?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Rp300.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Rp450.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Rp500.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Rp600.000</label>
+                    </div>
+                </div>
+                <div class="h-separator"></div>
+
+                <!-- SOAL 10 -->
+                <div class="soal-item">
+                    <div class="mb-2">
+                        <b>10.</b> Kaka spends Rp8.000 for parking. His remaining money is enough to pay for parking <b>9 more times</b>. How much is Kaka's total money?
+                    </div>
+                    <div class="choice-container ml-4 flex-col gap-2">
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> a) Rp72.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> b) Rp80.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> c) Rp88.000</label>
+                        <label class="flex items-center cursor-pointer"><span class="choice-box"></span> d) Rp90.000</label>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Motivational Quote -->
+            <div class="quote-box">
+                Great effort today. Quick check-through and you’re good.
+            </div>
+
+        </div>
+        
+        <footer class="page-footer">
+          <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+          <i>Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</i>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
