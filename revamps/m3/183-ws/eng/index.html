@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Champs - Advanced Ratio</title>
+    
+    <!-- Tailwind untuk komponen internal -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Montserrat (Sesuai Layout) & Noto Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- CSS UTAMA --- */
+      :root {
+        --primary-text: #333333;
+        --secondary-text: #555555;
+        --grey-text: #8d8e8d;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        font-size: 11pt;
+        line-height: 1.4; /* Sedikit dikurangi dari 1.6 */
+        color: var(--primary-text);
+        background-color: #525659;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 1.5cm 2cm;
+        margin-bottom: 1cm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        width: 100%;
+        margin-bottom: 15px; /* Dikurangi dari 20px */
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        flex-grow: 1;
+      }
+
+      /* --- FOOTER --- */
+      .page-footer {
+        text-align: left;
+        font-size: 7pt;
+        color: var(--grey-text);
+        padding-top: 8px;
+        margin-top: auto;
+        border-top: 2px solid var(--grey-text);
+        width: 100%;
+      }
+
+      /* --- STYLE KHUSUS PRINT --- */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .page-container {
+          display: block;
+        }
+        .page {
+          width: 100%;
+          height: auto;
+          min-height: 29.7cm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          padding: 1.5cm 2cm;
+        }
+        .page:last-child {
+          page-break-after: avoid;
+        }
+        .math-champs-header {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+
+      /* --- KOMPONEN HEADER --- */
+      .math-champs-header {
+        background-color: white;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: black;
+      }
+
+      /* --- LAYOUT SOAL (Flexbox untuk alignment nomor) --- */
+      .soal-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Dikurangi dari 2rem agar lebih rapat */
+      }
+
+      .soal-item {
+        display: flex; /* Menggunakan Flexbox agar nomor dan konten terpisah kolom */
+        align-items: flex-start; /* Alignment atas */
+        gap: 0.75rem; /* Jarak antara nomor dan soal */
+        break-inside: avoid;
+        position: relative;
+        margin-bottom: 0.5rem; /* Dikurangi dari 1rem */
+      }
+
+      .soal-number {
+        font-weight: 700;
+        font-size: 1rem;
+        flex-shrink: 0;
+        width: 25px;
+      }
+
+      .soal-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .soal-text {
+        margin-bottom: 0.5rem; /* Dikurangi dari 1rem */
+        display: block;
+      }
+
+      /* --- Input & Choices --- */
+      .input-line {
+        border: none;
+        border-bottom: 2px solid #333;
+        width: 150px;
+        height: 30px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+        background: transparent;
+      }
+
+      .choice-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px; /* Dikurangi dari 10px */
+        margin-top: 5px;
+        max-width: 400px;
+      }
+
+      .choice-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-weight: 500;
+      }
+
+      .radio-custom {
+        width: 18px;
+        height: 18px;
+        border: 2px solid black;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .drawing-box {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        height: 100px; /* Sedikit diperkecil defaultnya */
+        width: 100%;
+        margin-top: 5px; /* Dikurangi dari 10px */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-style: italic;
+      }
+
+      .h-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #eee;
+        margin: 0.5cm 0; /* Dikurangi drastis dari 1.5cm */
+      }
+
+      /* Utilities */
+      .text-highlight {
+        font-weight: 700;
+        color: #000;
+      }
+      
+      /* SVG Styles */
+      .bar-model-svg {
+        display: block;
+        margin: 5px 0 5px 0; /* Margin atas bawah diperkecil */
+        overflow: visible;
+      }
+      .svg-text {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .svg-label {
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      
+      <!-- HALAMAN 1 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <!-- LOGO -->
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">
+                        Advanced Ratio
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Finding the Value of One Quantity
+                    </div>
+                    <div class="text-[11px] text-black font-medium">
+                        Code : M3-182
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="text-center mb-6 mt-2"> <!-- Margin bottom dikurangi -->
+                <h1 class="text-2xl font-black uppercase tracking-wider text-gray-800">
+                    RATIO & TOTAL SUM
+                </h1>
+                <p class="text-sm font-medium text-gray-600">Visual Approach (Bar Model)</p>
+            </div>
+
+            <div class="soal-container">
+                <!-- Soal 1 -->
+                <div class="soal-item">
+                    <div class="soal-number">1.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            <span class="text-highlight">Basic Concept:</span> The ratio of Andi's marbles to Budi's marbles is 3 : 5. Their total sum of marbles is 64. How many marbles does Andi have?
+                        </span>
+                        
+                        <!-- SVG Bar Model Corrected -->
+                        <svg class="bar-model-svg" width="400" height="100" viewBox="0 0 400 100">
+                           <!-- Andi: 3 blocks -->
+                           <text x="0" y="25" class="svg-text" text-anchor="start" dominant-baseline="middle">Andi</text>
+                           <rect x="50" y="10" width="40" height="30" fill="#e5e7eb" stroke="#374151" stroke-width="2"/>
+                           <rect x="92" y="10" width="40" height="30" fill="#e5e7eb" stroke="#374151" stroke-width="2"/>
+                           <rect x="134" y="10" width="40" height="30" fill="#e5e7eb" stroke="#374151" stroke-width="2"/>
+
+                           <!-- Budi: 5 blocks -->
+                           <text x="0" y="65" class="svg-text" text-anchor="start" dominant-baseline="middle">Budi</text>
+                           <rect x="50" y="50" width="40" height="30" fill="white" stroke="#374151" stroke-width="2"/>
+                           <rect x="92" y="50" width="40" height="30" fill="white" stroke="#374151" stroke-width="2"/>
+                           <rect x="134" y="50" width="40" height="30" fill="white" stroke="#374151" stroke-width="2"/>
+                           <rect x="176" y="50" width="40" height="30" fill="white" stroke="#374151" stroke-width="2"/>
+                           <rect x="218" y="50" width="40" height="30" fill="white" stroke="#374151" stroke-width="2"/>
+
+                           <!-- Brace Total -->
+                           <path d="M 270 10 Q 280 10 280 20 L 280 35 Q 280 45 290 45 Q 280 45 280 55 L 280 70 Q 280 80 270 80" fill="none" stroke="black" stroke-width="1.5" />
+                           <text x="300" y="50" class="svg-label" dominant-baseline="middle">Total = 64</text>
+                        </svg>
+
+                        <div class="mt-2">
+                            <span class="font-bold mr-2">Answer:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 2 -->
+                <div class="soal-item">
+                    <div class="soal-number">2.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            On a farm, the ratio of chickens to ducks is 2 : 7. If the total sum of poultry on the farm is 108, how many ducks are there?
+                        </span>
+                        
+                        <div class="mb-4">
+                            <span class="text-sm font-semibold text-gray-500">Draw your Bar Model here:</span>
+                            <div class="drawing-box">
+                                (Drawing Area)
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="font-bold mr-2">Answer:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 3 -->
+                <div class="soal-item">
+                    <div class="soal-number">3.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            The ratio of Siti's savings to Dayu's savings is 4 : 9. If the total sum of their savings combined is Rp 650.000,00, what is the amount of Dayu's savings?
+                        </span>
+                        
+                        <div class="choice-container">
+                            <div class="choice-item"><span class="radio-custom"></span> a. Rp 200.000,00</div>
+                            <div class="choice-item"><span class="radio-custom"></span> b. Rp 250.000,00</div>
+                            <div class="choice-item"><span class="radio-custom"></span> c. Rp 450.000,00</div>
+                            <div class="choice-item"><span class="radio-custom"></span> d. Rp 500.000,00</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <span class="ml-2">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 2 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Advanced Ratio</div>
+                    <div class="text-[11px] text-black font-medium">Finding the Value of One Quantity</div>
+                    <div class="text-[11px] text-black font-medium">Code : M3-182</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-container">
+                
+                <!-- Soal 4 -->
+                <div class="soal-item">
+                    <div class="soal-number">4.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            <span class="text-highlight">Three Variables:</span> A paint mixture is made of Red, Yellow, and Blue colors in the ratio of 2 : 3 : 5. If the total volume of paint made is 20 liters, how many liters of <span class="font-bold">Blue</span> paint are needed?
+                        </span>
+
+                        <!-- SVG Bar Model Corrected -->
+                        <svg class="bar-model-svg" width="400" height="140" viewBox="0 0 400 140">
+                           <!-- Merah: 2 blocks -->
+                           <text x="0" y="25" class="svg-text" text-anchor="start" dominant-baseline="middle">Red</text>
+                           <rect x="60" y="10" width="40" height="30" fill="#e5e7eb" stroke="#374151" stroke-width="2"/>
+                           <rect x="102" y="10" width="40" height="30" fill="#e5e7eb" stroke="#374151" stroke-width="2"/>
+
+                           <!-- Kuning: 3 blocks -->
+                           <text x="0" y="65" class="svg-text" text-anchor="start" dominant-baseline="middle">Yellow</text>
+                           <rect x="60" y="50" width="40" height="30" fill="white" stroke="#374151" stroke-width="2"/>
+                           <rect x="102" y="50" width="40" height="30" fill="white" stroke="#374151" stroke-width="2"/>
+                           <rect x="144" y="50" width="40" height="30" fill="white" stroke="#374151" stroke-width="2"/>
+
+                           <!-- Biru: 5 blocks -->
+                           <text x="0" y="105" class="svg-text" text-anchor="start" dominant-baseline="middle">Blue</text>
+                           <rect x="60" y="90" width="40" height="30" fill="#e5e7eb" stroke="#374151" stroke-width="2"/>
+                           <rect x="102" y="90" width="40" height="30" fill="#e5e7eb" stroke="#374151" stroke-width="2"/>
+                           <rect x="144" y="90" width="40" height="30" fill="#e5e7eb" stroke="#374151" stroke-width="2"/>
+                           <rect x="186" y="90" width="40" height="30" fill="#e5e7eb" stroke="#374151" stroke-width="2"/>
+                           <rect x="228" y="90" width="40" height="30" fill="#e5e7eb" stroke="#374151" stroke-width="2"/>
+
+                           <!-- Brace Total -->
+                           <path d="M 280 10 Q 290 10 290 20 L 290 55 Q 290 65 300 65 Q 290 65 290 75 L 290 110 Q 290 120 280 120" fill="none" stroke="black" stroke-width="1.5" />
+                           <text x="310" y="65" class="svg-label" dominant-baseline="middle">Total = 20 L</text>
+                        </svg>
+
+                        <div class="mt-2">
+                            <span class="font-bold mr-2">Answer:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 5 -->
+                <div class="soal-item">
+                    <div class="soal-number">5.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            The perimeter of a rectangle is 60 cm. The ratio of its length to its width is 3 : 2. What is the <span class="font-bold">length</span> of the rectangle? (Remember: Perimeter = 2 × (Length + Width)).
+                        </span>
+                        
+                        <div class="choice-container">
+                            <div class="choice-item"><span class="radio-custom"></span> a. 12 cm</div>
+                            <div class="choice-item"><span class="radio-custom"></span> b. 18 cm</div>
+                            <div class="choice-item"><span class="radio-custom"></span> c. 24 cm</div>
+                            <div class="choice-item"><span class="radio-custom"></span> d. 36 cm</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 6 -->
+                <div class="soal-item">
+                    <div class="soal-number">6.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            The 6th-grade students of SD Merdeka consist of boys and girls. The ratio of boys to girls is 5 : 6. If the total sum of students in the class is 44, how many girls are there?
+                        </span>
+                        
+                        <div class="mb-4">
+                            <div class="drawing-box" style="height: 80px;">
+                                (Scratchpad Area)
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="font-bold mr-2">Answer:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal 7 dipindah ke halaman 3 -->
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <span class="ml-2">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 3 -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Advanced Ratio</div>
+                    <div class="text-[11px] text-black font-medium">Finding the Value of One Quantity</div>
+                    <div class="text-[11px] text-black font-medium">Code : M3-182</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-container">
+
+                <!-- Soal 7 (Dipindahkan dari Halaman 2) -->
+                <div class="soal-item">
+                    <div class="soal-number">7.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            In a box, there are red balls and green balls. The number of red balls is 3/7 of the <span class="font-bold">total sum</span> of balls. If the total number of balls is 98, how many green balls are there?
+                        </span>
+                        <div class="text-sm text-gray-500 italic ml-0 mb-2">Tip: If Red is 3 parts of the total 7 parts, how many parts are for Green?</div>
+                        
+                        <div class="choice-container">
+                            <div class="choice-item"><span class="radio-custom"></span> a. 42</div>
+                            <div class="choice-item"><span class="radio-custom"></span> b. 56</div>
+                            <div class="choice-item"><span class="radio-custom"></span> c. 49</div>
+                            <div class="choice-item"><span class="radio-custom"></span> d. 30</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 8 -->
+                <div class="soal-item">
+                    <div class="soal-number">8.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            Mother makes cake dough using wheat flour and sugar in a weight ratio of 5 : 2. If the total weight of the dough is 3.5 kg, what is the weight of the wheat flour used?
+                        </span>
+                        
+                        <div class="mb-4">
+                            <div class="drawing-box" style="height: 80px;">
+                                (Scratchpad Area)
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="font-bold mr-2">Answer:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-separator"></div>
+
+                <!-- Soal 9 -->
+                <div class="soal-item">
+                    <div class="soal-number">9.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            <span class="text-highlight">Challenge (High-Ability):</span> The ratio of Hasan's money to Husin's money is 7 : 3. Their total sum of money is Rp 100.000,00. Hasan wants to buy a toy for Rp 50.000,00. How much money does Hasan have left after buying the toy?
+                        </span>
+                        
+                        <div class="mb-4">
+                            <span class="text-sm font-semibold text-gray-500">Draw your Bar Model:</span>
+                            <div class="drawing-box" style="height: 120px;">
+                                (Drawing Area)
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="font-bold mr-2">Final Answer:</span>
+                            <input type="text" class="input-line">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal 10 dipindah ke halaman 4 -->
+
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <span class="ml-2">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+        </footer>
+      </section>
+
+      <!-- HALAMAN 4 (Halaman Baru) -->
+      <section class="page">
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="math-champs-header">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs" class="h-10 md:h-14 w-auto object-contain">
+                <div class="text-right">
+                    <div class="text-base font-extrabold text-black uppercase tracking-wide">Mastery 3</div>
+                    <div class="text-[11px] text-black font-semibold mt-1">Advanced Ratio</div>
+                    <div class="text-[11px] text-black font-medium">Finding the Value of One Quantity</div>
+                    <div class="text-[11px] text-black font-medium">Code : M3-182</div>
+                </div>
+            </div>
+            <div class="w-full h-0.5 bg-black mt-2"></div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="soal-container">
+                <!-- Soal 10 (Dipindahkan dari Halaman 3) -->
+                <div class="soal-item">
+                    <div class="soal-number">10.</div>
+                    <div class="soal-content">
+                        <span class="soal-text">
+                            Pak Tani divides his farmland to plant corn, rice, and soybeans in an area ratio of 3 : 4 : 1. If the total area of the farmland is 2,400 m², what is the area of the land used to plant <span class="font-bold">Rice</span>?
+                        </span>
+                        
+                        <div class="choice-container">
+                            <div class="choice-item"><span class="radio-custom"></span> a. 300 m²</div>
+                            <div class="choice-item"><span class="radio-custom"></span> b. 900 m²</div>
+                            <div class="choice-item"><span class="radio-custom"></span> c. 1,200 m²</div>
+                            <div class="choice-item"><span class="radio-custom"></span> d. 1,500 m²</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 text-center font-bold text-gray-700">
+                    Great effort today. Quick check-through and you’re good.
+                </div>
+                
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <b>Copyright Ⓒ 2025 - PT Ruang Raya Indonesia - All Rights Reserved.</b>
+            <span class="ml-2">Dilarang menyebarluaskan dokumen ini tanpa seizin PT Ruang Raya Indonesia.</span>
+        </footer>
+      </section>
+
+    </div>
+  </body>
+</html>
