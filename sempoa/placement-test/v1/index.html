@@ -1,344 +1,25 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sempoa - Placement Test</title>
-    <!-- Font 'Nunito' & 'Noto Sans' -->
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
-    <!-- KaTeX untuk Rumus Matematika Cantik -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-    <style>
-        :root {
-            --primary: #FF9F1C;
-            --primary-dark: #e08b15;
-            --secondary: #2EC4B6;
-            --secondary-dark: #259f93;
-            --accent: #E71D36;
-            --dark: #011627;
-            --light: #FDFFFC;
-            --bg-gradient: linear-gradient(135deg, #E0F7FA 0%, #80DEEA 100%);
-            --header-bg: #011627;
-            --text-main: #2c3e50;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html { height: 100%; }
-        body {
-            font-family: 'Nunito', sans-serif;
-            background: var(--bg-gradient);
-            margin: 0; padding: 0;
-            color: var(--text-main);
-            height: 100%;
-        }
-        .app-container {
-            display: flex; flex-direction: column; width: 100vw;
-            background-image: radial-gradient(#2EC4B6 1px, transparent 1px), radial-gradient(#2EC4B6 1px, transparent 1px);
-            background-position: 0 0, 25px 25px; background-size: 50px 50px; background-color: #f0f8ff;
-        }
-        header {
-            background: var(--header-bg); padding: 15px 30px;
-            display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 50; position: relative; flex-shrink: 0; height: 80px;
-        }
-        .logo { height: 40px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); display: block; }
-        .status-bar { display: flex; gap: 15px; }
-        .status-item {
-            display: flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.15);
-            padding: 10px 20px; border-radius: 50px; font-weight: 800; color: white;
-            font-size: 1.2rem; border: 2px solid rgba(255,255,255,0.2);
-        }
-        @media (min-width: 769px) {
-            body { overflow: hidden; }
-            .app-container { height: 100vh; }
-            .game-stage {
-                flex: 1; overflow-y: auto; padding: 20px; display: flex; justify-content: center; scrollbar-width: thin;
-            }
-            .content-card {
-                margin: auto 0; max-width: 900px; background: rgba(255, 255, 255, 0.95);
-                border-radius: 24px; padding: 40px; box-shadow: 0 10px 40px rgba(1, 22, 39, 0.1);
-                animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 100%;
-            }
-            .feedback-container {
-                margin-top: 30px; display: none; flex-direction: column; align-items: center; animation: popIn 0.3s ease;
-            }
-        }
-        @media (max-width: 768px) {
-            body { overflow-y: auto; height: auto; }
-            html { height: auto; }
-            .app-container { height: auto; min-height: 100vh; background-size: 20px 20px; }
-            header { position: sticky; top: 0; padding: 12px 20px; justify-content: space-between; }
-            .game-stage { display: block; height: auto; padding: 0; overflow: visible; }
-            .content-card {
-                background: white; max-width: none; border-radius: 0; box-shadow: none; margin: 0;
-                min-height: calc(100vh - 80px); padding: 25px 20px 150px 20px;
-            }
-            h1 { font-size: 1.6rem !important; }
-            .question-box { font-size: 1.1rem !important; }
-            .feedback-container {
-                position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px;
-                box-shadow: 0 -5px 20px rgba(0,0,0,0.1); animation: slideUp 0.3s ease;
-                border-top: 1px solid #eee; display: none; flex-direction: column; align-items: center; z-index: 100;
-            }
-        }
-        @keyframes popIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
-        h1 { color: var(--primary); font-weight: 900; font-size: 2.2rem; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: -0.5px; }
-        h2 { color: #7f8c8d; font-weight: 600; margin: 0; }
-        
-        .input-group { margin-bottom: 25px; text-align: left; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
-        .input-label { display: block; font-weight: 700; margin-bottom: 10px; color: var(--dark); font-size: 1.1rem; }
-        .name-input {
-            width: 100%; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #e0e6ed; border-radius: 15px;
-            font-family: 'Nunito', sans-serif; outline: none; transition: border-color 0.2s; background: white;
-        }
-        .name-input:focus { border-color: var(--primary); }
-        
-        /* Agent Section Style */
-        .agent-section {
-            background-color: #f8f9fa; border: 2px dashed #cbd5e0; padding: 20px;
-            border-radius: 15px; margin-bottom: 30px;
-        }
-        .section-title {
-            font-size: 0.9rem; color: #718096; text-transform: uppercase;
-            letter-spacing: 1px; font-weight: 800; margin-bottom: 15px; text-align: center;
-        }
-
-        .progress-container {
-            background: #eef2f5; height: 14px; border-radius: 50px; margin: 0 0 30px; overflow: hidden;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .progress-fill {
-            height: 100%; background: linear-gradient(90deg, var(--primary), #ffcb05); width: 0%;
-            border-radius: 50px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .question-box { font-size: 1.35rem; font-weight: 700; color: var(--dark); margin-bottom: 30px; line-height: 1.5; }
-        .q-img { max-width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: 20px 0; border: 4px solid #fff; background: #fff;}
-        .opt-img { max-height: 80px; object-fit: contain; pointer-events: none; }
-        
-        .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-        @media (max-width: 600px) { .options-grid { grid-template-columns: 1fr; } }
-        
-        .option-btn {
-            background: white; border: 2px solid #e0e6ed; border-bottom: 6px solid #e0e6ed; padding: 20px;
-            border-radius: 20px; font-size: 1.2rem; color: var(--text-main); font-weight: 700; cursor: pointer;
-            transition: all 0.15s ease; position: relative; font-family: 'Nunito', sans-serif;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .option-btn:hover:not(:disabled) { border-color: var(--secondary); border-bottom-color: var(--secondary-dark); background: #f0fffd; transform: translateY(-2px); }
-        .option-btn:active:not(:disabled) { transform: translateY(4px); border-bottom-width: 2px; margin-top: 4px; }
-        .option-btn:disabled { opacity: 0.8; cursor: default; }
-        .option-btn.correct { background: #d1f7c4; border-color: #2ecc71; border-bottom-color: #27ae60; color: #27ae60; }
-        .option-btn.wrong { background: #fadbd8; border-color: #e74c3c; border-bottom-color: #c0392b; color: #c0392b; }
-        .option-btn.report-variant { padding: 15px; font-size: 1rem; min-height: auto; border-bottom-width: 3px; cursor: default; pointer-events: none; }
-        
-        .report-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; }
-        @media(max-width: 600px) { .report-grid { grid-template-columns: 1fr !important; } }
-        
-        .btn {
-            background: var(--primary); color: white; border: none; border-bottom: 5px solid var(--primary-dark);
-            padding: 18px 40px; font-size: 1.2rem; border-radius: 50px; font-weight: 800; cursor: pointer;
-            transition: all 0.1s; font-family: 'Nunito', sans-serif; text-transform: uppercase; letter-spacing: 1px;
-            display: inline-block; margin-top: 20px; width: 100%;
-        }
-        .btn:active { transform: translateY(3px); border-bottom-width: 2px; margin-top: 23px; }
-        .btn-next { background: var(--secondary); border-bottom: 5px solid var(--secondary-dark); }
-        .btn-report { background: white; color: var(--dark); border: 2px solid #ddd; border-bottom: 5px solid #ccc; margin-top: 15px; }
-        .btn-report:active { border-bottom-width: 2px; margin-top: 18px; }
-        
-        .feedback-msg { font-size: 1.4rem; font-weight: 800; margin-bottom: 15px; }
-        
-        .checkpoint-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(1, 22, 39, 0.9); z-index: 200;
-            display: none; justify-content: center; align-items: center; flex-direction: column;
-            animation: fadeIn 0.3s ease; backdrop-filter: blur(5px);
-        }
-        .checkpoint-content {
-            background: white; padding: 40px; border-radius: 30px; text-align: center; max-width: 400px; width: 90%;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3); animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative; overflow: hidden;
-        }
-        .checkpoint-content::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 10px; background: linear-gradient(90deg, var(--primary), var(--secondary));
-        }
-        
-        .report-card {
-            display: none; margin-top: 30px; text-align: left; background: #fff; border-radius: 15px;
-            border: 2px solid #eee; overflow: hidden; animation: slideUp 0.3s ease;
-        }
-        .report-header { background: var(--dark); color: white; padding: 15px 20px; font-weight: 800; font-size: 1.1rem; }
-        .report-list { padding: 0; margin: 0; list-style: none; max-height: 500px; overflow-y: auto; }
-        .report-item { padding: 25px 20px; border-bottom: 4px solid #f0f4f8; font-size: 0.95rem; }
-        .report-item:last-child { border-bottom: none; }
-        .report-meta { display: inline-block; background: #e3f2fd; color: #1565c0; padding: 3px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: 800; margin-bottom: 15px; text-transform: uppercase; }
-        .report-q-text { margin-bottom: 20px; font-weight: 700; color: var(--dark); font-size: 1.1rem; }
-        .report-q-text img { max-width: 100%; height: auto; max-height: 200px; display: block; margin: 10px 0; border-radius: 8px; border: 1px solid #eee; }
-        
-        .screen { display: none; width: 100%; }
-        .screen.active { display: block; }
-        
-        .result-level { font-size: clamp(2rem, 8vw, 3.5rem); font-weight: 900; color: white; text-shadow: 2px 2px 0 rgba(0,0,0,0.1); word-wrap: break-word; line-height: 1.1; }
-        .result-card-inner {
-            background: linear-gradient(135deg, #FF9F1C, #FF5E00); padding: 40px; border-radius: 30px;
-            color: white; margin: 20px 0; position: relative; overflow: hidden; box-shadow: 0 15px 30px rgba(255, 159, 28, 0.4);
-        }
-        .result-card-inner::before { content: '🏆'; position: absolute; font-size: 10rem; opacity: 0.1; right: -20px; bottom: -20px; transform: rotate(-15deg); }
-    </style>
-</head>
-<body>
-
-<div class="app-container">
-    <!-- HEADER -->
-    <header>
-        <!-- Logo Sempoa -->
-        <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Sempoa Logo" class="logo">
-        <div class="status-bar" id="statusBar" style="visibility: hidden;">
-            <div class="status-item" style="display: none;">
-                <span>⏱️</span> <span id="timerDisplay">60:00</span>
-            </div>
-        </div>
-    </header>
-
-    <!-- MAIN GAME STAGE -->
-    <div class="game-stage">
-        <div class="content-card">
-            
-            <!-- SCREEN 0: INPUT DATA -->
-            <div id="inputNameScreen" class="screen active" style="text-align: center;">
-                <div style="font-size: 4rem; margin-bottom: 10px;">👋</div>
-                <h1>Halo, Champion!</h1>
-                <h2 style="margin-bottom: 30px;">Lengkapi data sebelum mulai</h2>
-
-                <!-- SECTION: DATA SISWA -->
-                <div class="input-group">
-                    <label class="input-label">Nama Lengkap</label>
-                    <input type="text" id="studentNameInput" class="name-input" placeholder="Tulis nama lengkapmu di sini..." autocomplete="off">
-                </div>
-                
-                <!-- OPSI 2 LOGIC: USIA -->
-                <div class="input-group">
-                    <label class="input-label">Usia Siswa</label>
-                    <select id="studentAgeInput" class="name-input">
-                        <option value="" disabled selected>Pilih Usia...</option>
-                        <option value="3">&lt; 4 tahun</option>
-                        <option value="4">4 tahun</option>
-                        <option value="5">5 tahun</option>
-                        <option value="6">6 tahun</option>
-                        <option value="7">7 tahun</option>
-                        <option value="8">8 tahun</option>
-                        <option value="9">9 tahun</option>
-                        <option value="10">10 tahun</option>
-                        <option value="11">11 tahun</option>
-                        <option value="12">12 tahun</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label class="input-label">Email Siswa/Ortu</label>
-                    <input type="email" id="studentEmailInput" class="name-input" placeholder="contoh: nama@email.com" autocomplete="off">
-                </div>
-
-                <!-- SECTION: DATA SALES/AGENT -->
-                <div class="agent-section">
-                    <div class="section-title">— Diisi oleh Petugas Lapangan —</div>
-                    
-                    <div class="input-group">
-                        <label class="input-label">Nama Agent/Sales</label>
-                        <input type="text" id="agentNameInput" class="name-input" placeholder="Nama Anda (Petugas)" autocomplete="off">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Pilih Cabang</label>
-                        <input list="branchList" id="branchInput" class="name-input" placeholder="Ketik nama kota (Contoh: Bandung)...">
-                        <datalist id="branchList"></datalist>
-                    </div>
-                </div>
-
-                <button class="btn" onclick="saveNameAndContinue()">Lanjut</button>
-            </div>
-
-            <!-- SCREEN 1: START -->
-            <div id="startScreen" class="screen" style="text-align: center;">
-                <div style="font-size: 4rem; margin-bottom: 10px;">🧮</div>
-                <h1>PLACEMENT TEST SEMPOA</h1>
-                <h2 style="margin-bottom: 30px;">Uji Kemampuan Berhitungmu</h2>
-                <div style="background: #FFF8E1; padding: 25px; border-radius: 20px; text-align: left; border: 2px solid #FFE082; margin-bottom: 30px;">
-                    <h3 style="margin: 0 0 15px 0; color: #F57F17;">📜 Cara Kerja Tes:</h3>
-                    <ul style="margin: 0; padding-left: 20px; color: #5d4037; font-size: 1.1rem; line-height: 1.6;">
-                        <li>Sistem akan menyesuaikan tingkat kesulitan soal khusus untuk kamu berdasarkan <strong>Usia</strong>.</li>
-                        <li>Level kamu bisa naik atau turun bergantung dari ketepatan jawabanmu.</li>
-                    </ul>
-                </div>
-                <button class="btn" onclick="startGame()">MULAI SEKARANG 🚀</button>
-            </div>
-
-            <!-- SCREEN 2: GAME -->
-            <div id="gameScreen" class="screen">
-                <div class="progress-container">
-                    <div class="progress-fill" id="progressBar"></div>
-                </div>
-                <div class="question-box" id="questionText"></div>
-                <div class="options-grid" id="optionsContainer"></div>
-            </div>
-
-            <!-- SCREEN 3: RESULT -->
-            <div id="resultScreen" class="screen" style="text-align: center;">
-                <h1>Tes Selesai! 🎉</h1>
-                <p style="font-size: 1.2rem; color: #7f8c8d;">Level kamu sudah ditemukan!</p>
-                <div class="result-card-inner">
-                    <div style="font-size: 1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 2px;">Level Rekomendasi</div>
-                    <div class="result-level" id="finalPlacement">...</div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px;">
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; border: 2px solid #eee;">
-                        <div style="font-size: 2rem; font-weight: 900; color: var(--dark);" id="finalScore">0</div>
-                        <div style="color: #95a5a6; font-size: 0.9rem; font-weight: 700;">TOTAL BENAR</div>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; border: 2px solid #eee;">
-                        <div style="font-size: 2rem; font-weight: 900; color: var(--dark);" id="timeUsed">00:00</div>
-                        <div style="color: #95a5a6; font-size: 0.9rem; font-weight: 700;">WAKTU</div>
-                    </div>
-                </div>
-                <button class="btn btn-report" onclick="toggleReport()" id="btnReportToggle">📋 Lihat Detail Jawaban Salah</button>
-                <div id="reportCard" class="report-card">
-                    <div class="report-header">
-                        <span>Analisis Kesalahan</span>
-                    </div>
-                    <ul id="reportList" class="report-list"></ul>
-                </div>
-            </div>
-
-            <!-- FEEDBACK AREA -->
-            <div class="feedback-container" id="feedbackArea">
-                <div class="feedback-msg" id="feedbackMessage">Jawaban Benar!</div>
-                <button class="btn btn-next" id="nextBtn">Lanjut ➔</button>
-            </div>
-
-            <!-- CHECKPOINT MODAL -->
-            <div id="checkpointModal" class="checkpoint-overlay">
-                <div class="checkpoint-content">
-                    <div style="font-size: 4rem; margin-bottom: 10px;">⚖️</div>
-                    <h2 style="color: var(--primary); font-size: 1.8rem; margin-bottom: 10px;">ANALISIS SELESAI</h2>
-                    <p style="font-size: 1.1rem; color: #555;">Kami sedang menyesuaikan tingkat kesulitan soal...</p>
-                    <p id="checkpointMsg" style="color: #27ae60; font-weight: bold; margin: 15px 0;">...</p>
-                    <button class="btn" onclick="closeCheckpoint()">LANJUT ▶</button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
+<!DOCTYPE html><html lang="id"><head>    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    <title>Sempoa - Placement Test</title>    <!-- Font 'Nunito' & 'Noto Sans' -->    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">    <!-- KaTeX untuk Rumus Matematika Cantik -->    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>    <style>        :root {            --primary: #FF9F1C;            --primary-dark: #e08b15;            --secondary: #2EC4B6;            --secondary-dark: #259f93;            --accent: #E71D36;            --dark: #011627;            --light: #FDFFFC;            --bg-gradient: linear-gradient(135deg, #E0F7FA 0%, #80DEEA 100%);            --header-bg: #011627;            --text-main: #2c3e50;        }        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }        html { height: 100%; }        body {            font-family: 'Nunito', sans-serif;            background: var(--bg-gradient);            margin: 0; padding: 0;            color: var(--text-main);            height: 100%;        }        .app-container {            display: flex; flex-direction: column; width: 100vw;            background-image: radial-gradient(#2EC4B6 1px, transparent 1px), radial-gradient(#2EC4B6 1px, transparent 1px);            background-position: 0 0, 25px 25px; background-size: 50px 50px; background-color: #f0f8ff;        }        header {            background: var(--header-bg); padding: 15px 30px;            display: flex; align-items: center; justify-content: space-between;            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 50; position: relative; flex-shrink: 0; height: 80px;        }        .logo { height: 40px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); display: block; }        .status-bar { display: flex; gap: 15px; }        .status-item {            display: flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.15);            padding: 10px 20px; border-radius: 50px; font-weight: 800; color: white;            font-size: 1.2rem; border: 2px solid rgba(255,255,255,0.2);        }        @media (min-width: 769px) {            body { overflow: hidden; }            .app-container { height: 100vh; }            .game-stage {                flex: 1; overflow-y: auto; padding: 20px; display: flex; justify-content: center; scrollbar-width: thin;            }            .content-card {                margin: auto 0; max-width: 900px; background: rgba(255, 255, 255, 0.95);                border-radius: 24px; padding: 40px; box-shadow: 0 10px 40px rgba(1, 22, 39, 0.1);                animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 100%;            }            .feedback-container {                margin-top: 30px; display: none; flex-direction: column; align-items: center; animation: popIn 0.3s ease;            }        }        @media (max-width: 768px) {            body { overflow-y: auto; height: auto; }            html { height: auto; }            .app-container { height: auto; min-height: 100vh; background-size: 20px 20px; }            header { position: sticky; top: 0; padding: 12px 20px; justify-content: space-between; }            .game-stage { display: block; height: auto; padding: 0; overflow: visible; }            .content-card {                background: white; max-width: none; border-radius: 0; box-shadow: none; margin: 0;                min-height: calc(100vh - 80px); padding: 25px 20px 150px 20px;            }            h1 { font-size: 1.6rem !important; }            .question-box { font-size: 1.1rem !important; }            .feedback-container {                position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px;                box-shadow: 0 -5px 20px rgba(0,0,0,0.1); animation: slideUp 0.3s ease;                border-top: 1px solid #eee; display: none; flex-direction: column; align-items: center; z-index: 100;            }        }        @keyframes popIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }                h1 { color: var(--primary); font-weight: 900; font-size: 2.2rem; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: -0.5px; }        h2 { color: #7f8c8d; font-weight: 600; margin: 0; }                .input-group { margin-bottom: 25px; text-align: left; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }        .input-label { display: block; font-weight: 700; margin-bottom: 10px; color: var(--dark); font-size: 1.1rem; }        .name-input {            width: 100%; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #e0e6ed; border-radius: 15px;            font-family: 'Nunito', sans-serif; outline: none; transition: border-color 0.2s; background: white;        }        .name-input:focus { border-color: var(--primary); }                /* Agent Section Style */        .agent-section {            background-color: #f8f9fa; border: 2px dashed #cbd5e0; padding: 20px;            border-radius: 15px; margin-bottom: 30px;        }        .section-title {            font-size: 0.9rem; color: #718096; text-transform: uppercase;            letter-spacing: 1px; font-weight: 800; margin-bottom: 15px; text-align: center;        }
+        .progress-container {            background: #eef2f5; height: 14px; border-radius: 50px; margin: 0 0 30px; overflow: hidden;            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);        }        .progress-fill {            height: 100%; background: linear-gradient(90deg, var(--primary), #ffcb05); width: 0%;            border-radius: 50px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);        }                .question-box { font-size: 1.35rem; font-weight: 700; color: var(--dark); margin-bottom: 30px; line-height: 1.5; }        .q-img { max-width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: 20px 0; border: 4px solid #fff; background: #fff;}        .opt-img { max-height: 80px; object-fit: contain; pointer-events: none; }                .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }        @media (max-width: 600px) { .options-grid { grid-template-columns: 1fr; } }                .option-btn {            background: white; border: 2px solid #e0e6ed; border-bottom: 6px solid #e0e6ed; padding: 20px;            border-radius: 20px; font-size: 1.2rem; color: var(--text-main); font-weight: 700; cursor: pointer;            transition: all 0.15s ease; position: relative; font-family: 'Nunito', sans-serif;            display: flex; flex-direction: column; align-items: center; justify-content: center;        }        .option-btn:hover:not(:disabled) { border-color: var(--secondary); border-bottom-color: var(--secondary-dark); background: #f0fffd; transform: translateY(-2px); }        .option-btn:active:not(:disabled) { transform: translateY(4px); border-bottom-width: 2px; margin-top: 4px; }        .option-btn:disabled { opacity: 0.8; cursor: default; }        .option-btn.correct { background: #d1f7c4; border-color: #2ecc71; border-bottom-color: #27ae60; color: #27ae60; }        .option-btn.wrong { background: #fadbd8; border-color: #e74c3c; border-bottom-color: #c0392b; color: #c0392b; }        .option-btn.report-variant { padding: 15px; font-size: 1rem; min-height: auto; border-bottom-width: 3px; cursor: default; pointer-events: none; }                .report-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; }        @media(max-width: 600px) { .report-grid { grid-template-columns: 1fr !important; } }                .btn {            background: var(--primary); color: white; border: none; border-bottom: 5px solid var(--primary-dark);            padding: 18px 40px; font-size: 1.2rem; border-radius: 50px; font-weight: 800; cursor: pointer;            transition: all 0.1s; font-family: 'Nunito', sans-serif; text-transform: uppercase; letter-spacing: 1px;            display: inline-block; margin-top: 20px; width: 100%;        }        .btn:active { transform: translateY(3px); border-bottom-width: 2px; margin-top: 23px; }        .btn-next { background: var(--secondary); border-bottom: 5px solid var(--secondary-dark); }        .btn-report { background: white; color: var(--dark); border: 2px solid #ddd; border-bottom: 5px solid #ccc; margin-top: 15px; }        .btn-report:active { border-bottom-width: 2px; margin-top: 18px; }                .feedback-msg { font-size: 1.4rem; font-weight: 800; margin-bottom: 15px; }                .checkpoint-overlay {            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(1, 22, 39, 0.9); z-index: 200;            display: none; justify-content: center; align-items: center; flex-direction: column;            animation: fadeIn 0.3s ease; backdrop-filter: blur(5px);        }        .checkpoint-content {            background: white; padding: 40px; border-radius: 30px; text-align: center; max-width: 400px; width: 90%;            box-shadow: 0 20px 50px rgba(0,0,0,0.3); animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);            position: relative; overflow: hidden;        }        .checkpoint-content::before {            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 10px; background: linear-gradient(90deg, var(--primary), var(--secondary));        }                .report-card {            display: none; margin-top: 30px; text-align: left; background: #fff; border-radius: 15px;            border: 2px solid #eee; overflow: hidden; animation: slideUp 0.3s ease;        }        .report-header { background: var(--dark); color: white; padding: 15px 20px; font-weight: 800; font-size: 1.1rem; }        .report-list { padding: 0; margin: 0; list-style: none; max-height: 500px; overflow-y: auto; }        .report-item { padding: 25px 20px; border-bottom: 4px solid #f0f4f8; font-size: 0.95rem; }        .report-item:last-child { border-bottom: none; }        .report-meta { display: inline-block; background: #e3f2fd; color: #1565c0; padding: 3px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: 800; margin-bottom: 15px; text-transform: uppercase; }        .report-q-text { margin-bottom: 20px; font-weight: 700; color: var(--dark); font-size: 1.1rem; }        .report-q-text img { max-width: 100%; height: auto; max-height: 200px; display: block; margin: 10px 0; border-radius: 8px; border: 1px solid #eee; }                .screen { display: none; width: 100%; }        .screen.active { display: block; }                .result-level { font-size: clamp(2rem, 8vw, 3.5rem); font-weight: 900; color: white; text-shadow: 2px 2px 0 rgba(0,0,0,0.1); word-wrap: break-word; line-height: 1.1; }        .result-card-inner {            background: linear-gradient(135deg, #FF9F1C, #FF5E00); padding: 40px; border-radius: 30px;            color: white; margin: 20px 0; position: relative; overflow: hidden; box-shadow: 0 15px 30px rgba(255, 159, 28, 0.4);        }        .result-card-inner::before { content: '🏆'; position: absolute; font-size: 10rem; opacity: 0.1; right: -20px; bottom: -20px; transform: rotate(-15deg); }    </style></head><body>
+<div class="app-container">    <!-- HEADER -->    <header>        <!-- Logo Sempoa -->        <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Sempoa Logo" class="logo">        <div class="status-bar" id="statusBar" style="visibility: hidden;">            <div class="status-item" style="display: none;">                <span>⏱️</span> <span id="timerDisplay">60:00</span>            </div>        </div>    </header>
+    <!-- MAIN GAME STAGE -->    <div class="game-stage">        <div class="content-card">                        <!-- SCREEN 0: INPUT DATA -->            <div id="inputNameScreen" class="screen active" style="text-align: center;">                <div style="font-size: 4rem; margin-bottom: 10px;">👋</div>                <h1>Halo, Champion!</h1>                <h2 style="margin-bottom: 30px;">Lengkapi data sebelum mulai</h2>
+                <!-- SECTION: DATA SISWA -->                <div class="input-group">                    <label class="input-label">Nama Lengkap</label>                    <input type="text" id="studentNameInput" class="name-input" placeholder="Tulis nama lengkapmu di sini..." autocomplete="off">                </div>                                <!-- OPSI 2 LOGIC: USIA -->                <div class="input-group">                    <label class="input-label">Usia Siswa</label>                    <select id="studentAgeInput" class="name-input">                        <option value="" disabled selected>Pilih Usia...</option>                        <option value="3">&lt; 4 tahun</option>                        <option value="4">4 tahun</option>                        <option value="5">5 tahun</option>                        <option value="6">6 tahun</option>                        <option value="7">7 tahun</option>                        <option value="8">8 tahun</option>                        <option value="9">9 tahun</option>                        <option value="10">10 tahun</option>                        <option value="11">11 tahun</option>                        <option value="12">12 tahun</option>                    </select>                </div>
+                <div class="input-group">                    <label class="input-label">Email Siswa/Ortu</label>                    <input type="email" id="studentEmailInput" class="name-input" placeholder="contoh: nama@email.com" autocomplete="off">                </div>
+                <!-- SECTION: DATA SALES/AGENT -->                <div class="agent-section">                    <div class="section-title">— Diisi oleh Petugas Lapangan —</div>                                        <div class="input-group">                        <label class="input-label">Nama Agent/Sales</label>                        <input type="text" id="agentNameInput" class="name-input" placeholder="Nama Anda (Petugas)" autocomplete="off">                    </div>
+                    <div class="input-group">                        <label class="input-label">Pilih Cabang</label>                        <input list="branchList" id="branchInput" class="name-input" placeholder="Ketik nama kota (Contoh: Bandung)...">                        <datalist id="branchList"></datalist>                    </div>                </div>
+                <button class="btn" onclick="saveNameAndContinue()">Lanjut</button>            </div>
+            <!-- SCREEN 1: START -->            <div id="startScreen" class="screen" style="text-align: center;">                <div style="font-size: 4rem; margin-bottom: 10px;">🧮</div>                <h1>PLACEMENT TEST SEMPOA</h1>                <h2 style="margin-bottom: 30px;">Uji Kemampuan Berhitungmu</h2>                <div style="background: #FFF8E1; padding: 25px; border-radius: 20px; text-align: left; border: 2px solid #FFE082; margin-bottom: 30px;">                    <h3 style="margin: 0 0 15px 0; color: #F57F17;">📜 Cara Kerja Tes:</h3>                    <ul style="margin: 0; padding-left: 20px; color: #5d4037; font-size: 1.1rem; line-height: 1.6;">                        <li>Sistem akan menyesuaikan tingkat kesulitan soal khusus untuk kamu berdasarkan <strong>Usia</strong>.</li>                        <li>Level kamu bisa naik atau turun bergantung dari ketepatan jawabanmu.</li>                    </ul>                </div>                <button class="btn" onclick="startGame()">MULAI SEKARANG 🚀</button>            </div>
+            <!-- SCREEN 2: GAME -->            <div id="gameScreen" class="screen">                <div class="progress-container">                    <div class="progress-fill" id="progressBar"></div>                </div>                <div class="question-box" id="questionText"></div>                <div class="options-grid" id="optionsContainer"></div>            </div>
+            <!-- SCREEN 3: RESULT -->            <div id="resultScreen" class="screen" style="text-align: center;">                <h1>Tes Selesai! 🎉</h1>                <p style="font-size: 1.2rem; color: #7f8c8d;">Level kamu sudah ditemukan!</p>                <div class="result-card-inner">                    <div style="font-size: 1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 2px;">Level Rekomendasi</div>                    <div class="result-level" id="finalPlacement">...</div>                </div>                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px;">                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; border: 2px solid #eee;">                        <div style="font-size: 2rem; font-weight: 900; color: var(--dark);" id="finalScore">0</div>                        <div style="color: #95a5a6; font-size: 0.9rem; font-weight: 700;">TOTAL BENAR</div>                    </div>                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; border: 2px solid #eee;">                        <div style="font-size: 2rem; font-weight: 900; color: var(--dark);" id="timeUsed">00:00</div>                        <div style="color: #95a5a6; font-size: 0.9rem; font-weight: 700;">WAKTU</div>                    </div>                </div>                <button class="btn btn-report" onclick="toggleReport()" id="btnReportToggle">📋 Lihat Detail Jawaban Salah</button>                <div id="reportCard" class="report-card">                    <div class="report-header">                        <span>Analisis Kesalahan</span>                    </div>                    <ul id="reportList" class="report-list"></ul>                </div>            </div>
+            <!-- FEEDBACK AREA -->            <div class="feedback-container" id="feedbackArea">                <div class="feedback-msg" id="feedbackMessage">Jawaban Benar!</div>                <button class="btn btn-next" id="nextBtn">Lanjut ➔</button>            </div>
+            <!-- CHECKPOINT MODAL -->            <div id="checkpointModal" class="checkpoint-overlay">                <div class="checkpoint-content">                    <div style="font-size: 4rem; margin-bottom: 10px;">⚖️</div>                    <h2 style="color: var(--primary); font-size: 1.8rem; margin-bottom: 10px;">ANALISIS SELESAI</h2>                    <p style="font-size: 1.1rem; color: #555;">Kami sedang menyesuaikan tingkat kesulitan soal...</p>                    <p id="checkpointMsg" style="color: #27ae60; font-weight: bold; margin: 15px 0;">...</p>                    <button class="btn" onclick="closeCheckpoint()">LANJUT ▶</button>                </div>            </div>
+        </div>    </div></div>
 <script>
-    // --- KONFIGURASI API ---
-    // GANTI URL DI BAWAH INI DENGAN URL WEB APP DARI GOOGLE APPS SCRIPT KAMU
+    /* --- KONFIGURASI API --- */
+    /* GANTI URL DI BAWAH INI DENGAN URL WEB APP DARI GOOGLE APPS SCRIPT KAMU */
     const googleScriptURL = 'https://script.google.com/macros/s/AKfycbzMK_FafDgSWHNdY5f5XMdS-M6EQFt4sfoTf7-z8cDYHCb7RiYGoqDBnr_LktzSPrN8zg/exec';
 
-    // --- DATA CABANG ---
-    // DATA INI DIAMBIL SECARA LENGKAP DARI KODE MATH CHAMPS SESUAI REQUEST
+    /* --- DATA CABANG --- */
+    /* DATA INI DIAMBIL SECARA LENGKAP DARI KODE MATH CHAMPS SESUAI REQUEST */
     const branches = [
         "Atambua - Proklamasi", "Badung - Kapal", "Bagan Batu - Simpang Pujud", "Balige - Patuan Nagari",
         "Balikpapan - Jendral Sudirman Plus", "Balikpapan - Sungai Ampal", "Banda Aceh - Jambo Tape",
@@ -445,48 +126,88 @@
         "Yogyakarta - Wirobrajan", "Math Champs Online"
     ];
 
-    // --- GENERATE BANK SOAL SEMPOA ---
+    /* --- GENERATE BANK SOAL SEMPOA --- */
     const imageLinks = [
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_oganng_8844.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_d2cxan_796.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_ahpt0h_7449.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_lcfs8j_9356.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_qqlsun_9485.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_amxv5x_264.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_w933pi_9716.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_anow6l_7705.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_girh7e_7896.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_ofudrs_5053.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_rhmiiy_2050.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_qxx2qa_7847.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_1lt96e_964.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_nf6rne_7334.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_hjhe1m_1358.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_dfpqis_8463.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_1n6qpn_5147.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_lodisp_4453.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_nmclvo_1410.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_dgiyhe_3200.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_aatrbn_8388.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_dorqaq_3989.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_jvaewz_9254.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_tfkehs_2539.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_f5b3mx_4677.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_rrow8x_5662.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_ifd0qv_7764.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_niwppt_5714.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_a5pw8a_7468.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_l3siwr_7989.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_hvyf4x_3181.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_2zi5x2_3075.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_mcgtg1_8586.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_stcchf_447.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_igxgno_8644.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_pz43xc_1008.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_wfdyuj_2399.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_ousqfw_9421.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_dxm8cu_7959.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_4i0xcq_9646.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_lqflec_8358.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_yurwai_3523.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_hwzhii_6298.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_y9ogyx_660.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_itg2ad_738.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_jw63rv_9135.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_ebrv89_400.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_7mfa9t_8453.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_er3xa6_3538.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_ytp9uu_1291.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_eyptie_2298.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_ieluqa_6892.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_fyg7wl_6028.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_0cs6ue_4206.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_6kstcz_2944.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_woam0r_2010.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_lkizua_7621.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_vgkavp_3543.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_djdwmh_8659.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_xjxfxj_9377.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_46yn3f_7711.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_sljgos_4921.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_eht274_4809.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_55gdk6_7515.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_esoldi_280.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_pgzjpi_5743.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_drcqvt_1069.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_ayhmrm_4096.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_1i7eve_2619.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_bjzwun_6064.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_pemmgm_3771.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_eqwmhw_4342.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_ykskga_232.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_ckw4dp_7750.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_kmd0gt_22.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_1gmmse_2348.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_zg5rxs_3615.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_y6w47z_2880.png",
-        "https://imgix3.ruangguru.com/assets/miscellaneous/png_r3d23j_7826.png", "https://imgix3.ruangguru.com/assets/miscellaneous/png_8gsuvf_9166.png"
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_oganng_8844.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_d2cxan_796.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_ahpt0h_7449.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_lcfs8j_9356.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_qqlsun_9485.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_amxv5x_264.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_w933pi_9716.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_anow6l_7705.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_girh7e_7896.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_ofudrs_5053.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_rhmiiy_2050.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_qxx2qa_7847.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_1lt96e_964.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_nf6rne_7334.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_hjhe1m_1358.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_dfpqis_8463.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_1n6qpn_5147.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_lodisp_4453.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_nmclvo_1410.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_dgiyhe_3200.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_pl8avk_5095.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_afq5mb_9436.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_r89ykk_207.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_vhgbm9_3409.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_f5hn76_4393.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_djnbgx_7993.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_pncxzf_2135.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_et16ia_7820.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_6akvzj_7163.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_yvj2lh_2092.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_x1n4cd_8840.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_lfczwe_1491.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_nguf2r_1796.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_rvq30z_1082.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_cjdnit_8467.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_cm7jfp_1794.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_uwsaeo_7011.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_oa2lgd_8210.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_e4gtwq_3205.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_lypeyk_5023.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_2tiqhz_8660.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_rkwh3g_1645.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_hwzhii_6298.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_vbvzwz_4505.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_eoagsn_3442.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_r3gl4b_2927.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_l1eaqj_9112.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_tfbjvh_1485.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_54y6qa_425.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_qb6zj5_2540.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_gtpdwz_4647.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_cglrxo_1021.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_ziwc8d_4438.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_1d3ddk_644.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_iqdx1k_5857.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_gtpdwz_4647.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_g6ejnj_5376.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_efdkrr_4005.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_k01c8x_7190.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_w8cqgb_4969.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_9xwijl_3624.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_h1nhhm_1769.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_mxqbvs_2158.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_7hpbab_3796.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_aa1um4_7296.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_m6bvkw_2058.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_sghlr0_4296.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_srsada_6627.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_lk6l2n_4891.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_4ruzu6_7701.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_nmpm66_672.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_r66zku_5774.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_oongfj_3302.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_ay6hlh_3487.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_1fdvty_9088.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_e4kjx6_6725.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_yy9ijk_9952.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_b6idoj_1248.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_m6vp7z_8344.png",
+        "https://imgix3.ruangguru.com/assets/miscellaneous/png_ordjme_5551.png"
     ];
 
     const levelCategories = [
@@ -497,97 +218,97 @@
     ];
 
     const rawData = [
-        // Junior 1
+        /* Junior 1 */
         { text: "Berhitung Yuk!", options: ["$1$", "$2$", "$3$", "$4$", "$5$"], answer: 0 },
         { text: "Berhitung Yuk!", options: ["$2$", "$4$", "$5$", "$1$", "$3$"], answer: 0 },
         { text: "Berhitung Yuk!", options: ["$5$", "$1$", "$2$", "$3$", "$4$"], answer: 0 },
         { text: "Berhitung Yuk!", options: ["$3$", "$4$", "$2$", "$1$", "$0$"], answer: 1 },
         { text: "Berhitung Yuk!", options: ["$0$", "$5$", "$4$", "$3$", "$2$"], answer: 4 },
-        // Junior 2
+        /* Junior 2 */
         { text: "Berhitung Yuk!", options: ["$12$", "$30$", "$40$", "$20$", "$15$"], answer: 3 },
         { text: "Berhitung Yuk!", options: ["$30$", "$20$", "$15$", "$5$", "$10$"], answer: 4 },
         { text: "Berhitung Yuk!", options: ["$40$", "$30$", "$45$", "$50$", "$55$"], answer: 0 },
         { text: "Berhitung Yuk!", options: ["$10$", "$30$", "$50$", "$40$", "$20$"], answer: 2 },
         { text: "Berhitung Yuk!", options: ["$10$", "$20$", "$15$", "$30$", "$40$"], answer: 3 },
-        // Junior 3
+        /* Junior 3 */
         { text: "Berhitung Yuk!", options: ["$72$", "$27$", "$17$", "$37$", "$12$"], answer: 1 },
         { text: "Berhitung Yuk!", options: ["$13$", "$20$", "$14$", "$23$", "$15$"], answer: 0 },
         { text: "Berhitung Yuk!", options: ["$32$", "$33$", "$40$", "$35$", "$30$"], answer: 1 },
         { text: "Berhitung Yuk!", options: ["$2$", "$3$", "$1$", "$0$", "$5$"], answer: 1 },
         { text: "Berhitung Yuk!", options: ["$1$", "$3$", "$5$", "$2$", "$4$"], answer: 2 },
-        // Junior 4
+        /* Junior 4 */
         { text: "Berhitung Yuk!", options: ["$47$", "$46$", "$56$", "$57$", "$36$"], answer: 1 },
         { text: "Berhitung Yuk!", options: ["$73$", "$62$", "$72$", "$75$", "$65$"], answer: 2 },
         { text: "Berhitung Yuk!", options: ["$7$", "$6$", "$8$", "$4$", "$9$"], answer: 0 },
         { text: "Berhitung Yuk!", options: ["$8$", "$9$", "$10$", "$7$", "$11$"], answer: 1 },
         { text: "Berhitung Yuk!", options: ["$2$", "$4$", "$3$", "$1$", "$0$"], answer: 0 },
-        // Starter 1
+        /* Starter 1 */
         { text: "Perhatikan gambar di bawah ini. Berapa nilai manik sempoa di atas?", options: ["$8$", "$5$", "$3$", "$4$", "$1$"], answer: 0 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$9$", "$7$", "$8$", "$3$", "$5$"], answer: 2 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$8$", "$3$", "$7$", "$2$", "$4$"], answer: 0 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$9$", "$5$", "$1$", "$7$", "$2$"], answer: 1 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$5$", "$1$", "$6$", "$7$", "$10$"], answer: 2 },
-        // Starter 2
+        /* Starter 2 */
         { text: "Perhatikan gambar di bawah ini. Berapa nilai manik sempoa di atas?", options: ["$15$", "$11$", "$16$", "$26$", "$12$"], answer: 2 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$18$", "$12$", "$20$", "$11$", "$19$"], answer: 2 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$21$", "$15$", "$17$", "$12$", "$20$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$17$", "$10$", "$11$", "$18$", "$22$"], answer: 1 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$32$", "$22$", "$23$", "$33$", "$30$"], answer: 2 },
-        // Starter 3
+        /* Starter 3 */
         { text: "Perhatikan gambar di bawah ini. Berapa nilai manik sempoa di atas?", options: ["$44$", "$39$", "$45$", "$35$", "$49$"], answer: 4 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$119$", "$190$", "$109$", "$209$", "$190$"], answer: 0 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$68$", "$64$", "$69$", "$65$", "$96$"], answer: 2 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil perkalian di atas?", options: ["$64$", "$63$", "$72$", "$56$", "$90$"], answer: 2 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil perkalian di atas?", options: ["$72$", "$64$", "$63$", "$56$", "$81$"], answer: 3 },
-        // Starter 4
+        /* Starter 4 */
         { text: "Perhatikan gambar di bawah ini. Berapa nilai manik dari sempoa di atas?", options: ["$78$", "$73$", "$23$", "$74$", "$28$"], answer: 0 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$181$", "$118$", "$318$", "$138$", "$183$"], answer: 4 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$126$", "$121$", "$176$", "$126$", "$166$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil perkalian di atas?", options: ["$234$", "$224$", "$334$", "$324$", "$432$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil perkalian di atas?", options: ["$322$", "$223$", "$233$", "$333$", "$303$"], answer: 0 },
-        // Builder 1
+        /* Builder 1 */
         { text: "Perhatikan gambar di bawah ini. Berapa nilai manik dari sempoa di atas?", options: ["$111$", "$161$", "$151$", "$116$", "$611$"], answer: 1 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$183$", "$118$", "$108$", "$103$", "$133$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$280$", "$208$", "$228$", "$288$", "$188$"], answer: 0 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil perkalian di atas?", options: ["$4,422$", "$2,242$", "$4,420$", "$4,042$", "$2,042$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil pembagian di atas?", options: ["$76$", "$88$", "$86$", "$68$", "$66$"], answer: 3 },
-        // Builder 2
+        /* Builder 2 */
         { text: "Perhatikan gambar di bawah ini. Berapa nilai manik dari sempoa di atas?", options: ["$324$", "$329$", "$379$", "$325$", "$397$"], answer: 2 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$185$", "$135$", "$158$", "$153$", "$133$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$1,443$", "$1,334$", "$1,340$", "$1,301$", "$1,403$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil perkalian di atas?", options: ["$2,454$", "$2,245$", "$2,544$", "$2,542$", "$2,545$"], answer: 0 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil pembagian di atas?", options: ["$55$", "$45$", "$54$", "$55$", "$59$"], answer: 4 },
-        // Builder 3
+        /* Builder 3 */
         { text: "Perhatikan gambar di bawah ini. Berapa nilai manik dari sempoa di atas?", options: ["$1,881$", "$1,515$", "$1,811$", "$1,815$", "$1,415$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$1,211$", "$1,231$", "$1,122$", "$2,112$", "$1,212$"], answer: 1 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$993$", "$939$", "$989$", "$934$", "$439$"], answer: 1 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil perkalian di atas?", options: ["$57,465$", "$56,556$", "$56,596$", "$57,596$", "$57,546$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil pembagian di atas?", options: ["$558$", "$658$", "$158$", "$668$", "$618$"], answer: 1 },
-        // Builder 4
+        /* Builder 4 */
         { text: "Perhatikan gambar di bawah ini. Berapa nilai manik dari sempoa di atas?", options: ["$3,253$", "$2,353$", "$2,253$", "$5,323$", "$3,213$"], answer: 1 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$1,022$", "$1,032$", "$1,203$", "$1,023$", "$1,302$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$11.18$", "$15.18$", "$13.18$", "$18.15$", "$13.15$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil perkalian di atas?", options: ["$166,213$", "$155,213$", "$165,321$", "$156,213$", "$165,213$"], answer: 4 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil pembagian di atas?", options: ["$716$", "$756$", "$751$", "$715$", "$766$"], answer: 1 },
-        // Master 1
+        /* Master 1 */
         { text: "Perhatikan gambar di bawah ini. Berapa nilai manik dari sempoa di atas?", options: ["$12,114$", "$17,664$", "$12,664$", "$12,224$", "$12,324$"], answer: 2 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$194$", "$144$", "$199$", "$154$", "$134$"], answer: 0 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$1,962$", "$1,652$", "$1,692$", "$1,642$", "$1,162$"], answer: 2 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil perkalian di atas?", options: ["$175,224$", "$125,224$", "$155,224$", "$155,224$", "$175,244$"], answer: 0 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil pembagian di atas?", options: ["$75$", "$88$", "$85$", "$65$", "$66$"], answer: 2 },
-        // Master 2
+        /* Master 2 */
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$64,927$", "$24,947$", "$54,927$", "$64,279$", "$64,923$"], answer: 0 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$3,323$", "$2,233$", "$3,322$", "$3,233$", "$2,233$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$22,322$", "$21,322$", "$31,223$", "$22,321$", "$12,322$"], answer: 1 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil perkalian di atas?", options: ["$669,799$", "$695,799$", "$599,679$", "$569,799$", "$596,799$"], answer: 4 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil pembagian di atas?", options: ["$4$", "$9$", "$5$", "$6$", "$7$"], answer: 1 },
-        // Master 3
+        /* Master 3 */
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$223,174$", "$213,174$", "$723,174$", "$263,174$", "$253,174$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$15,417$", "$14,517$", "$15,471$", "$17,451$", "$14,571$"], answer: 0 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$12,138$", "$11,283$", "$12,238$", "$11,238$", "$21,138$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil perkalian di atas?", options: ["$2,989,696$", "$2,489,696$", "$2,439,696$", "$2,989,696$", "$2,239,696$"], answer: 1 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil pembagian di atas?", options: ["$9$", "$4$", "$5$", "$2$", "$7$"], answer: 0 },
-        // Master 4
+        /* Master 4 */
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$613,412$", "$617,812$", "$217,812$", "$217,812$", "$617,128$"], answer: 1 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$23,997$", "$23,799$", "$22,979$", "$23,979$", "$24,979$"], answer: 3 },
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil penjumlahan di atas?", options: ["$58.68$", "$55.68$", "$53.68$", "$55.68$", "$68.58$"], answer: 0 },
@@ -595,7 +316,7 @@
         { text: "Perhatikan gambar di bawah ini. Berapakah hasil pembagian di atas?", options: ["$2$", "$4$", "$5$", "$7$", "$6$"], answer: 3 }
     ];
 
-    // Menggabungkan soal, level, dan image
+    /* Menggabungkan soal, level, dan image */
     const questions = rawData.map((q, i) => {
         return {
             level: levelCategories[i],
@@ -605,7 +326,7 @@
         };
     });
 
-    // --- STATE MANAGER ---
+    /* --- STATE MANAGER --- */
     const LEVEL_ORDER = [
         "Junior 1", "Junior 2", "Junior 3", "Junior 4",
         "Starter 1", "Starter 2", "Starter 3", "Starter 4",
@@ -616,8 +337,8 @@
     let studentName = "";
     let studentAge = "";
     let studentEmail = "";
-    let agentName = ""; 
-    let branchName = ""; 
+    let agentName = "";
+    let branchName = "";
     let minIndex = 0;
     let maxIndex = LEVEL_ORDER.length - 1;
     let currentLevelIndex = 0;
@@ -634,7 +355,7 @@
     let wrongAnswers = [];
     let bestLevelReached = "Foundation";
 
-    // --- MAIN FUNCTIONS ---
+    /* --- MAIN FUNCTIONS --- */
     window.onload = function() {
         minIndex = 0;
         maxIndex = LEVEL_ORDER.length - 1;
@@ -663,7 +384,7 @@
             studentEmail = email;
             agentName = agent;
             branchName = branch;
-            
+
             document.getElementById('inputNameScreen').classList.remove('active');
             document.getElementById('startScreen').classList.add('active');
         } else {
@@ -676,11 +397,11 @@
         document.getElementById('gameScreen').classList.add('active');
         document.getElementById('statusBar').style.visibility = 'visible';
 
-        // OPSI 2 LOGIC: LOGIKA PENENTUAN START LEVEL BERDASARKAN USIA
+        /* OPSI 2 LOGIC: LOGIKA PENENTUAN START LEVEL BERDASARKAN USIA */
         if (studentAge <= 6) {
-            startLevelOverride = 0; // Index 0 = "Junior 1"
+            startLevelOverride = 0; /* Index 0 = "Junior 1" */
         } else if (studentAge >= 7) {
-            startLevelOverride = 4; // Index 4 = "Starter 1"
+            startLevelOverride = 4; /* Index 4 = "Starter 1" */
         }
 
         minIndex = 0;
@@ -738,8 +459,8 @@
 
         const optionsContainer = document.getElementById('optionsContainer');
         optionsContainer.innerHTML = '';
-        
-        // Layout rapi untuk opsi jawaban
+
+        /* Layout rapi untuk opsi jawaban */
         optionsContainer.style.gridTemplateColumns = (window.innerWidth > 600 && q.options.length !== 5) ? "repeat(2, 1fr)" : "1fr";
 
         q.options.forEach((opt, index) => {
@@ -750,9 +471,9 @@
             optionsContainer.appendChild(btn);
         });
 
-        // Trigger KaTeX untuk opsi jawaban
+        /* Trigger KaTeX untuk opsi jawaban */
         if(window.renderMathInElement) {
-             renderMathInElement(document.getElementById('gameScreen'), { delimiters: [
+            renderMathInElement(document.getElementById('gameScreen'), { delimiters: [
                 {left: '$$', right: '$$', display: true},
                 {left: '$', right: '$', display: false},
                 {left: '\\(', right: '\\)', display: false},
@@ -865,7 +586,7 @@
         let timeString = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
 
         if (bestLevelReached === "Placement Start" && maxIndex < 0) {
-            bestLevelReached = "Junior 1"; // Default terendah
+            bestLevelReached = "Junior 1"; /* Default terendah */
         }
 
         document.getElementById('finalPlacement').innerText = bestLevelReached.toUpperCase();
@@ -873,15 +594,15 @@
         document.getElementById('timeUsed').innerText = timeString;
 
         generateReportCard();
-        
-        // KIRIM DATA KE GOOGLE SHEETS
+
+        /* KIRIM DATA KE GOOGLE SHEETS */
         sendToGoogleSheet(timeString);
     }
 
     function sendToGoogleSheet(timeString) {
         let laporanSalah = "";
         if(wrongAnswers.length > 0) {
-            // Kita bersihkan tag HTML seperti <br> atau <img> agar rapi di Google Sheets
+            /* Kita bersihkan tag HTML seperti <br> atau <img> agar rapi di Google Sheets */
             laporanSalah = wrongAnswers.map(w => `[Soal #${w.qNum}|${w.level}] ${w.text.replace(/<[^>]*>?/gm, '').substring(0, 30)}... (Jawab: ${w.options[w.userIndex].replace(/<[^>]*>?/gm, '')})`).join(" || ");
         } else {
             laporanSalah = "Sempurna";
@@ -891,7 +612,7 @@
             nama_siswa: studentName,
             usia: studentAge,
             email: studentEmail,
-            nama_agent: agentName, 
+            nama_agent: agentName,
             cabang: branchName,
             level_akhir: bestLevelReached,
             skor_total: totalCorrectAnswers,
@@ -901,8 +622,8 @@
 
         const btnReport = document.getElementById('btnReportToggle');
         const originalText = btnReport.innerText;
-        
-        // Cek URL belum diganti
+
+        /* Cek URL belum diganti */
         if(googleScriptURL === 'PASTE_URL_WEB_APP_DISINI') {
             alert("⚠️ URL Script belum diset! Data tidak akan terkirim. Silakan ganti 'PASTE_URL_WEB_APP_DISINI' di dalam kode dengan URL Apps Script kamu.");
             console.log("Data Simulasi:", dataToSend);
@@ -914,7 +635,7 @@
 
         fetch(googleScriptURL, {
             method: 'POST',
-            mode: 'no-cors', // Penting untuk menghindari blokir CORS dari browser
+            mode: 'no-cors', /* Penting untuk menghindari blokir CORS dari browser */
             cache: 'no-cache',
             headers: {
                 'Content-Type': 'application/json'
@@ -968,7 +689,7 @@
         });
 
         if(window.renderMathInElement) {
-             renderMathInElement(list, { delimiters: [
+            renderMathInElement(list, { delimiters: [
                 {left: '$$', right: '$$', display: true},
                 {left: '$', right: '$', display: false}
             ]});
