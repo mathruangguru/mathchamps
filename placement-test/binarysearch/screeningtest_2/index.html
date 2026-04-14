@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Math Champs - Screening Test 2</title>
-    <!-- Font 'Nunito' & 'Noto Sans' -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
-    <!-- KaTeX untuk Rumus Matematika Cantik -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
@@ -174,7 +172,6 @@
 </head>
 <body>
 <div class="app-container">
-    <!-- HEADER -->
     <header>
         <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="logo">
         <div class="status-bar" id="statusBar" style="visibility: hidden;">
@@ -184,11 +181,9 @@
         </div>
     </header>
 
-    <!-- MAIN GAME STAGE -->
     <div class="game-stage">
         <div class="content-card">
             
-            <!-- SCREEN 0: INPUT DATA -->
             <div id="inputNameScreen" class="screen active" style="text-align: center;">
                 <div style="font-size: 4rem; margin-bottom: 10px;">👋</div>
                 <h1>SCREENING TEST 2</h1>
@@ -203,19 +198,17 @@
                     <label class="input-label">Cabang</label>
                     <input list="branchList" id="branchInput" class="name-input" placeholder="Ketik nama kota (Contoh: Bandung)...">
                     <datalist id="branchList">
-                        <!-- Populated by JS -->
-                    </datalist>
+                        </datalist>
                 </div>
                 
                 <div class="input-group">
-                    <label class="input-label">Email Siswa/Ortu</label>
+                    <label class="input-label">Email</label>
                     <input type="email" id="studentEmailInput" class="name-input" placeholder="contoh: nama@email.com" autocomplete="off">
                 </div>
 
                 <button class="btn" onclick="saveNameAndContinue()">Lanjut</button>
             </div>
 
-            <!-- SCREEN 1: START -->
             <div id="startScreen" class="screen" style="text-align: center;">
                 <div style="font-size: 4rem; margin-bottom: 10px;">🔥</div>
                 <h1>PLACEMENT TEST</h1>
@@ -231,7 +224,6 @@
                 <button class="btn" onclick="startGame()">MULAI SEKARANG 🚀</button>
             </div>
 
-            <!-- SCREEN 2: GAME -->
             <div id="gameScreen" class="screen">
                 <div class="progress-container">
                     <div class="progress-fill" id="progressBar"></div>
@@ -240,7 +232,6 @@
                 <div class="options-grid" id="optionsContainer"></div>
             </div>
 
-            <!-- SCREEN 3: RESULT -->
             <div id="resultScreen" class="screen" style="text-align: center;">
                 <h1>Tes Selesai! 🎉</h1>
                 <p style="font-size: 1.2rem; color: #7f8c8d;">Level kamu sudah ditemukan!</p>
@@ -269,13 +260,11 @@
                 </div>
             </div>
 
-            <!-- FEEDBACK AREA -->
             <div class="feedback-container" id="feedbackArea">
                 <div class="feedback-msg" id="feedbackMessage">Jawaban Benar!</div>
                 <button class="btn btn-next" id="nextBtn">Lanjut ➔</button>
             </div>
 
-            <!-- CHECKPOINT MODAL -->
             <div id="checkpointModal" class="checkpoint-overlay">
                 <div class="checkpoint-content">
                     <div style="font-size: 4rem; margin-bottom: 10px;">⚖️</div>
@@ -291,6 +280,10 @@
 </div>
 
 <script>
+    // --- CONFIG ---
+    // [PENTING] URL GOOGLE APPS SCRIPT
+    const googleScriptURL = 'https://script.google.com/macros/s/AKfycbxtObzsR8ZDx0ePEGQbtTVNJJJIdLNc1UPlvxsB2UL6zn8lQHfoId6I3a1DFMphUzDm7g/exec';
+
     // --- 0. DATA CABANG & SOAL ---
     
     // Data Cabang
@@ -1466,6 +1459,64 @@
         document.getElementById('timeUsed').innerText = timeString;
 
         generateReportCard();
+        
+        // Panggil fungsi kirim data ke Google Sheets
+        sendToGoogleSheet(timeString);
+    }
+    
+    // --- FUNGSI UNTUK MENGIRIM DATA KE GOOGLE SHEETS ---
+    function sendToGoogleSheet(timeString) {
+        let laporanSalah = "";
+        if(wrongAnswers.length > 0) {
+            // Kita bersihkan tag HTML dari teks agar rapi saat masuk ke dalam tabel Sheets
+            laporanSalah = wrongAnswers.map(w => {
+                let cleanText = w.text.replace(/<[^>]*>?/gm, '').substring(0, 30);
+                let cleanOption = w.options[w.userIndex].replace(/<[^>]*>?/gm, '');
+                return `[Soal #${w.qNum}|${w.level}] ${cleanText}... (Jawab: ${cleanOption})`;
+            }).join(" || ");
+        } else {
+            laporanSalah = "Sempurna";
+        }
+
+        const dataToSend = {
+            nama_siswa: studentName,
+            cabang: branchName,
+            email: studentEmail,
+            level_akhir: bestLevelReached,
+            skor_total: totalCorrectAnswers,
+            waktu: timeString,
+            laporan_salah: laporanSalah
+        };
+
+        const btnReport = document.getElementById('btnReportToggle');
+        const originalText = btnReport.innerText;
+
+        btnReport.innerText = "⏳ Menyimpan ke Database...";
+        btnReport.disabled = true;
+
+        fetch(googleScriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            cache: 'no-cache',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            redirect: 'follow',
+            body: JSON.stringify(dataToSend)
+        })
+        .then(response => {
+            btnReport.innerText = "✅ Tersimpan! " + originalText;
+            btnReport.disabled = false;
+            setTimeout(() => {
+                btnReport.innerText = originalText;
+            }, 3000);
+            console.log("Data berhasil terkirim!");
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            btnReport.innerText = "⚠️ Gagal Simpan (Cek Koneksi)";
+            btnReport.disabled = false;
+        });
     }
 
     function generateReportCard() {
