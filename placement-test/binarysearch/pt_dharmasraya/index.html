@@ -93,8 +93,7 @@
             font-family: 'Nunito', sans-serif; outline: none; transition: border-color 0.2s; background: white;
         }
         .name-input:focus { border-color: var(--primary); }
-        .name-input[readonly] { background-color: #f1f5f9; color: #718096; cursor: not-allowed; border-color: #e2e8f0; }
-        
+        .name-input[readonly] { background-color: #f1f5f9; color: #718096; cursor: not-allowed; border-color: #e2e8f0; }        
         .btn-search {
             background: var(--primary); color: white; border: none; border-bottom: 4px solid var(--primary-dark);
             padding: 15px 20px; font-size: 1.1rem; border-radius: 15px; font-weight: 800; cursor: pointer;
@@ -207,10 +206,12 @@
                 <!-- Input Nama untuk Pencarian -->
                 <div class="input-group">
                     <label class="input-label">Nama Lengkap</label>
-                    <input type="text" id="studentNameInput" class="name-input" placeholder="Ketik namamu di sini..." autocomplete="off">
+                    <select id="studentNameInput" class="name-input">
+                        <option value="">⏳ Memuat daftar nama...</option>
+                    </select>
                 </div>
                 
-                <button class="btn-search" id="btnCariSiswa" onclick="cariDataSiswa()" style="margin-bottom: 25px;">🔍 Cari Data</button>
+                <button class="btn-search" id="btnCariSiswa" onclick="cariDataSiswa()" style="margin-bottom: 25px;" disabled>🔍 Cek Data</button>
 
                 <!-- Hasil Pencarian & Konfirmasi -->
                 <div id="searchResultArea" style="display: none; max-width: 500px; margin: 0 auto; text-align: left; background: #f8f9fa; padding: 25px; border-radius: 15px; border: 2px dashed var(--secondary);">
@@ -307,90 +308,85 @@
     // 0. FITUR PENCARIAN NAMA SISWA & KONFIRMASI
     // ==========================================
     
-    // Auto-refresh tombol Cari Data saat user mengetik
+    let allStudentsData = []; // Menyimpan data siswa secara global
+    
+    // Variabel global untuk menyimpan data ekstra (Email)
+    let studentEmail = "";
+
+    // Ambil data langsung saat web pertama kali dimuat
     window.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('studentNameInput').addEventListener('input', function() {
+        const selectEl = document.getElementById('studentNameInput');
+        const btnCari = document.getElementById('btnCariSiswa');
+        
+        // URL Web App dari Google Apps Script
+        const url = 'https://script.google.com/macros/s/AKfycbz2MbW_Aqe6CR450ldB6ArXUYt4oLxqvNvCXIbY6_FA2ncsJyb8ufAREpX7JWLJdH25/exec';
+
+        fetch(url)
+            .then(res => res.json())
+            .then(response => {
+                if (response.status !== "success") {
+                    throw new Error(response.message || "Gagal memuat data");
+                }
+                
+                allStudentsData = response.data;
+                
+                // Kosongkan dan isi dropdown dengan data nama
+                selectEl.innerHTML = '<option value="">-- Pilih Nama Kamu --</option>';
+                
+                allStudentsData.forEach((student, index) => {
+                    if (student['Nama']) {
+                        const option = document.createElement('option');
+                        option.value = index; // Gunakan index sebagai value agar mudah dicari
+                        option.text = student['Nama'];
+                        selectEl.appendChild(option);
+                    }
+                });
+                
+                // Aktifkan tombol
+                btnCari.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                selectEl.innerHTML = '<option value="">❌ Gagal memuat daftar nama</option>';
+                alert("Gagal memuat daftar nama. Pastikan koneksi internet stabil lalu muat ulang halaman.");
+            });
+
+        // Reset tampilan saat siswa mengganti pilihan nama
+        selectEl.addEventListener('change', function() {
             document.getElementById('searchResultArea').style.display = 'none';
-            const btn = document.getElementById('btnCariSiswa');
-            btn.style.display = 'block';
-            btn.innerText = '🔍 Cari Data';
-            btn.disabled = false;
+            btnCari.style.display = 'block';
         });
     });
 
     function cariDataSiswa() {
-        const nameInput = document.getElementById('studentNameInput').value.trim();
+        const selectEl = document.getElementById('studentNameInput');
+        const selectedIndex = selectEl.value;
         const btnCari = document.getElementById('btnCariSiswa');
         const resultArea = document.getElementById('searchResultArea');
 
-        if (!nameInput) {
-            alert("Masukkan nama terlebih dahulu!");
+        if (selectedIndex === "") {
+            alert("Silakan klik dan pilih namamu dari daftar terlebih dahulu!");
             return;
         }
 
-        // Ubah state tombol saat mencari
-        btnCari.innerText = "⏳ Mencari...";
-        btnCari.disabled = true;
+        // Ambil data siswa dari array berdasarkan index pilihan
+        const foundData = allStudentsData[selectedIndex];
 
-        // ID Spreadsheet Bapak
-        const sheetId = '1Cw4LXovGDKDRKCqTXjarWc0JUunmY-WYEVNai01syZk';
-        // URL Google Visualization API (Hanya berfungsi jika Spreadsheet di set 'Anyone with link can view')
-        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+        // Tampilkan data di box konfirmasi HTML 
+        document.getElementById('resNama').innerText = foundData['Nama'] || "-";
+        document.getElementById('resSekolah').innerText = foundData['Asal Sekolah'] || "-";
+        document.getElementById('resKelas').innerText = foundData['Kelas'] || "-";
+        
+        // Simpan semua variabel sementara di memori global
+        window.tempStudentData = {
+            nama: foundData['Nama'] ? foundData['Nama'].toString().trim() : "-",
+            sekolah: foundData['Asal Sekolah'] || "-",
+            kelas: foundData['Kelas'] || "-",
+            email: foundData['Email'] || "-"
+        };
 
-        fetch(url)
-            .then(res => res.text())
-            .then(text => {
-                // Ekstrak JSON asli dari format JSONP Google Visualization
-                const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
-                const data = JSON.parse(jsonString);
-                
-                // Array data dari spreadsheet
-                const rows = data.table.rows;
-                
-                let dataDitemukan = false;
-                let foundData = {};
-
-                // Loop dari index 0 (karena gviz otomatis menghilangkan baris header jika terdeteksi)
-                for(let i=0; i < rows.length; i++) {
-                    if(rows[i] && rows[i].c && rows[i].c[0] && rows[i].c[0].v) {
-                        let dbName = rows[i].c[0].v.toString().trim();
-                        
-                        // Cek kecocokan (case-insensitive)
-                        if(dbName.toLowerCase() === nameInput.toLowerCase()) {
-                            dataDitemukan = true;
-                            foundData = {
-                                nama: dbName,
-                                sekolah: (rows[i].c[1] && rows[i].c[1].v) ? rows[i].c[1].v : "-",
-                                kelas: (rows[i].c[2] && rows[i].c[2].v) ? rows[i].c[2].v : "-"
-                            };
-                            break;
-                        }
-                    }
-                }
-
-                if (dataDitemukan) {
-                    // Tampilkan data di box konfirmasi
-                    document.getElementById('resNama').innerText = foundData.nama;
-                    document.getElementById('resSekolah').innerText = foundData.sekolah;
-                    document.getElementById('resKelas').innerText = foundData.kelas;
-                    
-                    // Simpan sementara di memori global
-                    window.tempStudentData = foundData;
-
-                    btnCari.style.display = 'none'; // Sembunyikan tombol cari
-                    resultArea.style.display = 'block'; // Munculkan box konfirmasi
-                } else {
-                    alert("Data dengan nama tersebut tidak ditemukan di database.");
-                    btnCari.innerText = "🔍 Cari Data";
-                    btnCari.disabled = false;
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-                alert("Gagal mengambil data. Pastikan koneksi internet stabil dan Spreadsheet disetting 'Siapa saja yang memiliki link'.");
-                btnCari.innerText = "🔍 Cari Data";
-                btnCari.disabled = false;
-            });
+        btnCari.style.display = 'none'; // Sembunyikan tombol cari
+        resultArea.style.display = 'block'; // Munculkan box konfirmasi
     }
 
     function confirmData(isCorrect) {
@@ -399,6 +395,7 @@
             studentName = window.tempStudentData.nama;
             schoolName = window.tempStudentData.sekolah;
             studentClass = window.tempStudentData.kelas;
+            studentEmail = window.tempStudentData.email;
             
             document.getElementById('inputNameScreen').classList.remove('active');
             document.getElementById('startScreen').classList.add('active');
@@ -409,7 +406,7 @@
             
             const btn = document.getElementById('btnCariSiswa');
             btn.style.display = 'block';
-            btn.innerText = '🔍 Cari Data';
+            btn.innerText = '🔍 Cek Data';
             btn.disabled = false;
             document.getElementById('studentNameInput').focus();
         }
@@ -645,6 +642,7 @@
                         <circle cx="0" cy="0" r="6" fill="#333"/>
                     </g>
                     <text x="150" y="260" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="bold" fill="#333">Jam Mulai</text>
+                    
                     <g transform="translate(450, 130)">
                         <use href="#clock-face"/>
                         <line x1="0" y1="0" x2="-25" y2="-43" stroke="#333" stroke-width="7" stroke-linecap="round"/>
@@ -1344,8 +1342,8 @@
             optionsContainer.appendChild(btn);
         });
 
-        if(window.renderMathInElement) {
-             renderMathInElement(document.getElementById('gameScreen'), { delimiters: [
+        if(window.renderMathInElement) { 
+            renderMathInElement(document.getElementById('gameScreen'), { delimiters: [
                 {left: '$$', right: '$$', display: true},
                 {left: '$', right: '$', display: false},
                 {left: '\\(', right: '\\)', display: false},
@@ -1470,23 +1468,57 @@
         sendToGoogleSheet(timeString);
     }
     
-    // --- FUNGSI MOCK UNTUK SEMENTARA TIDAK KIRIM KE GOOGLE SHEETS ---
+    // --- FUNGSI MENGIRIM DATA KE GOOGLE SHEETS ---
     function sendToGoogleSheet(timeString) {
-        console.log("INFO: Fitur pengiriman data ke Google Sheets dinonaktifkan sementara.");
-        
+        const btnReport = document.getElementById('btnReportToggle');
+        btnReport.innerText = "⏳ Sedang menyimpan hasil ujian...";
+        btnReport.disabled = true;
+
+        // Proses format "Laporan Salah" untuk di spreadsheet
+        let laporanFormat = "Sempurna";
+        if (wrongAnswers.length > 0) {
+            laporanFormat = wrongAnswers.map(w => {
+                // Hapus semua HTML (termasuk tag <svg>, <strong>, dll), bersihkan spasi
+                let cleanText = w.text.replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+                // Potong agar tidak terlalu panjang
+                let shortText = cleanText.length > 25 ? cleanText.substring(0, 25) + "..." : cleanText;
+                // Index opsi user ditambah 1 karena array mulai dari 0, tapi di sheet Jawabannya 1,2,3,4
+                return `[Soal #${w.qNum}|${w.level}] ${shortText} (Jawab: ${w.userIndex + 1})`;
+            }).join(" | ");
+        }
+
         const dataToSend = {
             nama_siswa: studentName,
             asal_sekolah: schoolName,
             kelas: studentClass,
+            email: studentEmail,
             level_akhir: bestLevelReached,
             skor_total: totalCorrectAnswers,
-            waktu: timeString,
-            laporan_salah: wrongAnswers.length > 0 ? "Ada Salah" : "Sempurna"
+            waktu: timeString, // Durasi dari timer
+            laporan_salah: laporanFormat
         };
-        console.log("Data siap kirim:", dataToSend);
 
-        const btnReport = document.getElementById('btnReportToggle');
-        btnReport.innerText = "✅ Tes Selesai (Data Lokal) | 📋 Lihat Detail Jawaban Salah";
+        const url = 'https://script.google.com/macros/s/AKfycbz2MbW_Aqe6CR450ldB6ArXUYt4oLxqvNvCXIbY6_FA2ncsJyb8ufAREpX7JWLJdH25/exec';
+
+        fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(dataToSend)
+        })
+        .then(res => res.json())
+        .then(response => {
+            if(response.status === "success") {
+                btnReport.innerText = "✅ Hasil Tersimpan | 📋 Lihat Detail Jawaban Salah";
+            } else {
+                btnReport.innerText = "⚠️ Gagal Simpan | 📋 Lihat Detail Jawaban Salah";
+                console.error(response.message);
+            }
+            btnReport.disabled = false;
+        })
+        .catch(err => {
+            console.error(err);
+            btnReport.innerText = "⚠️ Gagal Simpan | 📋 Lihat Detail Jawaban Salah";
+            btnReport.disabled = false;
+        });
     }
 
     function generateReportCard() {
@@ -1520,8 +1552,8 @@
             list.appendChild(li);
         });
 
-        if(window.renderMathInElement) {
-             renderMathInElement(list, { delimiters: [
+        if(window.renderMathInElement) { 
+            renderMathInElement(list, { delimiters: [
                 {left: '$$', right: '$$', display: true},
                 {left: '$', right: '$', display: false},
                 {left: '\\(', right: '\\)', display: false},
