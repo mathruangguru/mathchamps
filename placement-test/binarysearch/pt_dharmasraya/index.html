@@ -215,6 +215,11 @@
 
                 <!-- Hasil Pencarian & Konfirmasi -->
                 <div id="searchResultArea" style="display: none; max-width: 500px; margin: 0 auto; text-align: left; background: #f8f9fa; padding: 25px; border-radius: 15px; border: 2px dashed var(--secondary);">
+                    
+                    <div id="pastResultAlert" style="display: none; color: #e74c3c; font-weight: bold; text-align: center; margin-bottom: 15px; background: #fadbd8; padding: 10px; border-radius: 10px; font-size: 1.1rem;">
+                        ⚠️ Kamu sudah pernah mengerjakan tes ini!<br>Hasilmu akan langsung ditampilkan.
+                    </div>
+
                     <p style="margin: 0 0 15px 0; font-size: 1.1rem; color: var(--secondary-dark); font-weight: 800;">✅ Data Ditemukan!</p>
                     <div style="margin-bottom: 8px; font-size: 1.1rem;"><strong>Nama:</strong> <span id="resNama"></span></div>
                     <div style="margin-bottom: 8px; font-size: 1.1rem;"><strong>Sekolah:</strong> <span id="resSekolah"></span></div>
@@ -268,7 +273,7 @@
                     </div>
                     <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; border: 2px solid #eee;">
                         <div style="font-size: 2rem; font-weight: 900; color: var(--dark);" id="timeUsed">00:00</div>
-                        <div style="color: #95a5a6; font-size: 0.9rem; font-weight: 700;">WAKTU</div>
+                        <div style="color: #95a5a6; font-size: 0.9rem; font-weight: 700;">DURASI</div>
                     </div>
                 </div>
                 
@@ -319,7 +324,7 @@
         const btnCari = document.getElementById('btnCariSiswa');
         
         // URL Web App dari Google Apps Script
-        const url = 'https://script.google.com/macros/s/AKfycbz2MbW_Aqe6CR450ldB6ArXUYt4oLxqvNvCXIbY6_FA2ncsJyb8ufAREpX7JWLJdH25/exec';
+        const url = 'https://script.google.com/macros/s/AKfycbzBYbFmlHJCT8uyzv4hY6Oj7mOMtL1-2VnULA67rCLMhTjy9mLLboqwmd-3gfGcRtqc/exec';
 
         fetch(url)
             .then(res => res.json())
@@ -363,6 +368,7 @@
         const selectedIndex = selectEl.value;
         const btnCari = document.getElementById('btnCariSiswa');
         const resultArea = document.getElementById('searchResultArea');
+        const pastResultAlert = document.getElementById('pastResultAlert');
 
         if (selectedIndex === "") {
             alert("Silakan klik dan pilih namamu dari daftar terlebih dahulu!");
@@ -371,6 +377,13 @@
 
         // Ambil data siswa dari array berdasarkan index pilihan
         const foundData = allStudentsData[selectedIndex];
+
+        // Tampilkan peringatan jika sudah pernah mengerjakan
+        if (foundData.pastResult) {
+            pastResultAlert.style.display = 'block';
+        } else {
+            pastResultAlert.style.display = 'none';
+        }
 
         // Tampilkan data di box konfirmasi HTML 
         document.getElementById('resNama').innerText = foundData['Nama'] || "-";
@@ -382,7 +395,8 @@
             nama: foundData['Nama'] ? foundData['Nama'].toString().trim() : "-",
             sekolah: foundData['Asal Sekolah'] || "-",
             kelas: foundData['Kelas'] || "-",
-            email: foundData['Email'] || "-"
+            email: foundData['Email'] || "-",
+            pastResult: foundData.pastResult || null // Menyimpan rekaman nilai masa lalu
         };
 
         btnCari.style.display = 'none'; // Sembunyikan tombol cari
@@ -391,14 +405,22 @@
 
     function confirmData(isCorrect) {
         if (isCorrect) {
-            // Jika siswa konfirmasi YA, simpan ke state permanen dan mulai tes
-            studentName = window.tempStudentData.nama;
-            schoolName = window.tempStudentData.sekolah;
-            studentClass = window.tempStudentData.kelas;
-            studentEmail = window.tempStudentData.email;
-            
-            document.getElementById('inputNameScreen').classList.remove('active');
-            document.getElementById('startScreen').classList.add('active');
+            // Cek apakah siswa punya rekaman nilai masa lalu
+            if (window.tempStudentData.pastResult) {
+                // Sembunyikan form
+                document.getElementById('inputNameScreen').classList.remove('active');
+                // Tampilkan hasil secara langsung
+                showPastResult(window.tempStudentData.pastResult);
+            } else {
+                // Jika belum punya nilai, mulai alur tes normal
+                studentName = window.tempStudentData.nama;
+                schoolName = window.tempStudentData.sekolah;
+                studentClass = window.tempStudentData.kelas;
+                studentEmail = window.tempStudentData.email;
+                
+                document.getElementById('inputNameScreen').classList.remove('active');
+                document.getElementById('startScreen').classList.add('active');
+            }
         } else {
             // Jika TIDAK, reset inputan
             document.getElementById('studentNameInput').value = '';
@@ -411,6 +433,78 @@
             document.getElementById('studentNameInput').focus();
         }
     }
+
+    // Fungsi untuk menampilkan hasil tes masa lalu langsung ke layar "Result"
+    function showPastResult(result) {
+        document.getElementById('resultScreen').classList.add('active');
+        
+        // Masukkan data dari Google Sheets
+        document.getElementById('finalPlacement').innerText = (result['Level Akhir'] || "...").toUpperCase();
+        document.getElementById('finalScore').innerText = result['Skor Akhir'] || "0";
+        
+        // 1. PERBAIKAN WAKTU/DURASI: Menangani format jam "1899-12..." atau "00:18:00" dari kolom H (Durasi)
+        let durasiText = result['Durasi'] ? String(result['Durasi']) : "00:00";
+        
+        // Bersihkan tanda kutip jika terbawa
+        if (durasiText.startsWith("'")) durasiText = durasiText.substring(1);
+        
+        // Cek jika Apps Script mengirimkan string panjang "1899-12-29T..."
+        if (durasiText.includes('T') && durasiText.includes('Z')) {
+            let dateObj = new Date(durasiText);
+            // Google Sheets secara ajaib membaca 00:18 sebagai 0 Jam 18 Menit.
+            // Sehingga di sini kita panggil getHours (sebagai menit) dan getMinutes (sebagai detik)
+            let h = dateObj.getHours();
+            let m = dateObj.getMinutes();
+            durasiText = `${h < 10 ? '0'+h : h}:${m < 10 ? '0'+m : m}`;
+        } 
+        // Jika format aslinya mengirimkan HH:MM:SS (contoh 00:18:00)
+        else if (durasiText.split(':').length === 3) {
+            let parts = durasiText.split(':');
+            durasiText = `${parts[0]}:${parts[1]}`;
+        }
+
+        document.getElementById('timeUsed').innerText = durasiText;
+
+        // 2. SIMULASI "NYONTEK": Membangun ulang array Jawaban Salah
+        wrongAnswers = []; // Kosongkan state global
+        let laporan = result['Laporan Salah'];
+        
+        if (laporan && laporan !== "Sempurna") {
+            let mistakes = laporan.split(' | ');
+            mistakes.forEach(m => {
+                // Bedah kalimat: "[Soal #3|Discovery 1] text... (Jawab: 4)"
+                let match = m.match(/\[Soal #(\d+)\|[^\]]+\](.*)\(Jawab:\s*(\d+)\)/);
+                if (match) {
+                    let globalQNum = parseInt(match[1]); // Dapat nomor soal: 3
+                    let userAnsNum = parseInt(match[3]); // Dapat jawaban user: 4
+                    let qIndex = globalQNum - 1; // Ubah ke index array: 2
+                    
+                    // Tarik soal aslinya dari bank soal, seolah-olah dia baru ngerjain
+                    if (questions[qIndex]) {
+                        let q = questions[qIndex];
+                        wrongAnswers.push({
+                            qNum: globalQNum,
+                            level: q.level,
+                            text: q.text,
+                            options: q.options,
+                            userIndex: userAnsNum - 1, // Konversi "Jawab: 4" jadi index ke-3
+                            correctIndex: q.answer
+                        });
+                    }
+                }
+            });
+        }
+        
+        // Panggil fungsi render ASLI agar UI merah/hijau beserta gambar matematikanya muncul
+        generateReportCard();
+
+        // Ubah tampilan tombol pengirim agar persis seperti gambar desainmu
+        const btnReport = document.getElementById('btnReportToggle');
+        btnReport.innerHTML = "✅ HASIL TERSIMPAN | 📋 LIHAT DETAIL JAWABAN SALAH";
+        btnReport.disabled = false;
+        document.getElementById('reportCard').style.display = 'none'; // Sembunyikan daftar secara default
+    }
+
 
     // --- 1. DATA BANK SOAL (60 SOAL TERBARU) ---
 
@@ -1498,7 +1592,7 @@
             laporan_salah: laporanFormat
         };
 
-        const url = 'https://script.google.com/macros/s/AKfycbz2MbW_Aqe6CR450ldB6ArXUYt4oLxqvNvCXIbY6_FA2ncsJyb8ufAREpX7JWLJdH25/exec';
+        const url = 'https://script.google.com/macros/s/AKfycbzBYbFmlHJCT8uyzv4hY6Oj7mOMtL1-2VnULA67rCLMhTjy9mLLboqwmd-3gfGcRtqc/exec';
 
         fetch(url, {
             method: 'POST',
