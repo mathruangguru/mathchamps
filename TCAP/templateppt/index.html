@@ -3,658 +3,484 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Presentasi Interaktif</title>
+    <title>Math Champs Presentation</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts: Lato -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
     
-    <!-- MathJax for LaTeX Support -->
     <script>
         MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
-            },
-            svg: {
-                fontCache: 'global'
-            }
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
         };
     </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 
     <style>
-        body {
-            font-family: 'Lato', sans-serif;
-            background-color: #f3f4f6;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .slide-container {
-            aspect-ratio: 16 / 9;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            border-radius: 0.5rem;
-        }
-
-        .slide {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out;
-            background-color: white;
-        }
-
-        .slide.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .content-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-        .content-scroll::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-            border-radius: 4px;
-        }
-        .content-scroll::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
-            border-radius: 4px;
-        }
-        .content-scroll::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
-        }
-
-        :fullscreen #presentation {
-            max-width: 100vw;
-            max-height: 100vh;
-            border-radius: 0;
-            box-shadow: none;
-        }
-
-        /* Animasi untuk memunculkan pembahasan inline */
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-down {
-            animation: fadeInDown 0.5s ease-out forwards;
-        }
+        body { font-family: 'Lato', sans-serif; background-color: #f3f4f6; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .slide-container { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border-radius: 12px; aspect-ratio: 16/9; }
+        .slide { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; animation: fadeIn 0.5s ease-in-out; }
+        .slide.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .content-scroll::-webkit-scrollbar { width: 8px; }
+        .content-scroll::-webkit-scrollbar-track { background: transparent; }
+        .content-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .btn-hover { transition: all 0.2s ease; }
+        .btn-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        
+        /* FIX MATHJAX: Mencegah rumus inline turun ke bawah akibat reset CSS Tailwind */
+        mjx-container svg { display: inline !important; }
+        /* Memastikan rumus display-style (menggunakan $$) tetap ke tengah dan baris baru */
+        mjx-container[display="true"] svg { display: block !important; margin: auto; }
     </style>
 </head>
-<body class="p-4 sm:p-8">
+<body class="p-4 md:p-8">
 
     <!-- MAIN PRESENTATION CANVAS -->
     <div id="presentation" class="slide-container relative bg-white w-full max-w-[1200px] max-h-[85vh] mx-auto overflow-hidden">
         
-        <!-- GLOBAL LOGOS (Selalu tampil di pojok kanan atas) -->
-        <div class="absolute top-3 right-6 flex items-center gap-4 z-50 pointer-events-none">
+        <!-- GLOBAL LOGOS (Dinamic: Stacked di Slide 1, Side-by-side di Slide lain) -->
+        <div id="global-logo-container" class="absolute top-3 right-6 flex flex-col items-end gap-2 z-50 pointer-events-none transition-all duration-500">
             <!-- Logo Ruangguru -->
-            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_zekej2_3984.png" alt="Ruangguru Logo" class="h-16 md:h-20 object-contain">
-            <!-- Logo Math Champs (Sejajar dan Ukuran Sama) -->
-            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs Logo" class="h-16 md:h-20 object-contain">
+            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_zekej2_3984.png" alt="Ruangguru Logo" class="h-14 md:h-20 object-contain">
+            <!-- Logo Math Champs -->
+            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs Logo" class="h-14 md:h-20 object-contain">
         </div>
 
         <!-- SLIDE WRAPPER -->
         <div id="slides-wrapper" class="w-full h-full relative text-gray-800">
 
             <!-- SLIDE 1: WELCOME & TOPIK -->
-            <div id="slide-1" class="slide active flex flex-col items-center justify-center text-center px-4 py-8 bg-blue-50 overflow-y-auto content-scroll">
+            <div id="slide-1" class="slide active flex flex-col items-center justify-start text-center px-4 py-8 bg-blue-50 overflow-y-auto content-scroll">
                 
                 <!-- STEP 1: LOGIN -->
-                <div id="step-login" class="flex flex-col items-center justify-center w-full min-h-full transition-all duration-500 py-8">
-                    <h1 class="text-3xl md:text-5xl font-black text-blue-900 mb-4">Selamat Datang di Math Champs!</h1>
-                    <p class="text-lg md:text-xl text-gray-600 mb-6 max-w-2xl">Sebelum memulai petualangan belajarmu hari ini, silakan tulis nama dan password kamu terlebih dahulu ya.</p>
-                    <div class="w-full max-w-md bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-blue-100">
-                        <label for="student-name" class="block text-left text-sm font-bold text-gray-700 mb-2">Nama Lengkap</label>
-                        <input type="text" id="student-name" placeholder="Misal: Budi Santoso" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 transition-all" onkeypress="if(event.key === 'Enter') document.getElementById('teacher-password').focus()">
-                        
-                        <label for="teacher-password" class="block text-left text-sm font-bold text-gray-700 mb-2">Password Guru</label>
-                        <input type="password" id="teacher-password" placeholder="Masukkan password dari gurumu" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-6 transition-all" onkeypress="if(event.key === 'Enter') simpanNama()">
-
-                        <button onclick="simpanNama()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-4 px-4 rounded-xl text-lg transition-colors shadow-md hover:shadow-lg">
+                <div id="step-login" class="flex flex-col items-center justify-center w-full min-h-full transition-all duration-500 py-8 pt-20 md:pt-12">
+                    <h1 class="text-3xl md:text-5xl font-black text-blue-900 mb-4 px-4 mt-8">Selamat Datang di Math Champs!</h1>
+                    <p class="text-lg md:text-xl text-gray-600 mb-6 max-w-2xl px-4">Sebelum memulai petualangan belajarmu hari ini, silakan tulis nama, email, dan password kamu terlebih dahulu ya.</p>
+                    
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg w-full max-w-md text-left">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-bold mb-2">Nama Lengkap</label>
+                            <input type="text" id="input-nama" class="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Misal: Budi Santoso" onkeypress="if(event.key === 'Enter') document.getElementById('input-email').focus();">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-bold mb-2">Alamat Email</label>
+                            <input type="email" id="input-email" class="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Misal: budi@sekolah.com" onkeypress="if(event.key === 'Enter') document.getElementById('input-password').focus();">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-bold mb-2">Password Guru</label>
+                            <input type="password" id="input-password" class="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Masukkan password dari gurumu" onkeypress="if(event.key === 'Enter') simpanNama();">
+                        </div>
+                        <button onclick="simpanNama()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg btn-hover text-lg">
                             Mulai Belajar 🚀
                         </button>
                     </div>
                 </div>
 
-                <!-- STEP 2: PILIH TOPIK (Ditampilkan setelah login) -->
-                <div id="step-topic" class="hidden flex-col items-center justify-center w-full max-w-5xl transition-all duration-500 py-6 my-auto">
-                    <h1 class="text-2xl md:text-4xl font-black text-blue-900 mb-2">Halo, <span id="display-nama" class="text-blue-600">Siswa</span>! 👋</h1>
-                    <p class="text-base md:text-lg text-gray-600 mb-6">Pilih topik materi yang akan kamu pelajari hari ini:</p>
+                <!-- STEP 2: PILIH TOPIK -->
+                <div id="step-topic" class="hidden flex-col items-center justify-center w-full min-h-full transition-all duration-500 py-8 pt-20 md:pt-12">
+                    <h1 class="text-3xl md:text-5xl font-black text-blue-900 mb-2 px-4 mt-8">Halo, <span id="display-nama" class="text-blue-600">Siswa</span>! 👋</h1>
+                    <p class="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl px-4">Pilih topik materi yang akan kamu pelajari hari ini:</p>
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full px-4 max-w-4xl">
-                        <!-- Lower Primary -->
-                        <button onclick="pilihTopik('Bilangan dan Aritmetika (Lower Primary)')" class="group bg-white p-4 rounded-2xl shadow-sm border-2 border-transparent hover:border-blue-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">🔢</div>
-                            <h3 class="font-bold text-gray-800 text-sm md:text-base leading-tight">Bilangan & Aritmetika</h3>
-                            <p class="text-xs font-semibold text-blue-600 mt-1">Lower Primary</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl px-4 w-full pb-8">
+                        <!-- Topik 1 -->
+                        <button onclick="pilihTopik('Bilangan & Aritmetika (Lower Primary)')" class="bg-white p-6 rounded-2xl shadow-md border-2 border-transparent hover:border-blue-400 hover:shadow-xl btn-hover flex flex-col items-center justify-center gap-3">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-3xl">🔢</div>
+                            <span class="font-bold text-gray-800 text-lg">Bilangan & Aritmetika</span>
+                            <span class="text-sm font-semibold text-blue-600">Lower Primary</span>
                         </button>
-                        
-                        <button onclick="pilihTopik('Geometri dan Pengukuran (Lower Primary)')" class="group bg-white p-4 rounded-2xl shadow-sm border-2 border-transparent hover:border-green-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">📐</div>
-                            <h3 class="font-bold text-gray-800 text-sm md:text-base leading-tight">Geometri & Pengukuran</h3>
-                            <p class="text-xs font-semibold text-green-600 mt-1">Lower Primary</p>
+                        <!-- Topik 2 -->
+                        <button onclick="pilihTopik('Geometri & Pengukuran (Lower Primary)')" class="bg-white p-6 rounded-2xl shadow-md border-2 border-transparent hover:border-green-400 hover:shadow-xl btn-hover flex flex-col items-center justify-center gap-3">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-3xl">📐</div>
+                            <span class="font-bold text-gray-800 text-lg">Geometri & Pengukuran</span>
+                            <span class="text-sm font-semibold text-green-600">Lower Primary</span>
                         </button>
-                        
-                        <button onclick="pilihTopik('Challenging Problems (Lower Primary)')" class="group bg-white p-4 rounded-2xl shadow-sm border-2 border-transparent hover:border-purple-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">🧩</div>
-                            <h3 class="font-bold text-gray-800 text-sm md:text-base leading-tight">Challenging Problems</h3>
-                            <p class="text-xs font-semibold text-purple-600 mt-1">Lower Primary</p>
+                        <!-- Topik 3 -->
+                        <button onclick="pilihTopik('Challenging Problems (Lower Primary)')" class="bg-white p-6 rounded-2xl shadow-md border-2 border-transparent hover:border-purple-400 hover:shadow-xl btn-hover flex flex-col items-center justify-center gap-3">
+                            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center text-3xl">🧩</div>
+                            <span class="font-bold text-gray-800 text-lg">Challenging Problems</span>
+                            <span class="text-sm font-semibold text-purple-600">Lower Primary</span>
                         </button>
-                        
-                        <!-- Upper Primary -->
-                        <button onclick="pilihTopik('Bilangan dan Aritmetika (Upper Primary)')" class="group bg-white p-4 rounded-2xl shadow-sm border-2 border-transparent hover:border-orange-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">🧮</div>
-                            <h3 class="font-bold text-gray-800 text-sm md:text-base leading-tight">Bilangan & Aritmetika</h3>
-                            <p class="text-xs font-semibold text-orange-600 mt-1">Upper Primary</p>
+                        <!-- Topik 4 -->
+                        <button onclick="pilihTopik('Bilangan & Aritmetika (Upper Primary)')" class="bg-white p-6 rounded-2xl shadow-md border-2 border-transparent hover:border-orange-400 hover:shadow-xl btn-hover flex flex-col items-center justify-center gap-3">
+                            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center text-3xl">🧮</div>
+                            <span class="font-bold text-gray-800 text-lg">Bilangan & Aritmetika</span>
+                            <span class="text-sm font-semibold text-orange-600">Upper Primary</span>
                         </button>
-                        
-                        <button onclick="pilihTopik('Geometri dan Pengukuran (Upper Primary)')" class="group bg-white p-4 rounded-2xl shadow-sm border-2 border-transparent hover:border-pink-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">📏</div>
-                            <h3 class="font-bold text-gray-800 text-sm md:text-base leading-tight">Geometri & Pengukuran</h3>
-                            <p class="text-xs font-semibold text-pink-600 mt-1">Upper Primary</p>
+                        <!-- Topik 5 -->
+                        <button onclick="pilihTopik('Geometri & Pengukuran (Upper Primary)')" class="bg-white p-6 rounded-2xl shadow-md border-2 border-transparent hover:border-pink-400 hover:shadow-xl btn-hover flex flex-col items-center justify-center gap-3">
+                            <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center text-3xl">📏</div>
+                            <span class="font-bold text-gray-800 text-lg">Geometri & Pengukuran</span>
+                            <span class="text-sm font-semibold text-pink-600">Upper Primary</span>
                         </button>
-
-                        <button onclick="pilihTopik('Challenging Problems (Upper Primary)')" class="group bg-white p-4 rounded-2xl shadow-sm border-2 border-transparent hover:border-red-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">🏆</div>
-                            <h3 class="font-bold text-gray-800 text-sm md:text-base leading-tight">Challenging Problems</h3>
-                            <p class="text-xs font-semibold text-red-600 mt-1">Upper Primary</p>
+                        <!-- Topik 6 -->
+                        <button onclick="pilihTopik('Challenging Problems (Upper Primary)')" class="bg-white p-6 rounded-2xl shadow-md border-2 border-transparent hover:border-red-400 hover:shadow-xl btn-hover flex flex-col items-center justify-center gap-3">
+                            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl">🏆</div>
+                            <span class="font-bold text-gray-800 text-lg">Challenging Problems</span>
+                            <span class="text-sm font-semibold text-red-600">Upper Primary</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- STEP 3: PILIH MODE BELAJAR (Ditambahkan Baru) -->
-                <div id="step-mode" class="hidden flex-col items-center justify-center w-full max-w-5xl transition-all duration-500 py-6 my-auto">
-                    <h1 class="text-2xl md:text-4xl font-black text-blue-900 mb-2">Mode Belajar</h1>
-                    <p class="text-base md:text-lg text-gray-600 mb-8 text-center max-w-2xl">
-                        Topik: <span id="display-topic" class="font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-full text-sm ml-1">...</span><br>Pilih kegiatanmu hari ini:
-                    </p>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full px-4 max-w-3xl">
-                        <!-- Pembelajaran di Kelas -->
-                        <button onclick="pilihMode('Pembelajaran di Kelas')" class="group bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent hover:border-blue-500 hover:shadow-lg transition-all flex flex-col items-center text-center">
-                            <div class="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform">🏫</div>
-                            <h3 class="font-black text-gray-800 text-xl md:text-2xl mb-2">Pembelajaran di Kelas</h3>
-                            <p class="text-sm text-gray-500">Materi lengkap dengan penjelasan, ilustrasi, dan evaluasi bersama.</p>
+                <!-- STEP 3: PILIH MODE BELAJAR -->
+                <div id="step-mode" class="hidden flex-col items-center justify-center w-full min-h-full transition-all duration-500 py-8 pt-20 md:pt-12">
+                    <h2 class="text-xl font-bold text-blue-600 mb-2 mt-8 uppercase tracking-wider" id="selected-topic-display">TOPIK</h2>
+                    <h1 class="text-3xl md:text-5xl font-black text-gray-900 mb-8 px-4">Pilih Mode Belajarmu</h1>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl px-4 w-full">
+                        <!-- Mode 1: Pembelajaran Kelas -->
+                        <button onclick="pilihMode('Pembelajaran di Kelas')" class="bg-white p-8 rounded-3xl shadow-lg border-2 border-transparent hover:border-blue-500 hover:shadow-2xl btn-hover flex flex-col items-center justify-center text-center group">
+                            <div class="w-24 h-24 bg-blue-50 rounded-2xl flex items-center justify-center text-5xl mb-6 group-hover:scale-110 transition-transform">🏫</div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-3">Pembelajaran di Kelas</h3>
+                            <p class="text-gray-500">Materi lengkap dengan penjelasan dan latihan interaktif bersama guru.</p>
                         </button>
 
-                        <!-- Modul Latihan Mandiri -->
-                        <button onclick="pilihMode('Modul Latihan Mandiri')" class="group bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent hover:border-orange-500 hover:shadow-lg transition-all flex flex-col items-center text-center">
-                            <div class="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform">🎯</div>
-                            <h3 class="font-black text-gray-800 text-xl md:text-2xl mb-2">Modul Latihan Mandiri</h3>
-                            <p class="text-sm text-gray-500">Kumpulan soal Pilihan Ganda dan Isian Singkat untuk menguji kemampuanmu.</p>
+                        <!-- Mode 2: Latihan Mandiri -->
+                        <button onclick="pilihMode('Modul Latihan Mandiri')" class="bg-white p-8 rounded-3xl shadow-lg border-2 border-transparent hover:border-green-500 hover:shadow-2xl btn-hover flex flex-col items-center justify-center text-center group">
+                            <div class="w-24 h-24 bg-green-50 rounded-2xl flex items-center justify-center text-5xl mb-6 group-hover:scale-110 transition-transform">🎯</div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-3">Modul Latihan Mandiri</h3>
+                            <p class="text-gray-500">Uji kemampuanmu langsung dengan mengerjakan kumpulan soal tantangan.</p>
                         </button>
                     </div>
-                    
-                    <button onclick="kembaliKeTopik()" class="mt-8 text-blue-500 font-bold hover:text-blue-700 transition-colors flex items-center gap-2 px-4 py-2 rounded-full hover:bg-blue-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                        Kembali pilih topik
+
+                    <button onclick="kembaliKeTopik()" class="mt-10 text-gray-500 hover:text-blue-600 font-semibold underline flex items-center gap-2">
+                        ← Kembali pilih topik
                     </button>
                 </div>
-
             </div>
 
-            <!-- SLIDE 2: TEMPLATE PRETEST -->
-            <!-- Catatan: Di App Script, HTML block slide ini bisa di-loop sebanyak jumlah soal pretest -->
-            <div id="slide-2" class="slide flex flex-col p-12 md:p-16 bg-white">
-                <div class="flex items-center gap-3 mb-6">
-                    <span class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full text-sm font-bold tracking-wide">PRETEST</span>
-                    <span class="text-gray-400 text-sm font-medium">Uji Kemampuan Awal - Soal 1</span>
-                </div>
-                
-                <div class="content-scroll flex-1 overflow-y-auto pb-4 pr-4">
-                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-snug">
-                        Sebelum kita mulai belajar, berapakah hasil dari $\frac{1}{2} + \frac{1}{2}$ ?
+            <!-- SLIDE 2: TEMPLATE PRE-TEST -->
+            <div id="slide-2" class="slide flex-col px-8 md:px-16 py-12 pt-28 bg-white overflow-y-auto content-scroll">
+                <div class="w-full max-w-4xl mx-auto">
+                    <span class="bg-purple-100 text-purple-800 text-sm font-bold px-3 py-1 rounded-full mb-4 inline-block tracking-wide">PRE-TEST DIAGNOSTIK</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-relaxed">
+                        Sederhanakan bentuk pecahan berikut: $\frac{12}{16}$ = ...
                     </h2>
                     
-                    <div id="options-pretest_1" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <button onclick="checkPG(this, false, 'A', 'pretest_1')" class="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-indigo-500 group-hover:text-white flex items-center justify-center font-bold text-lg transition-colors pointer-events-none">A</div>
-                                <div class="text-xl text-gray-700 pointer-events-none">$\frac{1}{4}$</div>
-                            </div>
-                        </button>
-                        <button onclick="checkPG(this, true, 'B', 'pretest_1')" class="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-indigo-500 group-hover:text-white flex items-center justify-center font-bold text-lg transition-colors pointer-events-none">B</div>
-                                <div class="text-xl text-gray-700 pointer-events-none">$1$</div>
-                            </div>
-                        </button>
-                        <button onclick="checkPG(this, false, 'C', 'pretest_1')" class="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-indigo-500 group-hover:text-white flex items-center justify-center font-bold text-lg transition-colors pointer-events-none">C</div>
-                                <div class="text-xl text-gray-700 pointer-events-none">$\frac{2}{4}$</div>
-                            </div>
-                        </button>
-                        <button onclick="checkPG(this, false, 'D', 'pretest_1')" class="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-indigo-500 group-hover:text-white flex items-center justify-center font-bold text-lg transition-colors pointer-events-none">D</div>
-                                <div class="text-xl text-gray-700 pointer-events-none">$\frac{1}{2}$</div>
-                            </div>
-                        </button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="opts-pretest-1">
+                        <button id="pretest-1-A" onclick="cekJawabanPG(this, 'C', 'pretest-1')" class="text-left px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-lg font-medium transition-all">A. $\frac{1}{2}$</button>
+                        <button id="pretest-1-B" onclick="cekJawabanPG(this, 'C', 'pretest-1')" class="text-left px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-lg font-medium transition-all">B. $\frac{2}{3}$</button>
+                        <button id="pretest-1-C" onclick="cekJawabanPG(this, 'C', 'pretest-1')" class="text-left px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-lg font-medium transition-all">C. $\frac{3}{4}$</button>
+                        <button id="pretest-1-D" onclick="cekJawabanPG(this, 'C', 'pretest-1')" class="text-left px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-lg font-medium transition-all">D. $\frac{4}{5}$</button>
                     </div>
 
-                    <!-- PEMBAHASAN INLINE (Awalnya tersembunyi) -->
-                    <div id="explanation-pretest_1" class="hidden mt-8 p-6 bg-indigo-50 border border-indigo-200 rounded-2xl">
-                        <h3 class="text-xl font-bold text-indigo-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                            Pembahasan
-                        </h3>
-                        <div class="text-lg text-gray-700 space-y-2">
-                            <p>Karena penyebutnya sudah sama (yaitu 2), kita cukup menjumlahkan pembilangnya:</p>
-                            <p class="font-bold text-center text-xl bg-white p-3 rounded-lg border border-indigo-100 inline-block w-full">
-                                $$ \frac{1}{2} + \frac{1}{2} = \frac{1+1}{2} = \frac{2}{2} = 1 $$
-                            </p>
-                            <p>Jadi, jawaban yang benar adalah <b>B. $1$</b></p>
-                        </div>
+                    <div id="bahas-pretest-1" class="hidden mt-8 p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg shadow-sm transition-all duration-500">
+                        <h4 class="font-bold text-blue-900 mb-2">Pembahasan:</h4>
+                        <p class="text-gray-700 leading-relaxed">
+                            Bagi pembilang dan penyebut dengan FPB dari 12 dan 16, yaitu 4.<br>
+                            $12 \div 4 = 3$<br>
+                            $16 \div 4 = 4$<br>
+                            Jadi, bentuk sederhananya adalah $\frac{3}{4}$ (Opsi C).
+                        </p>
                     </div>
-
                 </div>
             </div>
 
-            <!-- SLIDE 3: TEMPLATE JUDUL UTAMA -->
-            <div id="slide-3" class="slide flex flex-col justify-center p-16 md:p-24 border-l-[16px] border-blue-600">
-                <div class="max-w-3xl">
-                    <h3 id="subtitle-main" class="text-2xl md:text-3xl font-semibold text-blue-600 mb-4 uppercase tracking-wider">Bab 1: Pecahan</h3>
-                    <h1 id="title-main" class="text-5xl md:text-7xl font-black text-gray-900 leading-tight mb-6">Operasi Hitung<br>Pecahan Campuran</h1>
-                    <p id="desc-main" class="text-xl text-gray-600 border-l-4 border-gray-300 pl-4 py-1">Mari kita pahami cara menjumlahkan dan mengurangkan pecahan dengan mudah bersama Math Champs.</p>
+            <!-- SLIDE 3: TEMPLATE JUDUL MATERI -->
+            <div id="slide-3" class="slide flex-col items-center justify-center text-center px-4 bg-gradient-to-br from-white to-blue-50">
+                <span class="bg-blue-100 text-blue-800 text-sm font-bold px-4 py-2 rounded-full mb-6 tracking-wide">BAGIAN 1</span>
+                <h1 class="text-4xl md:text-6xl font-black text-gray-900 mb-6 drop-shadow-sm">Mengenal Pecahan</h1>
+                <p class="text-xl md:text-2xl text-gray-600 max-w-3xl">Pecahan adalah bagian dari keseluruhan. Mari kita pelajari bagaimana cara menyederhanakan pecahan dengan mudah.</p>
+            </div>
+
+            <!-- SLIDE 4: TEMPLATE ISI (POIN-POIN) -->
+            <div id="slide-4" class="slide flex-col px-8 md:px-16 py-12 pt-28 bg-white overflow-y-auto content-scroll">
+                <h2 class="text-3xl font-bold text-blue-900 mb-8 border-b-2 border-blue-100 pb-4">Sifat-Sifat Pecahan</h2>
+                <ul class="space-y-6 text-lg text-gray-700 list-none">
+                    <li class="flex items-start">
+                        <span class="text-blue-500 text-2xl mr-4">✓</span>
+                        <div><strong>Pembilang dan Penyebut:</strong> Angka di atas disebut pembilang, angka di bawah disebut penyebut. $\frac{a}{b}$</div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-blue-500 text-2xl mr-4">✓</span>
+                        <div><strong>Pecahan Senilai:</strong> Pecahan yang memiliki nilai yang sama walaupun angkanya berbeda. Contoh: $\frac{1}{2} = \frac{2}{4}$</div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-blue-500 text-2xl mr-4">✓</span>
+                        <div><strong>Menyederhanakan:</strong> Membagi pembilang dan penyebut dengan angka yang sama (FPB) hingga tidak bisa dibagi lagi.</div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- SLIDE 5: TEMPLATE MATERI (KIRI TEKS, KANAN GAMBAR) -->
+            <div id="slide-5" class="slide flex-col md:flex-row px-8 md:px-16 py-12 pt-28 bg-white gap-8 items-center">
+                <div class="w-full md:w-1/2 flex flex-col justify-center">
+                    <h2 class="text-3xl font-bold text-blue-900 mb-6">Pecahan Senilai</h2>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-4">
+                        Perhatikan gambar pizza di samping. Setengah bagian pizza ($\frac{1}{2}$) besarnya sama persis dengan dua perempat bagian pizza ($\frac{2}{4}$). 
+                    </p>
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r mt-4">
+                        <p class="text-yellow-800 font-medium">Tips: Kalikan atau bagikan pembilang dan penyebut dengan angka yang sama untuk mendapatkan pecahan senilai.</p>
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2 flex justify-center mt-8 md:mt-0">
+                    <img src="https://placehold.co/500x400/e2e8f0/475569?text=Ilustrasi+Pecahan+Pizza" alt="Ilustrasi" class="rounded-2xl shadow-lg max-w-full h-auto">
                 </div>
             </div>
 
-            <!-- SLIDE 4: TEMPLATE MATERI - LIST/POIN -->
-            <div id="slide-4" class="slide flex flex-col p-12 md:p-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 border-b-2 border-gray-100 pb-4">Langkah-langkah Penjumlahan</h2>
-                <div class="content-scroll flex-1 overflow-y-auto pr-4">
-                    <ul class="space-y-6 text-xl text-gray-700">
-                        <li class="flex items-start">
-                            <span class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 font-bold mr-4">1</span>
-                            <span>Ubah pecahan campuran menjadi pecahan biasa. Contoh: $1 \frac{1}{2}$ menjadi $\frac{3}{2}$.</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 font-bold mr-4">2</span>
-                            <span>Samakan penyebutnya dengan mencari KPK dari kedua penyebut.</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 font-bold mr-4">3</span>
-                            <span>Jumlahkan pembilangnya. Penyebutnya tetap sama!</span>
-                        </li>
-                    </ul>
+            <!-- SLIDE 6: TEMPLATE MATERI (KIRI GAMBAR, KANAN TEKS) -->
+            <div id="slide-6" class="slide flex-col md:flex-row px-8 md:px-16 py-12 pt-28 bg-white gap-8 items-center">
+                <div class="w-full md:w-1/2 flex justify-center mb-8 md:mb-0">
+                    <img src="https://placehold.co/400x500/e2e8f0/475569?text=Ilustrasi+Sifat+Komutatif" alt="Ilustrasi" class="rounded-2xl shadow-lg max-w-full h-auto">
                 </div>
-            </div>
-
-            <!-- SLIDE 5: TEMPLATE ILUSTRASI SAJA (TENGAH) -->
-            <div id="slide-5" class="slide flex flex-col p-12 md:p-16 items-center justify-center">
-                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center w-full">Ilustrasi Pecahan</h2>
-                <div class="flex-1 w-full max-w-4xl bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center p-4 relative">
-                    <img src="https://placehold.co/800x400/e2e8f0/475569?text=Gambar+Ilustrasi+Utama" alt="Ilustrasi" class="max-w-full max-h-full object-contain rounded-xl">
-                </div>
-                <p class="text-gray-500 mt-4 italic">Gambar 1.1: Contoh representasi visual $\frac{3}{4}$</p>
-            </div>
-
-            <!-- SLIDE 6: TEMPLATE ILUSTRASI ATAS, MATERI BAWAH -->
-            <div id="slide-6" class="slide flex flex-col p-12 md:p-16">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">Konsep Pembagian Kue</h2>
-                <div class="w-full h-64 bg-gray-100 rounded-xl mb-6 flex items-center justify-center overflow-hidden">
-                     <img src="https://placehold.co/1000x300/dbeafe/1e3a8a?text=Ilustrasi+di+Atas" alt="Ilustrasi" class="w-full h-full object-cover">
-                </div>
-                <div class="content-scroll flex-1 overflow-y-auto">
-                    <p class="text-xl text-gray-700 leading-relaxed">
-                        Bayangkan kamu memiliki sebuah kue bolu yang dipotong menjadi 8 bagian sama besar. Jika kamu memakan 3 potong, maka kamu telah memakan $\frac{3}{8}$ bagian dari kue tersebut. Sisa kue yang ada adalah $\frac{5}{8}$ bagian.
+                <div class="w-full md:w-1/2 flex flex-col justify-center">
+                    <h2 class="text-3xl font-bold text-blue-900 mb-6">Penjumlahan Pecahan</h2>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-4">
+                        Jika penyebutnya sama, kita cukup menjumlahkan pembilangnya saja.
+                        $$ \frac{2}{7} + \frac{3}{7} = \frac{5}{7} $$
+                    </p>
+                    <p class="text-lg text-gray-700 leading-relaxed">
+                        Namun, jika penyebutnya berbeda, kita harus menyamakan penyebutnya terlebih dahulu dengan mencari KPK.
                     </p>
                 </div>
             </div>
 
-            <!-- SLIDE 7: TEMPLATE ILUSTRASI KIRI, MATERI KANAN -->
-            <div id="slide-7" class="slide flex flex-col p-12 md:p-16">
-                <h2 class="text-3xl font-bold text-gray-800 mb-8 border-b-2 border-gray-100 pb-4">Pengurangan Pecahan</h2>
-                <div class="flex flex-row gap-8 flex-1 h-full">
-                    <div class="w-1/2 bg-blue-50 rounded-2xl flex items-center justify-center p-4">
-                        <img src="https://placehold.co/500x500/bfdbfe/1e40af?text=Ilustrasi+Kiri" alt="Ilustrasi Kiri" class="max-w-full max-h-full rounded-xl object-contain shadow-sm">
-                    </div>
-                    <div class="w-1/2 content-scroll overflow-y-auto flex flex-col justify-center">
-                        <h3 class="text-2xl font-bold text-blue-700 mb-4">Langkah Pengurangan</h3>
-                        <p class="text-xl text-gray-700 leading-relaxed mb-4">
-                            Sama seperti penjumlahan, hal pertama yang harus dilakukan adalah menyamakan penyebut.
-                        </p>
-                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
-                            <p class="text-lg text-yellow-800">
-                                $$ \frac{3}{4} - \frac{1}{3} = \frac{9}{12} - \frac{4}{12} = \frac{5}{12} $$
-                            </p>
-                        </div>
-                    </div>
+            <!-- SLIDE 7: TEMPLATE ILUSTRASI SAJA (TENGAH) -->
+            <div id="slide-7" class="slide flex-col items-center justify-center px-8 md:px-16 py-12 pt-28 bg-white text-center">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Peta Konsep Pecahan</h2>
+                <div class="w-full max-w-3xl bg-gray-50 p-4 rounded-xl shadow-inner inline-block">
+                    <img src="https://placehold.co/800x450/cbd5e1/1e293b?text=Diagram+Peta+Konsep+Utama" alt="Diagram Ilustrasi" class="rounded-lg shadow w-full h-auto">
                 </div>
+                <p class="text-sm text-gray-500 mt-4 italic">Gambar 1. Peta konsep bilangan pecahan dasar.</p>
             </div>
 
-            <!-- SLIDE 8: TEMPLATE MATERI KIRI, ILUSTRASI KANAN -->
-            <div id="slide-8" class="slide flex flex-col p-12 md:p-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 border-b-2 border-gray-100 pb-4">Pecahan Senilai</h2>
-                <div class="flex flex-col md:flex-row gap-8 flex-1 h-full">
-                    <!-- Text Area Kiri -->
-                    <div class="w-full md:w-1/2 content-scroll overflow-y-auto">
-                        <p id="materi-text-1" class="text-xl text-gray-700 leading-relaxed mb-4">
-                            Pecahan senilai adalah pecahan yang nilainya sama meskipun pembilang dan penyebutnya berbeda. 
-                        </p>
-                        <p class="text-xl text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg border border-gray-200">
-                            Contoh:<br>
-                            $$\frac{1}{2} = \frac{2}{4} = \frac{3}{6}$$
-                        </p>
-                    </div>
-                    <!-- Image Area Kanan -->
-                    <div class="w-full md:w-1/2 bg-gray-100 rounded-2xl flex items-center justify-center p-4">
-                        <img id="materi-img-1" src="https://placehold.co/600x400/e0f2fe/0369a1?text=Ilustrasi+Kanan" alt="Ilustrasi Materi" class="max-w-full max-h-full rounded-xl object-contain shadow-sm">
-                    </div>
-                </div>
-            </div>
-
-            <!-- SLIDE 9: TEMPLATE SOAL PILIHAN GANDA (4 OPSI) -->
-            <div id="slide-9" class="slide flex flex-col p-12 md:p-16 bg-white">
-                <div class="flex items-center gap-3 mb-6">
-                    <span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-bold tracking-wide">SOAL LATIHAN</span>
-                    <span class="text-gray-400 text-sm font-medium">Pilihan Ganda</span>
-                </div>
-                
-                <div class="content-scroll flex-1 overflow-y-auto pb-4 pr-4">
-                    <h2 id="question-pg-text" class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-snug">
-                        Berapakah hasil dari penjumlahan $\frac{1}{3} + \frac{1}{6}$ ?
+            <!-- SLIDE 8: TEMPLATE LATIHAN SOAL KELAS (PG) -->
+            <div id="slide-8" class="slide flex-col px-8 md:px-16 py-12 pt-28 bg-white overflow-y-auto content-scroll">
+                <div class="w-full max-w-4xl mx-auto">
+                    <span class="bg-blue-100 text-blue-800 text-sm font-bold px-3 py-1 rounded-full mb-4 inline-block tracking-wide">LATIHAN SOAL PILIHAN GANDA</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-relaxed">
+                        Berapakah hasil dari $\frac{1}{3} + \frac{1}{6}$ ?
                     </h2>
                     
-                    <div id="options-soal_pg_1" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <button onclick="checkPG(this, false, 'A', 'soal_pg_1')" class="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-500 group-hover:text-white flex items-center justify-center font-bold text-lg transition-colors pointer-events-none">A</div>
-                                <div class="text-xl text-gray-700 pointer-events-none">$\frac{2}{9}$</div>
-                            </div>
-                        </button>
-                        <button onclick="checkPG(this, false, 'B', 'soal_pg_1')" class="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-500 group-hover:text-white flex items-center justify-center font-bold text-lg transition-colors pointer-events-none">B</div>
-                                <div class="text-xl text-gray-700 pointer-events-none">$\frac{2}{6}$</div>
-                            </div>
-                        </button>
-                        <button onclick="checkPG(this, true, 'C', 'soal_pg_1')" class="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-500 group-hover:text-white flex items-center justify-center font-bold text-lg transition-colors pointer-events-none">C</div>
-                                <div class="text-xl text-gray-700 pointer-events-none">$\frac{1}{2}$</div>
-                            </div>
-                        </button>
-                        <button onclick="checkPG(this, false, 'D', 'soal_pg_1')" class="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-500 group-hover:text-white flex items-center justify-center font-bold text-lg transition-colors pointer-events-none">D</div>
-                                <div class="text-xl text-gray-700 pointer-events-none">$\frac{3}{6}$</div>
-                            </div>
-                        </button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="opts-soal_pg-1">
+                        <button id="soal_pg-1-A" onclick="cekJawabanPG(this, 'B', 'soal_pg-1')" class="text-left px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-lg font-medium transition-all">A. $\frac{2}{9}$</button>
+                        <button id="soal_pg-1-B" onclick="cekJawabanPG(this, 'B', 'soal_pg-1')" class="text-left px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-lg font-medium transition-all">B. $\frac{1}{2}$</button>
+                        <button id="soal_pg-1-C" onclick="cekJawabanPG(this, 'B', 'soal_pg-1')" class="text-left px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-lg font-medium transition-all">C. $\frac{1}{3}$</button>
+                        <button id="soal_pg-1-D" onclick="cekJawabanPG(this, 'B', 'soal_pg-1')" class="text-left px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-lg font-medium transition-all">D. $\frac{2}{3}$</button>
                     </div>
 
-                    <!-- PEMBAHASAN INLINE -->
-                    <div id="explanation-soal_pg_1" class="hidden mt-8 p-6 bg-blue-50 border border-blue-200 rounded-2xl">
-                        <h3 class="text-xl font-bold text-blue-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                            Pembahasan: $\frac{1}{3} + \frac{1}{6}$
-                        </h3>
-                        <div class="text-lg text-gray-700 space-y-4">
-                            <p>Langkah pertama, samakan penyebutnya menjadi 6:</p>
-                            <div class="bg-white p-4 rounded-xl border border-blue-100 text-center text-xl overflow-x-auto inline-block">
-                                $$ \left(\frac{1 \times 2}{3 \times 2}\right) + \frac{1}{6} = \frac{2}{6} + \frac{1}{6} = \frac{3}{6} $$
-                            </div>
-                            <p>Sederhanakan hasil $\frac{3}{6}$ dengan membagi pembilang dan penyebut dengan 3, sehingga didapat <b>$\frac{1}{2}$</b>. Jawaban yang tepat adalah <b>C</b>.</p>
-                        </div>
+                    <div id="bahas-soal_pg-1" class="hidden mt-8 p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg shadow-sm transition-all duration-500">
+                        <h4 class="font-bold text-blue-900 mb-2">Pembahasan:</h4>
+                        <p class="text-gray-700 leading-relaxed">
+                            Samakan penyebutnya menjadi 6.<br>
+                            $\frac{1}{3} = \frac{2}{6}$<br>
+                            Maka: $\frac{2}{6} + \frac{1}{6} = \frac{3}{6}$<br>
+                            Sederhanakan $\frac{3}{6}$ menjadi $\frac{1}{2}$ (Opsi B).
+                        </p>
                     </div>
-
                 </div>
             </div>
 
-            <!-- SLIDE 10: TEMPLATE SOAL ISIAN SINGKAT -->
-            <div id="slide-10" class="slide flex flex-col p-12 md:p-16 bg-white">
-                <div class="flex items-center gap-3 mb-6">
-                    <span class="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-sm font-bold tracking-wide">TANTANGAN</span>
-                    <span class="text-gray-400 text-sm font-medium">Isian Singkat</span>
-                </div>
-                
-                <div class="content-scroll flex-1 overflow-y-auto pr-4">
-                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4 leading-snug">
-                        Sederhanakan pecahan berikut ini menjadi bentuk paling sederhana:
+            <!-- SLIDE 9: TEMPLATE LATIHAN SOAL KELAS (ISIAN SINGKAT) -->
+            <div id="slide-9" class="slide flex-col px-8 md:px-16 py-12 pt-28 bg-white overflow-y-auto content-scroll">
+                <div class="w-full max-w-4xl mx-auto">
+                    <span class="bg-orange-100 text-orange-800 text-sm font-bold px-3 py-1 rounded-full mb-4 inline-block tracking-wide">LATIHAN SOAL ISIAN SINGKAT</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-relaxed">
+                        Jika $x = 5$, berapakah nilai dari $2x + 10$ ?
                     </h2>
-                    <div class="text-3xl text-center my-8">
-                        $$ \frac{16}{24} $$
-                    </div>
                     
-                    <div class="max-w-md mx-auto bg-gray-50 p-6 rounded-2xl border border-gray-200 text-center">
-                        <label class="block text-gray-700 font-bold mb-4 text-lg">Jawaban Kamu:</label>
-                        <input type="text" id="input-soal_isian_1" placeholder="Ketik format: 2/3" class="w-full text-center text-2xl px-4 py-3 rounded-xl border-2 border-gray-300 focus:outline-none focus:border-purple-500 mb-4 transition-all" onkeypress="if(event.key === 'Enter') checkIsian('soal_isian_1')">
-                        <button id="btn-soal_isian_1" onclick="checkIsian('soal_isian_1')" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow hover:shadow-md">
+                    <div class="flex flex-col md:flex-row gap-4 items-start md:items-center w-full max-w-md">
+                        <input type="text" id="input-soal_isian-1" placeholder="Ketik jawabanmu di sini..." class="w-full px-6 py-4 text-xl rounded-xl border-2 border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                        <button id="btn-soal_isian-1" onclick="cekJawabanIsian('input-soal_isian-1', this, '20', 'soal_isian-1')" class="w-full md:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl btn-hover text-lg whitespace-nowrap">
                             Cek Jawaban
                         </button>
-                        <div id="feedback-soal_isian_1" class="mt-4 text-lg font-bold hidden animate-fade-in-down"></div>
                     </div>
+                    <div id="feedback-soal_isian-1" class="mt-4 text-lg font-bold hidden"></div>
 
-                    <!-- PEMBAHASAN INLINE -->
-                    <div id="explanation-soal_isian_1" class="hidden mt-8 p-6 bg-purple-50 border border-purple-200 rounded-2xl max-w-3xl mx-auto">
-                        <h3 class="text-xl font-bold text-purple-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                            Pembahasan: Sederhanakan $\frac{16}{24}$
-                        </h3>
-                        <div class="text-lg text-gray-700 space-y-4">
-                            <p>Cari Faktor Persekutuan Terbesar (FPB) dari 16 dan 24. Angka terbesar yang bisa membagi keduanya adalah <b>8</b>.</p>
-                            <div class="bg-white p-4 rounded-xl border border-purple-100 text-center text-xl overflow-x-auto inline-block">
-                                $$ \frac{16 \div 8}{24 \div 8} = \frac{2}{3} $$
-                            </div>
-                            <p>Jadi bentuk paling sederhana adalah <b>2/3</b>.</p>
-                        </div>
+                    <div id="bahas-soal_isian-1" class="hidden mt-8 p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg shadow-sm transition-all duration-500">
+                        <h4 class="font-bold text-blue-900 mb-2">Pembahasan:</h4>
+                        <p class="text-gray-700 leading-relaxed">
+                            Substitusikan nilai x = 5 ke dalam persamaan.<br>
+                            $2(5) + 10 = 10 + 10 = 20$<br>
+                            Jadi, jawabannya adalah 20.
+                        </p>
                     </div>
-
                 </div>
             </div>
 
-            <!-- SLIDE 11: TEMPLATE POST-TEST -->
-            <!-- Catatan: Bisa di-loop juga di App Script jika soal lebih dari 1 -->
-            <div id="slide-11" class="slide flex flex-col p-12 md:p-16 bg-white">
-                <div class="flex items-center gap-3 mb-6">
-                    <span class="bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-sm font-bold tracking-wide">POST-TEST</span>
-                    <span class="text-gray-400 text-sm font-medium">Evaluasi Akhir - Soal 1</span>
-                </div>
-                
-                <div class="content-scroll flex-1 overflow-y-auto pb-4 pr-4">
-                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-snug">
-                        Setelah mempelajari materi hari ini, berapakah hasil dari $\frac{3}{4} - \frac{1}{4}$ ?
+            <!-- SLIDE 10: TEMPLATE POST-TEST -->
+            <div id="slide-10" class="slide flex-col px-8 md:px-16 py-12 pt-28 bg-white overflow-y-auto content-scroll">
+                <div class="w-full max-w-4xl mx-auto">
+                    <span class="bg-red-100 text-red-800 text-sm font-bold px-3 py-1 rounded-full mb-4 inline-block tracking-wide">POST-TEST EVALUASI</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-relaxed">
+                        Pecahan mana yang nilainya lebih besar dari $\frac{2}{5}$ ?
                     </h2>
                     
-                    <div id="options-posttest_1" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <button onclick="checkPG(this, false, 'A', 'posttest_1')" class="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-rose-500 hover:bg-rose-50 transition-all">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-rose-500 group-hover:text-white flex items-center justify-center font-bold text-lg transition-colors pointer-events-none">A</div>
-                                <div class="text-xl text-gray-700 pointer-events-none">$\frac{1}{4}$</div>
-                            </div>
-                        </button>
-                        <button onclick="checkPG(this, true, 'B', 'posttest_1')" class="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-rose-500 hover:bg-rose-50 transition-all">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-rose-500 group-hover:text-white flex items-center justify-center font-bold text-lg transition-colors pointer-events-none">B</div>
-                                <div class="text-xl text-gray-700 pointer-events-none">$\frac{2}{4}$ (atau $\frac{1}{2}$)</div>
-                            </div>
-                        </button>
-                        <button onclick="checkPG(this, false, 'C', 'posttest_1')" class="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-rose-500 hover:bg-rose-50 transition-all">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-rose-500 group-hover:text-white flex items-center justify-center font-bold text-lg transition-colors pointer-events-none">C</div>
-                                <div class="text-xl text-gray-700 pointer-events-none">$\frac{3}{4}$</div>
-                            </div>
-                        </button>
-                        <button onclick="checkPG(this, false, 'D', 'posttest_1')" class="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-rose-500 hover:bg-rose-50 transition-all">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-rose-500 group-hover:text-white flex items-center justify-center font-bold text-lg transition-colors pointer-events-none">D</div>
-                                <div class="text-xl text-gray-700 pointer-events-none">$1$</div>
-                            </div>
-                        </button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="opts-posttest-1">
+                        <button id="posttest-1-A" onclick="cekJawabanPG(this, 'D', 'posttest-1')" class="text-left px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-lg font-medium transition-all">A. $\frac{1}{3}$</button>
+                        <button id="posttest-1-B" onclick="cekJawabanPG(this, 'D', 'posttest-1')" class="text-left px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-lg font-medium transition-all">B. $\frac{3}{10}$</button>
+                        <button id="posttest-1-C" onclick="cekJawabanPG(this, 'D', 'posttest-1')" class="text-left px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-lg font-medium transition-all">C. $\frac{1}{4}$</button>
+                        <button id="posttest-1-D" onclick="cekJawabanPG(this, 'D', 'posttest-1')" class="text-left px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-lg font-medium transition-all">D. $\frac{1}{2}$</button>
                     </div>
 
-                    <!-- PEMBAHASAN INLINE -->
-                    <div id="explanation-posttest_1" class="hidden mt-8 p-6 bg-rose-50 border border-rose-200 rounded-2xl">
-                        <h3 class="text-xl font-bold text-rose-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                            Pembahasan
-                        </h3>
-                        <div class="text-lg text-gray-700 space-y-2">
-                            <p>Karena penyebutnya sudah sama, kita cukup kurangkan pembilangnya:</p>
-                            <p class="font-bold text-center text-xl bg-white p-3 rounded-lg border border-rose-100 inline-block w-full">
-                                $$ \frac{3}{4} - \frac{1}{4} = \frac{3-1}{4} = \frac{2}{4} = \frac{1}{2} $$
-                            </p>
-                            <p>Jadi, jawaban yang benar adalah <b>B. $\frac{2}{4}$</b></p>
-                        </div>
+                    <div id="bahas-posttest-1" class="hidden mt-8 p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg shadow-sm transition-all duration-500">
+                        <h4 class="font-bold text-blue-900 mb-2">Pembahasan:</h4>
+                        <p class="text-gray-700 leading-relaxed">
+                            Samakan penyebut semua opsi menjadi 20 untuk dibandingkan.<br>
+                            Acuan: $\frac{2}{5} = \frac{8}{20}$<br>
+                            A. $\frac{1}{3} \approx 0.33$ (Lebih kecil dari 0.4)<br>
+                            D. $\frac{1}{2} = \frac{10}{20}$ (Benar, $\frac{10}{20} > \frac{8}{20}$)
+                        </p>
                     </div>
-
                 </div>
             </div>
 
-            <!-- SLIDE 12: TEMPLATE PENUTUP / APRESIASI -->
-            <div id="slide-12" class="slide flex flex-col justify-center items-center text-center p-8 md:p-12 bg-blue-50">
-                <div class="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-blue-100 max-w-2xl w-full relative overflow-hidden mt-12">
-                    <div class="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-blue-400 to-green-400"></div>
-                    <h1 class="text-4xl md:text-5xl font-black text-gray-800 mb-3">Kerja Bagus! 🎉</h1>
-                    <h2 id="final-name" class="text-2xl md:text-3xl font-bold text-blue-600 mb-2">Siswa Hebat</h2>
+            <!-- SLIDE 11: PENUTUP (TAMPILAN SKOR TERPISAH) -->
+            <div id="slide-11" class="slide flex-col items-center justify-center text-center px-4 bg-blue-50 overflow-y-auto">
+                <div class="bg-white p-10 md:p-14 rounded-3xl shadow-xl w-full max-w-3xl mt-12 mb-8">
+                    <h1 class="text-4xl md:text-5xl font-black text-gray-900 mb-4">Kerja Bagus! 🎉</h1>
+                    <h2 class="text-3xl font-bold text-blue-600 mb-10" id="final-nama">Budi</h2>
                     
-                    <!-- KOTAK SKOR DIPECAH 3 -->
-                    <div class="my-6 grid grid-cols-3 gap-2 md:gap-4">
-                        <div class="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 shadow-sm">
-                            <p class="text-indigo-500 font-bold uppercase tracking-widest text-xs mb-1">Pre-Test</p>
-                            <div id="final-score-pre" class="text-4xl md:text-5xl font-black text-indigo-700">0</div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <!-- Box Pre-Test -->
+                        <div class="bg-indigo-50 border-2 border-indigo-100 p-6 rounded-2xl">
+                            <h3 class="text-sm font-bold text-indigo-500 uppercase tracking-widest mb-2">Pre-Test</h3>
+                            <div class="text-5xl font-black text-indigo-700" id="final-score-pre">0</div>
                         </div>
-                        <div class="p-4 bg-blue-50 rounded-2xl border border-blue-100 shadow-sm">
-                            <p class="text-blue-500 font-bold uppercase tracking-widest text-xs mb-1">Latihan</p>
-                            <div id="final-score-class" class="text-4xl md:text-5xl font-black text-blue-700">0</div>
+                        <!-- Box Latihan -->
+                        <div class="bg-blue-50 border-2 border-blue-100 p-6 rounded-2xl">
+                            <h3 class="text-sm font-bold text-blue-500 uppercase tracking-widest mb-2">Latihan</h3>
+                            <div class="text-5xl font-black text-blue-700" id="final-score-latihan">0</div>
                         </div>
-                        <div class="p-4 bg-rose-50 rounded-2xl border border-rose-100 shadow-sm">
-                            <p class="text-rose-500 font-bold uppercase tracking-widest text-xs mb-1">Post-Test</p>
-                            <div id="final-score-post" class="text-4xl md:text-5xl font-black text-rose-700">0</div>
+                        <!-- Box Post-Test -->
+                        <div class="bg-rose-50 border-2 border-rose-100 p-6 rounded-2xl">
+                            <h3 class="text-sm font-bold text-rose-500 uppercase tracking-widest mb-2">Post-Test</h3>
+                            <div class="text-5xl font-black text-rose-700" id="final-score-post">0</div>
                         </div>
                     </div>
 
-                    <p class="text-lg md:text-xl text-gray-600 mb-6">Kamu telah menyelesaikan materi hari ini dengan sangat baik. Tetap semangat belajar bersama Math Champs!</p>
+                    <p class="text-xl text-gray-600 mb-8 max-w-xl mx-auto leading-relaxed">
+                        Kamu telah menyelesaikan materi hari ini dengan sangat baik. Tetap semangat belajar bersama Math Champs!
+                    </p>
                     
-                    <div id="submit-status" class="text-sm font-bold text-gray-500 mb-4">Menyimpan nilai ke sistem...</div>
+                    <p id="status-pengiriman" class="text-orange-500 font-bold mb-6 text-sm">⚠️ Offline: Data tidak tersimpan ke Sheets.</p>
 
-                    <button onclick="goToSlide(1)" class="bg-gray-800 hover:bg-black text-white font-bold py-3 px-8 rounded-full transition-colors inline-flex items-center gap-2">
-                        <span>Kembali ke Awal</span>
+                    <button onclick="location.reload()" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-full btn-hover transition-colors">
+                        Kembali ke Awal
                     </button>
                 </div>
             </div>
 
         </div>
-    </div>
 
-    <!-- NAVIGATION CONTROLS -->
-    <div class="w-full max-w-[1200px] mt-6 flex items-center justify-between px-2">
-        <div class="text-gray-500 font-medium">
-            <span id="current-page">1</span> / <span id="total-pages">12</span>
-        </div>
-        
-        <div class="flex gap-3">
-            <button onclick="prevSlide()" class="p-3 bg-white rounded-full shadow hover:bg-gray-50 transition-colors text-gray-700" title="Slide Sebelumnya">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-            <button onclick="nextSlide()" class="p-3 bg-blue-600 rounded-full shadow hover:bg-blue-700 transition-colors text-white" title="Slide Selanjutnya">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
-            <div class="w-px h-8 bg-gray-300 self-center mx-2"></div>
-            <button onclick="toggleFullscreen()" class="p-3 bg-white rounded-full shadow hover:bg-gray-50 transition-colors text-gray-700" title="Fullscreen">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-            </button>
-        </div>
-    </div>
-
-    <!-- LOGIC / JAVASCRIPT -->
-    <script>
-        const totalSlides = 12; 
-        let currentSlide = 1;
-        let studentName = "";
-        let studentPassword = "";
-        let selectedTopic = "";
-        let selectedMode = ""; // <--- Variabel baru untuk mode
-        
-        // --- VARIABEL SKOR DIPECAH 3 ---
-        let scorePre = 0;
-        let scoreClass = 0;
-        let scorePost = 0;
-        
-        let userAnswers = {};
-        let answeredQuestions = {};
-
-        // 1. Simpan Nama dan Validasi
-        function simpanNama() {
-            const inputName = document.getElementById('student-name').value;
-            const inputPassword = document.getElementById('teacher-password').value;
+        <!-- NAVIGATION CONTROLS (Overlay) -->
+        <div class="absolute bottom-4 left-0 right-0 flex justify-between items-center px-6 z-40">
+            <!-- Paging Indicator -->
+            <div class="bg-white/80 backdrop-blur px-4 py-1.5 rounded-full shadow text-sm font-bold text-gray-600">
+                <span id="current-page">1</span> / <span id="total-page">11</span>
+            </div>
             
-            if (inputName.trim() !== "" && inputPassword.trim() !== "") {
-                studentName = inputName;
-                studentPassword = inputPassword; 
-                
-                document.getElementById('final-name').innerText = studentName;
-                document.getElementById('display-nama').innerText = studentName;
+            <!-- Next Prev Buttons -->
+            <div class="flex gap-2">
+                <button onclick="prevSlide()" class="bg-white/90 hover:bg-blue-50 text-gray-700 p-3 rounded-full shadow-lg transition-all hover:text-blue-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <button onclick="nextSlide()" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
+        </div>
 
+        <!-- Fullscreen Button -->
+        <button onclick="toggleFullscreen()" class="absolute bottom-4 right-4 bg-black/20 hover:bg-black/40 text-white p-2 rounded z-50 transition-colors backdrop-blur">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+        </button>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // 1. Variabel State
+        let currentSlide = 1;
+        const totalSlides = 11; // Sesuaikan dengan jumlah slide HTML
+        document.getElementById('total-page').innerText = totalSlides;
+
+        // Data Penyimpanan User
+        let userData = {
+            nama: '',
+            email: '',
+            password: '',
+            topik: '',
+            mode: ''
+        };
+
+        // Pemisahan Skor
+        let scores = {
+            pre: 0,
+            latihan: 0,
+            post: 0
+        };
+        let dijawab = {}; // Untuk menyimpan status soal sudah dijawab atau belum
+
+        // Helper untuk render ulang MathJax (jika teks diganti via App Script)
+        window.renderMath = function() {
+            if (window.MathJax) {
+                MathJax.typesetPromise().catch((err) => console.log('MathJax error: ', err.message));
+            }
+        };
+
+        // 2. Fungsi Login (Step 1)
+        function simpanNama() {
+            const inputNama = document.getElementById('input-nama');
+            const inputEmail = document.getElementById('input-email');
+            const inputPass = document.getElementById('input-password');
+            
+            const nama = inputNama.value.trim();
+            const email = inputEmail.value.trim();
+            const pass = inputPass.value.trim();
+            
+            // Validasi Input Kosong
+            let valid = true;
+            if(!nama) { inputNama.classList.add('border-red-500'); valid = false; } else { inputNama.classList.remove('border-red-500'); }
+            if(!email) { inputEmail.classList.add('border-red-500'); valid = false; } else { inputEmail.classList.remove('border-red-500'); }
+            if(!pass) { inputPass.classList.add('border-red-500'); valid = false; } else { inputPass.classList.remove('border-red-500'); }
+
+            if (valid) {
+                userData.nama = nama;
+                userData.email = email;
+                userData.password = pass;
+                
+                // Set nama di layar pemilihan topik & slide terakhir
+                document.getElementById('display-nama').innerText = nama;
+                document.getElementById('final-nama').innerText = nama;
+                
+                // Pindah ke step 2 (Pilih Topik)
                 document.getElementById('step-login').classList.add('hidden');
                 document.getElementById('step-topic').classList.remove('hidden');
                 document.getElementById('step-topic').classList.add('flex');
-            } else {
-                if (inputName.trim() === "") {
-                    const inputEl = document.getElementById('student-name');
-                    inputEl.classList.add('border-red-500', 'bg-red-50');
-                    setTimeout(() => inputEl.classList.remove('border-red-500', 'bg-red-50'), 1000);
-                }
-                
-                if (inputPassword.trim() === "") {
-                    const passEl = document.getElementById('teacher-password');
-                    passEl.classList.add('border-red-500', 'bg-red-50');
-                    setTimeout(() => passEl.classList.remove('border-red-500', 'bg-red-50'), 1000);
-                }
             }
         }
 
-        // 2. Pilih Topik 
-        function pilihTopik(topik) {
-            selectedTopic = topik;
-            console.log("Topik yang dipilih:", selectedTopic);
+        // 3. Fungsi Pilih Topik (Step 2)
+        function pilihTopik(topikPilihan) {
+            userData.topik = topikPilihan;
+            document.getElementById('selected-topic-display').innerText = topikPilihan;
             
-            // Ubah teks span topik
-            document.getElementById('display-topic').innerText = selectedTopic;
-
-            // Sembunyikan step topik, tampilkan step mode
+            // Pindah ke step 3 (Pilih Mode)
             document.getElementById('step-topic').classList.add('hidden');
             document.getElementById('step-topic').classList.remove('flex');
-            
             document.getElementById('step-mode').classList.remove('hidden');
             document.getElementById('step-mode').classList.add('flex');
         }
 
-        // 2.b. Kembali ke Pemilihan Topik
         function kembaliKeTopik() {
             document.getElementById('step-mode').classList.add('hidden');
             document.getElementById('step-mode').classList.remove('flex');
-            
             document.getElementById('step-topic').classList.remove('hidden');
             document.getElementById('step-topic').classList.add('flex');
         }
 
-        // 2.c. Pilih Mode Belajar dan Lanjut ke Slide Materi/Soal
-        function pilihMode(mode) {
-            selectedMode = mode;
-            console.log("Mode yang dipilih:", selectedMode);
+        // 4. Fungsi Pilih Mode (Step 3) - Trigger ke Apps Script Nanti
+        function pilihMode(modePilihan) {
+            userData.mode = modePilihan;
             
-            // Lanjut ke slide berikutnya (Di App Script nanti ini akan meload konten berdasarkan selectedTopic & selectedMode)
-            nextSlide(); 
+            // DI SINI NANTI TERJADI PEMANGGILAN GOOGLE APP SCRIPT
+            // google.script.run.ambilDataBerdasarkan(userData.topik, userData.mode);
+
+            // Untuk preview HTML saat ini, kita langsung next slide (Mulai presentasi)
+            nextSlide();
         }
 
-        // 3. Navigasi Slide
+        // 5. Navigasi Slide Utama
         function showSlide(index) {
             const slides = document.querySelectorAll('.slide');
             slides.forEach((el, i) => {
@@ -664,19 +490,24 @@
             
             document.getElementById('current-page').innerText = index;
 
-            // Submit Data di Slide Terakhir (Tampilkan 3 Skor)
-            if (index === totalSlides) {
-                document.getElementById('final-score-pre').innerText = scorePre;
-                document.getElementById('final-score-class').innerText = scoreClass;
-                document.getElementById('final-score-post').innerText = scorePost;
-                kirimDataKeAppScript();
+            // --- PENGATURAN POSISI LOGO GLOBAL ---
+            const logoContainer = document.getElementById('global-logo-container');
+            if (index === 1) {
+                // Di Slide 1: Logo Atas-Bawah (Vertikal) agar tidak nabrak judul besar
+                logoContainer.classList.remove('flex-row', 'items-center', 'gap-4');
+                logoContainer.classList.add('flex-col', 'items-end', 'gap-2');
+            } else {
+                // Di Slide Lainnya: Logo Kiri-Kanan (Horizontal)
+                logoContainer.classList.remove('flex-col', 'items-end', 'gap-2');
+                logoContainer.classList.add('flex-row', 'items-center', 'gap-4');
             }
-        }
 
-        function prevSlide() {
-            if (currentSlide > 1) {
-                currentSlide--;
-                showSlide(currentSlide);
+            // Slide Terakhir: Tampilkan 3 Skor
+            if (index === totalSlides) {
+                document.getElementById('final-score-pre').innerText = scores.pre;
+                document.getElementById('final-score-latihan').innerText = scores.latihan;
+                document.getElementById('final-score-post').innerText = scores.post;
+                kirimDataKeAppScript();
             }
         }
 
@@ -687,177 +518,170 @@
             }
         }
 
+        function prevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        }
+
         function goToSlide(index) {
-            currentSlide = index;
-            showSlide(currentSlide);
+            if (index >= 1 && index <= totalSlides) {
+                currentSlide = index;
+                showSlide(currentSlide);
+            }
         }
 
+        // Navigasi Keyboard
+        document.addEventListener('keydown', (e) => {
+            // Abaikan input keyboard jika sedang mengetik di dalam textbox (kecuali form login awal)
+            if (document.activeElement.tagName === 'INPUT' && document.activeElement.id.startsWith('input-soal')) return;
+            
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // 6. Fullscreen Feature dengan Auto-Fallback CSS
+        let isCssFullscreen = false;
         function toggleFullscreen() {
-            let elem = document.documentElement;
+            const elem = document.getElementById('presentation');
             
-            try {
-                if (!document.fullscreenElement) {
-                    let req = null;
-                    if (elem.requestFullscreen) req = elem.requestFullscreen();
-                    else if (elem.webkitRequestFullscreen) req = elem.webkitRequestFullscreen();
-                    else if (elem.msRequestFullscreen) req = elem.msRequestFullscreen();
-                    
-                    // Tangkap error jika browser/iframe memblokir akses fullscreen
-                    if (req && req.catch) {
-                        req.catch(err => {
-                            console.warn("Fullscreen diblokir oleh environment saat ini:", err.message);
-                            // Berikan feedback visual sederhana ke user tanpa menggunakan alert()
-                            const pageInfo = document.getElementById('current-page').parentElement;
-                            const originalText = pageInfo.innerHTML;
-                            pageInfo.innerHTML = "<span class='text-red-500 text-sm'>Fullscreen dinonaktifkan di preview ini</span>";
-                            setTimeout(() => { pageInfo.innerHTML = originalText; }, 3000);
-                        });
-                    }
-                } else {
-                    let exitReq = null;
-                    if (document.exitFullscreen) exitReq = document.exitFullscreen();
-                    else if (document.webkitExitFullscreen) exitReq = document.webkitExitFullscreen();
-                    else if (document.msExitFullscreen) exitReq = document.msExitFullscreen();
-                    
-                    if (exitReq && exitReq.catch) {
-                        exitReq.catch(err => console.warn("Exit Fullscreen error:", err));
-                    }
+            if (!document.fullscreenElement && !isCssFullscreen) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => {
+                        // Jika native API diblokir (seperti di mode preview), gunakan CSS Fullscreen
+                        isCssFullscreen = true;
+                        elem.style.position = 'fixed';
+                        elem.style.top = '0';
+                        elem.style.left = '0';
+                        elem.style.width = '100vw';
+                        elem.style.height = '100vh';
+                        elem.style.maxWidth = '100%';
+                        elem.style.maxHeight = '100%';
+                        elem.style.zIndex = '9999';
+                        elem.style.borderRadius = '0';
+                    });
                 }
-            } catch (err) {
-                console.warn("Terjadi kesalahan pada fitur fullscreen:", err);
-            }
-        }
-
-        // 4. Logic Jawab PG 
-        function checkPG(button, isCorrect, valueSelected, questionId) {
-            if (!answeredQuestions[questionId]) {
-                answeredQuestions[questionId] = true;
-                userAnswers[questionId] = valueSelected;
-                
-                // DISTRIBUSI SKOR BERDASARKAN ID PERTANYAAN
-                if (isCorrect) {
-                    if (questionId.includes('pretest')) {
-                        scorePre += 100; // Misal 100 poin untuk 1 soal pretest
-                    } else if (questionId.includes('posttest')) {
-                        scorePost += 100; // Misal 100 poin untuk 1 soal posttest
-                    } else {
-                        scoreClass += 100; // Misal 100 poin untuk soal latihan biasa
-                    }
-                }
-
-                // Munculkan Pembahasan
-                const explanation = document.getElementById('explanation-' + questionId);
-                if(explanation) {
-                    explanation.classList.remove('hidden');
-                    explanation.classList.add('animate-fade-in-down');
-                    if (window.renderMath) window.renderMath(); 
-                }
-
-                // Kunci (Lock)
-                const buttons = document.getElementById('options-' + questionId).querySelectorAll('button');
-                buttons.forEach(btn => {
-                    btn.classList.remove('hover:border-indigo-500', 'hover:bg-indigo-50', 'hover:border-blue-500', 'hover:bg-blue-50', 'hover:border-rose-500', 'hover:bg-rose-50');
-                    btn.classList.add('cursor-not-allowed', 'opacity-70');
-                    btn.onclick = null; 
-                });
-            }
-
-            // Visual tombol yang diklik
-            if (isCorrect) {
-                button.classList.remove('border-gray-200', 'opacity-70');
-                button.classList.add('border-green-500', 'bg-green-50', 'opacity-100');
             } else {
-                button.classList.remove('border-gray-200', 'opacity-70');
-                button.classList.add('border-red-500', 'bg-red-50', 'opacity-100');
+                if (document.fullscreenElement && document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+                if (isCssFullscreen) {
+                    isCssFullscreen = false;
+                    elem.style = ''; // Kembalikan ke ukuran normal
+                }
             }
         }
 
-        // 5. Logic Jawab Isian Singkat
-        function checkIsian(questionId) {
-            const inputEl = document.getElementById('input-' + questionId);
-            const inputVal = inputEl.value.trim();
-            const feedback = document.getElementById('feedback-' + questionId);
-            const btnEl = document.getElementById('btn-' + questionId);
+        // 7. Sistem Penilaian Terpisah (Pre, Latihan, Post) & Pembahasan Inline
+        function klasifikasiSkor(soalId, poin) {
+            if (soalId.includes('pretest')) scores.pre += poin;
+            else if (soalId.includes('posttest')) scores.post += poin;
+            else scores.latihan += poin; // soal_pg atau soal_isian
+        }
+
+        // Fungsi Cek PG
+        function cekJawabanPG(btnElement, jawabanBenar, soalId) {
+            if (dijawab[soalId]) return; // Hanya dinilai 1x
+
+            const textJawaban = btnElement.innerText.charAt(0); // Ambil huruf A/B/C/D
+            const buttons = document.getElementById('opts-' + soalId).getElementsByTagName('button');
             
-            if (!answeredQuestions[questionId] && inputVal !== "") {
-                answeredQuestions[questionId] = true;
-                userAnswers[questionId] = inputVal;
+            for (let btn of buttons) {
+                btn.classList.remove('border-blue-500', 'hover:bg-blue-50');
+                btn.classList.add('cursor-not-allowed', 'opacity-80');
                 
-                // Hardcode cek untuk contoh mockup HTML
-                let isCorrect = (inputVal === "2/3"); 
-
-                if(isCorrect) {
-                    // DISTRIBUSI SKOR
-                    if (questionId.includes('pretest')) scorePre += 100;
-                    else if (questionId.includes('posttest')) scorePost += 100;
-                    else scoreClass += 100;
-
-                    feedback.innerHTML = "✅ Benar Sekali!";
-                    feedback.className = "mt-4 text-lg font-bold text-green-600 animate-fade-in-down";
-                } else {
-                    feedback.innerHTML = "❌ Jawaban kamu salah.";
-                    feedback.className = "mt-4 text-lg font-bold text-red-600 animate-fade-in-down";
+                // Warnai Hijau yang Benar
+                if (btn.innerText.charAt(0) === jawabanBenar) {
+                    btn.classList.add('bg-green-100', 'border-green-500', 'text-green-800');
                 }
-                
-                // Munculkan Pembahasan
-                const explanation = document.getElementById('explanation-' + questionId);
-                if(explanation) {
-                    explanation.classList.remove('hidden');
-                    explanation.classList.add('animate-fade-in-down');
-                    if (window.renderMath) window.renderMath();
-                }
+            }
 
-                // Kunci Input dan Tombol
-                inputEl.disabled = true;
-                inputEl.classList.add('bg-gray-100', 'cursor-not-allowed');
-                btnEl.disabled = true;
-                btnEl.classList.add('opacity-50', 'cursor-not-allowed');
+            if (textJawaban === jawabanBenar) {
+                klasifikasiSkor(soalId, 10);
+                dijawab[soalId] = "Benar";
+            } else {
+                btnElement.classList.add('bg-red-100', 'border-red-500', 'text-red-800');
+                dijawab[soalId] = "Salah";
+            }
+
+            // Munculkan Pembahasan
+            const bahasDiv = document.getElementById('bahas-' + soalId);
+            if (bahasDiv) {
+                bahasDiv.classList.remove('hidden');
+                bahasDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         }
 
-        // --- FUNGSI INTEGRASI APPS SCRIPT ---
+        // Fungsi Cek Isian
+        function cekJawabanIsian(inputId, btnElement, jawabanBenar, soalId) {
+            if (dijawab[soalId]) return; // Hanya dinilai 1x
+            
+            const inputEl = document.getElementById(inputId);
+            const feedbackEl = document.getElementById('feedback-' + soalId);
+            const jawabanUser = inputEl.value.trim().toLowerCase();
+            
+            if (jawabanUser === "") return;
+
+            inputEl.disabled = true;
+            btnElement.disabled = true;
+            btnElement.classList.add('opacity-50', 'cursor-not-allowed');
+
+            if (jawabanUser === jawabanBenar.toLowerCase()) {
+                inputEl.classList.add('border-green-500', 'bg-green-50', 'text-green-700');
+                feedbackEl.innerText = "✅ Jawabanmu Tepat!";
+                feedbackEl.classList.add('text-green-600');
+                klasifikasiSkor(soalId, 10);
+                dijawab[soalId] = "Benar";
+            } else {
+                inputEl.classList.add('border-red-500', 'bg-red-50', 'text-red-700');
+                feedbackEl.innerText = "❌ Jawaban kurang tepat.";
+                feedbackEl.classList.add('text-red-600');
+                dijawab[soalId] = "Salah (" + jawabanUser + ")";
+            }
+            feedbackEl.classList.remove('hidden');
+
+            // Munculkan Pembahasan
+            const bahasDiv = document.getElementById('bahas-' + soalId);
+            if (bahasDiv) {
+                bahasDiv.classList.remove('hidden');
+                bahasDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        // 8. Kirim Data ke App Script (Mockup)
         function kirimDataKeAppScript() {
-            const dataToSave = {
-                nama: studentName,
-                password: studentPassword,
-                topik: selectedTopic,
-                mode: selectedMode,       // <--- Mode belajar dikirim
-                skor_pre: scorePre,       
-                skor_kelas: scoreClass,   
-                skor_post: scorePost,     
-                jawaban: JSON.stringify(userAnswers)
+            const dataFinal = {
+                nama: userData.nama,
+                email: userData.email,
+                password: userData.password,
+                topik: userData.topik,
+                mode: userData.mode,
+                skor_pretest: scores.pre,
+                skor_latihan: scores.latihan,
+                skor_posttest: scores.post,
+                detail_jawaban: JSON.stringify(dijawab)
             };
 
-            console.log("Mengirim data:", dataToSave);
-
-            if (typeof google !== 'undefined' && google.script) {
-                document.getElementById('submit-status').innerText = "Sedang menyimpan nilai... ⏳";
-                document.getElementById('submit-status').classList.remove('text-green-600', 'text-red-600');
-                document.getElementById('submit-status').classList.add('text-gray-500');
-
-                google.script.run
-                    .withSuccessHandler(function(response) {
-                        document.getElementById('submit-status').innerText = "✅ Nilai berhasil disimpan!";
-                        document.getElementById('submit-status').classList.replace('text-gray-500', 'text-green-600');
-                    })
-                    .withFailureHandler(function(error) {
-                        document.getElementById('submit-status').innerText = "❌ Gagal menyimpan nilai. Silakan lapor ke guru.";
-                        document.getElementById('submit-status').classList.replace('text-gray-500', 'text-red-600');
-                    })
-                    .simpanNilaiSiswa(dataToSave); 
-            } else {
-                document.getElementById('submit-status').innerText = "⚠️ Offline: Data tidak tersimpan ke Sheets.";
-                document.getElementById('submit-status').classList.replace('text-gray-500', 'text-orange-500');
-            }
+            console.log("Mengirim data ke Apps Script:", dataFinal);
+            
+            // JIKA SUDAH DI APPS SCRIPT BUKA KOMENTAR DI BAWAH INI:
+            /*
+            document.getElementById('status-pengiriman').innerText = "⏳ Sedang menyimpan data ke Sheets...";
+            document.getElementById('status-pengiriman').classList.replace('text-orange-500', 'text-blue-500');
+            
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    document.getElementById('status-pengiriman').innerText = "✅ Berhasil disimpan ke Sheets!";
+                    document.getElementById('status-pengiriman').classList.replace('text-blue-500', 'text-green-500');
+                })
+                .withFailureHandler(function(err) {
+                    document.getElementById('status-pengiriman').innerText = "❌ Gagal menyimpan. Hubungi guru.";
+                    document.getElementById('status-pengiriman').classList.replace('text-blue-500', 'text-red-500');
+                })
+                .simpanNilaiSiswa(dataFinal);
+            */
         }
-
-        window.renderMath = function() {
-            if (window.MathJax) {
-                MathJax.typesetPromise().then(() => {
-                    console.log('Math rendered!');
-                });
-            }
-        };
     </script>
 </body>
 </html>
