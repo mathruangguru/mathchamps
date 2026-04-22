@@ -1,10 +1,10 @@
 
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Presentasi Interaktif</title>
+    <title>Math Champs - Presentasi Interaktif</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,9 +21,7 @@
                 inlineMath: [['$', '$'], ['\\(', '\\)']],
                 displayMath: [['$$', '$$'], ['\\[', '\\]']]
             },
-            svg: {
-                fontCache: 'global'
-            }
+            svg: { fontCache: 'global' }
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
@@ -31,7 +29,7 @@
     <style>
         body {
             font-family: 'Lato', sans-serif;
-            background-color: #f3f4f6;
+            background-color: #f3f4f6; /* Warna abu-abu halus untuk background luar */
             margin: 0;
             padding: 0;
             display: flex;
@@ -39,12 +37,29 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        .slide-container {
-            aspect-ratio: 16 / 9;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            border-radius: 0.5rem;
+        /* 
+           UKURAN KANVAS MAKSIMAL 16:9 
+        */
+        .presentation-wrapper {
+            width: 95vw;
+            height: 82vh;
+            max-width: calc(82vh * (16 / 9));
+            max-height: calc(95vw * (9 / 16));
+            background-color: white;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border-radius: 1.25rem;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .presentation-nav {
+            width: 95vw;
+            max-width: calc(82vh * (16 / 9));
+            margin: 1.5rem auto 0 auto;
         }
 
         .slide {
@@ -62,26 +77,20 @@
         .slide.active {
             opacity: 1;
             visibility: visible;
+            z-index: 10;
         }
 
-        .content-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-        .content-scroll::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-            border-radius: 4px;
-        }
-        .content-scroll::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
-            border-radius: 4px;
-        }
-        .content-scroll::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
-        }
+        /* Kustomisasi Scrollbar agar rapi */
+        .content-scroll::-webkit-scrollbar { width: 8px; }
+        .content-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 8px; }
+        .content-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+        .content-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        :fullscreen #presentation {
+        :fullscreen .presentation-wrapper {
             max-width: 100vw;
             max-height: 100vh;
+            width: 100vw;
+            height: 100vh;
             border-radius: 0;
             box-shadow: none;
         }
@@ -93,164 +102,168 @@
         .animate-fade-in-down {
             animation: fadeInDown 0.5s ease-out forwards;
         }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="p-4 sm:p-8">
+<body class="p-2 sm:p-4">
 
-    <!-- TOAST NOTIFICATION CONTAINER -->
-    <div id="toast-container" class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+    <!-- CUSTOM TOAST NOTIFICATION (Pengganti Alert) -->
+    <div id="toast-container" class="fixed top-5 right-5 z-[1000] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- MODAL LUPA PASSWORD -->
-    <div id="modal-forgot-password" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden items-center justify-center p-4">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full animate-fade-in-down">
-            <h2 class="text-2xl font-bold text-blue-900 mb-4">Lupa Password?</h2>
-            <p class="text-gray-600 mb-6">Masukkan email kamu yang terdaftar. Kami akan mengirimkan password baru ke email tersebut.</p>
-            <input type="email" id="input-forgot-email" placeholder="contoh: budi@sekolah.com" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+    <div id="modal-forgot-password" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm transition-all">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full animate-fade-in-down border border-gray-100">
+            <h2 class="text-2xl font-bold text-blue-900 mb-2">Lupa Password?</h2>
+            <p class="text-gray-600 mb-6 text-sm">Masukkan email kamu yang terdaftar. Kami akan mengirimkan password baru ke email tersebut.</p>
+            <input type="email" id="input-forgot-email" placeholder="contoh: budi@sekolah.com" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 bg-gray-50">
             <p id="forgot-status" class="text-sm font-bold mb-4 hidden"></p>
             <div class="flex gap-4">
-                <button onclick="tutupModalLupaPassword()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-xl transition-colors">Batal</button>
-                <button onclick="prosesLupaPassword()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors">Kirim Password</button>
+                <button onclick="tutupModalLupaPassword()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-xl transition-colors">Batal</button>
+                <button onclick="prosesLupaPassword()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-blue-200">Kirim</button>
             </div>
         </div>
     </div>
 
     <!-- MAIN PRESENTATION CANVAS -->
-    <div id="presentation" class="slide-container relative bg-white w-full max-w-[1200px] max-h-[85vh] mx-auto overflow-hidden">
+    <div id="presentation" class="presentation-wrapper">
         
         <!-- GLOBAL LOGOS -->
-        <div id="global-logo-container" class="absolute top-3 right-6 flex flex-col items-end gap-2 z-50 pointer-events-none transition-all duration-500">
-            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_zekej2_3984.png" alt="Ruangguru Logo" class="h-16 md:h-20 object-contain">
-            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs Logo" class="h-16 md:h-20 object-contain">
+        <div id="global-logo-container" class="absolute top-4 right-6 flex flex-col items-end gap-2 z-50 pointer-events-none transition-all duration-500">
+            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_zekej2_3984.png" alt="Ruangguru Logo" class="h-16 md:h-20 object-contain drop-shadow-sm">
+            <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs Logo" class="h-16 md:h-20 object-contain drop-shadow-sm">
         </div>
 
         <!-- SLIDE WRAPPER -->
         <div id="slides-wrapper" class="w-full h-full relative text-gray-800">
 
             <!-- SLIDE 1: WELCOME & TOPIK -->
-            <div id="slide-1" class="slide active flex flex-col items-center justify-center text-center px-4 py-8 bg-blue-50 overflow-y-auto content-scroll">
+            <!-- Diberi pt-28 (padding top) agar konten didorong ke bawah dan tidak nabrak logo -->
+            <div id="slide-1" class="slide active flex flex-col items-center justify-start text-center px-4 pt-28 pb-8 bg-gradient-to-br from-blue-50 to-indigo-50 overflow-y-auto content-scroll">
                 
                 <!-- STEP 1: LOGIN -->
-                <div id="step-login" class="flex flex-col items-center justify-center w-full min-h-full transition-all duration-500 py-8">
-                    <h1 class="text-3xl md:text-5xl font-black text-blue-900 mb-4 mt-8">Selamat Datang di Math Champs!</h1>
-                    <p class="text-lg md:text-xl text-gray-600 mb-6 max-w-2xl">Sebelum memulai petualangan belajarmu hari ini, silakan tulis nama dan password kamu terlebih dahulu ya.</p>
+                <div id="step-login" class="flex flex-col items-center justify-center w-full min-h-full transition-all duration-500">
+                    <h1 class="text-3xl md:text-5xl font-black text-blue-900 mb-3 drop-shadow-sm tracking-tight px-4 relative z-10">Selamat Datang di Math Champs!</h1>
+                    <p class="text-base md:text-lg text-gray-600 mb-6 max-w-2xl font-medium px-4">Sebelum memulai petualangan belajarmu hari ini, silakan tulis nama dan sandi kamu terlebih dahulu ya.</p>
                     
-                    <div class="w-full max-w-md bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-blue-100">
-                        <label for="student-name" class="block text-left text-sm font-bold text-gray-700 mb-2">Nama Lengkap</label>
-                        <input type="text" id="student-name" placeholder="Misal: Budi Santoso" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 transition-all" onkeypress="if(event.key === 'Enter') document.getElementById('student-email').focus()">
+                    <div class="w-full max-w-lg bg-white p-6 md:p-8 rounded-3xl shadow-xl border border-blue-50 relative overflow-hidden shrink-0">
+                        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-indigo-500"></div>
                         
-                        <label for="student-email" class="block text-left text-sm font-bold text-gray-700 mb-2">Alamat Email</label>
-                        <input type="email" id="student-email" placeholder="Misal: budi@sekolah.com" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 transition-all" onkeypress="if(event.key === 'Enter') document.getElementById('teacher-password').focus()">
+                        <label class="block text-left text-sm font-bold text-gray-700 mb-1.5">Nama Lengkap</label>
+                        <input type="text" id="student-name" placeholder="Misal: Budi Santoso" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 bg-gray-50 transition-all text-base" onkeypress="if(event.key === 'Enter') document.getElementById('student-email').focus()">
+                        
+                        <label class="block text-left text-sm font-bold text-gray-700 mb-1.5">Alamat Email</label>
+                        <input type="email" id="student-email" placeholder="Misal: budi@sekolah.com" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 bg-gray-50 transition-all text-base" onkeypress="if(event.key === 'Enter') document.getElementById('teacher-password').focus()">
 
-                        <label for="teacher-password" class="block text-left text-sm font-bold text-gray-700 mb-2">Password Guru</label>
-                        <input type="password" id="teacher-password" placeholder="Masukkan password dari gurumu" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2 transition-all" onkeypress="if(event.key === 'Enter') simpanNama()">
+                        <label class="block text-left text-sm font-bold text-gray-700 mb-1.5">Password Guru</label>
+                        <input type="password" id="teacher-password" placeholder="Masukkan password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2 bg-gray-50 transition-all text-base" onkeypress="if(event.key === 'Enter') simpanNama()">
 
                         <div class="text-right mb-6">
-                            <button onclick="bukaModalLupaPassword()" class="text-sm text-blue-500 hover:text-blue-700 font-semibold underline">Lupa Password?</button>
+                            <button onclick="bukaModalLupaPassword()" class="text-sm text-blue-500 hover:text-blue-700 font-semibold transition-colors">Lupa Password?</button>
                         </div>
 
-                        <button id="btn-login-submit" onclick="simpanNama()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-4 px-4 rounded-xl text-lg transition-colors shadow-md hover:shadow-lg">
+                        <button id="btn-login-submit" onclick="simpanNama()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl text-lg transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-blue-300">
                             Mulai Belajar 🚀
                         </button>
                     </div>
                 </div>
 
                 <!-- STEP 2: PILIH TOPIK -->
-                <div id="step-topic" class="hidden flex-col items-center justify-center w-full max-w-5xl transition-all duration-500 py-6 my-auto">
-                    <h1 class="text-2xl md:text-4xl font-black text-blue-900 mb-2 mt-4">Halo, <span id="display-nama" class="text-blue-600">Siswa</span>! 👋</h1>
-                    <p class="text-base md:text-lg text-gray-600 mb-6">Pilih topik materi yang akan kamu pelajari hari ini:</p>
+                <div id="step-topic" class="hidden flex-col items-center justify-center w-full max-w-6xl transition-all duration-500 my-auto">
+                    <h1 class="text-3xl md:text-5xl font-black text-blue-900 mb-3 mt-4">Halo, <span id="display-nama" class="text-blue-600">Siswa</span>! 👋</h1>
+                    <p class="text-base md:text-xl text-gray-600 mb-8 font-medium">Pilih topik materi yang akan kamu pelajari hari ini:</p>
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full px-4 max-w-4xl pb-4">
-                        <button onclick="pilihTopik('Bilangan dan Aritmetika (Lower Primary)')" class="group bg-white p-4 rounded-2xl shadow-sm border-2 border-transparent hover:border-blue-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">🔢</div>
-                            <h3 class="font-bold text-gray-800 text-sm md:text-base leading-tight">Bilangan & Aritmetika</h3>
-                            <p class="text-xs font-semibold text-blue-600 mt-1">Lower Primary</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full px-4 max-w-5xl pb-4">
+                        <button onclick="pilihTopik('Bilangan dan Aritmetika (Lower Primary)')" class="group bg-white p-5 rounded-3xl shadow-sm border-2 border-gray-100 hover:border-blue-500 hover:shadow-xl transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
+                            <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">🔢</div>
+                            <h3 class="font-bold text-gray-800 text-base md:text-lg leading-tight mb-1">Bilangan & Aritmetika</h3>
+                            <p class="text-xs font-semibold text-blue-500 bg-blue-50 px-3 py-1 rounded-full">Lower Primary</p>
                         </button>
-                        <button onclick="pilihTopik('Geometri dan Pengukuran (Lower Primary)')" class="group bg-white p-4 rounded-2xl shadow-sm border-2 border-transparent hover:border-green-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">📐</div>
-                            <h3 class="font-bold text-gray-800 text-sm md:text-base leading-tight">Geometri & Pengukuran</h3>
-                            <p class="text-xs font-semibold text-green-600 mt-1">Lower Primary</p>
+                        <button onclick="pilihTopik('Geometri dan Pengukuran (Lower Primary)')" class="group bg-white p-5 rounded-3xl shadow-sm border-2 border-gray-100 hover:border-green-500 hover:shadow-xl transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
+                            <div class="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">📐</div>
+                            <h3 class="font-bold text-gray-800 text-base md:text-lg leading-tight mb-1">Geometri & Pengukuran</h3>
+                            <p class="text-xs font-semibold text-green-500 bg-green-50 px-3 py-1 rounded-full">Lower Primary</p>
                         </button>
-                        <button onclick="pilihTopik('Challenging Problems (Lower Primary)')" class="group bg-white p-4 rounded-2xl shadow-sm border-2 border-transparent hover:border-purple-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">🧩</div>
-                            <h3 class="font-bold text-gray-800 text-sm md:text-base leading-tight">Challenging Problems</h3>
-                            <p class="text-xs font-semibold text-purple-600 mt-1">Lower Primary</p>
+                        <button onclick="pilihTopik('Challenging Problems (Lower Primary)')" class="group bg-white p-5 rounded-3xl shadow-sm border-2 border-gray-100 hover:border-purple-500 hover:shadow-xl transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
+                            <div class="w-14 h-14 rounded-full bg-purple-50 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">🧩</div>
+                            <h3 class="font-bold text-gray-800 text-base md:text-lg leading-tight mb-1">Challenging Problems</h3>
+                            <p class="text-xs font-semibold text-purple-500 bg-purple-50 px-3 py-1 rounded-full">Lower Primary</p>
                         </button>
-                        <button onclick="pilihTopik('Bilangan dan Aritmetika (Upper Primary)')" class="group bg-white p-4 rounded-2xl shadow-sm border-2 border-transparent hover:border-orange-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">🧮</div>
-                            <h3 class="font-bold text-gray-800 text-sm md:text-base leading-tight">Bilangan & Aritmetika</h3>
-                            <p class="text-xs font-semibold text-orange-600 mt-1">Upper Primary</p>
+                        <button onclick="pilihTopik('Bilangan dan Aritmetika (Upper Primary)')" class="group bg-white p-5 rounded-3xl shadow-sm border-2 border-gray-100 hover:border-orange-500 hover:shadow-xl transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
+                            <div class="w-14 h-14 rounded-full bg-orange-50 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">🧮</div>
+                            <h3 class="font-bold text-gray-800 text-base md:text-lg leading-tight mb-1">Bilangan & Aritmetika</h3>
+                            <p class="text-xs font-semibold text-orange-500 bg-orange-50 px-3 py-1 rounded-full">Upper Primary</p>
                         </button>
-                        <button onclick="pilihTopik('Geometri dan Pengukuran (Upper Primary)')" class="group bg-white p-4 rounded-2xl shadow-sm border-2 border-transparent hover:border-pink-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">📏</div>
-                            <h3 class="font-bold text-gray-800 text-sm md:text-base leading-tight">Geometri & Pengukuran</h3>
-                            <p class="text-xs font-semibold text-pink-600 mt-1">Upper Primary</p>
+                        <button onclick="pilihTopik('Geometri dan Pengukuran (Upper Primary)')" class="group bg-white p-5 rounded-3xl shadow-sm border-2 border-gray-100 hover:border-pink-500 hover:shadow-xl transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
+                            <div class="w-14 h-14 rounded-full bg-pink-50 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">📏</div>
+                            <h3 class="font-bold text-gray-800 text-base md:text-lg leading-tight mb-1">Geometri & Pengukuran</h3>
+                            <p class="text-xs font-semibold text-pink-500 bg-pink-50 px-3 py-1 rounded-full">Upper Primary</p>
                         </button>
-                        <button onclick="pilihTopik('Challenging Problems (Upper Primary)')" class="group bg-white p-4 rounded-2xl shadow-sm border-2 border-transparent hover:border-red-500 hover:shadow-md transition-all flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">🏆</div>
-                            <h3 class="font-bold text-gray-800 text-sm md:text-base leading-tight">Challenging Problems</h3>
-                            <p class="text-xs font-semibold text-red-600 mt-1">Upper Primary</p>
+                        <button onclick="pilihTopik('Challenging Problems (Upper Primary)')" class="group bg-white p-5 rounded-3xl shadow-sm border-2 border-gray-100 hover:border-red-500 hover:shadow-xl transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
+                            <div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">🏆</div>
+                            <h3 class="font-bold text-gray-800 text-base md:text-lg leading-tight mb-1">Challenging Problems</h3>
+                            <p class="text-xs font-semibold text-red-500 bg-red-50 px-3 py-1 rounded-full">Upper Primary</p>
                         </button>
                     </div>
                 </div>
 
                 <!-- STEP 3: PILIH MODE BELAJAR -->
-                <div id="step-mode" class="hidden flex-col items-center justify-center w-full max-w-5xl transition-all duration-500 py-6 my-auto">
-                    <h1 class="text-2xl md:text-4xl font-black text-blue-900 mb-2">Mode Belajar</h1>
-                    <p class="text-base md:text-lg text-gray-600 mb-8 text-center max-w-2xl">
-                        Topik: <span id="display-topic" class="font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-full text-sm ml-1">...</span><br>Pilih kegiatanmu hari ini:
-                    </p>
+                <div id="step-mode" class="hidden flex-col items-center justify-center w-full max-w-5xl transition-all duration-500 my-auto">
+                    <h1 class="text-3xl md:text-5xl font-black text-blue-900 mb-4 tracking-tight">Mode Belajar</h1>
+                    <div class="flex flex-col items-center mb-10 text-center">
+                        <span class="text-gray-500 uppercase font-bold tracking-wider text-xs mb-2">Topik Terpilih</span>
+                        <span id="display-topic" class="font-bold text-blue-700 bg-blue-100 border border-blue-200 px-6 py-2 rounded-full text-base md:text-lg shadow-sm">...</span>
+                    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full px-4 max-w-3xl">
-                        <button onclick="pilihMode('Pembelajaran di Kelas')" class="group bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent hover:border-blue-500 hover:shadow-lg transition-all flex flex-col items-center text-center">
-                            <div class="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform">🏫</div>
-                            <h3 class="font-black text-gray-800 text-xl md:text-2xl mb-2">Pembelajaran di Kelas</h3>
-                            <p class="text-sm text-gray-500">Materi lengkap dengan penjelasan, ilustrasi, dan evaluasi bersama.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full px-4 max-w-4xl">
+                        <button onclick="pilihMode('Pembelajaran di Kelas')" class="group bg-white p-8 rounded-[2rem] shadow-sm border-2 border-gray-100 hover:border-blue-500 hover:shadow-2xl transition-all flex flex-col items-center text-center transform hover:-translate-y-2">
+                            <div class="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center text-4xl mb-6 group-hover:scale-110 transition-transform shadow-inner">🏫</div>
+                            <h3 class="font-black text-gray-800 text-xl md:text-3xl mb-3">Kelas Materi</h3>
+                            <p class="text-sm md:text-base text-gray-500 font-medium">Materi lengkap dengan penjelasan, ilustrasi visual, dan evaluasi bersama guru.</p>
                         </button>
-                        <button onclick="pilihMode('Modul Latihan Mandiri')" class="group bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent hover:border-orange-500 hover:shadow-lg transition-all flex flex-col items-center text-center">
-                            <div class="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform">🎯</div>
-                            <h3 class="font-black text-gray-800 text-xl md:text-2xl mb-2">Modul Latihan Mandiri</h3>
-                            <p class="text-sm text-gray-500">Kumpulan soal Pilihan Ganda dan Isian Singkat untuk menguji kemampuanmu.</p>
+                        <button onclick="pilihMode('Modul Latihan Mandiri')" class="group bg-white p-8 rounded-[2rem] shadow-sm border-2 border-gray-100 hover:border-orange-500 hover:shadow-2xl transition-all flex flex-col items-center text-center transform hover:-translate-y-2">
+                            <div class="w-20 h-20 rounded-full bg-orange-50 flex items-center justify-center text-4xl mb-6 group-hover:scale-110 transition-transform shadow-inner">🎯</div>
+                            <h3 class="font-black text-gray-800 text-xl md:text-3xl mb-3">Modul Latihan</h3>
+                            <p class="text-sm md:text-base text-gray-500 font-medium">Kumpulan soal Pilihan Ganda dan Isian Singkat untuk menguji ketangkasanmu.</p>
                         </button>
                     </div>
                     
-                    <button onclick="kembaliKeTopik()" class="mt-8 text-blue-500 font-bold hover:text-blue-700 transition-colors flex items-center gap-2 px-4 py-2 rounded-full hover:bg-blue-100">
+                    <button onclick="kembaliKeTopik()" class="mt-10 text-blue-500 font-bold hover:text-blue-800 transition-colors flex items-center gap-2 px-6 py-3 rounded-full hover:bg-blue-50">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                        Kembali pilih topik
+                        Kembali ganti topik
                     </button>
                 </div>
             </div>
 
             <!-- SLIDE 12: TEMPLATE PENUTUP / APRESIASI -->
-            <div id="slide-12" class="slide flex flex-col justify-center items-center text-center p-8 md:p-12 bg-blue-50">
-                <div class="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-blue-100 max-w-2xl w-full relative overflow-hidden mt-12">
-                    <div class="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-blue-400 to-green-400"></div>
-                    <h1 class="text-4xl md:text-5xl font-black text-gray-800 mb-3">Kerja Bagus! 🎉</h1>
-                    <h2 id="final-name" class="text-2xl md:text-3xl font-bold text-blue-600 mb-2">Siswa Hebat</h2>
+            <div id="slide-12" class="slide flex flex-col justify-center items-center text-center p-8 md:p-12 bg-gradient-to-br from-blue-50 to-indigo-50">
+                <div class="bg-white p-10 md:p-14 rounded-[2.5rem] shadow-2xl border border-blue-50 max-w-3xl w-full relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500"></div>
+                    <h1 class="text-4xl md:text-6xl font-black text-gray-800 mb-4 tracking-tight">Kerja Bagus! 🎉</h1>
+                    <h2 id="final-name" class="text-2xl md:text-4xl font-bold text-blue-600 mb-8">Siswa Hebat</h2>
                     
-                    <div class="my-6 grid grid-cols-3 gap-2 md:gap-4">
-                        <div class="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 shadow-sm">
-                            <p class="text-indigo-500 font-bold uppercase tracking-widest text-xs mb-1">Pre-Test</p>
-                            <div id="final-score-pre" class="text-4xl md:text-5xl font-black text-indigo-700">0</div>
+                    <div class="my-8 grid grid-cols-3 gap-4 md:gap-6">
+                        <div class="p-4 md:p-6 bg-indigo-50 rounded-3xl border border-indigo-100 shadow-sm transform transition hover:scale-105">
+                            <p class="text-indigo-500 font-bold uppercase tracking-widest text-xs md:text-sm mb-2">Pre-Test</p>
+                            <div id="final-score-pre" class="text-4xl md:text-6xl font-black text-indigo-700">0</div>
                         </div>
-                        <div class="p-4 bg-blue-50 rounded-2xl border border-blue-100 shadow-sm">
-                            <p class="text-blue-500 font-bold uppercase tracking-widest text-xs mb-1">Latihan</p>
-                            <div id="final-score-class" class="text-4xl md:text-5xl font-black text-blue-700">0</div>
+                        <div class="p-4 md:p-6 bg-blue-50 rounded-3xl border border-blue-100 shadow-sm transform transition hover:scale-105">
+                            <p class="text-blue-500 font-bold uppercase tracking-widest text-xs md:text-sm mb-2">Latihan</p>
+                            <div id="final-score-class" class="text-4xl md:text-6xl font-black text-blue-700">0</div>
                         </div>
-                        <div class="p-4 bg-rose-50 rounded-2xl border border-rose-100 shadow-sm">
-                            <p class="text-rose-500 font-bold uppercase tracking-widest text-xs mb-1">Post-Test</p>
-                            <div id="final-score-post" class="text-4xl md:text-5xl font-black text-rose-700">0</div>
+                        <div class="p-4 md:p-6 bg-rose-50 rounded-3xl border border-rose-100 shadow-sm transform transition hover:scale-105">
+                            <p class="text-rose-500 font-bold uppercase tracking-widest text-xs md:text-sm mb-2">Post-Test</p>
+                            <div id="final-score-post" class="text-4xl md:text-6xl font-black text-rose-700">0</div>
                         </div>
                     </div>
 
-                    <p class="text-lg md:text-xl text-gray-600 mb-6">Kamu telah menyelesaikan materi hari ini dengan sangat baik. Tetap semangat belajar bersama Math Champs!</p>
+                    <p class="text-lg md:text-xl text-gray-600 mb-8 font-medium">Kamu telah menyelesaikan materi ini dengan sangat baik. Tetap semangat belajar bersama Math Champs!</p>
                     
-                    <div id="submit-status" class="text-sm font-bold text-gray-500 mb-4">Menyimpan nilai ke sistem...</div>
+                    <div id="submit-status" class="text-sm md:text-base font-bold text-gray-500 mb-6 bg-gray-50 py-2 px-4 rounded-full inline-block">Menyimpan rekam jejak...</div>
 
-                    <button onclick="goToSlide(1)" class="bg-gray-800 hover:bg-black text-white font-bold py-3 px-8 rounded-full transition-colors inline-flex items-center gap-2">
-                        <span>Kembali ke Awal</span>
-                    </button>
+                    <div class="mt-4">
+                        <button onclick="goToSlide(1)" class="bg-gray-900 hover:bg-black text-white font-bold py-3 px-8 md:py-4 md:px-10 rounded-full text-lg md:text-xl transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 inline-flex items-center gap-3">
+                            <span>Selesai & Kembali</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -258,30 +271,29 @@
     </div>
 
     <!-- NAVIGATION CONTROLS -->
-    <div class="w-full max-w-[1200px] mt-6 flex items-center justify-between px-2">
-        <div class="text-gray-500 font-medium">
-            <span id="current-page">1</span> / <span id="total-pages">1</span> <!-- Angka awal 1, diperbarui dinamis -->
+    <div class="presentation-nav flex items-center justify-between px-2">
+        <div class="text-gray-500 font-bold text-base md:text-lg bg-white px-4 md:px-5 py-2 rounded-full shadow-sm border border-gray-200">
+            <span id="current-page" class="text-blue-600">1</span> / <span id="total-pages">2</span>
         </div>
         
-        <div class="flex gap-3">
-            <button onclick="prevSlide()" class="p-3 bg-white rounded-full shadow hover:bg-gray-50 transition-colors text-gray-700" title="Slide Sebelumnya">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        <div class="flex gap-2 md:gap-4">
+            <button onclick="prevSlide()" class="p-3 md:p-4 bg-white rounded-full shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors text-gray-700 hover:text-blue-600 focus:outline-none" title="Slide Sebelumnya">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
             </button>
-            <button onclick="nextSlide()" class="p-3 bg-blue-600 rounded-full shadow hover:bg-blue-700 transition-colors text-white" title="Slide Selanjutnya">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            <button onclick="nextSlide()" class="p-3 md:p-4 bg-blue-600 rounded-full shadow-md hover:bg-blue-700 transition-colors text-white focus:outline-none transform hover:scale-105" title="Slide Selanjutnya">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
             </button>
-            <div class="w-px h-8 bg-gray-300 self-center mx-2"></div>
-            <button onclick="toggleFullscreen()" class="p-3 bg-white rounded-full shadow hover:bg-gray-50 transition-colors text-gray-700" title="Fullscreen">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            <div class="w-px h-8 md:h-10 bg-gray-300 self-center mx-1"></div>
+            <button onclick="toggleFullscreen()" class="p-3 md:p-4 bg-white rounded-full shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors text-gray-700 focus:outline-none" title="Fullscreen">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
             </button>
         </div>
     </div>
 
-    <!-- REFACTORED JAVASCRIPT -->
     <script>
         // --- 1. STATE MANAGEMENT (Terpusat) ---
         const App = {
-            slide: { current: 1, total: 12 },
+            slide: { current: 1, total: 2 },
             user: { name: "", email: "", password: "" },
             course: { topic: "", mode: "" },
             scores: { pre: 0, class: 0, post: 0, modul: 0 },
@@ -290,49 +302,42 @@
             isReviewMode: false
         };
 
+        // MENGGUNAKAN URL APPS SCRIPT YANG BARU DAN BENAR
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwV26E7TiOwJSOJOr1zvPUfTpaRw56SdNBJsqx298KTuxG7AD77cd4q9fgFRQuNb1Y/exec";
 
         // --- 2. HELPER FUNCTIONS ---
         const $ = id => document.getElementById(id);
         
+        // PENGGANTI ALERT() -> TOAST NOTIFICATION MODERN
+        function showToast(message, type = 'error') {
+            const container = $('toast-container');
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-600' : (type === 'warning' ? 'bg-orange-500' : 'bg-rose-500');
+            const icon = type === 'success' ? '✅' : (type === 'warning' ? '⚠️' : '🚨');
+            
+            toast.className = `${bgColor} text-white px-5 py-3 md:px-6 md:py-4 rounded-2xl shadow-xl transform transition-all duration-300 translate-x-[120%] flex items-center gap-3 max-w-sm`;
+            toast.innerHTML = `<span class="text-lg md:text-xl">${icon}</span> <span class="font-bold text-xs md:text-sm leading-tight">${message}</span>`;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => { toast.classList.remove('translate-x-[120%]'); }, 50);
+            
+            setTimeout(() => {
+                toast.classList.add('translate-x-[120%]', 'opacity-0');
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
+
         const flashError = id => {
             const el = $(id);
-            el.classList.add('border-red-500', 'bg-red-50');
-            setTimeout(() => el.classList.remove('border-red-500', 'bg-red-50'), 1000);
+            el.classList.add('border-rose-500', 'bg-rose-50');
+            setTimeout(() => el.classList.remove('border-rose-500', 'bg-rose-50'), 1000);
         };
         
         const switchView = (hideId, showId) => {
             $(hideId).classList.replace('flex', 'hidden');
             $(showId).classList.replace('hidden', 'flex');
         };
-
-        // --- TOAST NOTIFICATION FUNCTION (Pengganti Alert) ---
-        function showToast(message, type = 'error') {
-            const container = $('toast-container');
-            const toast = document.createElement('div');
-            
-            // Konfigurasi warna berdasarkan tipe
-            let bgColor = 'bg-red-500';
-            if (type === 'success') bgColor = 'bg-green-500';
-            else if (type === 'warning') bgColor = 'bg-orange-500';
-            else if (type === 'info') bgColor = 'bg-blue-500';
-
-            toast.className = `${bgColor} text-white px-6 py-3 rounded-xl shadow-xl transform transition-all duration-300 translate-x-full flex items-center gap-2`;
-            toast.innerHTML = `<span class="font-bold text-lg">${type === 'success' ? '✅' : type === 'warning' ? '⚠️' : '❌'}</span> <span>${message}</span>`;
-            
-            container.appendChild(toast);
-            
-            // Animasi masuk
-            requestAnimationFrame(() => {
-                setTimeout(() => toast.classList.remove('translate-x-full'), 10);
-            });
-            
-            // Animasi keluar dan hapus elemen setelah 3 detik
-            setTimeout(() => {
-                toast.classList.add('translate-x-full');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
 
         function bukaModalLupaPassword() { $('modal-forgot-password').classList.replace('hidden', 'flex'); }
         function tutupModalLupaPassword() { 
@@ -359,10 +364,13 @@
 
         async function prosesLupaPassword() {
             const email = $('input-forgot-email').value.trim();
-            if(!email) return;
+            if(!email) {
+                showToast("Harap masukkan email terlebih dahulu.", "warning");
+                return;
+            }
             
             const statusEl = $('forgot-status');
-            statusEl.innerText = "Mengirim...";
+            statusEl.innerText = "Mengirim permintaan...";
             statusEl.className = "text-sm font-bold mb-4 text-blue-500 block";
             
             try {
@@ -370,13 +378,14 @@
                 if (result && result.success) {
                     statusEl.innerText = result.message;
                     statusEl.className = "text-sm font-bold text-green-600 mb-4 block";
+                    setTimeout(tutupModalLupaPassword, 3000);
                 } else {
                     statusEl.innerText = result ? result.message : "Gagal mengirim request.";
-                    statusEl.className = "text-sm font-bold text-red-600 mb-4 block";
+                    statusEl.className = "text-sm font-bold text-rose-600 mb-4 block";
                 }
             } catch (err) {
                 statusEl.innerText = "Gagal terhubung ke server.";
-                statusEl.className = "text-sm font-bold text-red-600 mb-4 block";
+                statusEl.className = "text-sm font-bold text-rose-600 mb-4 block";
             }
         }
 
@@ -391,7 +400,7 @@
                 const oldText = btn.innerHTML;
                 btn.innerHTML = 'Memeriksa Data... ⏳';
                 btn.disabled = true;
-                btn.classList.add('opacity-70', 'cursor-not-allowed');
+                btn.classList.add('opacity-70', 'cursor-wait');
 
                 try {
                     const result = await gasRunner('checkLogin', [email, pass]);
@@ -401,20 +410,22 @@
                         $('final-name').innerText = finalName;
                         $('display-nama').innerText = finalName;
                         switchView('step-login', 'step-topic');
+                        showToast(`Selamat datang, ${finalName}!`, "success");
                     } else {
-                        showToast(result ? result.message : "Gagal login. Email/Password salah.", "error");
+                        showToast(result ? result.message : "Gagal login. Email/Password salah.");
                     }
                 } catch(e) {
-                    showToast("Gagal terhubung ke server. Pastikan koneksi internet lancar.", "error");
+                    showToast("Gagal terhubung ke server. Pastikan koneksi internet lancar.");
                 } finally {
                     btn.innerHTML = oldText;
                     btn.disabled = false;
-                    btn.classList.remove('opacity-70', 'cursor-not-allowed');
+                    btn.classList.remove('opacity-70', 'cursor-wait');
                 }
             } else {
                 if (!name) flashError('student-name');
                 if (!email) flashError('student-email');
                 if (!pass) flashError('teacher-password');
+                showToast("Harap isi semua kolom untuk melanjutkan.", "warning");
             }
         }
 
@@ -435,43 +446,40 @@
             const btns = document.querySelectorAll('#step-mode button');
             const oldTitle = title.innerText;
             
-            title.innerText = "Menarik Materi dari Google Sheets... ⏳";
+            title.innerText = "Menarik Materi... ⏳";
             btns.forEach(b => { b.disabled = true; b.classList.add('opacity-50', 'cursor-wait'); });
 
             try {
                 const result = await gasRunner('getTopikData', [App.user.email, App.course.topic, mode]);
                 
                 if (!result || !result.slides || result.slides.length === 0) {
-                    // FIX: Pesan error diperjelas agar tahu Sheet mana yang salah/kosong
-                    showToast(`Materi kosong! Pastikan penulisan Topik di Tab "${mode === 'Pembelajaran di Kelas' ? 'Konten_Kelas' : 'Soal_Mandiri'}" sama persis dengan yang diklik.`, "warning");
+                    showToast("Materi untuk topik ini belum tersedia di sistem.", "warning");
                     title.innerText = oldTitle;
                     btns.forEach(b => { b.disabled = false; b.classList.remove('opacity-50', 'cursor-wait'); });
                     return;
                 }
 
-                // --- INI BARIS YANG TERHAPUS SEBELUMNYA ---
-                App.slidesData = result.slides; // Memasukkan soal dari Sheets ke memori
-                App.tracking.answers = {};      // Me-reset jawaban sebelumnya
-                App.tracking.answered = {};     // Me-reset status soal terkunci
-                // ------------------------------------------
-
-                // FIX 1: Matikan Mode Review otomatis agar soal selalu bisa dikerjakan ulang
-                App.isReviewMode = false; 
+                App.isReviewMode = result.isReviewMode;
+                App.tracking.answers = result.history || {};
                 
-                // FIX OFF-BY-ONE ERROR DISINI: +2 Karena ada 1 slide menu utama (depan) dan 1 slide penutup (belakang)
+                // MENGEMBALIKAN BARIS YANG SEMPAT TERHAPUS
+                App.slidesData = result.slides;
+                
+                // MEMASTIKAN HALAMAN TIDAK TERSKIP
                 App.slide.total = App.slidesData.length + 2; 
-                $('total-pages').innerText = App.slide.total; // Update UI Navigasi secara Dinamis
 
                 if(App.isReviewMode) {
-                    showToast("Mode Review. Nilai tidak akan ditimpa karena kamu sudah mengerjakannya.", "info");
+                    showToast("Kamu sudah pernah mengerjakan. Sistem masuk ke Mode Review.", "warning");
                 }
 
-                // Inject dynamic slides
+                // Inject dynamic slides ke HTML
                 renderDynamicSlides(App.slidesData);
+                
+                $('total-pages').innerText = App.slide.total;
                 
                 nextSlide(); 
             } catch (e) {
-                showToast("Gagal menarik data materi: " + e.message, "error");
+                showToast("Gagal menarik data: " + e.message);
                 title.innerText = oldTitle;
                 btns.forEach(b => { b.disabled = false; b.classList.remove('opacity-50', 'cursor-wait'); });
             }
@@ -480,18 +488,16 @@
         function renderDynamicSlides(slidesData) {
             const wrapper = $('slides-wrapper');
             
-            // Hapus slide dinamis lama (jika siswa menekan tombol kembali dan pilih materi lain)
             document.querySelectorAll('.dynamic-slide').forEach(el => el.remove());
 
             slidesData.forEach((slide, idx) => {
-                // Dimulai dari index ke-2 karena index 1 adalah halaman login/menu awal
-                const slideId = `dynamic-slide-${idx + 2}`; 
+                const slideId = `dynamic-slide-${idx + 2}`;
                 const div = document.createElement('div');
                 div.id = slideId;
                 div.className = 'slide dynamic-slide flex flex-col bg-white w-full h-full';
                 div.innerHTML = buildHTMLForType(slide, idx + 1);
                 
-                const finishSlide = $('slide-12');
+                const finishSlide = $('slide-12'); 
                 wrapper.insertBefore(div, finishSlide);
             });
 
@@ -499,172 +505,184 @@
         }
 
         function buildHTMLForType(slide, slideIndex) {
-            const t = slide.Tipe_Slide;
+            // KEBAL UNDEFINED: Fallback ke Tipe_Soal jika Tipe_Slide tidak ditemukan
+            const rawType = slide.Tipe_Slide || slide.Tipe_Soal || '';
+            const t = rawType.toString().trim().toUpperCase(); 
+            
             let prefix = 'soal';
             if (t && t.includes('PRE')) prefix = 'pretest';
             else if (t && t.includes('POST')) prefix = 'posttest';
             const uid = `${prefix}_${slideIndex}`;
             
             const getBadge = () => {
-                if(prefix === 'pretest') return `<span class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full text-sm font-bold tracking-wide">PRE-TEST</span>`;
-                if(prefix === 'posttest') return `<span class="bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-sm font-bold tracking-wide">POST-TEST</span>`;
-                return `<span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-bold tracking-wide">LATIHAN</span>`;
+                if(prefix === 'pretest') return `<span class="bg-indigo-100 text-indigo-700 px-3 py-1.5 md:px-4 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase">PRE-TEST</span>`;
+                if(prefix === 'posttest') return `<span class="bg-rose-100 text-rose-700 px-3 py-1.5 md:px-4 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase">POST-TEST</span>`;
+                return `<span class="bg-orange-100 text-orange-700 px-3 py-1.5 md:px-4 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase">LATIHAN</span>`;
             };
 
             const ans = App.tracking.answers[uid] || null; 
             const isLocked = App.isReviewMode || App.tracking.answered[uid];
 
-            // 1. MATERI JUDUL
             if (t === 'MATERI_JUDUL') {
                 return `
-                    <div class="flex flex-col justify-center p-16 md:p-24 border-l-[16px] border-blue-600 h-full">
-                        <div class="max-w-3xl">
-                            <h3 class="text-2xl md:text-3xl font-semibold text-blue-600 mb-4 uppercase tracking-wider">${slide.Sub_Konten || ''}</h3>
-                            <h1 class="text-5xl md:text-7xl font-black text-gray-900 leading-tight mb-6">${slide.Judul || ''}</h1>
-                            <div class="text-xl text-gray-600 border-l-4 border-gray-300 pl-4 py-1">${slide.Konten || ''}</div>
+                    <div class="flex flex-col justify-center p-10 md:p-24 border-l-[12px] md:border-l-[20px] border-blue-600 h-full bg-white">
+                        <div class="max-w-4xl">
+                            <h3 class="text-xl md:text-3xl font-semibold text-blue-600 mb-4 md:mb-6 uppercase tracking-widest">${slide.Sub_Konten || ''}</h3>
+                            <h1 class="text-4xl md:text-8xl font-black text-gray-900 leading-tight mb-6 md:mb-8 tracking-tight">${slide.Judul || ''}</h1>
+                            <div class="text-lg md:text-2xl text-gray-600 border-l-4 border-gray-300 pl-4 md:pl-6 py-2 leading-relaxed">${slide.Konten || ''}</div>
                         </div>
                     </div>`;
             }
 
-            // 2. MATERI LIST/POIN
             if (t === 'MATERI_LIST') {
                 return `
-                    <div class="flex flex-col p-12 md:p-16 h-full">
-                        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 border-b-2 border-gray-100 pb-4">${slide.Judul || ''}</h2>
-                        <div class="content-scroll flex-1 overflow-y-auto pr-4 text-xl text-gray-700 leading-relaxed">
+                    <div class="flex flex-col p-8 md:p-20 h-full bg-white">
+                        <h2 class="text-3xl md:text-5xl font-bold text-gray-800 mb-6 md:mb-10 border-b-2 border-gray-100 pb-4 md:pb-6 tracking-tight">${slide.Judul || ''}</h2>
+                        <div class="content-scroll flex-1 overflow-y-auto pr-4 md:pr-6 text-lg md:text-2xl text-gray-700 leading-relaxed space-y-4 md:space-y-6">
                             ${slide.Konten || ''}
                         </div>
                     </div>`;
             }
 
-            // 3. MATERI GAMBAR TENGAH
             if (t === 'MATERI_IMG_TENGAH') {
                 return `
-                    <div class="flex flex-col p-12 md:p-16 items-center justify-center h-full">
-                        <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center w-full">${slide.Judul || ''}</h2>
-                        <div class="flex-1 w-full max-w-4xl bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center p-4 relative dedicated-image">
-                            <img src="${slide.Image_URL || ''}" class="max-w-full max-h-full object-contain rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex flex-col p-8 md:p-20 items-center justify-center h-full bg-white">
+                        <h2 class="text-3xl md:text-5xl font-bold text-gray-800 mb-6 md:mb-8 text-center w-full tracking-tight">${slide.Judul || ''}</h2>
+                        <div class="flex-1 w-full max-w-5xl bg-gray-50 rounded-2xl md:rounded-3xl border-2 border-dashed border-gray-300 flex items-center justify-center p-4 md:p-6 relative dedicated-image">
+                            <img src="${slide.Image_URL || ''}" class="max-w-full max-h-[40vh] md:max-h-[50vh] object-contain rounded-xl md:rounded-2xl shadow-sm border border-gray-200">
                         </div>
-                        <p class="text-gray-500 mt-4 italic text-center">${slide.Sub_Konten || ''}</p>
+                        <p class="text-gray-500 mt-4 md:mt-6 text-base md:text-xl italic text-center bg-gray-100 px-4 md:px-6 py-2 rounded-full">${slide.Sub_Konten || ''}</p>
                     </div>`;
             }
 
-            // 4. MATERI GAMBAR ATAS
             if (t === 'MATERI_IMG_ATAS') {
                 return `
-                    <div class="flex flex-col p-12 md:p-16 h-full">
-                        <h2 class="text-3xl font-bold text-gray-800 mb-4">${slide.Judul || ''}</h2>
-                        <div class="w-full h-64 bg-gray-100 rounded-xl mb-6 flex items-center justify-center overflow-hidden dedicated-image">
-                            <img src="${slide.Image_URL || ''}" class="w-full h-full object-contain rounded-xl">
+                    <div class="flex flex-col p-8 md:p-20 h-full bg-white">
+                        <h2 class="text-3xl md:text-5xl font-bold text-gray-800 mb-4 md:mb-6 tracking-tight">${slide.Judul || ''}</h2>
+                        <div class="w-full h-48 md:h-80 bg-gray-50 rounded-2xl md:rounded-3xl mb-6 md:mb-8 flex items-center justify-center overflow-hidden dedicated-image shadow-inner border border-gray-100">
+                            <img src="${slide.Image_URL || ''}" class="w-full h-full object-contain">
                         </div>
-                        <div class="content-scroll flex-1 overflow-y-auto text-xl text-gray-700 leading-relaxed">
+                        <div class="content-scroll flex-1 overflow-y-auto text-lg md:text-2xl text-gray-700 leading-relaxed pr-4 md:pr-6">
                             ${slide.Konten || ''}
                         </div>
                     </div>`;
             }
 
-            // 5. MATERI GAMBAR KIRI / KANAN
             if (t === 'MATERI_IMG_KIRI' || t === 'MATERI_IMG_KANAN') {
                 const imgBlock = `
-                    <div class="w-full md:w-1/2 flex items-center justify-center p-4 dedicated-image">
-                        <img src="${slide.Image_URL || ''}" class="max-w-full h-auto object-contain rounded-2xl shadow-sm">
+                    <div class="w-full md:w-1/2 flex items-center justify-center p-4 md:p-6 dedicated-image bg-gray-50 rounded-2xl md:rounded-3xl border border-gray-100">
+                        <img src="${slide.Image_URL || ''}" class="max-w-full max-h-[40vh] md:max-h-[60vh] object-contain rounded-xl md:rounded-2xl drop-shadow-md">
                     </div>`;
                 const textBlock = `
-                    <div class="w-full md:w-1/2 content-scroll overflow-y-auto flex flex-col justify-center">
-                        <div class="text-xl text-gray-700 leading-relaxed">${slide.Konten || ''}</div>
+                    <div class="w-full md:w-1/2 content-scroll overflow-y-auto flex flex-col justify-center px-2 md:px-4 mt-4 md:mt-0">
+                        <div class="text-lg md:text-2xl text-gray-700 leading-relaxed space-y-4 md:space-y-6">${slide.Konten || ''}</div>
                     </div>`;
                 
                 return `
-                    <div class="flex flex-col p-12 md:p-16 h-full">
-                        <h2 class="text-3xl font-bold text-gray-800 mb-8 border-b-2 border-gray-100 pb-4">${slide.Judul || ''}</h2>
-                        <div class="flex flex-col md:flex-row gap-8 flex-1 h-full">
+                    <div class="flex flex-col p-8 md:p-20 h-full bg-white">
+                        <h2 class="text-3xl md:text-5xl font-bold text-gray-800 mb-6 md:mb-10 border-b-2 border-gray-100 pb-4 md:pb-6 tracking-tight">${slide.Judul || ''}</h2>
+                        <div class="flex flex-col md:flex-row gap-6 md:gap-12 flex-1 h-full items-stretch">
                             ${t === 'MATERI_IMG_KIRI' ? imgBlock + textBlock : textBlock + imgBlock}
                         </div>
                     </div>`;
             }
 
-            // 6. SOAL PILIHAN GANDA (PG)
             if (t && t.includes('_PG')) {
-                // FIX 3: Bersihkan spasi tersembunyi dari Google Sheets (misal "A " menjadi "A")
-                const kunciJawaban = String(slide.Kunci || '').trim().toUpperCase();
+                const safeA = (slide.Opsi_A || '').toString().trim();
+                const safeB = (slide.Opsi_B || '').toString().trim();
+                const safeC = (slide.Opsi_C || '').toString().trim();
+                const safeD = (slide.Opsi_D || '').toString().trim();
+                const safeKey = (slide.Kunci || '').toString().trim().toUpperCase();
 
                 const getBtnClass = (op) => {
-                    if (!isLocked) return 'border-gray-200 hover:border-blue-500 hover:bg-blue-50';
-                    if (op === kunciJawaban) return 'border-green-500 bg-green-50 opacity-100 cursor-not-allowed'; 
-                    if (ans === op) return 'border-red-500 bg-red-50 opacity-100 cursor-not-allowed'; 
-                    return 'border-gray-200 opacity-50 cursor-not-allowed';
+                    if (!isLocked) return 'border-gray-200 hover:border-blue-500 hover:bg-blue-50 hover:shadow-md';
+                    if (op === safeKey) return 'border-green-500 bg-green-50 opacity-100 cursor-not-allowed shadow-inner'; 
+                    if (ans === op) return 'border-rose-500 bg-rose-50 opacity-100 cursor-not-allowed shadow-inner'; 
+                    return 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed';
                 };
 
-                // FIX: Menambahkan 'flex-1' dan 'break-words' agar teks biasa yang panjang bisa masuk ke dalam kotak dengan rapi
-                const renderOption = (letter, val) => `
-                    <button id="btn-${uid}-${letter}" onclick="checkPG(this, ${kunciJawaban === letter}, '${letter}', '${uid}', '${t}')" 
-                        class="group text-left p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${getBtnClass(letter)}" ${isLocked ? 'disabled' : ''}>
-                        <div class="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 flex items-center justify-center font-bold text-lg pointer-events-none">${letter}</div>
-                        <div class="text-lg md:text-xl text-gray-700 pointer-events-none flex-1 break-words">${val || ''}</div>
+                const renderOption = (letter, val) => {
+                    if (!val) return ''; 
+                    return `
+                    <button id="btn-${uid}-${letter}" onclick="checkPG(this, ${safeKey === letter}, '${letter}', '${uid}', '${t}')" 
+                        class="group text-left p-4 md:p-5 rounded-2xl border-2 transition-all flex flex-row items-center gap-4 md:gap-5 ${getBtnClass(letter)}" ${isLocked ? 'disabled' : ''}>
+                        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-white border border-gray-200 flex items-center justify-center font-bold text-lg md:text-xl text-gray-500 pointer-events-none shadow-sm">${letter}</div>
+                        <div class="text-lg md:text-2xl text-gray-700 pointer-events-none flex-1 break-words">${val}</div>
                     </button>`;
+                };
 
                 return `
-                    <div class="flex flex-col p-12 md:p-16 h-full bg-white">
-                        <div class="flex items-center gap-3 mb-6">
+                    <div class="flex flex-col p-8 md:p-20 h-full bg-white">
+                        <div class="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
                             ${getBadge()}
-                            <span class="text-gray-400 text-sm font-medium">Pilihan Ganda</span>
+                            <span class="text-gray-400 text-xs md:text-base font-bold uppercase tracking-widest">Pilihan Ganda</span>
                         </div>
-                        <div class="content-scroll flex-1 overflow-y-auto pb-4 pr-4">
-                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-snug">${slide.Konten || ''}</h2>
-                            <div id="options-${uid}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                ${renderOption('A', slide.Opsi_A)}
-                                ${renderOption('B', slide.Opsi_B)}
-                                ${renderOption('C', slide.Opsi_C)}
-                                ${renderOption('D', slide.Opsi_D)}
+                        <div class="content-scroll flex-1 overflow-y-auto pb-4 md:pb-6 pr-4 md:pr-6">
+                            <h2 class="text-2xl md:text-4xl font-bold text-gray-800 mb-8 md:mb-10 leading-snug tracking-tight">${slide.Konten || ''}</h2>
+                            <div id="options-${uid}" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                                ${renderOption('A', safeA)}
+                                ${renderOption('B', safeB)}
+                                ${renderOption('C', safeC)}
+                                ${renderOption('D', safeD)}
                             </div>
                             
-                            <div id="explanation-${uid}" class="${isLocked ? 'block' : 'hidden'} mt-8 p-6 bg-blue-50 border border-blue-200 rounded-2xl animate-fade-in-down">
-                                <h3 class="text-xl font-bold text-blue-800 mb-3">Pembahasan:</h3>
-                                <div class="text-lg text-gray-700">${slide.Pembahasan || 'Kunci jawaban: ' + slide.Kunci}</div>
+                            <div id="explanation-${uid}" class="${isLocked ? 'block' : 'hidden'} mt-8 md:mt-10 p-6 md:p-8 bg-blue-50 border border-blue-100 rounded-2xl md:rounded-3xl animate-fade-in-down shadow-sm">
+                                <h3 class="text-xl md:text-2xl font-bold text-blue-800 mb-3 md:mb-4 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                    Pembahasan:
+                                </h3>
+                                <div class="text-lg md:text-xl text-gray-700 leading-relaxed">${slide.Pembahasan || 'Kunci jawaban yang tepat: <b>' + safeKey + '</b>'}</div>
                             </div>
                         </div>
                     </div>`;
             }
 
-            // 7. SOAL ISIAN SINGKAT
             if (t && t.includes('_ISIAN')) {
                 const isCorrectHistory = ans && ans.toLowerCase().replace(/\s/g,'') === String(slide.Kunci).toLowerCase().replace(/\s/g,'');
 
                 return `
-                    <div class="flex flex-col p-12 md:p-16 h-full bg-white">
-                        <div class="flex items-center gap-3 mb-6">
+                    <div class="flex flex-col p-8 md:p-20 h-full bg-white">
+                        <div class="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
                             ${getBadge()}
-                            <span class="text-gray-400 text-sm font-medium">Isian Singkat</span>
+                            <span class="text-gray-400 text-xs md:text-base font-bold uppercase tracking-widest">Isian Singkat</span>
                         </div>
-                        <div class="content-scroll flex-1 overflow-y-auto pr-4">
-                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4 leading-snug">${slide.Konten || ''}</h2>
+                        <div class="content-scroll flex-1 overflow-y-auto pr-4 md:pr-6">
+                            <h2 class="text-2xl md:text-4xl font-bold text-gray-800 mb-8 md:mb-10 leading-snug tracking-tight">${slide.Konten || ''}</h2>
                             
-                            <div class="max-w-md mx-auto bg-gray-50 p-6 rounded-2xl border border-gray-200 text-center mt-8">
-                                <label class="block text-gray-700 font-bold mb-4 text-lg">Jawaban Kamu:</label>
+                            <div class="max-w-2xl mx-auto bg-gray-50 p-6 md:p-10 rounded-[1.5rem] md:rounded-[2rem] border border-gray-200 text-center mt-8 md:mt-12 shadow-inner">
+                                <label class="block text-gray-500 font-bold uppercase tracking-widest mb-4 md:mb-6 text-xs md:text-sm">Ketikan Jawabanmu:</label>
                                 <input type="text" id="input-${uid}" value="${ans || ''}" ${isLocked ? 'disabled' : ''} 
-                                    class="w-full text-center text-2xl px-4 py-3 rounded-xl border-2 border-gray-300 focus:outline-none focus:border-purple-500 mb-4 transition-all ${isLocked ? 'bg-gray-100 cursor-not-allowed' : ''}" 
+                                    class="w-full text-center text-3xl md:text-4xl px-4 py-4 md:px-6 md:py-5 rounded-xl md:rounded-2xl border-2 border-gray-300 focus:outline-none focus:border-purple-500 mb-4 md:mb-6 transition-all ${isLocked ? 'bg-gray-200 text-gray-500 cursor-not-allowed border-dashed' : 'shadow-sm text-gray-800'}" 
                                     onkeypress="if(event.key === 'Enter') checkIsian('${uid}', '${slide.Kunci}', '${t}')">
                                 
                                 ${!isLocked ? `
                                 <button id="btn-${uid}" onclick="checkIsian('${uid}', '${slide.Kunci}', '${t}')" 
-                                    class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow">
+                                    class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 md:py-4 px-8 md:px-12 rounded-xl md:rounded-2xl text-lg md:text-xl transition-all transform hover:scale-105 shadow-xl hover:shadow-purple-300">
                                     Cek Jawaban
                                 </button>` : ''}
                                 
-                                <div id="feedback-${uid}" class="mt-4 text-lg font-bold ${isLocked ? 'block' : 'hidden'} ${isCorrectHistory ? 'text-green-600' : 'text-red-600'}">
-                                    ${isLocked ? (isCorrectHistory ? '✅ Jawaban kamu sebelumnya benar!' : '❌ Jawaban kamu sebelumnya salah.') : ''}
+                                <div id="feedback-${uid}" class="mt-4 md:mt-6 text-xl md:text-2xl font-black ${isLocked ? 'block' : 'hidden'} ${isCorrectHistory ? 'text-green-600' : 'text-rose-600'}">
+                                    ${isLocked ? (isCorrectHistory ? '✅ Jawaban tepat!' : '❌ Jawaban belum tepat.') : ''}
                                 </div>
                             </div>
 
-                            <div id="explanation-${uid}" class="${isLocked ? 'block' : 'hidden'} mt-8 p-6 bg-purple-50 border border-purple-200 rounded-2xl max-w-3xl mx-auto animate-fade-in-down">
-                                <h3 class="text-xl font-bold text-purple-800 mb-3">Pembahasan:</h3>
-                                <div class="text-lg text-gray-700">${slide.Pembahasan || 'Kunci jawaban yang benar: ' + slide.Kunci}</div>
+                            <div id="explanation-${uid}" class="${isLocked ? 'block' : 'hidden'} mt-8 md:mt-10 p-6 md:p-8 bg-purple-50 border border-purple-100 rounded-2xl md:rounded-3xl max-w-4xl mx-auto animate-fade-in-down shadow-sm">
+                                <h3 class="text-xl md:text-2xl font-bold text-purple-800 mb-3 md:mb-4 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                    Pembahasan:
+                                </h3>
+                                <div class="text-lg md:text-xl text-gray-700 leading-relaxed">${slide.Pembahasan || 'Kunci jawaban yang benar: <b>' + slide.Kunci + '</b>'}</div>
                             </div>
                         </div>
                     </div>`;
             }
 
-            return `<div class="p-16 text-red-500 font-bold h-full flex items-center justify-center">⚠️ Tipe slide [${t}] tidak dikenali di Google Sheets.</div>`;
+            return `
+                <div class="p-10 md:p-16 h-full flex flex-col items-center justify-center bg-rose-50 text-center">
+                    <div class="text-5xl md:text-6xl mb-4">⚠️</div>
+                    <h3 class="text-xl md:text-2xl font-bold text-rose-700 mb-2">Tipe Slide Tidak Dikenali</h3>
+                    <p class="text-base md:text-lg text-rose-600">Pastikan kolom <b class="bg-rose-200 px-2 py-1 rounded">Tipe_Slide</b> atau <b class="bg-rose-200 px-2 py-1 rounded">Tipe_Soal</b> diisi dengan benar di Google Sheets. [Isi saat ini: <b>${t || 'KOSONG / UNDEFINED'}</b>]</p>
+                </div>`;
         }
 
         // --- 4. NAVIGATION LOGIC ---
@@ -675,7 +693,6 @@
             
             $('current-page').innerText = index;
 
-            // Logo layout adjustment
             const logoBox = $('global-logo-container');
             if (index === 1) {
                 logoBox.classList.replace('flex-row', 'flex-col');
@@ -687,13 +704,11 @@
                 logoBox.classList.replace('gap-2', 'gap-4');
             }
 
-            // Logic Navigasi:
             if (index === 1) {
-                $('slide-1').classList.add('active'); // Slide Menu Utama
+                $('slide-1').classList.add('active'); 
             } else if (index === App.slide.total) {
-                $('slide-12').classList.add('active'); // Slide Penutup
-                
-                // Render nilai
+                $('slide-12').classList.add('active'); 
+
                 $('final-score-pre').innerText = App.scores.pre;
                 $('final-score-class').innerText = App.scores.class;
                 $('final-score-post').innerText = App.scores.post;
@@ -703,14 +718,8 @@
                 
                 kirimDataKeAppScript();
             } else {
-                // Menampilkan Slide Dinamis
                 const dSlide = $('dynamic-slide-' + index);
-                if (dSlide) {
-                    dSlide.classList.add('active');
-                } else {
-                    // Fallback jika tidak ditemukan
-                    console.warn(`Slide dynamic-slide-${index} tidak ditemukan.`);
-                }
+                if (dSlide) dSlide.classList.add('active');
             }
         }
 
@@ -723,9 +732,7 @@
             try {
                 if (!document.fullscreenElement) {
                     const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
-                    if(req) req.call(el).catch(err => {
-                        showToast("Fullscreen diblokir oleh browser", "error");
-                    });
+                    if(req) req.call(el).catch(err => showToast("Fullscreen diblokir oleh browser.", "warning"));
                 } else {
                     const exitReq = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
                     if(exitReq) exitReq.call(document);
@@ -761,12 +768,16 @@
 
             $('options-' + qId).querySelectorAll('button').forEach(btn => {
                 btn.className = btn.className.replace(/hover:[^\s]+/g, ''); 
-                btn.classList.add('cursor-not-allowed', 'opacity-70');
+                btn.classList.add('cursor-not-allowed', 'opacity-50', 'bg-gray-50');
+                btn.classList.remove('border-gray-200');
                 btn.onclick = null; 
             });
 
-            button.classList.remove('border-gray-200', 'opacity-70');
-            button.classList.add(isCorrect ? 'border-green-500' : 'border-red-500', isCorrect ? 'bg-green-50' : 'bg-red-50', 'opacity-100');
+            button.classList.remove('opacity-50', 'bg-gray-50');
+            button.classList.add(isCorrect ? 'border-green-500' : 'border-rose-500', isCorrect ? 'bg-green-50' : 'bg-rose-50', 'opacity-100', 'shadow-inner');
+            
+            if(isCorrect) showToast("Wah, jawabanmu benar!", "success");
+            else showToast("Sayang sekali, jawabanmu masih keliru.", "error");
         }
 
         function checkIsian(qId, kunci = "2/3", type = '') {
@@ -783,25 +794,28 @@
 
             if(isCorrect) {
                 addScore(qId, type);
-                feedback.innerHTML = "✅ Benar Sekali!";
-                feedback.className = "mt-4 text-lg font-bold text-green-600 animate-fade-in-down block";
+                feedback.innerHTML = "✅ Tepat Sekali!";
+                feedback.className = "mt-4 md:mt-6 text-xl md:text-2xl font-black text-green-600 animate-fade-in-down block";
+                showToast("Wah, jawabanmu benar!", "success");
             } else {
-                feedback.innerHTML = "❌ Jawaban kamu salah.";
-                feedback.className = "mt-4 text-lg font-bold text-red-600 animate-fade-in-down block";
+                feedback.innerHTML = "❌ Masih kurang tepat.";
+                feedback.className = "mt-4 md:mt-6 text-xl md:text-2xl font-black text-rose-600 animate-fade-in-down block";
+                showToast("Sayang sekali, jawabanmu masih keliru.", "error");
             }
             
             showExplanation(qId);
 
             inputEl.disabled = true;
-            inputEl.classList.add('bg-gray-100', 'cursor-not-allowed');
+            inputEl.classList.add('bg-gray-200', 'text-gray-500', 'cursor-not-allowed', 'border-dashed');
+            inputEl.classList.remove('shadow-sm', 'text-gray-800');
             const btn = $('btn-' + qId);
             if(btn) {
                 btn.disabled = true;
                 btn.classList.add('opacity-50', 'cursor-not-allowed');
+                btn.classList.remove('hover:scale-105', 'hover:shadow-purple-300', 'shadow-xl');
             }
         }
 
-        // --- 6. UTILITIES & INTEGRATION ---
         function renderCustomImages() {
             const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
             const nodesToReplace = [];
@@ -810,14 +824,14 @@
             }
             nodesToReplace.forEach(node => {
                 const span = document.createElement('span');
-                span.innerHTML = node.nodeValue.replace(/\[GAMBAR:(.*?)\]/g, '<img src="$1" alt="Ilustrasi" class="block max-w-full h-auto max-h-64 object-contain rounded-xl shadow-md my-4 mx-auto border border-gray-200">');
+                span.innerHTML = node.nodeValue.replace(/\[GAMBAR:(.*?)\]/g, '<img src="$1" alt="Ilustrasi" class="block max-w-full h-auto max-h-[40vh] object-contain rounded-2xl shadow-md my-6 mx-auto border border-gray-200">');
                 node.parentNode.replaceChild(span, node);
             });
 
             document.querySelectorAll('.dedicated-image').forEach(el => {
                 const text = el.innerText.trim();
                 if (text.startsWith('http://') || text.startsWith('https://')) {
-                    el.innerHTML = `<img src="${text}" alt="Ilustrasi Materi" class="w-full max-w-full h-auto max-h-full rounded-xl object-contain">`;
+                    el.innerHTML = `<img src="${text}" alt="Ilustrasi Materi" class="w-full max-w-full h-auto max-h-full rounded-2xl object-contain drop-shadow-md">`;
                 }
             });
         }
@@ -825,7 +839,7 @@
         async function kirimDataKeAppScript() {
             if (App.isReviewMode) {
                 $('submit-status').innerText = "✅ Ini adalah mode review. Nilai tidak ditimpa.";
-                $('submit-status').className = "text-sm font-bold text-gray-500 mb-4 block";
+                $('submit-status').className = "text-xs md:text-sm font-bold text-gray-500 mb-6 bg-gray-50 py-2 px-4 rounded-full inline-block";
                 return;
             }
 
@@ -844,31 +858,30 @@
 
             const statusEl = $('submit-status');
             statusEl.innerText = "Sedang menyimpan nilai... ⏳";
-            statusEl.className = "text-sm font-bold text-blue-500 mb-4 block";
+            statusEl.className = "text-xs md:text-sm font-bold text-gray-500 mb-6 bg-gray-50 py-2 px-4 rounded-full inline-block";
 
             try {
                 const result = await gasRunner('simpanNilaiSiswa', [dataToSave]);
                 if (result && result.success) {
-                    statusEl.innerText = "✅ Nilai berhasil disimpan!";
-                    statusEl.className = "text-sm font-bold text-green-600 mb-4 block";
+                    statusEl.innerText = "✅ Rekam jejak belajar berhasil disimpan!";
+                    statusEl.className = "text-xs md:text-sm font-bold text-green-600 mb-6 bg-green-50 py-2 px-4 rounded-full inline-block";
                 } else {
                     statusEl.innerText = "❌ Gagal menyimpan nilai.";
-                    statusEl.className = "text-sm font-bold text-red-600 mb-4 block";
+                    statusEl.className = "text-xs md:text-sm font-bold text-rose-600 mb-6 bg-rose-50 py-2 px-4 rounded-full inline-block";
                 }
             } catch (err) {
                 statusEl.innerText = "⚠️ Gagal Koneksi: Data tidak tersimpan ke Sheets.";
-                statusEl.className = "text-sm font-bold text-orange-500 mb-4 block";
+                statusEl.className = "text-xs md:text-sm font-bold text-orange-600 mb-6 bg-orange-50 py-2 px-4 rounded-full inline-block";
             }
         }
 
         window.renderMath = function() {
             renderCustomImages();
             if (window.MathJax) {
-                MathJax.typesetPromise().catch(err => console.log('MathJax error:', err));
+                MathJax.typesetPromise().then(() => console.log('Math rendered!'));
             }
         };
 
-        // Initialize App
         document.addEventListener('DOMContentLoaded', () => {
             renderCustomImages();
             showSlide(App.slide.current); 
