@@ -281,7 +281,7 @@
     <script>
         // --- 1. STATE MANAGEMENT (Terpusat) ---
         const App = {
-            slide: { current: 1, total: 1 }, // Total awal diubah dinamis
+            slide: { current: 1, total: 12 },
             user: { name: "", email: "", password: "" },
             course: { topic: "", mode: "" },
             scores: { pre: 0, class: 0, post: 0, modul: 0 },
@@ -290,7 +290,7 @@
             isReviewMode: false
         };
 
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqv2qHiPQj2cpIgoMEWuTGzE1Vycf233GnWBqjQ62Pu_--7xM0NHOC_gLt5PQgtS8/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwV26E7TiOwJSOJOr1zvPUfTpaRw56SdNBJsqx298KTuxG7AD77cd4q9fgFRQuNb1Y/exec";
 
         // --- 2. HELPER FUNCTIONS ---
         const $ = id => document.getElementById(id);
@@ -442,15 +442,21 @@
                 const result = await gasRunner('getTopikData', [App.user.email, App.course.topic, mode]);
                 
                 if (!result || !result.slides || result.slides.length === 0) {
-                    showToast("Materi untuk topik ini belum dimasukkan ke Google Sheets.", "warning");
+                    // FIX: Pesan error diperjelas agar tahu Sheet mana yang salah/kosong
+                    showToast(`Materi kosong! Pastikan penulisan Topik di Tab "${mode === 'Pembelajaran di Kelas' ? 'Konten_Kelas' : 'Soal_Mandiri'}" sama persis dengan yang diklik.`, "warning");
                     title.innerText = oldTitle;
                     btns.forEach(b => { b.disabled = false; b.classList.remove('opacity-50', 'cursor-wait'); });
                     return;
                 }
 
-                App.isReviewMode = result.isReviewMode;
-                App.tracking.answers = result.history || {};
-                App.slidesData = result.slides;
+                // --- INI BARIS YANG TERHAPUS SEBELUMNYA ---
+                App.slidesData = result.slides; // Memasukkan soal dari Sheets ke memori
+                App.tracking.answers = {};      // Me-reset jawaban sebelumnya
+                App.tracking.answered = {};     // Me-reset status soal terkunci
+                // ------------------------------------------
+
+                // FIX 1: Matikan Mode Review otomatis agar soal selalu bisa dikerjakan ulang
+                App.isReviewMode = false; 
                 
                 // FIX OFF-BY-ONE ERROR DISINI: +2 Karena ada 1 slide menu utama (depan) dan 1 slide penutup (belakang)
                 App.slide.total = App.slidesData.length + 2; 
@@ -579,20 +585,22 @@
 
             // 6. SOAL PILIHAN GANDA (PG)
             if (t && t.includes('_PG')) {
+                // FIX 3: Bersihkan spasi tersembunyi dari Google Sheets (misal "A " menjadi "A")
+                const kunciJawaban = String(slide.Kunci || '').trim().toUpperCase();
+
                 const getBtnClass = (op) => {
                     if (!isLocked) return 'border-gray-200 hover:border-blue-500 hover:bg-blue-50';
-                    if (op === slide.Kunci) return 'border-green-500 bg-green-50 opacity-100 cursor-not-allowed'; 
+                    if (op === kunciJawaban) return 'border-green-500 bg-green-50 opacity-100 cursor-not-allowed'; 
                     if (ans === op) return 'border-red-500 bg-red-50 opacity-100 cursor-not-allowed'; 
                     return 'border-gray-200 opacity-50 cursor-not-allowed';
                 };
 
+                // FIX: Menambahkan 'flex-1' dan 'break-words' agar teks biasa yang panjang bisa masuk ke dalam kotak dengan rapi
                 const renderOption = (letter, val) => `
-                    <button id="btn-${uid}-${letter}" onclick="checkPG(this, ${slide.Kunci === letter}, '${letter}', '${uid}', '${t}')" 
-                        class="group text-left p-4 rounded-xl border-2 transition-all ${getBtnClass(letter)}" ${isLocked ? 'disabled' : ''}>
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center font-bold text-lg pointer-events-none">${letter}</div>
-                            <div class="text-xl text-gray-700 pointer-events-none">${val || ''}</div>
-                        </div>
+                    <button id="btn-${uid}-${letter}" onclick="checkPG(this, ${kunciJawaban === letter}, '${letter}', '${uid}', '${t}')" 
+                        class="group text-left p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${getBtnClass(letter)}" ${isLocked ? 'disabled' : ''}>
+                        <div class="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 flex items-center justify-center font-bold text-lg pointer-events-none">${letter}</div>
+                        <div class="text-lg md:text-xl text-gray-700 pointer-events-none flex-1 break-words">${val || ''}</div>
                     </button>`;
 
                 return `
