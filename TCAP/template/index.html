@@ -1,1029 +1,358 @@
+bisa baca ini ngga 
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Champs - Presentasi Interaktif</title>
-    
+    <title>Panduan & Template Sheet Math Champs</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts: Lato -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
-    
-    <!-- MathJax for LaTeX Support -->
-    <script>
-        MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
-            },
-            svg: { fontCache: 'global' }
-        };
-    </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        /* FULLSCREEN NATIVE MAX SCALING HACK */
-        html, body {
-            font-family: 'Lato', sans-serif;
-            background-color: #e2e8f0;
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #app-container {
-            width: 96vw;
-            height: calc(96vw * 9 / 16);
-            max-height: 96vh;
-            max-width: calc(96vh * 16 / 9);
-            background-color: white;
-            border-radius: 1.25rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0,0,0,0.05);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .presentation-wrapper {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .slide {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out;
-            background-color: white;
-            overflow: hidden; 
-        }
-
-        .slide.active {
-            opacity: 1;
-            visibility: visible;
-            z-index: 10;
-        }
-
-        .presentation-nav {
-            height: 75px;
-            width: 100%;
-            background-color: #ffffff;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 1.5rem;
-            z-index: 100;
-            flex-shrink: 0;
-        }
-
-        :fullscreen #app-container {
-            width: 100vw;
-            height: 100vh;
-            max-width: none;
-            max-height: none;
-            border-radius: 0;
-        }
-        :-webkit-full-screen #app-container {
-            width: 100vw;
-            height: 100vh;
-            max-width: none;
-            max-height: none;
-            border-radius: 0;
-        }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f8fafc; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        body { font-family: 'Inter', sans-serif; }
+        /* Scrollbar styling untuk tabel */
+        .table-container::-webkit-scrollbar { height: 10px; }
+        .table-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+        .table-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        .content-scroll::-webkit-scrollbar { width: 6px; }
-        .content-scroll::-webkit-scrollbar-track { background: #f8fafc; border-radius: 8px; }
-        .content-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
-        .content-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-down {
-            animation: fadeInDown 0.3s ease-out forwards;
-        }
+        .code-block { font-family: monospace; background: #1e293b; color: #e2e8f0; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.9em; }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800 min-h-screen pb-20">
 
-    <!-- CUSTOM TOAST NOTIFICATION -->
-    <div id="toast-container" class="fixed top-5 right-5 z-[1000] flex flex-col gap-3 pointer-events-none"></div>
-
-    <!-- MODAL LUPA PASSWORD -->
-    <div id="modal-forgot-password" class="fixed inset-0 bg-black bg-opacity-60 z-[300] hidden items-center justify-center p-4 backdrop-blur-sm transition-all">
-        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm md:max-w-md w-full animate-fade-in-down border border-gray-100">
-            <h2 class="text-xl md:text-2xl font-bold text-blue-900 mb-2">Lupa Password?</h2>
-            <p class="text-gray-600 mb-6 text-sm">Masukkan email kamu yang terdaftar. Kami akan mengirimkan password baru ke email tersebut.</p>
-            <input type="email" id="input-forgot-email" placeholder="contoh: budi@sekolah.com" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 bg-gray-50">
-            <p id="forgot-status" class="text-sm font-bold mb-4 hidden"></p>
-            <div class="flex gap-4">
-                <button onclick="tutupModalLupaPassword()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-xl transition-colors">Batal</button>
-                <button onclick="prosesLupaPassword()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-blue-200">Kirim</button>
-            </div>
-        </div>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-5 right-5 transform translate-x-full transition-transform duration-300 bg-green-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="font-bold text-lg" id="toast-message">Berhasil disalin!</span>
     </div>
 
-    <!-- MODAL DAFTAR SOAL (NAVIGASI) -->
-    <div id="modal-navigasi" class="fixed inset-0 bg-black bg-opacity-60 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm transition-all">
-        <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-3xl w-full animate-fade-in-down border border-gray-100 flex flex-col max-h-[85vh]">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl md:text-2xl font-bold text-blue-900">Daftar Soal / Materi</h2>
-                <button onclick="tutupNavigasi()" class="text-gray-400 hover:text-rose-500 transition-colors p-2 rounded-full hover:bg-rose-50">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-            </div>
+    <div class="max-w-[90rem] mx-auto px-4 py-12">
+        <!-- Header -->
+        <header class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-black text-blue-900 mb-4 tracking-tight">Panduan Setup & Template Database</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Pelajari cara menulis rumus, menebalkan teks, membuat paragraf baru, dan memasukkan gambar. Gunakan tabel di bawah untuk menyalin template langsung ke Google Sheets milikmu.</p>
+        </header>
+
+        <!-- SEGMEN 1: ATURAN PENULISAN (SANGAT DETAIL) -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-black text-gray-900 mb-6 border-b-2 border-gray-200 pb-4">📝 Aturan Penulisan Konten (Wajib Dibaca)</h2>
             
-            <div class="mb-5 flex flex-wrap gap-4 text-xs md:text-sm text-gray-600 font-medium bg-gray-50 p-4 rounded-xl border border-gray-200">
-                <div class="flex items-center gap-2"><div class="w-4 h-4 rounded bg-white border-2 border-gray-200"></div> Belum Dijawab / Info Materi</div>
-                <div class="flex items-center gap-2"><div class="w-4 h-4 rounded bg-green-500 border-2 border-green-600"></div> Sudah Dijawab</div>
-            </div>
-            
-            <div id="navigasi-grid" class="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-3 overflow-y-auto content-scroll p-2 pb-6">
-                <!-- Tombol-tombol navigasi akan diisi dinamis oleh JavaScript -->
-            </div>
-        </div>
-    </div>
-
-    <!-- KESELURUHAN APLIKASI -->
-    <div id="app-container">
-
-        <!-- MAIN PRESENTATION CANVAS -->
-        <div id="presentation" class="presentation-wrapper">
-            
-            <!-- GLOBAL LOGOS -->
-            <div id="global-logo-container" class="absolute top-4 right-6 md:top-5 md:right-8 flex flex-col items-end gap-2 z-50 pointer-events-none transition-all duration-500">
-                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_zekej2_3984.png" alt="Ruangguru Logo" class="h-8 md:h-10 lg:h-12 object-contain drop-shadow-sm">
-                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs Logo" class="h-8 md:h-10 lg:h-12 object-contain drop-shadow-sm">
-            </div>
-
-            <!-- SLIDE WRAPPER -->
-            <div id="slides-wrapper" class="w-full h-full relative text-gray-800">
-
-                <!-- SLIDE 1: WELCOME & TOPIK -->
-                <div id="slide-1" class="slide active flex flex-col items-center justify-center text-center px-4 py-4 md:py-6 bg-gradient-to-br from-blue-50 to-indigo-50 overflow-y-auto content-scroll">
-                    
-                    <!-- STEP 1: LOGIN -->
-                    <div id="step-login" class="flex flex-col items-center justify-center w-full transition-all duration-500 mt-2 md:mt-4">
-                        <h1 class="text-3xl md:text-4xl lg:text-5xl font-black text-blue-900 mb-2 md:mb-3 drop-shadow-sm tracking-tight px-4 relative z-10">Selamat Datang di Math Champs!</h1>
-                        <p class="text-sm md:text-base lg:text-lg text-gray-600 mb-4 md:mb-6 max-w-2xl font-medium px-4">Sebelum memulai petualangan belajarmu hari ini, silakan tulis nama dan sandi kamu terlebih dahulu ya.</p>
-                        
-                        <div class="w-full max-w-md bg-white p-6 md:p-8 rounded-3xl shadow-xl border border-blue-50 relative overflow-hidden shrink-0">
-                            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-indigo-500"></div>
-                            
-                            <label class="block text-left text-xs md:text-sm font-bold text-gray-700 mb-1.5">Nama Lengkap</label>
-                            <input type="text" id="student-name" placeholder="Misal: Budi Santoso" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3 md:mb-4 bg-gray-50 transition-all text-sm md:text-base" onkeypress="if(event.key === 'Enter') document.getElementById('student-email').focus()">
-                            
-                            <label class="block text-left text-xs md:text-sm font-bold text-gray-700 mb-1.5">Alamat Email</label>
-                            <input type="email" id="student-email" placeholder="Misal: budi@sekolah.com" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3 md:mb-4 bg-gray-50 transition-all text-sm md:text-base" onkeypress="if(event.key === 'Enter') document.getElementById('teacher-password').focus()">
-
-                            <label class="block text-left text-xs md:text-sm font-bold text-gray-700 mb-1.5">Password Guru</label>
-                            <input type="password" id="teacher-password" placeholder="Masukkan password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2 bg-gray-50 transition-all text-sm md:text-base" onkeypress="if(event.key === 'Enter') simpanNama()">
-
-                            <div class="text-right mb-4">
-                                <button onclick="bukaModalLupaPassword()" class="text-xs md:text-sm text-blue-500 hover:text-blue-700 font-semibold transition-colors">Lupa Password?</button>
-                            </div>
-
-                            <button id="btn-login-submit" onclick="simpanNama()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-3.5 px-6 rounded-2xl text-base md:text-lg transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-blue-300">
-                                Mulai Belajar 🚀
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- STEP 2: PILIH TOPIK -->
-                    <div id="step-topic" class="hidden flex-col items-center justify-center w-full max-w-6xl transition-all duration-500 my-auto">
-                        <h1 class="text-3xl md:text-5xl font-black text-blue-900 mb-3 mt-4">Halo, <span id="display-nama" class="text-blue-600">Siswa</span>! 👋</h1>
-                        <p class="text-base md:text-xl text-gray-600 mb-8 font-medium">Pilih topik materi yang akan kamu pelajari hari ini:</p>
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8 w-full px-4 pb-4">
-                            <button onclick="pilihTopik('Bilangan dan Aritmetika (Lower Primary)')" class="group bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-lg transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
-                                <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-blue-50 flex items-center justify-center text-3xl md:text-4xl mb-4 group-hover:scale-110 transition-transform">🔢</div>
-                                <h3 class="font-bold text-gray-800 text-base md:text-xl leading-tight mb-2">Bilangan & Aritmetika</h3>
-                                <p class="text-xs md:text-sm font-semibold text-blue-500 bg-blue-50 px-4 py-1.5 rounded-full">Lower Primary</p>
-                            </button>
-                            <button onclick="pilihTopik('Geometri dan Pengukuran (Lower Primary)')" class="group bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-200 hover:border-green-500 hover:shadow-lg transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
-                                <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-green-50 flex items-center justify-center text-3xl md:text-4xl mb-4 group-hover:scale-110 transition-transform">📐</div>
-                                <h3 class="font-bold text-gray-800 text-base md:text-xl leading-tight mb-2">Geometri & Pengukuran</h3>
-                                <p class="text-xs md:text-sm font-semibold text-green-500 bg-green-50 px-4 py-1.5 rounded-full">Lower Primary</p>
-                            </button>
-                            <button onclick="pilihTopik('Challenging Problems (Lower Primary)')" class="group bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-200 hover:border-purple-500 hover:shadow-lg transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
-                                <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-purple-50 flex items-center justify-center text-3xl md:text-4xl mb-4 group-hover:scale-110 transition-transform">🧩</div>
-                                <h3 class="font-bold text-gray-800 text-base md:text-xl leading-tight mb-2">Challenging Problems</h3>
-                                <p class="text-xs md:text-sm font-semibold text-purple-500 bg-purple-50 px-4 py-1.5 rounded-full">Lower Primary</p>
-                            </button>
-                            <button onclick="pilihTopik('Bilangan dan Aritmetika (Upper Primary)')" class="group bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-200 hover:border-orange-500 hover:shadow-lg transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
-                                <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-orange-50 flex items-center justify-center text-3xl md:text-4xl mb-4 group-hover:scale-110 transition-transform">🧮</div>
-                                <h3 class="font-bold text-gray-800 text-base md:text-xl leading-tight mb-2">Bilangan & Aritmetika</h3>
-                                <p class="text-xs md:text-sm font-semibold text-orange-500 bg-orange-50 px-4 py-1.5 rounded-full">Upper Primary</p>
-                            </button>
-                            <button onclick="pilihTopik('Geometri dan Pengukuran (Upper Primary)')" class="group bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-200 hover:border-pink-500 hover:shadow-lg transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
-                                <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-pink-50 flex items-center justify-center text-3xl md:text-4xl mb-4 group-hover:scale-110 transition-transform">📏</div>
-                                <h3 class="font-bold text-gray-800 text-base md:text-xl leading-tight mb-2">Geometri & Pengukuran</h3>
-                                <p class="text-xs md:text-sm font-semibold text-pink-500 bg-pink-50 px-4 py-1.5 rounded-full">Upper Primary</p>
-                            </button>
-                            <button onclick="pilihTopik('Challenging Problems (Upper Primary)')" class="group bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-200 hover:border-red-500 hover:shadow-lg transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
-                                <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-50 flex items-center justify-center text-3xl md:text-4xl mb-4 group-hover:scale-110 transition-transform">🏆</div>
-                                <h3 class="font-bold text-gray-800 text-base md:text-xl leading-tight mb-2">Challenging Problems</h3>
-                                <p class="text-xs md:text-sm font-semibold text-red-500 bg-red-50 px-4 py-1.5 rounded-full">Upper Primary</p>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- STEP 3: PILIH MODE BELAJAR -->
-                    <div id="step-mode" class="hidden flex-col items-center justify-center w-full max-w-5xl transition-all duration-500 my-auto">
-                        <h1 class="text-3xl md:text-5xl font-black text-blue-900 mb-5 tracking-tight">Mode Belajar</h1>
-                        <div class="flex flex-col items-center mb-10 text-center">
-                            <span class="text-gray-500 uppercase font-bold tracking-wider text-xs mb-2">Topik Terpilih</span>
-                            <span id="display-topic" class="font-bold text-blue-700 bg-blue-100 border border-blue-200 px-6 py-2 rounded-full text-base md:text-lg shadow-sm">...</span>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full px-4">
-                            <button onclick="pilihMode('Pembelajaran di Kelas')" class="group bg-white p-8 md:p-14 rounded-3xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-xl transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
-                                <div class="w-24 h-24 rounded-full bg-blue-50 flex items-center justify-center text-5xl mb-6 group-hover:scale-110 transition-transform shadow-inner">🏫</div>
-                                <h3 class="font-black text-gray-800 text-2xl md:text-4xl mb-4">Kelas Materi</h3>
-                                <p class="text-base md:text-lg text-gray-500 font-medium">Materi lengkap dengan penjelasan, ilustrasi visual, dan evaluasi bersama guru.</p>
-                            </button>
-                            <button onclick="pilihMode('Modul Latihan Mandiri')" class="group bg-white p-8 md:p-14 rounded-3xl shadow-sm border border-gray-200 hover:border-orange-500 hover:shadow-xl transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
-                                <div class="w-24 h-24 rounded-full bg-orange-50 flex items-center justify-center text-5xl mb-6 group-hover:scale-110 transition-transform shadow-inner">🎯</div>
-                                <h3 class="font-black text-gray-800 text-2xl md:text-4xl mb-4">Modul Latihan</h3>
-                                <p class="text-base md:text-lg text-gray-500 font-medium">Kumpulan soal Pilihan Ganda dan Isian Singkat untuk menguji ketangkasanmu.</p>
-                            </button>
-                        </div>
-                        
-                        <button onclick="kembaliKeTopik()" class="mt-10 text-blue-500 font-bold hover:text-blue-800 transition-colors flex items-center gap-2 px-6 py-2 text-sm md:text-base rounded-full hover:bg-blue-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                            Kembali ganti topik
-                        </button>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Aturan Teks -->
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-200">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-2xl mb-6">✍️</div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Format Teks (Bold/Italic)</h3>
+                    <p class="text-gray-600 mb-4 text-sm leading-relaxed">Jangan menggunakan kode HTML seperti <code>&lt;b&gt;</code>. Sistem ini sudah sangat pintar.</p>
+                    <ul class="text-sm text-gray-600 space-y-2 list-disc pl-5">
+                        <li>Cukup gunakan fitur bawaan Google Sheets.</li>
+                        <li>Blok teks lalu tekan <b>Ctrl + B</b> untuk <b>Tebal</b>.</li>
+                        <li>Tekan <b>Ctrl + I</b> untuk <i>Miring</i>.</li>
+                        <li>Aplikasi akan otomatis mendeteksi gaya teksmu!</li>
+                    </ul>
                 </div>
 
-                <!-- SLIDE 12: TEMPLATE PENUTUP / APRESIASI -->
-                <div id="slide-12" class="slide flex flex-col justify-center items-center text-center p-6 md:p-12 bg-gradient-to-br from-blue-50 to-indigo-50 overflow-y-auto content-scroll">
-                    <div class="bg-white p-8 md:p-16 rounded-3xl shadow-2xl border border-blue-50 max-w-4xl w-full relative overflow-hidden my-auto">
-                        <div class="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500"></div>
-                        <h1 class="text-5xl md:text-7xl font-black text-gray-800 mb-6 tracking-tight">Kerja Bagus! 🎉</h1>
-                        <h2 id="final-name" class="text-3xl md:text-5xl font-bold text-blue-600 mb-10">Siswa Hebat</h2>
-                        
-                        <div class="my-8 grid grid-cols-3 gap-6 md:gap-10">
-                            <div class="p-6 md:p-10 bg-indigo-50 rounded-3xl border border-indigo-100 shadow-sm transform transition hover:scale-105">
-                                <p class="text-indigo-500 font-bold uppercase tracking-widest text-xs md:text-base mb-3 md:mb-5">Pre-Test</p>
-                                <div id="final-score-pre" class="text-5xl md:text-7xl font-black text-indigo-700">0</div>
-                            </div>
-                            <div class="p-6 md:p-10 bg-blue-50 rounded-3xl border border-blue-100 shadow-sm transform transition hover:scale-105">
-                                <p class="text-blue-500 font-bold uppercase tracking-widest text-xs md:text-base mb-3 md:mb-5">Latihan</p>
-                                <div id="final-score-class" class="text-5xl md:text-7xl font-black text-blue-700">0</div>
-                            </div>
-                            <div class="p-6 md:p-10 bg-rose-50 rounded-3xl border border-rose-100 shadow-sm transform transition hover:scale-105">
-                                <p class="text-rose-500 font-bold uppercase tracking-widest text-xs md:text-base mb-3 md:mb-5">Post-Test</p>
-                                <div id="final-score-post" class="text-5xl md:text-7xl font-black text-rose-700">0</div>
-                            </div>
-                        </div>
-
-                        <p class="text-lg md:text-2xl text-gray-600 mb-8 font-medium">Kamu telah menyelesaikan materi ini dengan sangat baik. Tetap semangat belajar bersama Math Champs!</p>
-                        
-                        <div id="submit-status" class="text-base md:text-lg font-bold text-gray-500 mb-8 bg-gray-50 py-3 px-8 rounded-full inline-block">Menyimpan rekam jejak...</div>
-
-                        <div class="mt-4">
-                            <button onclick="goToSlide(1)" class="bg-gray-900 hover:bg-black text-white font-bold py-4 md:py-5 px-10 md:px-12 rounded-full text-xl md:text-2xl transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 inline-flex items-center gap-3">
-                                <span>Selesai & Kembali</span>
-                            </button>
-                        </div>
-                    </div>
+                <!-- Aturan Paragraf Baru -->
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-200 border-b-4 border-b-green-500">
+                    <div class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center text-2xl mb-6 font-bold">↵</div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Pindah Baris / Paragraf</h3>
+                    <p class="text-gray-600 mb-4 text-sm leading-relaxed">Kamu tidak perlu mengetik kode <code>&lt;br&gt;</code> untuk memisahkan paragraf.</p>
+                    <ul class="text-sm text-gray-600 space-y-2 list-disc pl-5">
+                        <li>Saat mengetik di sel Sheet, tekan <b>Alt + Enter</b> (atau <b>Ctrl + Enter</b>).</li>
+                        <li>Teks akan turun ke baris baru di dalam sel yang sama.</li>
+                        <li>Aplikasi akan membaca baris baru tersebut secara otomatis.</li>
+                    </ul>
                 </div>
 
+                <!-- Aturan Rumus -->
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-200">
+                    <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center text-2xl mb-6">🧮</div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Menulis Rumus</h3>
+                    <p class="text-gray-600 mb-4 text-sm leading-relaxed">Aplikasi mendukung LaTeX. Gunakan penanda ini di sel Sheet:</p>
+                    <ul class="text-sm text-gray-600 space-y-4">
+                        <li>
+                            <b>Rumus Sebaris (Inline):</b> <br>
+                            Gunakan <span class="code-block">\( ... \)</span> atau <span class="code-block">$ ... $</span> <br>
+                            <span class="text-xs text-gray-500">Contoh: Luas = \(\pi r^2\)</span>
+                        </li>
+                        <li>
+                            <b>Rumus Besar (Block):</b> <br>
+                            Gunakan <span class="code-block">$$...$$</span> <br>
+                            <span class="text-xs text-gray-500">Contoh: $$\frac{1}{2}$$</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Aturan Gambar -->
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-200">
+                    <div class="w-12 h-12 bg-pink-100 text-pink-600 rounded-xl flex items-center justify-center text-2xl mb-6">🖼️</div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Menyisipkan Gambar</h3>
+                    <p class="text-gray-600 mb-4 text-sm leading-relaxed">Dua cara memasukkan gambar ke dalam aplikasi:</p>
+                    <ul class="text-sm text-gray-600 space-y-3">
+                        <li>
+                            <b>Via Kolom Image_URL:</b> Isi link khusus di kolom ini (berlaku untuk MATERI_IMG).
+                        </li>
+                        <li>
+                            <b>Sisip Tengah Teks (Custom):</b> <br>
+                            Agar gambar muncul di tengah paragraf/soal, ketik:<br>
+                            <span class="code-block text-[0.7rem] mt-2 inline-block break-all">[GAMBAR:https://link.com/gambar.png]</span>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
 
-        <!-- NAVIGATION CONTROLS (BAWAH KANVAS) -->
-        <div class="presentation-nav">
-            <div class="flex items-center gap-3 md:gap-4">
-                <div class="text-gray-500 font-bold text-sm md:text-base bg-slate-50 px-4 md:px-5 py-2 md:py-2.5 rounded-full border border-gray-200">
-                    <span id="current-page" class="text-blue-600">1</span> / <span id="total-pages">2</span>
-                </div>
-                
-                <!-- TOMBOL DAFTAR SOAL -->
-                <button id="btn-daftar-soal" onclick="bukaNavigasi()" class="hidden items-center gap-2 px-4 py-2 md:py-2.5 bg-blue-50 text-blue-700 font-bold rounded-full hover:bg-blue-100 transition-colors border border-blue-200 text-sm md:text-base shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-                    <span class="hidden sm:inline">Daftar Soal</span>
-                </button>
-            </div>
+        <!-- SEGMEN 2: TEMPLATE KONTEN KELAS -->
+        <div class="bg-white rounded-[2.5rem] shadow-xl border border-gray-200 overflow-hidden relative mb-16">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
             
-            <div class="flex gap-3 md:gap-5">
-                <button onclick="prevSlide()" class="p-3 md:p-4 bg-white rounded-full border border-gray-200 hover:bg-gray-50 transition-colors text-gray-700 hover:text-blue-600 focus:outline-none" title="Slide Sebelumnya">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                </button>
-                <button onclick="nextSlide()" class="p-3 md:p-4 bg-blue-600 rounded-full shadow-md hover:bg-blue-700 transition-colors text-white focus:outline-none transform hover:scale-105" title="Slide Selanjutnya">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                </button>
-                <div class="w-px h-10 md:h-12 bg-gray-300 self-center mx-1 md:mx-3"></div>
-                <button onclick="toggleFullscreen()" class="p-3 md:p-4 bg-white rounded-full border border-gray-200 hover:bg-gray-50 transition-colors text-gray-700 focus:outline-none" title="Fullscreen">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-                </button>
+            <div class="p-8 md:p-12">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-gray-100 pb-8">
+                    <div>
+                        <div class="inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold mb-3">TAB 1: Konten_Kelas</div>
+                        <h2 class="text-3xl font-black text-gray-900 mb-2">Template "Pembelajaran di Kelas"</h2>
+                        <p class="text-gray-500 max-w-3xl text-sm">Digunakan untuk presentasi kelas. Alurnya <b>Materi Judul -> Pre-Test -> Materi -> Post-Test</b>. Perhatikan baris ke-4, ada contoh penggunaan pemisahan paragraf (Alt+Enter) dan penyisipan gambar di dalam kolom Konten.</p>
+                    </div>
+                    <button onclick="copyToSheets('table-konten', 'Template Konten Kelas disalin!')" class="shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-2xl shadow-lg hover:shadow-blue-300 transition-all transform hover:-translate-y-1 flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                        Copy Tabel Ini
+                    </button>
+                </div>
+
+                <div class="border border-gray-200 rounded-2xl overflow-hidden">
+                    <div class="table-container overflow-x-auto w-full">
+                        <table id="table-konten" class="w-full text-sm text-left whitespace-nowrap">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-3 border-r border-gray-200">Topik</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">No_Slide</th>
+                                    <th class="px-4 py-3 border-r border-gray-200 text-blue-600">Tipe_Slide</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Judul</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Sub_Konten</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Konten</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Image_URL</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Opsi_A</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Opsi_B</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Opsi_C</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Opsi_D</th>
+                                    <th class="px-4 py-3 border-r border-gray-200 text-green-600">Kunci</th>
+                                    <th class="px-4 py-3">Pembahasan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600 align-top">
+                                <!-- Baris 1: Materi Judul -->
+                                <tr class="bg-white border-b border-gray-100 hover:bg-blue-50 transition-colors">
+                                    <td class="px-4 py-3 border-r font-medium">Bilangan dan Aritmetika (Lower Primary)</td>
+                                    <td class="px-4 py-3 border-r font-bold text-center">1</td>
+                                    <td class="px-4 py-3 border-r font-bold text-blue-600">MATERI_JUDUL</td>
+                                    <td class="px-4 py-3 border-r font-bold text-gray-900">Mengenal Pecahan</td>
+                                    <td class="px-4 py-3 border-r">Bab 1 - Kelas 3</td>
+                                    <td class="px-4 py-3 border-r">Mari belajar berbagi adil dengan pecahan!<br><br>Siapkan buku catatan dan alat tulismu ya.</td>
+                                    <td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3">-</td>
+                                </tr>
+                                <!-- Baris 2: Pre Test -->
+                                <tr class="bg-white border-b border-gray-100 hover:bg-blue-50 transition-colors">
+                                    <td class="px-4 py-3 border-r font-medium">Bilangan dan Aritmetika (Lower Primary)</td>
+                                    <td class="px-4 py-3 border-r font-bold text-center">2</td>
+                                    <td class="px-4 py-3 border-r font-bold text-indigo-600">PRE_PG</td>
+                                    <td class="px-4 py-3 border-r font-bold text-gray-900">Uji Wawasan Awal</td>
+                                    <td class="px-4 py-3 border-r">-</td>
+                                    <td class="px-4 py-3 border-r">Lambang pecahan untuk "satu per dua" (setengah) adalah...</td>
+                                    <td class="px-4 py-3 border-r">-</td>
+                                    <td class="px-4 py-3 border-r">\(\frac{1}{2}\)</td>
+                                    <td class="px-4 py-3 border-r">\(\frac{2}{1}\)</td>
+                                    <td class="px-4 py-3 border-r">\(\frac{1}{3}\)</td>
+                                    <td class="px-4 py-3 border-r">\(\frac{2}{2}\)</td>
+                                    <td class="px-4 py-3 border-r font-bold text-green-600">A</td>
+                                    <td class="px-4 py-3">Satu per dua ditulis dengan angka 1 di atas (pembilang) dan 2 di bawah (penyebut).</td>
+                                </tr>
+                                <!-- Baris 3: Gambar Kiri -->
+                                <tr class="bg-white border-b border-gray-100 hover:bg-blue-50 transition-colors">
+                                    <td class="px-4 py-3 border-r font-medium">Bilangan dan Aritmetika (Lower Primary)</td>
+                                    <td class="px-4 py-3 border-r font-bold text-center">3</td>
+                                    <td class="px-4 py-3 border-r font-bold text-blue-600">MATERI_IMG_KIRI</td>
+                                    <td class="px-4 py-3 border-r font-bold text-gray-900">Ilustrasi Pizza</td>
+                                    <td class="px-4 py-3 border-r">-</td>
+                                    <td class="px-4 py-3 border-r whitespace-normal max-w-xs">Bayangkan kamu memiliki sebuah pizza yang dipotong menjadi dua bagian sama besar. Satu bagian pizza tersebut bernilai \(\frac{1}{2}\).</td>
+                                    <td class="px-4 py-3 border-r text-blue-500">https://img.freepik.com/free-vector/sliced-pizza-concept-illustration_114360-9114.jpg</td>
+                                    <td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3">-</td>
+                                </tr>
+                                <!-- Baris 4: Materi List (DENGAN BARIS BARU & GAMBAR CUSTOM) -->
+                                <tr class="bg-white border-b border-gray-100 hover:bg-blue-50 transition-colors">
+                                    <td class="px-4 py-3 border-r font-medium">Bilangan dan Aritmetika (Lower Primary)</td>
+                                    <td class="px-4 py-3 border-r font-bold text-center">4</td>
+                                    <td class="px-4 py-3 border-r font-bold text-blue-600">MATERI_LIST</td>
+                                    <td class="px-4 py-3 border-r font-bold text-gray-900">Bagian Pecahan</td>
+                                    <td class="px-4 py-3 border-r">-</td>
+                                    <td class="px-4 py-3 border-r whitespace-normal max-w-md">Dalam pecahan $$\frac{A}{B}$$ angka A disebut sebagai Pembilang, sedangkan B disebut Penyebut.<br><br>[GAMBAR:https://cdn-icons-png.flaticon.com/512/3750/3750012.png]<br><br>Ingat, penyebut tidak boleh bernilai nol ya!</td>
+                                    <td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3">-</td>
+                                </tr>
+                                <!-- Baris 5: Post Test Isian -->
+                                <tr class="bg-white border-b border-gray-100 hover:bg-blue-50 transition-colors">
+                                    <td class="px-4 py-3 border-r font-medium">Bilangan dan Aritmetika (Lower Primary)</td>
+                                    <td class="px-4 py-3 border-r font-bold text-center">5</td>
+                                    <td class="px-4 py-3 border-r font-bold text-rose-600">POST_ISIAN</td>
+                                    <td class="px-4 py-3 border-r font-bold text-gray-900">Evaluasi Akhir</td>
+                                    <td class="px-4 py-3 border-r">-</td>
+                                    <td class="px-4 py-3 border-r whitespace-normal max-w-xs">Jika sebuah kue dipotong menjadi 4 bagian sama besar, dan kamu memakan 1 potong, berapa nilai pecahan kue yang kamu makan?<br><br><i>(Tulis menggunakan angka, contoh: 1/5)</i></td>
+                                    <td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td>
+                                    <td class="px-4 py-3 border-r font-bold text-green-600">1/4</td>
+                                    <td class="px-4 py-3">1 potong dari 4 potongan keseluruhan bernilai \(\frac{1}{4}\).</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
+        <!-- SEGMEN 3: TEMPLATE LATIHAN MANDIRI -->
+        <div class="bg-white rounded-[2.5rem] shadow-xl border border-gray-200 overflow-hidden relative">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-400 to-pink-500"></div>
+            
+            <div class="p-8 md:p-12">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-gray-100 pb-8">
+                    <div>
+                        <div class="inline-block bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-bold mb-3">TAB 2: Soal_Mandiri</div>
+                        <h2 class="text-3xl font-black text-gray-900 mb-2">Template "Modul Latihan Mandiri"</h2>
+                        <p class="text-gray-500 max-w-2xl text-sm">Berisi kumpulan evaluasi saja tanpa slide materi. Prefix PRE/POST juga <b>tidak diperlukan</b>. Perhatikan baris ke-2 ada penggunaan paragraf baru dan Custom Gambar.</p>
+                    </div>
+                    <button onclick="copyToSheets('table-modul', 'Template Latihan Mandiri disalin!')" class="shrink-0 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-2xl shadow-lg hover:shadow-orange-300 transition-all transform hover:-translate-y-1 flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                        Copy Tabel Ini
+                    </button>
+                </div>
+
+                <div class="border border-gray-200 rounded-2xl overflow-hidden">
+                    <div class="table-container overflow-x-auto w-full">
+                        <table id="table-modul" class="w-full text-sm text-left whitespace-nowrap">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-3 border-r border-gray-200">Topik</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">No_Soal</th>
+                                    <th class="px-4 py-3 border-r border-gray-200 text-orange-600">Tipe_Soal</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Judul</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Sub_Konten</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Isi_Soal</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Image_URL</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Opsi_A</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Opsi_B</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Opsi_C</th>
+                                    <th class="px-4 py-3 border-r border-gray-200">Opsi_D</th>
+                                    <th class="px-4 py-3 border-r border-gray-200 text-green-600">Kunci</th>
+                                    <th class="px-4 py-3">Pembahasan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600 align-top">
+                                <!-- Baris 1: Soal PG Biasa -->
+                                <tr class="bg-white border-b border-gray-100 hover:bg-orange-50 transition-colors">
+                                    <td class="px-4 py-3 border-r font-medium">Bilangan dan Aritmetika (Lower Primary)</td>
+                                    <td class="px-4 py-3 border-r font-bold text-center">1</td>
+                                    <td class="px-4 py-3 border-r font-bold text-orange-600">PG</td>
+                                    <td class="px-4 py-3 border-r font-bold text-gray-900">Latihan 1</td>
+                                    <td class="px-4 py-3 border-r">-</td>
+                                    <td class="px-4 py-3 border-r whitespace-normal max-w-xs">Manakah di antara pecahan berikut yang nilainya paling besar?</td>
+                                    <td class="px-4 py-3 border-r">-</td>
+                                    <td class="px-4 py-3 border-r">\(\frac{1}{2}\)</td>
+                                    <td class="px-4 py-3 border-r">\(\frac{1}{4}\)</td>
+                                    <td class="px-4 py-3 border-r">\(\frac{1}{8}\)</td>
+                                    <td class="px-4 py-3 border-r">\(\frac{1}{10}\)</td>
+                                    <td class="px-4 py-3 border-r font-bold text-green-600">A</td>
+                                    <td class="px-4 py-3 whitespace-normal max-w-xs">Semakin kecil penyebut (angka di bawah), maka nilai pecahannya semakin besar jika pembilangnya sama (1).</td>
+                                </tr>
+                                <!-- Baris 2: Soal dengan Paragraf & Gambar di tengah -->
+                                <tr class="bg-white border-b border-gray-100 hover:bg-orange-50 transition-colors">
+                                    <td class="px-4 py-3 border-r font-medium">Bilangan dan Aritmetika (Lower Primary)</td>
+                                    <td class="px-4 py-3 border-r font-bold text-center">2</td>
+                                    <td class="px-4 py-3 border-r font-bold text-orange-600">PG</td>
+                                    <td class="px-4 py-3 border-r font-bold text-gray-900">Latihan 2</td>
+                                    <td class="px-4 py-3 border-r">-</td>
+                                    <td class="px-4 py-3 border-r whitespace-normal max-w-md">Perhatikan gambar berikut ini!<br><br>[GAMBAR:https://example.com/kue-dibagi-3.png]<br><br>Berapa nilai pecahan untuk bagian yang diwarnai merah?</td>
+                                    <td class="px-4 py-3 border-r">-</td>
+                                    <td class="px-4 py-3 border-r">\(\frac{2}{3}\)</td>
+                                    <td class="px-4 py-3 border-r">\(\frac{1}{3}\)</td>
+                                    <td class="px-4 py-3 border-r">\(\frac{1}{4}\)</td>
+                                    <td class="px-4 py-3 border-r">\(\frac{3}{1}\)</td>
+                                    <td class="px-4 py-3 border-r font-bold text-green-600">B</td>
+                                    <td class="px-4 py-3 whitespace-normal max-w-xs">Kue dibagi menjadi 3 potong (penyebut = 3) dan yang diwarnai merah ada 1 potong (pembilang = 1). Jadi \(\frac{1}{3}\).</td>
+                                </tr>
+                                <!-- Baris 3: Soal Isian dengan Block Math dan Paragraf -->
+                                <tr class="bg-white border-b border-gray-100 hover:bg-orange-50 transition-colors">
+                                    <td class="px-4 py-3 border-r font-medium">Bilangan dan Aritmetika (Lower Primary)</td>
+                                    <td class="px-4 py-3 border-r font-bold text-center">3</td>
+                                    <td class="px-4 py-3 border-r font-bold text-orange-600">ISIAN</td>
+                                    <td class="px-4 py-3 border-r font-bold text-gray-900">Latihan 3</td>
+                                    <td class="px-4 py-3 border-r">-</td>
+                                    <td class="px-4 py-3 border-r whitespace-normal max-w-md">Hitunglah hasil penjumlahan pecahan berikut: $$\frac{2}{5} + \frac{1}{5} = \dots$$<br><br><i>Tulis jawabanmu dalam bentuk angka/angka (contoh: 3/5)</i></td>
+                                    <td class="px-4 py-3 border-r">-</td>
+                                    <td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td><td class="px-4 py-3 border-r">-</td>
+                                    <td class="px-4 py-3 border-r font-bold text-green-600">3/5</td>
+                                    <td class="px-4 py-3 whitespace-normal max-w-xs">Karena penyebutnya sama (5), kita cukup menjumlahkan pembilangnya: 2 + 1 = 3. Hasilnya \(\frac{3}{5}\).</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // --- 1. STATE MANAGEMENT (Terpusat) ---
-        const App = {
-            slide: { current: 1, total: 2 },
-            user: { name: "", email: "", password: "" },
-            course: { topic: "", mode: "" },
-            scores: { pre: 0, class: 0, post: 0, modul: 0 },
-            tracking: { answered: {}, answers: {} },
-            slidesData: [],
-            isReviewMode: false
-        };
-
-        // URL APPS SCRIPT
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzGHZV40VvnIlZWpksiySYqWF5ToGDyGcjvRa3Y4EnMkQBgXFPmByj_kFsckyvRM6c/exec";
-
-        // --- 2. HELPER FUNCTIONS ---
-        const $ = id => document.getElementById(id);
-        
-        const getVal = (obj, possibleKeys) => {
-            const foundKey = Object.keys(obj).find(k => 
-                possibleKeys.includes(k.trim().toLowerCase().replace(/_/g, ' '))
-            );
-            return foundKey ? obj[foundKey] : '';
-        };
-        
-        function showToast(message, type = 'error') {
-            const container = $('toast-container');
-            const toast = document.createElement('div');
-            const bgColor = type === 'success' ? 'bg-green-600' : (type === 'warning' ? 'bg-orange-500' : 'bg-rose-500');
-            const icon = type === 'success' ? '✅' : (type === 'warning' ? '⚠️' : '🚨');
+        function copyToSheets(tableId, successMessage) {
+            const table = document.getElementById(tableId);
+            let textFormat = '';
             
-            toast.className = `${bgColor} text-white px-5 py-3 md:px-6 md:py-4 rounded-xl shadow-lg transform transition-all duration-300 translate-x-[120%] flex items-center gap-3 max-w-sm`;
-            toast.innerHTML = `<span class="text-xl md:text-2xl">${icon}</span> <span class="font-bold text-xs md:text-sm leading-tight">${message}</span>`;
-            
-            container.appendChild(toast);
-
-            setTimeout(() => { toast.classList.remove('translate-x-[120%]'); }, 50);
-            
-            setTimeout(() => {
-                toast.classList.add('translate-x-[120%]', 'opacity-0');
-                setTimeout(() => toast.remove(), 400);
-            }, 4000);
-        }
-
-        const flashError = id => {
-            const el = $(id);
-            el.classList.add('border-rose-500', 'bg-rose-50');
-            setTimeout(() => el.classList.remove('border-rose-500', 'bg-rose-50'), 1000);
-        };
-        
-        const switchView = (hideId, showId) => {
-            $(hideId).classList.replace('flex', 'hidden');
-            $(showId).classList.replace('hidden', 'flex');
-        };
-
-        function bukaModalLupaPassword() { $('modal-forgot-password').classList.replace('hidden', 'flex'); }
-        function tutupModalLupaPassword() { 
-             $('modal-forgot-password').classList.replace('flex', 'hidden'); 
-             $('forgot-status').classList.add('hidden');
-        }
-
-        function bukaNavigasi() {
-            $('modal-navigasi').classList.replace('hidden', 'flex');
-            renderNavigasi();
-        }
-
-        function tutupNavigasi() {
-            $('modal-navigasi').classList.replace('flex', 'hidden');
-        }
-
-        function renderNavigasi() {
-            const grid = $('navigasi-grid');
-            grid.innerHTML = '';
-            
-            App.slidesData.forEach((slide, idx) => {
-                const slideNum = idx + 2;
-                const btn = document.createElement('button');
-                btn.innerText = idx + 1; 
-                
-                const rawType = getVal(slide, ['tipe slide', 'tipe soal', 'tipe']).toString().trim().toUpperCase();
-                
-                let isAnswered = false;
-                let isQuestion = false;
-
-                if (rawType.includes('PG') || rawType.includes('ISIAN') || rawType.includes('SINGKAT')) {
-                    isQuestion = true;
-                    let prefix = 'soal';
-                    if (rawType.includes('PRE')) prefix = 'pretest';
-                    else if (rawType.includes('POST')) prefix = 'posttest';
-                    const uid = `${prefix}_${idx + 1}`;
-                    isAnswered = App.tracking.answered[uid];
-                }
-
-                if (isQuestion && isAnswered) {
-                    btn.className = 'w-full aspect-square rounded-xl font-black text-sm md:text-base flex items-center justify-center transition-all border-2 bg-green-500 text-white border-green-600 shadow-inner hover:bg-green-600 transform hover:scale-105';
-                } else {
-                    btn.className = `w-full aspect-square rounded-xl font-bold text-sm md:text-base flex items-center justify-center transition-all border-2 bg-white text-gray-600 border-gray-200 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm transform hover:scale-105 ${slideNum === App.slide.current ? 'ring-2 ring-blue-400 ring-offset-2' : ''}`;
-                }
-                
-                btn.onclick = () => {
-                    goToSlide(slideNum);
-                    tutupNavigasi();
-                };
-                grid.appendChild(btn);
-            });
-        }
-
-        async function gasRunner(action, args) {
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: action, args: args }),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                });
-                const data = await response.json();
-                if (data.error) throw new Error(data.error);
-                if (!data.hasOwnProperty('result')) throw new Error("Format JSON server salah. Pastikan App Script doPost() sudah benar.");
-                return data.result;
-            } catch(e) {
-                console.error(e);
-                throw e;
-            }
-        }
-
-        async function prosesLupaPassword() {
-            const email = $('input-forgot-email').value.trim();
-            if(!email) {
-                showToast("Harap masukkan email terlebih dahulu.", "warning");
-                return;
-            }
-            
-            const statusEl = $('forgot-status');
-            statusEl.innerText = "Mengirim permintaan...";
-            statusEl.className = "text-sm font-bold mb-4 text-blue-500 block";
-            
-            try {
-                const result = await gasRunner('resetPassword', [email]);
-                if (result && result.success) {
-                    statusEl.innerText = result.message;
-                    statusEl.className = "text-sm font-bold text-green-600 mb-4 block";
-                    setTimeout(tutupModalLupaPassword, 3000);
-                } else {
-                    statusEl.innerText = result ? result.message : "Gagal mengirim request.";
-                    statusEl.className = "text-sm font-bold text-rose-600 mb-4 block";
-                }
-            } catch (err) {
-                statusEl.innerText = "Gagal terhubung ke server.";
-                statusEl.className = "text-sm font-bold text-rose-600 mb-4 block";
-            }
-        }
-
-        // --- 3. CORE LOGIC ---
-        async function simpanNama() {
-            const name = $('student-name').value.trim();
-            const email = $('student-email').value.trim();
-            const pass = $('teacher-password').value.trim();
-
-            if (name && email && pass) {
-                const btn = document.querySelector('#btn-login-submit');
-                const oldText = btn.innerHTML;
-                btn.innerHTML = 'Memeriksa Data... ⏳';
-                btn.disabled = true;
-                btn.classList.add('opacity-70', 'cursor-wait');
-
-                try {
-                    const result = await gasRunner('checkLogin', [email, pass]);
-                    if (result && result.success) {
-                        const finalName = result.name || name;
-                        App.user = { name: finalName, email, password: pass };
-                        $('final-name').innerText = finalName;
-                        $('display-nama').innerText = finalName;
-                        switchView('step-login', 'step-topic');
-                        showToast(`Selamat datang, ${finalName}!`, "success");
-                    } else {
-                        showToast(result ? result.message : "Gagal login. Email/Password salah.");
+            // Loop melalui baris tabel
+            for (let i = 0; i < table.rows.length; i++) {
+                let rowData = [];
+                // Loop melalui sel di dalam baris
+                for (let j = 0; j < table.rows[i].cells.length; j++) {
+                    // innerText mengubah elemen blok (seperti <br>) menjadi karakter newline (\n)
+                    let cellText = table.rows[i].cells[j].innerText.trim();
+                    
+                    // PENYESUAIAN PENTING UNTUK GOOGLE SHEETS:
+                    // Jika teks mengandung enter/baris baru, teks harus dibungkus dengan kutip ganda ("...").
+                    // Kutip ganda yang sudah ada di dalam teks harus dirubah menjadi double ("").
+                    if (cellText.includes('\n') || cellText.includes('"') || cellText.includes('\t')) {
+                        cellText = '"' + cellText.replace(/"/g, '""') + '"';
                     }
-                } catch(e) {
-                    showToast("Gagal terhubung ke server. Pastikan koneksi internet lancar.");
-                } finally {
-                    btn.innerHTML = oldText;
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-70', 'cursor-wait');
+                    
+                    rowData.push(cellText);
                 }
-            } else {
-                if (!name) flashError('student-name');
-                if (!email) flashError('student-email');
-                if (!pass) flashError('teacher-password');
-                showToast("Harap isi semua kolom untuk melanjutkan.", "warning");
+                // Gabungkan kolom dengan TAB (\t) dan baris dengan NEWLINE (\n)
+                textFormat += rowData.join('\t') + '\n';
             }
-        }
 
-        function pilihTopik(topik) {
-            App.course.topic = topik;
-            $('display-topic').innerText = topik;
-            switchView('step-topic', 'step-mode');
-        }
-
-        function kembaliKeTopik() {
-            switchView('step-mode', 'step-topic');
-        }
-
-        async function pilihMode(mode) {
-            App.course.mode = mode;
+            // Teknik menyalin menggunakan textarea agar format multiline tidak hancur
+            const textarea = document.createElement('textarea');
+            textarea.value = textFormat;
+            textarea.style.position = 'fixed'; 
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
             
-            const title = document.querySelector('#step-mode h1');
-            const btns = document.querySelectorAll('#step-mode button');
-            const oldTitle = title.innerText;
-            
-            title.innerText = "Menarik Materi... ⏳";
-            btns.forEach(b => { b.disabled = true; b.classList.add('opacity-50', 'cursor-wait'); });
-
             try {
-                const result = await gasRunner('getTopikData', [App.user.email, App.course.topic, mode]);
-                
-                if (!result || !result.slides || result.slides.length === 0) {
-                    showToast("Materi untuk topik ini belum tersedia di sistem.", "warning");
-                    title.innerText = oldTitle;
-                    btns.forEach(b => { b.disabled = false; b.classList.remove('opacity-50', 'cursor-wait'); });
-                    return;
-                }
-
-                App.isReviewMode = result.isReviewMode;
-                App.tracking.answers = result.history || {};
-                
-                App.slidesData = result.slides;
-                App.slide.total = App.slidesData.length + 2; 
-
-                if(App.isReviewMode) {
-                    showToast("Kamu sudah pernah mengerjakan. Sistem masuk ke Mode Review.", "warning");
-                }
-
-                renderDynamicSlides(App.slidesData);
-                
-                $('total-pages').innerText = App.slide.total;
-                
-                title.innerText = oldTitle;
-                btns.forEach(b => { b.disabled = false; b.classList.remove('opacity-50', 'cursor-wait'); });
-
-                nextSlide(); 
-            } catch (e) {
-                showToast("Gagal menarik data: Pastikan format Sheet sesuai dan koneksi lancar.");
-                title.innerText = oldTitle;
-                btns.forEach(b => { b.disabled = false; b.classList.remove('opacity-50', 'cursor-wait'); });
-            }
-        }
-
-        function renderDynamicSlides(slidesData) {
-            const wrapper = $('slides-wrapper');
-            
-            document.querySelectorAll('.dynamic-slide').forEach(el => el.remove());
-
-            slidesData.forEach((slide, idx) => {
-                const slideId = `dynamic-slide-${idx + 2}`;
-                const div = document.createElement('div');
-                div.id = slideId;
-                div.className = 'slide dynamic-slide flex flex-col bg-white w-full h-full';
-                div.innerHTML = buildHTMLForType(slide, idx + 1);
-                
-                const finishSlide = $('slide-12'); 
-                wrapper.insertBefore(div, finishSlide);
-            });
-
-            if (window.renderMath) window.renderMath();
-        }
-
-        function buildHTMLForType(slide, slideIndex) {
-            const rawType = getVal(slide, ['tipe slide', 'tipe soal', 'tipe']);
-            const t = rawType.toString().trim().toUpperCase(); 
-            
-            const kontenVal = getVal(slide, ['konten', 'soal', 'pertanyaan', 'isi soal']);
-            const pembahasanVal = getVal(slide, ['pembahasan', 'penjelasan']);
-            const judulVal = getVal(slide, ['judul', 'title']);
-            const subKontenVal = getVal(slide, ['sub konten', 'subjudul']);
-            const imgUrlVal = getVal(slide, ['image url', 'gambar', 'url gambar', 'link gambar']);
-            
-            let prefix = 'soal';
-            if (t && t.includes('PRE')) prefix = 'pretest';
-            else if (t && t.includes('POST')) prefix = 'posttest';
-            const uid = `${prefix}_${slideIndex}`;
-            
-            const getBadge = () => {
-                if(prefix === 'pretest') return `<span class="bg-indigo-100 text-indigo-700 px-3 py-1.5 md:px-4 rounded-full text-xs md:text-sm font-bold tracking-widest uppercase">PRE-TEST</span>`;
-                if(prefix === 'posttest') return `<span class="bg-rose-100 text-rose-700 px-3 py-1.5 md:px-4 rounded-full text-xs md:text-sm font-bold tracking-widest uppercase">POST-TEST</span>`;
-                return `<span class="bg-orange-100 text-orange-700 px-3 py-1.5 md:px-4 rounded-full text-xs md:text-sm font-bold tracking-widest uppercase">LATIHAN</span>`;
-            };
-
-            const ans = App.tracking.answers[uid] || null; 
-            const isLocked = App.isReviewMode || App.tracking.answered[uid];
-
-            if (t === 'MATERI_JUDUL') {
-                return `
-                    <div class="flex flex-col justify-center p-6 md:p-12 border-l-[12px] md:border-l-[20px] border-blue-600 h-full bg-white content-scroll overflow-y-auto">
-                        <div class="max-w-5xl mx-auto w-full">
-                            <h3 class="text-xl md:text-3xl font-semibold text-blue-600 mb-4 uppercase tracking-widest">${subKontenVal}</h3>
-                            <h1 class="text-4xl md:text-6xl font-black text-gray-900 leading-tight mb-8 tracking-tight">${judulVal}</h1>
-                            <div class="text-lg md:text-xl text-gray-600 border-l-[6px] border-gray-300 pl-6 py-3 leading-relaxed">${kontenVal}</div>
-                        </div>
-                    </div>`;
-            }
-
-            if (t === 'MATERI_LIST') {
-                return `
-                    <div class="flex flex-col p-6 md:p-12 h-full bg-white">
-                        <div class="max-w-5xl mx-auto w-full h-full flex flex-col">
-                            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 border-b-[3px] border-gray-100 pb-6 tracking-tight">${judulVal}</h2>
-                            <div class="content-scroll flex-1 overflow-y-auto pr-4 text-lg md:text-xl text-gray-700 leading-relaxed space-y-6">
-                                ${kontenVal}
-                            </div>
-                        </div>
-                    </div>`;
-            }
-
-            if (t === 'MATERI_IMG_TENGAH') {
-                return `
-                    <div class="flex flex-col p-6 md:p-10 items-center justify-center h-full bg-white content-scroll overflow-y-auto">
-                        <div class="max-w-5xl mx-auto w-full flex flex-col items-center">
-                            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center w-full tracking-tight">${judulVal}</h2>
-                            <div class="w-full bg-gray-50 rounded-3xl border-4 border-dashed border-gray-300 flex items-center justify-center p-6 md:p-10 relative dedicated-image">
-                                <img src="${imgUrlVal}" class="max-w-full max-h-[40vh] md:max-h-[50vh] object-contain rounded-2xl shadow-sm border border-gray-200">
-                            </div>
-                            <p class="text-gray-500 mt-6 text-lg md:text-xl italic text-center bg-gray-100 px-6 py-3 rounded-full">${subKontenVal}</p>
-                        </div>
-                    </div>`;
-            }
-
-            if (t === 'MATERI_IMG_ATAS') {
-                return `
-                    <div class="flex flex-col p-6 md:p-12 h-full bg-white">
-                        <div class="max-w-5xl mx-auto w-full h-full flex flex-col">
-                            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 tracking-tight">${judulVal}</h2>
-                            <div class="w-full h-[30vh] md:h-[40vh] bg-gray-50 rounded-3xl mb-8 flex items-center justify-center overflow-hidden dedicated-image shadow-inner border border-gray-100 shrink-0">
-                                <img src="${imgUrlVal}" class="w-full h-full object-contain p-4">
-                            </div>
-                            <div class="content-scroll flex-1 overflow-y-auto text-lg md:text-xl text-gray-700 leading-relaxed pr-4">
-                                ${kontenVal}
-                            </div>
-                        </div>
-                    </div>`;
-            }
-
-            if (t === 'MATERI_IMG_KIRI' || t === 'MATERI_IMG_KANAN') {
-                const imgBlock = `
-                    <div class="w-full md:w-1/2 flex items-center justify-center p-6 dedicated-image bg-gray-50 rounded-3xl border border-gray-100 h-[35vh] md:h-auto">
-                        <img src="${imgUrlVal}" class="max-w-full max-h-[30vh] md:max-h-full object-contain rounded-2xl drop-shadow-md">
-                    </div>`;
-                const textBlock = `
-                    <div class="w-full md:w-1/2 content-scroll overflow-y-auto flex flex-col justify-center px-4 md:px-8 mt-6 md:mt-0">
-                        <div class="text-lg md:text-xl text-gray-700 leading-relaxed space-y-6">${kontenVal}</div>
-                    </div>`;
-                
-                return `
-                    <div class="flex flex-col p-6 md:p-12 h-full bg-white">
-                        <div class="max-w-6xl mx-auto w-full h-full flex flex-col">
-                            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 border-b-[3px] border-gray-100 pb-6 tracking-tight">${judulVal}</h2>
-                            <div class="flex flex-col md:flex-row gap-8 flex-1 h-full items-stretch">
-                                ${t === 'MATERI_IMG_KIRI' ? imgBlock + textBlock : textBlock + imgBlock}
-                            </div>
-                        </div>
-                    </div>`;
-            }
-
-            if (t === 'PG' || t.includes('_PG') || t.includes('PILIHAN GANDA')) {
-                const safeA = getVal(slide, ['opsi a', 'pilihan a', 'a']).toString().trim();
-                const safeB = getVal(slide, ['opsi b', 'pilihan b', 'b']).toString().trim();
-                const safeC = getVal(slide, ['opsi c', 'pilihan c', 'c']).toString().trim();
-                const safeD = getVal(slide, ['opsi d', 'pilihan d', 'd']).toString().trim();
-                const safeKey = getVal(slide, ['kunci', 'kunci jawaban', 'jawaban', 'answer']).toString().trim().toUpperCase();
-
-                const getBtnClass = (op) => {
-                    if (!isLocked) return 'border-gray-200 hover:border-blue-500 hover:bg-blue-50 hover:shadow-md hover:-translate-y-1';
-                    if (op === safeKey) return 'border-green-500 bg-green-50 opacity-100 cursor-not-allowed shadow-inner'; 
-                    if (ans === op) return 'border-rose-500 bg-rose-50 opacity-100 cursor-not-allowed shadow-inner'; 
-                    return 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed';
-                };
-
-                const renderOption = (letter, val) => {
-                    if (!val) return ''; 
-                    return `
-                    <button id="btn-${uid}-${letter}" onclick="checkPG(this, ${safeKey === letter}, '${letter}', '${uid}', '${t}')" 
-                        class="group text-left p-4 md:p-6 rounded-2xl md:rounded-[2rem] border-[3px] transition-all flex flex-row items-center gap-4 md:gap-6 ${getBtnClass(letter)}" ${isLocked ? 'disabled' : ''}>
-                        <div class="w-12 h-12 md:w-16 md:h-16 shrink-0 rounded-xl bg-white border-2 border-gray-200 flex items-center justify-center font-bold text-xl md:text-2xl text-gray-500 pointer-events-none shadow-sm group-hover:bg-blue-500 group-hover:text-white transition-colors">${letter}</div>
-                        <div class="text-base md:text-xl text-gray-700 pointer-events-none flex-1 break-words">${val}</div>
-                    </button>`;
-                };
-
-                return `
-                    <div class="flex flex-col p-6 md:p-12 h-full bg-white">
-                        <div class="max-w-5xl mx-auto w-full h-full flex flex-col">
-                            <div class="flex items-center gap-4 mb-6 md:mb-8">
-                                ${getBadge()}
-                                <span class="text-gray-400 text-sm md:text-base font-bold uppercase tracking-widest">Pilihan Ganda</span>
-                            </div>
-                            <div class="content-scroll flex-1 overflow-y-auto pb-8 pr-3 md:pr-6">
-                                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 md:mb-8 leading-snug tracking-tight">${kontenVal}</h2>
-                                <div id="options-${uid}" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                                    ${renderOption('A', safeA)}
-                                    ${renderOption('B', safeB)}
-                                    ${renderOption('C', safeC)}
-                                    ${renderOption('D', safeD)}
-                                </div>
-                                
-                                <div id="explanation-${uid}" class="${isLocked ? 'block' : 'hidden'} mt-10 p-6 md:p-8 bg-blue-50 border-[3px] border-blue-100 rounded-[2rem] animate-fade-in-down shadow-sm">
-                                    <h3 class="text-xl md:text-2xl font-bold text-blue-800 mb-4 flex items-center gap-3">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                                        Pembahasan:
-                                    </h3>
-                                    <div class="text-lg md:text-xl text-gray-700 leading-relaxed">${pembahasanVal || 'Kunci jawaban yang tepat: <b>' + safeKey + '</b>'}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
-            }
-
-            if (t === 'ISIAN' || t.includes('_ISIAN') || t.includes('SINGKAT')) {
-                const safeKey = getVal(slide, ['kunci', 'kunci jawaban', 'jawaban', 'answer']).toString().trim();
-                const isCorrectHistory = ans && ans.toLowerCase().replace(/\s/g,'') === String(safeKey).toLowerCase().replace(/\s/g,'');
-
-                return `
-                    <div class="flex flex-col p-6 md:p-12 h-full bg-white">
-                        <div class="max-w-5xl mx-auto w-full h-full flex flex-col">
-                            <div class="flex items-center gap-4 mb-6 md:mb-8">
-                                ${getBadge()}
-                                <span class="text-gray-400 text-sm md:text-base font-bold uppercase tracking-widest">Isian Singkat</span>
-                            </div>
-                            <div class="content-scroll flex-1 overflow-y-auto pr-3 md:pr-6">
-                                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 md:mb-8 leading-snug tracking-tight">${kontenVal}</h2>
-                                
-                                <div class="max-w-3xl mx-auto bg-gray-50 p-8 md:p-12 rounded-[2rem] border-[3px] border-gray-200 text-center mt-8 shadow-inner">
-                                    <label class="block text-gray-500 font-bold uppercase tracking-widest mb-6 text-sm md:text-base">Ketik Jawabanmu Di Bawah Ini:</label>
-                                    <input type="text" id="input-${uid}" value="${ans || ''}" ${isLocked ? 'disabled' : ''}
-                                        class="w-full text-center text-2xl md:text-4xl px-4 py-4 md:px-6 md:py-6 rounded-2xl border-[3px] border-gray-300 focus:outline-none focus:border-purple-500 mb-8 transition-all ${isLocked ? 'bg-gray-200 text-gray-500 cursor-not-allowed border-dashed' : 'shadow-sm text-gray-800'}"
-                                        onkeypress="if(event.key === 'Enter') checkIsian('${uid}', '${safeKey}', '${t}')">
-                                        
-                                    ${!isLocked ? `
-                                    <button id="btn-${uid}" onclick="checkIsian('${uid}', '${safeKey}', '${t}')"
-                                        class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-10 rounded-full text-xl md:text-2xl transition-all transform hover:scale-105 shadow-xl hover:shadow-purple-300">
-                                        Cek Jawaban
-                                    </button>` : ''}
-                                    
-                                    <div id="feedback-${uid}" class="mt-8 text-2xl md:text-3xl font-black ${isLocked ? 'block' : 'hidden'} ${isCorrectHistory ? 'text-green-600' : 'text-rose-600'}">
-                                        ${isLocked ? (isCorrectHistory ? '✅ Jawaban tepat!' : '❌ Jawaban belum tepat.') : ''}
-                                    </div>
-                                </div>
-
-                                <div id="explanation-${uid}" class="${isLocked ? 'block' : 'hidden'} mt-10 p-6 md:p-8 bg-purple-50 border-[3px] border-purple-100 rounded-[2rem] max-w-4xl mx-auto animate-fade-in-down shadow-sm">
-                                    <h3 class="text-xl md:text-2xl font-bold text-purple-800 mb-4 flex items-center gap-3">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                                        Pembahasan:
-                                    </h3>
-                                    <div class="text-lg md:text-xl text-gray-700 leading-relaxed">${pembahasanVal || 'Kunci jawaban yang benar: <b>' + safeKey + '</b>'}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
-            }
-
-            return `
-                <div class="p-10 h-full flex flex-col items-center justify-center bg-rose-50 text-center">
-                    <div class="text-6xl mb-6">⚠️</div>
-                    <h3 class="text-3xl font-bold text-rose-700 mb-4">Tipe Slide Tidak Dikenali</h3>
-                    <p class="text-xl text-rose-600 max-w-2xl leading-relaxed">Pastikan kolom <b class="bg-rose-200 px-3 py-1 rounded">Tipe_Slide</b> atau <b class="bg-rose-200 px-3 py-1 rounded">Tipe_Soal</b> terisi di Google Sheets. <br><br>[Isi yang terbaca saat ini: <b class="bg-white px-4 py-2 rounded shadow-sm border border-rose-200">${t || 'KOSONG / UNDEFINED'}</b>]</p>
-                </div>`;
-        }
-
-        // --- 4. NAVIGATION LOGIC ---
-        function showSlide(index) {
-            document.querySelectorAll('.slide').forEach((el) => {
-                el.classList.remove('active');
-            });
-            
-            $('current-page').innerText = index;
-
-            // Kontrol visibilitas tombol "Daftar Soal" (hanya muncul setelah milih mode belajar)
-            if (index > 1 && index < App.slide.total) {
-                $('btn-daftar-soal').classList.replace('hidden', 'flex');
-            } else {
-                $('btn-daftar-soal').classList.replace('flex', 'hidden');
-            }
-
-            const logoBox = $('global-logo-container');
-            if (index === 1) {
-                logoBox.classList.replace('flex-row', 'flex-col');
-                logoBox.classList.replace('items-center', 'items-end');
-                logoBox.classList.replace('gap-4', 'gap-2');
-            } else {
-                logoBox.classList.replace('flex-col', 'flex-row');
-                logoBox.classList.replace('items-end', 'items-center');
-                logoBox.classList.replace('gap-2', 'gap-4');
-            }
-
-            if (index === 1) {
-                $('slide-1').classList.add('active'); 
-            } else if (index === App.slide.total) {
-                $('slide-12').classList.add('active'); 
-
-                $('final-score-pre').innerText = App.scores.pre;
-                $('final-score-class').innerText = App.scores.class;
-                $('final-score-post').innerText = App.scores.post;
-                if(App.course.mode === 'Modul Latihan Mandiri') { 
-                    $('final-score-class').innerText = App.scores.modul;
-                }
-                
-                kirimDataKeAppScript();
-            } else {
-                const dSlide = $('dynamic-slide-' + index);
-                if (dSlide) dSlide.classList.add('active');
-            }
-        }
-
-        function prevSlide() { if (App.slide.current > 1) goToSlide(App.slide.current - 1); }
-        function nextSlide() { if (App.slide.current < App.slide.total) goToSlide(App.slide.current + 1); }
-        function goToSlide(index) { App.slide.current = index; showSlide(index); }
-
-        function toggleFullscreen() {
-            const el = $('app-container');
-            try {
-                if (!document.fullscreenElement) {
-                    const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
-                    if(req) req.call(el).catch(err => showToast("Fullscreen diblokir oleh browser.", "warning"));
-                } else {
-                    const exitReq = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
-                    if(exitReq) exitReq.call(document);
-                }
-            } catch (err) { console.warn("Fullscreen error:", err); }
-        }
-
-        // --- 5. ASSESSMENT LOGIC ---
-        function showExplanation(qId) {
-            const exp = $('explanation-' + qId);
-            if(exp) {
-                exp.classList.remove('hidden');
-                exp.classList.add('animate-fade-in-down');
-                if (window.renderMath) window.renderMath(); 
-            }
-        }
-
-        function addScore(qId, type = '') {
-            if (App.course.mode === 'Modul Latihan Mandiri') App.scores.modul += 100;
-            else if (type.includes('PRE') || qId.includes('pretest')) App.scores.pre += 100;
-            else if (type.includes('POST') || qId.includes('posttest')) App.scores.post += 100;
-            else App.scores.class += 100;
-        }
-
-        function checkPG(button, isCorrect, valueSelected, qId, type = '') {
-            if (App.tracking.answered[qId]) return;
-            
-            App.tracking.answered[qId] = true;
-            App.tracking.answers[qId] = valueSelected;
-            
-            if (isCorrect) addScore(qId, type);
-            showExplanation(qId);
-
-            $('options-' + qId).querySelectorAll('button').forEach(btn => {
-                btn.className = btn.className.replace(/hover:[^\s]+/g, ''); 
-                btn.classList.add('cursor-not-allowed', 'opacity-50', 'bg-gray-50');
-                btn.classList.remove('border-gray-200');
-                btn.onclick = null; 
-            });
-
-            button.classList.remove('opacity-50', 'bg-gray-50');
-            button.classList.add(isCorrect ? 'border-green-500' : 'border-rose-500', isCorrect ? 'bg-green-50' : 'bg-rose-50', 'opacity-100', 'shadow-inner');
-            
-            if(isCorrect) showToast("Wah, jawabanmu benar!", "success");
-            else showToast("Sayang sekali, jawabanmu masih keliru.", "error");
-
-            renderNavigasi(); // Update status menu di daftar soal
-        }
-
-        function checkIsian(qId, kunci = "2/3", type = '') {
-            const inputEl = $('input-' + qId);
-            const inputVal = inputEl.value.trim();
-            const feedback = $('feedback-' + qId);
-            
-            if (App.tracking.answered[qId] || !inputVal) return;
-            
-            App.tracking.answered[qId] = true;
-            App.tracking.answers[qId] = inputVal;
-            
-            const isCorrect = (inputVal.toLowerCase().replace(/\s/g,'') === String(kunci).toLowerCase().replace(/\s/g,'')); 
-
-            if(isCorrect) {
-                addScore(qId, type);
-                feedback.innerHTML = "✅ Tepat Sekali!";
-                feedback.className = "mt-8 text-2xl md:text-3xl font-black text-green-600 animate-fade-in-down block";
-                showToast("Wah, jawabanmu benar!", "success");
-            } else {
-                feedback.innerHTML = "❌ Masih kurang tepat.";
-                feedback.className = "mt-8 text-2xl md:text-3xl font-black text-rose-600 animate-fade-in-down block";
-                showToast("Sayang sekali, jawabanmu masih keliru.", "error");
-            }
-            
-            showExplanation(qId);
-
-            inputEl.disabled = true;
-            inputEl.classList.add('bg-gray-200', 'text-gray-500', 'cursor-not-allowed', 'border-dashed');
-            inputEl.classList.remove('shadow-sm', 'text-gray-800');
-            const btn = $('btn-' + qId);
-            if(btn) {
-                btn.disabled = true;
-                btn.classList.add('opacity-50', 'cursor-not-allowed');
-                btn.classList.remove('hover:scale-105', 'hover:shadow-purple-300', 'shadow-xl');
-            }
-
-            renderNavigasi(); // Update status menu di daftar soal
-        }
-
-        function renderCustomImages() {
-            const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-            const nodesToReplace = [];
-            while(treeWalker.nextNode()) {
-                if(treeWalker.currentNode.nodeValue.includes('[GAMBAR:')) nodesToReplace.push(treeWalker.currentNode);
-            }
-            nodesToReplace.forEach(node => {
-                const span = document.createElement('span');
-                // Mengubah batas maksimal gambar dari 45vh menjadi 30vh agar soal di bawahnya selalu kelihatan
-                span.innerHTML = node.nodeValue.replace(/\[GAMBAR:(.*?)\]/g, '<img src="$1" alt="Ilustrasi" class="block max-w-full h-auto max-h-[30vh] object-contain rounded-2xl shadow-sm my-4 md:my-6 mx-auto border border-gray-200">');
-                node.parentNode.replaceChild(span, node);
-            });
-
-            document.querySelectorAll('.dedicated-image').forEach(el => {
-                const text = el.innerText.trim();
-                if (text.startsWith('http://') || text.startsWith('https://')) {
-                    el.innerHTML = `<img src="${text}" alt="Ilustrasi Materi" class="w-full max-w-full h-auto max-h-full rounded-2xl object-contain drop-shadow-md">`;
-                }
-            });
-        }
-
-        async function kirimDataKeAppScript() {
-            if (App.isReviewMode) {
-                $('submit-status').innerText = "✅ Ini adalah mode review. Nilai tidak ditimpa.";
-                $('submit-status').className = "text-base md:text-xl font-bold text-gray-500 mb-8 bg-gray-50 py-4 px-8 rounded-full inline-block";
-                return;
-            }
-
-            const dataToSave = {
-                nama: App.user.name,
-                email: App.user.email,
-                password: App.user.password,
-                topik: App.course.topic,
-                mode: App.course.mode,       
-                skor_pre: App.scores.pre,        
-                skor_kelas: App.scores.class,   
-                skor_post: App.scores.post,
-                skor_modul: App.scores.modul,
-                jawaban: JSON.stringify(App.tracking.answers)
-            };
-
-            const statusEl = $('submit-status');
-            statusEl.innerText = "Sedang menyimpan nilai... ⏳";
-            statusEl.className = "text-base md:text-xl font-bold text-gray-500 mb-8 bg-gray-50 py-4 px-8 rounded-full inline-block";
-
-            try {
-                const result = await gasRunner('simpanNilaiSiswa', [dataToSave]);
-                if (result && result.success) {
-                    statusEl.innerText = "✅ Rekam jejak belajar berhasil disimpan!";
-                    statusEl.className = "text-base md:text-xl font-bold text-green-600 mb-8 bg-green-50 py-4 px-8 rounded-full inline-block";
-                } else {
-                    statusEl.innerText = "❌ Gagal menyimpan nilai.";
-                    statusEl.className = "text-base md:text-xl font-bold text-rose-600 mb-8 bg-rose-50 py-4 px-8 rounded-full inline-block";
-                }
+                document.execCommand('copy');
+                tampilkanToast(successMessage);
             } catch (err) {
-                statusEl.innerText = "⚠️ Gagal Koneksi: Data tidak tersimpan ke Sheets.";
-                statusEl.className = "text-base md:text-xl font-bold text-orange-600 mb-8 bg-orange-50 py-4 px-8 rounded-full inline-block";
+                console.error('Gagal menyalin:', err);
+            } finally {
+                document.body.removeChild(textarea);
             }
         }
 
-        window.renderMath = function() {
-            renderCustomImages();
-            if (window.MathJax) {
-                MathJax.typesetPromise().then(() => console.log('Math rendered!'));
-            }
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderCustomImages();
-            showSlide(App.slide.current); 
-        });
-
+        function tampilkanToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = message;
+            
+            toast.classList.remove('translate-x-full');
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+            }, 3000);
+        }
     </script>
 </body>
 </html>
