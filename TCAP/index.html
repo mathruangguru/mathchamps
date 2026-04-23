@@ -39,9 +39,11 @@
             overflow-x: hidden;
         }
 
-        /* UKURAN KANVAS - DIKEMBALIKAN KE PROPORSI YANG PAS (TIDAK PERLU SCROLL)
-        */
+        /* UKURAN KANVAS - DIKUNCI MAKSIMAL 1100px AGAR SELALU PROPORSIONAL (BAIK DI GITHUB / LOKAL) */
         .presentation-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            aspect-ratio: 16/9;
             background-color: white;
             position: relative;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -50,29 +52,22 @@
             border-radius: 1rem;
         }
 
-        /* Jika Layar Lebar (Desktop/Laptop) */
-        @media (min-aspect-ratio: 16/9) {
-            .presentation-wrapper {
-                width: calc(85vh * (16 / 9));
-                height: 85vh;
-            }
-            .presentation-nav {
-                width: calc(85vh * (16 / 9));
-            }
+        .presentation-nav {
+            width: 100%;
+            max-width: 1100px;
+            margin: 1rem auto 0 auto;
         }
-        /* Jika Layar Sempit (Tablet/Portrait) */
-        @media (max-aspect-ratio: 16/9) {
+
+        /* Jika Layar Sempit / HP (Di bawah 1100px) dia akan mengecil menyesuaikan */
+        @media (max-width: 1100px) {
             .presentation-wrapper {
                 width: 95vw;
                 height: calc(95vw * (9 / 16));
+                aspect-ratio: auto;
             }
             .presentation-nav {
                 width: 95vw;
             }
-        }
-
-        .presentation-nav {
-            margin: 1rem auto 0 auto;
         }
 
         .slide {
@@ -315,10 +310,18 @@
         };
 
         // URL APPS SCRIPT
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz65k1A-q-aW38eJBd9a2v0MT8AHEb0x19QUZ0y3fIDByfYkIhnHzfbM4jFFDsnXjU/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzGHZV40VvnIlZWpksiySYqWF5ToGDyGcjvRa3Y4EnMkQBgXFPmByj_kFsckyvRM6c/exec";
 
         // --- 2. HELPER FUNCTIONS ---
         const $ = id => document.getElementById(id);
+        
+        // Fungsi ANTI-BADAI untuk mencari nama kolom (Abaikan spasi, kapital, atau _ )
+        const getVal = (obj, possibleKeys) => {
+            const foundKey = Object.keys(obj).find(k => 
+                possibleKeys.includes(k.trim().toLowerCase().replace(/_/g, ' '))
+            );
+            return foundKey ? obj[foundKey] : '';
+        };
         
         // TOAST NOTIFICATION MODERN
         function showToast(message, type = 'error') {
@@ -518,8 +521,16 @@
         }
 
         function buildHTMLForType(slide, slideIndex) {
-            const rawType = slide.Tipe_Slide || slide['Tipe Slide'] || slide.Tipe_Soal || slide['Tipe Soal'] || slide.Tipe || '';
+            // Gunakan fungsi Anti-Badai untuk mencari nama kolom
+            const rawType = getVal(slide, ['tipe slide', 'tipe soal', 'tipe']);
             const t = rawType.toString().trim().toUpperCase(); 
+            
+            // Mengambil field konten/soal
+            const kontenVal = getVal(slide, ['konten', 'soal', 'pertanyaan', 'isi soal']);
+            const pembahasanVal = getVal(slide, ['pembahasan', 'penjelasan']);
+            const judulVal = getVal(slide, ['judul', 'title']);
+            const subKontenVal = getVal(slide, ['sub konten', 'subjudul']);
+            const imgUrlVal = getVal(slide, ['image url', 'gambar', 'url gambar', 'link gambar']);
             
             let prefix = 'soal';
             if (t && t.includes('PRE')) prefix = 'pretest';
@@ -540,9 +551,9 @@
                 return `
                     <div class="flex flex-col justify-center p-8 md:p-16 border-l-[12px] md:border-l-[20px] border-blue-600 h-full bg-white">
                         <div class="max-w-4xl">
-                            <h3 class="text-lg md:text-2xl font-semibold text-blue-600 mb-4 uppercase tracking-widest">${slide.Sub_Konten || ''}</h3>
-                            <h1 class="text-4xl md:text-6xl font-black text-gray-900 leading-tight mb-6 tracking-tight">${slide.Judul || ''}</h1>
-                            <div class="text-lg md:text-xl text-gray-600 border-l-4 border-gray-300 pl-4 py-2 leading-relaxed">${slide.Konten || ''}</div>
+                            <h3 class="text-lg md:text-2xl font-semibold text-blue-600 mb-4 uppercase tracking-widest">${subKontenVal}</h3>
+                            <h1 class="text-4xl md:text-6xl font-black text-gray-900 leading-tight mb-6 tracking-tight">${judulVal}</h1>
+                            <div class="text-lg md:text-xl text-gray-600 border-l-4 border-gray-300 pl-4 py-2 leading-relaxed">${kontenVal}</div>
                         </div>
                     </div>`;
             }
@@ -551,9 +562,9 @@
             if (t === 'MATERI_LIST') {
                 return `
                     <div class="flex flex-col p-8 md:p-16 h-full bg-white">
-                        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 border-b-2 border-gray-100 pb-4 tracking-tight">${slide.Judul || ''}</h2>
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 border-b-2 border-gray-100 pb-4 tracking-tight">${judulVal}</h2>
                         <div class="content-scroll flex-1 overflow-y-auto pr-4 text-lg md:text-xl text-gray-700 leading-relaxed space-y-6">
-                            ${slide.Konten || ''}
+                            ${kontenVal}
                         </div>
                     </div>`;
             }
@@ -562,11 +573,11 @@
             if (t === 'MATERI_IMG_TENGAH') {
                 return `
                     <div class="flex flex-col p-8 md:p-16 items-center justify-center h-full bg-white">
-                        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center w-full tracking-tight">${slide.Judul || ''}</h2>
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center w-full tracking-tight">${judulVal}</h2>
                         <div class="flex-1 w-full max-w-4xl bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center p-4 relative dedicated-image">
-                            <img src="${slide.Image_URL || ''}" class="max-w-full max-h-[40vh] md:max-h-[50vh] object-contain rounded-xl shadow-sm border border-gray-200">
+                            <img src="${imgUrlVal}" class="max-w-full max-h-[40vh] md:max-h-[50vh] object-contain rounded-xl shadow-sm border border-gray-200">
                         </div>
-                        <p class="text-gray-500 mt-6 text-base md:text-lg italic text-center bg-gray-100 px-6 py-2 rounded-full">${slide.Sub_Konten || ''}</p>
+                        <p class="text-gray-500 mt-6 text-base md:text-lg italic text-center bg-gray-100 px-6 py-2 rounded-full">${subKontenVal}</p>
                     </div>`;
             }
 
@@ -574,12 +585,12 @@
             if (t === 'MATERI_IMG_ATAS') {
                 return `
                     <div class="flex flex-col p-8 md:p-16 h-full bg-white">
-                        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 tracking-tight">${slide.Judul || ''}</h2>
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 tracking-tight">${judulVal}</h2>
                         <div class="w-full h-48 md:h-[35vh] bg-gray-50 rounded-2xl mb-8 flex items-center justify-center overflow-hidden dedicated-image shadow-inner border border-gray-100">
-                            <img src="${slide.Image_URL || ''}" class="w-full h-full object-contain">
+                            <img src="${imgUrlVal}" class="w-full h-full object-contain">
                         </div>
                         <div class="content-scroll flex-1 overflow-y-auto text-lg md:text-xl text-gray-700 leading-relaxed pr-4">
-                            ${slide.Konten || ''}
+                            ${kontenVal}
                         </div>
                     </div>`;
             }
@@ -588,16 +599,16 @@
             if (t === 'MATERI_IMG_KIRI' || t === 'MATERI_IMG_KANAN') {
                 const imgBlock = `
                     <div class="w-full md:w-1/2 flex items-center justify-center p-4 dedicated-image bg-gray-50 rounded-2xl border border-gray-100">
-                        <img src="${slide.Image_URL || ''}" class="max-w-full max-h-[40vh] md:max-h-[60vh] object-contain rounded-xl drop-shadow-md">
+                        <img src="${imgUrlVal}" class="max-w-full max-h-[40vh] md:max-h-[60vh] object-contain rounded-xl drop-shadow-md">
                     </div>`;
                 const textBlock = `
                     <div class="w-full md:w-1/2 content-scroll overflow-y-auto flex flex-col justify-center px-2 md:px-6 mt-4 md:mt-0">
-                        <div class="text-lg md:text-xl text-gray-700 leading-relaxed space-y-6">${slide.Konten || ''}</div>
+                        <div class="text-lg md:text-xl text-gray-700 leading-relaxed space-y-6">${kontenVal}</div>
                     </div>`;
                 
                 return `
                     <div class="flex flex-col p-8 md:p-16 h-full bg-white">
-                        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 border-b-2 border-gray-100 pb-4 tracking-tight">${slide.Judul || ''}</h2>
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 border-b-2 border-gray-100 pb-4 tracking-tight">${judulVal}</h2>
                         <div class="flex flex-col md:flex-row gap-6 md:gap-10 flex-1 h-full items-stretch">
                             ${t === 'MATERI_IMG_KIRI' ? imgBlock + textBlock : textBlock + imgBlock}
                         </div>
@@ -606,11 +617,11 @@
 
             // 6. SOAL PILIHAN GANDA
             if (t === 'PG' || t.includes('_PG') || t.includes('PILIHAN GANDA')) {
-                const safeA = (slide.Opsi_A || slide['Opsi A'] || slide.A || '').toString().trim();
-                const safeB = (slide.Opsi_B || slide['Opsi B'] || slide.B || '').toString().trim();
-                const safeC = (slide.Opsi_C || slide['Opsi C'] || slide.C || '').toString().trim();
-                const safeD = (slide.Opsi_D || slide['Opsi D'] || slide.D || '').toString().trim();
-                const safeKey = (slide.Kunci || slide['Kunci Jawaban'] || slide.Jawaban || '').toString().trim().toUpperCase();
+                const safeA = getVal(slide, ['opsi a', 'pilihan a', 'a']).toString().trim();
+                const safeB = getVal(slide, ['opsi b', 'pilihan b', 'b']).toString().trim();
+                const safeC = getVal(slide, ['opsi c', 'pilihan c', 'c']).toString().trim();
+                const safeD = getVal(slide, ['opsi d', 'pilihan d', 'd']).toString().trim();
+                const safeKey = getVal(slide, ['kunci', 'kunci jawaban', 'jawaban', 'answer']).toString().trim().toUpperCase();
 
                 const getBtnClass = (op) => {
                     if (!isLocked) return 'border-gray-200 hover:border-blue-500 hover:bg-blue-50 hover:shadow-sm';
@@ -636,7 +647,7 @@
                             <span class="text-gray-400 text-sm md:text-base font-bold uppercase tracking-widest">Pilihan Ganda</span>
                         </div>
                         <div class="content-scroll flex-1 overflow-y-auto pb-6 pr-4">
-                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-snug tracking-tight">${slide.Konten || slide.Soal || ''}</h2>
+                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-snug tracking-tight">${kontenVal}</h2>
                             <div id="options-${uid}" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                 ${renderOption('A', safeA)}
                                 ${renderOption('B', safeB)}
@@ -649,7 +660,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                                     Pembahasan:
                                 </h3>
-                                <div class="text-base md:text-lg text-gray-700 leading-relaxed">${slide.Pembahasan || 'Kunci jawaban yang tepat: <b>' + safeKey + '</b>'}</div>
+                                <div class="text-base md:text-lg text-gray-700 leading-relaxed">${pembahasanVal || 'Kunci jawaban yang tepat: <b>' + safeKey + '</b>'}</div>
                             </div>
                         </div>
                     </div>`;
@@ -657,7 +668,7 @@
 
             // 7. SOAL ISIAN SINGKAT
             if (t === 'ISIAN' || t.includes('_ISIAN') || t.includes('SINGKAT')) {
-                const safeKey = (slide.Kunci || slide['Kunci Jawaban'] || slide.Jawaban || '').toString().trim();
+                const safeKey = getVal(slide, ['kunci', 'kunci jawaban', 'jawaban', 'answer']).toString().trim();
                 const isCorrectHistory = ans && ans.toLowerCase().replace(/\s/g,'') === String(safeKey).toLowerCase().replace(/\s/g,'');
 
                 return `
@@ -667,7 +678,7 @@
                             <span class="text-gray-400 text-sm md:text-base font-bold uppercase tracking-widest">Isian Singkat</span>
                         </div>
                         <div class="content-scroll flex-1 overflow-y-auto pr-4">
-                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-snug tracking-tight">${slide.Konten || slide.Soal || ''}</h2>
+                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-snug tracking-tight">${kontenVal}</h2>
                             
                             <div class="max-w-2xl mx-auto bg-gray-50 p-6 md:p-10 rounded-2xl border-2 border-gray-200 text-center mt-8 shadow-inner">
                                 <label class="block text-gray-500 font-bold uppercase tracking-widest mb-4 md:mb-6 text-xs md:text-sm">Ketikan Jawabanmu:</label>
@@ -691,7 +702,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                                     Pembahasan:
                                 </h3>
-                                <div class="text-base md:text-lg text-gray-700 leading-relaxed">${slide.Pembahasan || 'Kunci jawaban yang benar: <b>' + safeKey + '</b>'}</div>
+                                <div class="text-base md:text-lg text-gray-700 leading-relaxed">${pembahasanVal || 'Kunci jawaban yang benar: <b>' + safeKey + '</b>'}</div>
                             </div>
                         </div>
                     </div>`;
