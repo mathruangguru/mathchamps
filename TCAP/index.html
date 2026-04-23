@@ -26,13 +26,10 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 
     <style>
-        /* FULLSCREEN NATIVE MAX SCALING HACK
-           Ini akan memaksakan kanvas menjadi sebesar mungkin di layar manapun,
-           tapi tetap mengunci bentuknya menjadi persegi panjang (16:9).
-        */
+        /* FULLSCREEN NATIVE MAX SCALING HACK */
         html, body {
             font-family: 'Lato', sans-serif;
-            background-color: #e2e8f0; /* Warna abu-abu pinggiran layar */
+            background-color: #e2e8f0;
             margin: 0;
             padding: 0;
             width: 100vw;
@@ -44,7 +41,6 @@
         }
 
         #app-container {
-            /* Rumus mengikat rasio 16:9 terbesar di layar */
             width: 96vw;
             height: calc(96vw * 9 / 16);
             max-height: 96vh;
@@ -59,7 +55,7 @@
         }
 
         .presentation-wrapper {
-            flex: 1; /* Mengisi seluruh sisa ruang di atas navigasi */
+            flex: 1;
             position: relative;
             overflow: hidden;
             width: 100%;
@@ -94,10 +90,9 @@
             justify-content: space-between;
             padding: 0 1.5rem;
             z-index: 100;
-            flex-shrink: 0; /* Mencegah navigasi menyusut */
+            flex-shrink: 0;
         }
 
-        /* Saat tombol Fullscreen diklik, hilangkan lengkungan dan penuhi 100% */
         :fullscreen #app-container {
             width: 100vw;
             height: 100vh;
@@ -113,7 +108,6 @@
             border-radius: 0;
         }
 
-        /* Kustomisasi Scrollbar Seamless */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f8fafc; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -129,7 +123,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in-down {
-            animation: fadeInDown 0.5s ease-out forwards;
+            animation: fadeInDown 0.3s ease-out forwards;
         }
     </style>
 </head>
@@ -139,7 +133,7 @@
     <div id="toast-container" class="fixed top-5 right-5 z-[1000] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- MODAL LUPA PASSWORD -->
-    <div id="modal-forgot-password" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm transition-all">
+    <div id="modal-forgot-password" class="fixed inset-0 bg-black bg-opacity-60 z-[300] hidden items-center justify-center p-4 backdrop-blur-sm transition-all">
         <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm md:max-w-md w-full animate-fade-in-down border border-gray-100">
             <h2 class="text-xl md:text-2xl font-bold text-blue-900 mb-2">Lupa Password?</h2>
             <p class="text-gray-600 mb-6 text-sm">Masukkan email kamu yang terdaftar. Kami akan mengirimkan password baru ke email tersebut.</p>
@@ -152,6 +146,27 @@
         </div>
     </div>
 
+    <!-- MODAL DAFTAR SOAL (NAVIGASI) -->
+    <div id="modal-navigasi" class="fixed inset-0 bg-black bg-opacity-60 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm transition-all">
+        <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-3xl w-full animate-fade-in-down border border-gray-100 flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl md:text-2xl font-bold text-blue-900">Daftar Soal / Materi</h2>
+                <button onclick="tutupNavigasi()" class="text-gray-400 hover:text-rose-500 transition-colors p-2 rounded-full hover:bg-rose-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            
+            <div class="mb-5 flex flex-wrap gap-4 text-xs md:text-sm text-gray-600 font-medium bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <div class="flex items-center gap-2"><div class="w-4 h-4 rounded bg-white border-2 border-gray-200"></div> Belum Dijawab / Info Materi</div>
+                <div class="flex items-center gap-2"><div class="w-4 h-4 rounded bg-green-500 border-2 border-green-600"></div> Sudah Dijawab</div>
+            </div>
+            
+            <div id="navigasi-grid" class="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-3 overflow-y-auto content-scroll p-2 pb-6">
+                <!-- Tombol-tombol navigasi akan diisi dinamis oleh JavaScript -->
+            </div>
+        </div>
+    </div>
+
     <!-- KESELURUHAN APLIKASI -->
     <div id="app-container">
 
@@ -159,40 +174,39 @@
         <div id="presentation" class="presentation-wrapper">
             
             <!-- GLOBAL LOGOS -->
-            <div id="global-logo-container" class="absolute top-5 right-8 flex flex-col items-end gap-2 z-50 pointer-events-none transition-all duration-500">
-                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_zekej2_3984.png" alt="Ruangguru Logo" class="h-8 md:h-12 lg:h-14 object-contain drop-shadow-sm">
-                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs Logo" class="h-8 md:h-12 lg:h-14 object-contain drop-shadow-sm">
+            <div id="global-logo-container" class="absolute top-4 right-6 md:top-5 md:right-8 flex flex-col items-end gap-2 z-50 pointer-events-none transition-all duration-500">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_zekej2_3984.png" alt="Ruangguru Logo" class="h-8 md:h-10 lg:h-12 object-contain drop-shadow-sm">
+                <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_9hfnff_6419.png" alt="Math Champs Logo" class="h-8 md:h-10 lg:h-12 object-contain drop-shadow-sm">
             </div>
 
             <!-- SLIDE WRAPPER -->
             <div id="slides-wrapper" class="w-full h-full relative text-gray-800">
 
                 <!-- SLIDE 1: WELCOME & TOPIK -->
-                <div id="slide-1" class="slide active flex flex-col items-center justify-center text-center px-4 py-8 bg-gradient-to-br from-blue-50 to-indigo-50 overflow-y-auto content-scroll">
+                <div id="slide-1" class="slide active flex flex-col items-center justify-center text-center px-4 py-4 md:py-6 bg-gradient-to-br from-blue-50 to-indigo-50 overflow-y-auto content-scroll">
                     
                     <!-- STEP 1: LOGIN -->
-                    <div id="step-login" class="flex flex-col items-center justify-center w-full transition-all duration-500">
-                        <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-blue-900 mb-4 drop-shadow-sm tracking-tight px-4 relative z-10">Selamat Datang di Math Champs!</h1>
-                        <p class="text-base md:text-xl text-gray-600 mb-8 max-w-2xl font-medium px-4">Sebelum memulai petualangan belajarmu hari ini, silakan tulis nama dan sandi kamu terlebih dahulu ya.</p>
+                    <div id="step-login" class="flex flex-col items-center justify-center w-full transition-all duration-500 mt-2 md:mt-4">
+                        <h1 class="text-3xl md:text-4xl lg:text-5xl font-black text-blue-900 mb-2 md:mb-3 drop-shadow-sm tracking-tight px-4 relative z-10">Selamat Datang di Math Champs!</h1>
+                        <p class="text-sm md:text-base lg:text-lg text-gray-600 mb-4 md:mb-6 max-w-2xl font-medium px-4">Sebelum memulai petualangan belajarmu hari ini, silakan tulis nama dan sandi kamu terlebih dahulu ya.</p>
                         
-                        <!-- Kotak Login Diperbesar (max-w-lg) -->
-                        <div class="w-full max-w-lg bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-blue-50 relative overflow-hidden shrink-0">
+                        <div class="w-full max-w-md bg-white p-6 md:p-8 rounded-3xl shadow-xl border border-blue-50 relative overflow-hidden shrink-0">
                             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-indigo-500"></div>
                             
-                            <label class="block text-left text-sm font-bold text-gray-700 mb-2">Nama Lengkap</label>
-                            <input type="text" id="student-name" placeholder="Misal: Budi Santoso" class="w-full px-5 py-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-5 bg-gray-50 transition-all text-base md:text-lg" onkeypress="if(event.key === 'Enter') document.getElementById('student-email').focus()">
+                            <label class="block text-left text-xs md:text-sm font-bold text-gray-700 mb-1.5">Nama Lengkap</label>
+                            <input type="text" id="student-name" placeholder="Misal: Budi Santoso" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3 md:mb-4 bg-gray-50 transition-all text-sm md:text-base" onkeypress="if(event.key === 'Enter') document.getElementById('student-email').focus()">
                             
-                            <label class="block text-left text-sm font-bold text-gray-700 mb-2">Alamat Email</label>
-                            <input type="email" id="student-email" placeholder="Misal: budi@sekolah.com" class="w-full px-5 py-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-5 bg-gray-50 transition-all text-base md:text-lg" onkeypress="if(event.key === 'Enter') document.getElementById('teacher-password').focus()">
+                            <label class="block text-left text-xs md:text-sm font-bold text-gray-700 mb-1.5">Alamat Email</label>
+                            <input type="email" id="student-email" placeholder="Misal: budi@sekolah.com" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3 md:mb-4 bg-gray-50 transition-all text-sm md:text-base" onkeypress="if(event.key === 'Enter') document.getElementById('teacher-password').focus()">
 
-                            <label class="block text-left text-sm font-bold text-gray-700 mb-2">Password Guru</label>
-                            <input type="password" id="teacher-password" placeholder="Masukkan password" class="w-full px-5 py-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3 bg-gray-50 transition-all text-base md:text-lg" onkeypress="if(event.key === 'Enter') simpanNama()">
+                            <label class="block text-left text-xs md:text-sm font-bold text-gray-700 mb-1.5">Password Guru</label>
+                            <input type="password" id="teacher-password" placeholder="Masukkan password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2 bg-gray-50 transition-all text-sm md:text-base" onkeypress="if(event.key === 'Enter') simpanNama()">
 
-                            <div class="text-right mb-6">
-                                <button onclick="bukaModalLupaPassword()" class="text-sm md:text-base text-blue-500 hover:text-blue-700 font-semibold transition-colors">Lupa Password?</button>
+                            <div class="text-right mb-4">
+                                <button onclick="bukaModalLupaPassword()" class="text-xs md:text-sm text-blue-500 hover:text-blue-700 font-semibold transition-colors">Lupa Password?</button>
                             </div>
 
-                            <button id="btn-login-submit" onclick="simpanNama()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-2xl text-lg md:text-xl transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-blue-300">
+                            <button id="btn-login-submit" onclick="simpanNama()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-3.5 px-6 rounded-2xl text-base md:text-lg transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-blue-300">
                                 Mulai Belajar 🚀
                             </button>
                         </div>
@@ -292,7 +306,7 @@
                         <div id="submit-status" class="text-base md:text-lg font-bold text-gray-500 mb-8 bg-gray-50 py-3 px-8 rounded-full inline-block">Menyimpan rekam jejak...</div>
 
                         <div class="mt-4">
-                            <button onclick="goToSlide(1)" class="bg-gray-900 hover:bg-black text-white font-bold py-5 px-12 rounded-full text-xl md:text-2xl transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 inline-flex items-center gap-3">
+                            <button onclick="goToSlide(1)" class="bg-gray-900 hover:bg-black text-white font-bold py-4 md:py-5 px-10 md:px-12 rounded-full text-xl md:text-2xl transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 inline-flex items-center gap-3">
                                 <span>Selesai & Kembali</span>
                             </button>
                         </div>
@@ -302,10 +316,18 @@
             </div>
         </div>
 
-        <!-- NAVIGATION CONTROLS (SEKARANG MENEMPEL DI BAWAH KANVAS) -->
+        <!-- NAVIGATION CONTROLS (BAWAH KANVAS) -->
         <div class="presentation-nav">
-            <div class="text-gray-500 font-bold text-sm md:text-base bg-slate-50 px-5 py-2.5 rounded-full border border-gray-200">
-                <span id="current-page" class="text-blue-600">1</span> / <span id="total-pages">2</span>
+            <div class="flex items-center gap-3 md:gap-4">
+                <div class="text-gray-500 font-bold text-sm md:text-base bg-slate-50 px-4 md:px-5 py-2 md:py-2.5 rounded-full border border-gray-200">
+                    <span id="current-page" class="text-blue-600">1</span> / <span id="total-pages">2</span>
+                </div>
+                
+                <!-- TOMBOL DAFTAR SOAL -->
+                <button id="btn-daftar-soal" onclick="bukaNavigasi()" class="hidden items-center gap-2 px-4 py-2 md:py-2.5 bg-blue-50 text-blue-700 font-bold rounded-full hover:bg-blue-100 transition-colors border border-blue-200 text-sm md:text-base shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    <span class="hidden sm:inline">Daftar Soal</span>
+                </button>
             </div>
             
             <div class="flex gap-3 md:gap-5">
@@ -342,7 +364,6 @@
         // --- 2. HELPER FUNCTIONS ---
         const $ = id => document.getElementById(id);
         
-        // Fungsi ANTI-BADAI untuk mencari nama kolom (Abaikan spasi, kapital, atau _ )
         const getVal = (obj, possibleKeys) => {
             const foundKey = Object.keys(obj).find(k => 
                 possibleKeys.includes(k.trim().toLowerCase().replace(/_/g, ' '))
@@ -350,7 +371,6 @@
             return foundKey ? obj[foundKey] : '';
         };
         
-        // TOAST NOTIFICATION MODERN
         function showToast(message, type = 'error') {
             const container = $('toast-container');
             const toast = document.createElement('div');
@@ -383,8 +403,54 @@
 
         function bukaModalLupaPassword() { $('modal-forgot-password').classList.replace('hidden', 'flex'); }
         function tutupModalLupaPassword() { 
-            $('modal-forgot-password').classList.replace('flex', 'hidden'); 
-            $('forgot-status').classList.add('hidden');
+             $('modal-forgot-password').classList.replace('flex', 'hidden'); 
+             $('forgot-status').classList.add('hidden');
+        }
+
+        function bukaNavigasi() {
+            $('modal-navigasi').classList.replace('hidden', 'flex');
+            renderNavigasi();
+        }
+
+        function tutupNavigasi() {
+            $('modal-navigasi').classList.replace('flex', 'hidden');
+        }
+
+        function renderNavigasi() {
+            const grid = $('navigasi-grid');
+            grid.innerHTML = '';
+            
+            App.slidesData.forEach((slide, idx) => {
+                const slideNum = idx + 2;
+                const btn = document.createElement('button');
+                btn.innerText = idx + 1; 
+                
+                const rawType = getVal(slide, ['tipe slide', 'tipe soal', 'tipe']).toString().trim().toUpperCase();
+                
+                let isAnswered = false;
+                let isQuestion = false;
+
+                if (rawType.includes('PG') || rawType.includes('ISIAN') || rawType.includes('SINGKAT')) {
+                    isQuestion = true;
+                    let prefix = 'soal';
+                    if (rawType.includes('PRE')) prefix = 'pretest';
+                    else if (rawType.includes('POST')) prefix = 'posttest';
+                    const uid = `${prefix}_${idx + 1}`;
+                    isAnswered = App.tracking.answered[uid];
+                }
+
+                if (isQuestion && isAnswered) {
+                    btn.className = 'w-full aspect-square rounded-xl font-black text-sm md:text-base flex items-center justify-center transition-all border-2 bg-green-500 text-white border-green-600 shadow-inner hover:bg-green-600 transform hover:scale-105';
+                } else {
+                    btn.className = `w-full aspect-square rounded-xl font-bold text-sm md:text-base flex items-center justify-center transition-all border-2 bg-white text-gray-600 border-gray-200 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm transform hover:scale-105 ${slideNum === App.slide.current ? 'ring-2 ring-blue-400 ring-offset-2' : ''}`;
+                }
+                
+                btn.onclick = () => {
+                    goToSlide(slideNum);
+                    tutupNavigasi();
+                };
+                grid.appendChild(btn);
+            });
         }
 
         async function gasRunner(action, args) {
@@ -504,7 +570,6 @@
                 App.isReviewMode = result.isReviewMode;
                 App.tracking.answers = result.history || {};
                 
-                // DATA MASUK KE APP
                 App.slidesData = result.slides;
                 App.slide.total = App.slidesData.length + 2; 
 
@@ -512,7 +577,6 @@
                     showToast("Kamu sudah pernah mengerjakan. Sistem masuk ke Mode Review.", "warning");
                 }
 
-                // Inject dynamic slides ke HTML
                 renderDynamicSlides(App.slidesData);
                 
                 $('total-pages').innerText = App.slide.total;
@@ -548,11 +612,9 @@
         }
 
         function buildHTMLForType(slide, slideIndex) {
-            // Gunakan fungsi Anti-Badai untuk mencari nama kolom
             const rawType = getVal(slide, ['tipe slide', 'tipe soal', 'tipe']);
             const t = rawType.toString().trim().toUpperCase(); 
             
-            // Mengambil field konten/soal
             const kontenVal = getVal(slide, ['konten', 'soal', 'pertanyaan', 'isi soal']);
             const pembahasanVal = getVal(slide, ['pembahasan', 'penjelasan']);
             const judulVal = getVal(slide, ['judul', 'title']);
@@ -565,92 +627,86 @@
             const uid = `${prefix}_${slideIndex}`;
             
             const getBadge = () => {
-                if(prefix === 'pretest') return `<span class="bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full text-sm md:text-base font-bold tracking-widest uppercase">PRE-TEST</span>`;
-                if(prefix === 'posttest') return `<span class="bg-rose-100 text-rose-700 px-4 py-1.5 rounded-full text-sm md:text-base font-bold tracking-widest uppercase">POST-TEST</span>`;
-                return `<span class="bg-orange-100 text-orange-700 px-4 py-1.5 rounded-full text-sm md:text-base font-bold tracking-widest uppercase">LATIHAN</span>`;
+                if(prefix === 'pretest') return `<span class="bg-indigo-100 text-indigo-700 px-3 py-1.5 md:px-4 rounded-full text-xs md:text-sm font-bold tracking-widest uppercase">PRE-TEST</span>`;
+                if(prefix === 'posttest') return `<span class="bg-rose-100 text-rose-700 px-3 py-1.5 md:px-4 rounded-full text-xs md:text-sm font-bold tracking-widest uppercase">POST-TEST</span>`;
+                return `<span class="bg-orange-100 text-orange-700 px-3 py-1.5 md:px-4 rounded-full text-xs md:text-sm font-bold tracking-widest uppercase">LATIHAN</span>`;
             };
 
             const ans = App.tracking.answers[uid] || null; 
             const isLocked = App.isReviewMode || App.tracking.answered[uid];
 
-            // 1. MATERI_JUDUL
             if (t === 'MATERI_JUDUL') {
                 return `
-                    <div class="flex flex-col justify-center p-8 md:p-20 border-l-[16px] md:border-l-[24px] border-blue-600 h-full bg-white content-scroll overflow-y-auto">
-                        <div class="max-w-6xl mx-auto w-full">
-                            <h3 class="text-2xl md:text-4xl font-semibold text-blue-600 mb-4 md:mb-8 uppercase tracking-widest">${subKontenVal}</h3>
-                            <h1 class="text-6xl md:text-8xl font-black text-gray-900 leading-tight mb-8 md:mb-12 tracking-tight">${judulVal}</h1>
-                            <div class="text-2xl md:text-3xl text-gray-600 border-l-[6px] border-gray-300 pl-8 py-4 leading-relaxed">${kontenVal}</div>
+                    <div class="flex flex-col justify-center p-6 md:p-12 border-l-[12px] md:border-l-[20px] border-blue-600 h-full bg-white content-scroll overflow-y-auto">
+                        <div class="max-w-5xl mx-auto w-full">
+                            <h3 class="text-xl md:text-3xl font-semibold text-blue-600 mb-4 uppercase tracking-widest">${subKontenVal}</h3>
+                            <h1 class="text-4xl md:text-6xl font-black text-gray-900 leading-tight mb-8 tracking-tight">${judulVal}</h1>
+                            <div class="text-lg md:text-xl text-gray-600 border-l-[6px] border-gray-300 pl-6 py-3 leading-relaxed">${kontenVal}</div>
                         </div>
                     </div>`;
             }
 
-            // 2. MATERI_LIST
             if (t === 'MATERI_LIST') {
                 return `
-                    <div class="flex flex-col p-8 md:p-24 h-full bg-white">
-                        <div class="max-w-7xl mx-auto w-full h-full flex flex-col">
-                            <h2 class="text-4xl md:text-6xl font-bold text-gray-800 mb-8 md:mb-12 border-b-[3px] border-gray-100 pb-8 tracking-tight">${judulVal}</h2>
-                            <div class="content-scroll flex-1 overflow-y-auto pr-4 md:pr-10 text-2xl md:text-3xl text-gray-700 leading-relaxed space-y-10">
+                    <div class="flex flex-col p-6 md:p-12 h-full bg-white">
+                        <div class="max-w-5xl mx-auto w-full h-full flex flex-col">
+                            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 border-b-[3px] border-gray-100 pb-6 tracking-tight">${judulVal}</h2>
+                            <div class="content-scroll flex-1 overflow-y-auto pr-4 text-lg md:text-xl text-gray-700 leading-relaxed space-y-6">
                                 ${kontenVal}
                             </div>
                         </div>
                     </div>`;
             }
 
-            // 3. MATERI_IMG_TENGAH
             if (t === 'MATERI_IMG_TENGAH') {
                 return `
-                    <div class="flex flex-col p-8 md:p-20 items-center justify-center h-full bg-white content-scroll overflow-y-auto">
-                        <div class="max-w-6xl mx-auto w-full flex flex-col items-center">
-                            <h2 class="text-4xl md:text-6xl font-bold text-gray-800 mb-10 text-center w-full tracking-tight">${judulVal}</h2>
-                            <div class="w-full bg-gray-50 rounded-[2rem] border-4 border-dashed border-gray-300 flex items-center justify-center p-8 md:p-12 relative dedicated-image">
-                                <img src="${imgUrlVal}" class="max-w-full max-h-[50vh] md:max-h-[65vh] object-contain rounded-3xl shadow-sm border border-gray-200">
+                    <div class="flex flex-col p-6 md:p-10 items-center justify-center h-full bg-white content-scroll overflow-y-auto">
+                        <div class="max-w-5xl mx-auto w-full flex flex-col items-center">
+                            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center w-full tracking-tight">${judulVal}</h2>
+                            <div class="w-full bg-gray-50 rounded-3xl border-4 border-dashed border-gray-300 flex items-center justify-center p-6 md:p-10 relative dedicated-image">
+                                <img src="${imgUrlVal}" class="max-w-full max-h-[40vh] md:max-h-[50vh] object-contain rounded-2xl shadow-sm border border-gray-200">
                             </div>
-                            <p class="text-gray-500 mt-10 text-xl md:text-2xl italic text-center bg-gray-100 px-10 py-4 rounded-full">${subKontenVal}</p>
+                            <p class="text-gray-500 mt-6 text-lg md:text-xl italic text-center bg-gray-100 px-6 py-3 rounded-full">${subKontenVal}</p>
                         </div>
                     </div>`;
             }
 
-            // 4. MATERI_IMG_ATAS
             if (t === 'MATERI_IMG_ATAS') {
                 return `
-                    <div class="flex flex-col p-8 md:p-20 h-full bg-white">
-                        <div class="max-w-7xl mx-auto w-full h-full flex flex-col">
-                            <h2 class="text-4xl md:text-6xl font-bold text-gray-800 mb-10 tracking-tight">${judulVal}</h2>
-                            <div class="w-full h-[35vh] md:h-[45vh] bg-gray-50 rounded-[2rem] mb-12 flex items-center justify-center overflow-hidden dedicated-image shadow-inner border border-gray-100 shrink-0">
-                                <img src="${imgUrlVal}" class="w-full h-full object-contain">
+                    <div class="flex flex-col p-6 md:p-12 h-full bg-white">
+                        <div class="max-w-5xl mx-auto w-full h-full flex flex-col">
+                            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 tracking-tight">${judulVal}</h2>
+                            <div class="w-full h-[30vh] md:h-[40vh] bg-gray-50 rounded-3xl mb-8 flex items-center justify-center overflow-hidden dedicated-image shadow-inner border border-gray-100 shrink-0">
+                                <img src="${imgUrlVal}" class="w-full h-full object-contain p-4">
                             </div>
-                            <div class="content-scroll flex-1 overflow-y-auto text-2xl md:text-3xl text-gray-700 leading-relaxed pr-4 md:pr-10">
+                            <div class="content-scroll flex-1 overflow-y-auto text-lg md:text-xl text-gray-700 leading-relaxed pr-4">
                                 ${kontenVal}
                             </div>
                         </div>
                     </div>`;
             }
 
-            // 5. MATERI_IMG_KIRI / MATERI_IMG_KANAN
             if (t === 'MATERI_IMG_KIRI' || t === 'MATERI_IMG_KANAN') {
                 const imgBlock = `
-                    <div class="w-full md:w-1/2 flex items-center justify-center p-8 md:p-12 dedicated-image bg-gray-50 rounded-[2rem] border border-gray-100 h-[40vh] md:h-auto">
-                        <img src="${imgUrlVal}" class="max-w-full max-h-full object-contain rounded-3xl drop-shadow-md">
+                    <div class="w-full md:w-1/2 flex items-center justify-center p-6 dedicated-image bg-gray-50 rounded-3xl border border-gray-100 h-[35vh] md:h-auto">
+                        <img src="${imgUrlVal}" class="max-w-full max-h-[30vh] md:max-h-full object-contain rounded-2xl drop-shadow-md">
                     </div>`;
                 const textBlock = `
-                    <div class="w-full md:w-1/2 content-scroll overflow-y-auto flex flex-col justify-center px-4 md:px-12 mt-8 md:mt-0">
-                        <div class="text-2xl md:text-3xl text-gray-700 leading-relaxed space-y-10">${kontenVal}</div>
+                    <div class="w-full md:w-1/2 content-scroll overflow-y-auto flex flex-col justify-center px-4 md:px-8 mt-6 md:mt-0">
+                        <div class="text-lg md:text-xl text-gray-700 leading-relaxed space-y-6">${kontenVal}</div>
                     </div>`;
                 
                 return `
-                    <div class="flex flex-col p-8 md:p-20 h-full bg-white">
-                        <div class="max-w-[100rem] mx-auto w-full h-full flex flex-col">
-                            <h2 class="text-4xl md:text-6xl font-bold text-gray-800 mb-10 md:mb-14 border-b-[3px] border-gray-100 pb-8 tracking-tight">${judulVal}</h2>
-                            <div class="flex flex-col md:flex-row gap-10 md:gap-16 flex-1 h-full items-stretch">
+                    <div class="flex flex-col p-6 md:p-12 h-full bg-white">
+                        <div class="max-w-6xl mx-auto w-full h-full flex flex-col">
+                            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 border-b-[3px] border-gray-100 pb-6 tracking-tight">${judulVal}</h2>
+                            <div class="flex flex-col md:flex-row gap-8 flex-1 h-full items-stretch">
                                 ${t === 'MATERI_IMG_KIRI' ? imgBlock + textBlock : textBlock + imgBlock}
                             </div>
                         </div>
                     </div>`;
             }
 
-            // 6. SOAL PILIHAN GANDA
             if (t === 'PG' || t.includes('_PG') || t.includes('PILIHAN GANDA')) {
                 const safeA = getVal(slide, ['opsi a', 'pilihan a', 'a']).toString().trim();
                 const safeB = getVal(slide, ['opsi b', 'pilihan b', 'b']).toString().trim();
@@ -659,7 +715,7 @@
                 const safeKey = getVal(slide, ['kunci', 'kunci jawaban', 'jawaban', 'answer']).toString().trim().toUpperCase();
 
                 const getBtnClass = (op) => {
-                    if (!isLocked) return 'border-gray-200 hover:border-blue-500 hover:bg-blue-50 hover:shadow-lg hover:-translate-y-1';
+                    if (!isLocked) return 'border-gray-200 hover:border-blue-500 hover:bg-blue-50 hover:shadow-md hover:-translate-y-1';
                     if (op === safeKey) return 'border-green-500 bg-green-50 opacity-100 cursor-not-allowed shadow-inner'; 
                     if (ans === op) return 'border-rose-500 bg-rose-50 opacity-100 cursor-not-allowed shadow-inner'; 
                     return 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed';
@@ -669,78 +725,77 @@
                     if (!val) return ''; 
                     return `
                     <button id="btn-${uid}-${letter}" onclick="checkPG(this, ${safeKey === letter}, '${letter}', '${uid}', '${t}')" 
-                        class="group text-left p-6 md:p-10 rounded-[2rem] border-4 transition-all flex flex-row items-center gap-6 md:gap-10 ${getBtnClass(letter)}" ${isLocked ? 'disabled' : ''}>
-                        <div class="w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-2xl bg-white border-2 border-gray-200 flex items-center justify-center font-bold text-2xl md:text-3xl text-gray-500 pointer-events-none shadow-sm group-hover:bg-blue-500 group-hover:text-white transition-colors">${letter}</div>
-                        <div class="text-xl md:text-3xl text-gray-700 pointer-events-none flex-1 break-words">${val}</div>
+                        class="group text-left p-4 md:p-6 rounded-2xl md:rounded-[2rem] border-[3px] transition-all flex flex-row items-center gap-4 md:gap-6 ${getBtnClass(letter)}" ${isLocked ? 'disabled' : ''}>
+                        <div class="w-12 h-12 md:w-16 md:h-16 shrink-0 rounded-xl bg-white border-2 border-gray-200 flex items-center justify-center font-bold text-xl md:text-2xl text-gray-500 pointer-events-none shadow-sm group-hover:bg-blue-500 group-hover:text-white transition-colors">${letter}</div>
+                        <div class="text-base md:text-xl text-gray-700 pointer-events-none flex-1 break-words">${val}</div>
                     </button>`;
                 };
 
                 return `
-                    <div class="flex flex-col p-8 md:p-24 h-full bg-white">
-                        <div class="max-w-7xl mx-auto w-full h-full flex flex-col">
-                            <div class="flex items-center gap-5 mb-10">
+                    <div class="flex flex-col p-6 md:p-12 h-full bg-white">
+                        <div class="max-w-5xl mx-auto w-full h-full flex flex-col">
+                            <div class="flex items-center gap-4 mb-6 md:mb-8">
                                 ${getBadge()}
-                                <span class="text-gray-400 text-lg md:text-xl font-bold uppercase tracking-widest">Pilihan Ganda</span>
+                                <span class="text-gray-400 text-sm md:text-base font-bold uppercase tracking-widest">Pilihan Ganda</span>
                             </div>
-                            <div class="content-scroll flex-1 overflow-y-auto pb-10 pr-4 md:pr-10">
-                                <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-12 md:mb-16 leading-snug tracking-tight">${kontenVal}</h2>
-                                <div id="options-${uid}" class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                            <div class="content-scroll flex-1 overflow-y-auto pb-8 pr-3 md:pr-6">
+                                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 md:mb-8 leading-snug tracking-tight">${kontenVal}</h2>
+                                <div id="options-${uid}" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                     ${renderOption('A', safeA)}
                                     ${renderOption('B', safeB)}
                                     ${renderOption('C', safeC)}
                                     ${renderOption('D', safeD)}
                                 </div>
                                 
-                                <div id="explanation-${uid}" class="${isLocked ? 'block' : 'hidden'} mt-16 p-10 md:p-14 bg-blue-50 border-[3px] border-blue-100 rounded-[2.5rem] animate-fade-in-down shadow-sm">
-                                    <h3 class="text-3xl md:text-4xl font-bold text-blue-800 mb-8 flex items-center gap-4">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                <div id="explanation-${uid}" class="${isLocked ? 'block' : 'hidden'} mt-10 p-6 md:p-8 bg-blue-50 border-[3px] border-blue-100 rounded-[2rem] animate-fade-in-down shadow-sm">
+                                    <h3 class="text-xl md:text-2xl font-bold text-blue-800 mb-4 flex items-center gap-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                                         Pembahasan:
                                     </h3>
-                                    <div class="text-xl md:text-3xl text-gray-700 leading-relaxed">${pembahasanVal || 'Kunci jawaban yang tepat: <b>' + safeKey + '</b>'}</div>
+                                    <div class="text-lg md:text-xl text-gray-700 leading-relaxed">${pembahasanVal || 'Kunci jawaban yang tepat: <b>' + safeKey + '</b>'}</div>
                                 </div>
                             </div>
                         </div>
                     </div>`;
             }
 
-            // 7. SOAL ISIAN SINGKAT
             if (t === 'ISIAN' || t.includes('_ISIAN') || t.includes('SINGKAT')) {
                 const safeKey = getVal(slide, ['kunci', 'kunci jawaban', 'jawaban', 'answer']).toString().trim();
                 const isCorrectHistory = ans && ans.toLowerCase().replace(/\s/g,'') === String(safeKey).toLowerCase().replace(/\s/g,'');
 
                 return `
-                    <div class="flex flex-col p-8 md:p-24 h-full bg-white">
-                        <div class="max-w-7xl mx-auto w-full h-full flex flex-col">
-                            <div class="flex items-center gap-5 mb-10">
+                    <div class="flex flex-col p-6 md:p-12 h-full bg-white">
+                        <div class="max-w-5xl mx-auto w-full h-full flex flex-col">
+                            <div class="flex items-center gap-4 mb-6 md:mb-8">
                                 ${getBadge()}
-                                <span class="text-gray-400 text-lg md:text-xl font-bold uppercase tracking-widest">Isian Singkat</span>
+                                <span class="text-gray-400 text-sm md:text-base font-bold uppercase tracking-widest">Isian Singkat</span>
                             </div>
-                            <div class="content-scroll flex-1 overflow-y-auto pr-4 md:pr-10">
-                                <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-12 md:mb-16 leading-snug tracking-tight">${kontenVal}</h2>
+                            <div class="content-scroll flex-1 overflow-y-auto pr-3 md:pr-6">
+                                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 md:mb-8 leading-snug tracking-tight">${kontenVal}</h2>
                                 
-                                <div class="max-w-4xl mx-auto bg-gray-50 p-10 md:p-16 rounded-[2.5rem] border-4 border-gray-200 text-center mt-12 shadow-inner">
-                                    <label class="block text-gray-500 font-bold uppercase tracking-widest mb-8 md:mb-10 text-base md:text-xl">Ketik Jawabanmu Di Bawah Ini:</label>
-                                    <input type="text" id="input-${uid}" value="${ans || ''}" ${isLocked ? 'disabled' : ''} 
-                                        class="w-full text-center text-4xl md:text-5xl px-8 py-8 rounded-3xl border-4 border-gray-300 focus:outline-none focus:border-purple-500 mb-10 transition-all ${isLocked ? 'bg-gray-200 text-gray-500 cursor-not-allowed border-dashed' : 'shadow-sm text-gray-800'}" 
+                                <div class="max-w-3xl mx-auto bg-gray-50 p-8 md:p-12 rounded-[2rem] border-[3px] border-gray-200 text-center mt-8 shadow-inner">
+                                    <label class="block text-gray-500 font-bold uppercase tracking-widest mb-6 text-sm md:text-base">Ketik Jawabanmu Di Bawah Ini:</label>
+                                    <input type="text" id="input-${uid}" value="${ans || ''}" ${isLocked ? 'disabled' : ''}
+                                        class="w-full text-center text-2xl md:text-4xl px-4 py-4 md:px-6 md:py-6 rounded-2xl border-[3px] border-gray-300 focus:outline-none focus:border-purple-500 mb-8 transition-all ${isLocked ? 'bg-gray-200 text-gray-500 cursor-not-allowed border-dashed' : 'shadow-sm text-gray-800'}"
                                         onkeypress="if(event.key === 'Enter') checkIsian('${uid}', '${safeKey}', '${t}')">
-                                    
+                                        
                                     ${!isLocked ? `
-                                    <button id="btn-${uid}" onclick="checkIsian('${uid}', '${safeKey}', '${t}')" 
-                                        class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-6 px-16 rounded-full text-2xl md:text-3xl transition-all transform hover:scale-105 shadow-xl hover:shadow-purple-300">
+                                    <button id="btn-${uid}" onclick="checkIsian('${uid}', '${safeKey}', '${t}')"
+                                        class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-10 rounded-full text-xl md:text-2xl transition-all transform hover:scale-105 shadow-xl hover:shadow-purple-300">
                                         Cek Jawaban
                                     </button>` : ''}
                                     
-                                    <div id="feedback-${uid}" class="mt-10 text-3xl md:text-4xl font-black ${isLocked ? 'block' : 'hidden'} ${isCorrectHistory ? 'text-green-600' : 'text-rose-600'}">
+                                    <div id="feedback-${uid}" class="mt-8 text-2xl md:text-3xl font-black ${isLocked ? 'block' : 'hidden'} ${isCorrectHistory ? 'text-green-600' : 'text-rose-600'}">
                                         ${isLocked ? (isCorrectHistory ? '✅ Jawaban tepat!' : '❌ Jawaban belum tepat.') : ''}
                                     </div>
                                 </div>
 
-                                <div id="explanation-${uid}" class="${isLocked ? 'block' : 'hidden'} mt-16 p-10 md:p-14 bg-purple-50 border-[3px] border-purple-100 rounded-[2.5rem] max-w-5xl mx-auto animate-fade-in-down shadow-sm">
-                                    <h3 class="text-3xl md:text-4xl font-bold text-purple-800 mb-8 flex items-center gap-4">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                <div id="explanation-${uid}" class="${isLocked ? 'block' : 'hidden'} mt-10 p-6 md:p-8 bg-purple-50 border-[3px] border-purple-100 rounded-[2rem] max-w-4xl mx-auto animate-fade-in-down shadow-sm">
+                                    <h3 class="text-xl md:text-2xl font-bold text-purple-800 mb-4 flex items-center gap-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                                         Pembahasan:
                                     </h3>
-                                    <div class="text-xl md:text-3xl text-gray-700 leading-relaxed">${pembahasanVal || 'Kunci jawaban yang benar: <b>' + safeKey + '</b>'}</div>
+                                    <div class="text-lg md:text-xl text-gray-700 leading-relaxed">${pembahasanVal || 'Kunci jawaban yang benar: <b>' + safeKey + '</b>'}</div>
                                 </div>
                             </div>
                         </div>
@@ -748,10 +803,10 @@
             }
 
             return `
-                <div class="p-16 h-full flex flex-col items-center justify-center bg-rose-50 text-center">
-                    <div class="text-7xl mb-8">⚠️</div>
-                    <h3 class="text-4xl font-bold text-rose-700 mb-6">Tipe Slide Tidak Dikenali</h3>
-                    <p class="text-2xl text-rose-600 max-w-3xl leading-relaxed">Pastikan kolom <b class="bg-rose-200 px-3 py-1 rounded">Tipe_Slide</b> atau <b class="bg-rose-200 px-3 py-1 rounded">Tipe_Soal</b> terisi di Google Sheets. <br><br>[Isi yang terbaca saat ini: <b class="bg-white px-4 py-2 rounded shadow-sm border border-rose-200">${t || 'KOSONG / UNDEFINED'}</b>]</p>
+                <div class="p-10 h-full flex flex-col items-center justify-center bg-rose-50 text-center">
+                    <div class="text-6xl mb-6">⚠️</div>
+                    <h3 class="text-3xl font-bold text-rose-700 mb-4">Tipe Slide Tidak Dikenali</h3>
+                    <p class="text-xl text-rose-600 max-w-2xl leading-relaxed">Pastikan kolom <b class="bg-rose-200 px-3 py-1 rounded">Tipe_Slide</b> atau <b class="bg-rose-200 px-3 py-1 rounded">Tipe_Soal</b> terisi di Google Sheets. <br><br>[Isi yang terbaca saat ini: <b class="bg-white px-4 py-2 rounded shadow-sm border border-rose-200">${t || 'KOSONG / UNDEFINED'}</b>]</p>
                 </div>`;
         }
 
@@ -762,6 +817,13 @@
             });
             
             $('current-page').innerText = index;
+
+            // Kontrol visibilitas tombol "Daftar Soal" (hanya muncul setelah milih mode belajar)
+            if (index > 1 && index < App.slide.total) {
+                $('btn-daftar-soal').classList.replace('hidden', 'flex');
+            } else {
+                $('btn-daftar-soal').classList.replace('flex', 'hidden');
+            }
 
             const logoBox = $('global-logo-container');
             if (index === 1) {
@@ -782,8 +844,8 @@
                 $('final-score-pre').innerText = App.scores.pre;
                 $('final-score-class').innerText = App.scores.class;
                 $('final-score-post').innerText = App.scores.post;
-                if(App.course.mode === 'Modul Latihan Mandiri') {
-                     $('final-score-class').innerText = App.scores.modul;
+                if(App.course.mode === 'Modul Latihan Mandiri') { 
+                    $('final-score-class').innerText = App.scores.modul;
                 }
                 
                 kirimDataKeAppScript();
@@ -798,7 +860,6 @@
         function goToSlide(index) { App.slide.current = index; showSlide(index); }
 
         function toggleFullscreen() {
-            // Targetkan #app-container untuk fullscreen agar layar menjadi 100vw/100vh native
             const el = $('app-container');
             try {
                 if (!document.fullscreenElement) {
@@ -849,6 +910,8 @@
             
             if(isCorrect) showToast("Wah, jawabanmu benar!", "success");
             else showToast("Sayang sekali, jawabanmu masih keliru.", "error");
+
+            renderNavigasi(); // Update status menu di daftar soal
         }
 
         function checkIsian(qId, kunci = "2/3", type = '') {
@@ -866,11 +929,11 @@
             if(isCorrect) {
                 addScore(qId, type);
                 feedback.innerHTML = "✅ Tepat Sekali!";
-                feedback.className = "mt-10 text-3xl md:text-4xl font-black text-green-600 animate-fade-in-down block";
+                feedback.className = "mt-8 text-2xl md:text-3xl font-black text-green-600 animate-fade-in-down block";
                 showToast("Wah, jawabanmu benar!", "success");
             } else {
                 feedback.innerHTML = "❌ Masih kurang tepat.";
-                feedback.className = "mt-10 text-3xl md:text-4xl font-black text-rose-600 animate-fade-in-down block";
+                feedback.className = "mt-8 text-2xl md:text-3xl font-black text-rose-600 animate-fade-in-down block";
                 showToast("Sayang sekali, jawabanmu masih keliru.", "error");
             }
             
@@ -885,6 +948,8 @@
                 btn.classList.add('opacity-50', 'cursor-not-allowed');
                 btn.classList.remove('hover:scale-105', 'hover:shadow-purple-300', 'shadow-xl');
             }
+
+            renderNavigasi(); // Update status menu di daftar soal
         }
 
         function renderCustomImages() {
@@ -895,7 +960,8 @@
             }
             nodesToReplace.forEach(node => {
                 const span = document.createElement('span');
-                span.innerHTML = node.nodeValue.replace(/\[GAMBAR:(.*?)\]/g, '<img src="$1" alt="Ilustrasi" class="block max-w-full h-auto max-h-[45vh] object-contain rounded-3xl shadow-md my-8 mx-auto border border-gray-200">');
+                // Mengubah batas maksimal gambar dari 45vh menjadi 30vh agar soal di bawahnya selalu kelihatan
+                span.innerHTML = node.nodeValue.replace(/\[GAMBAR:(.*?)\]/g, '<img src="$1" alt="Ilustrasi" class="block max-w-full h-auto max-h-[30vh] object-contain rounded-2xl shadow-sm my-4 md:my-6 mx-auto border border-gray-200">');
                 node.parentNode.replaceChild(span, node);
             });
 
