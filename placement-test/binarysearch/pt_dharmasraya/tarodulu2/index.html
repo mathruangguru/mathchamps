@@ -361,19 +361,27 @@
         return arr; // Kalau sudah format Object, langsung kembalikan
     }
 
-    // 2. Pendeteksi nama kolom kebal huruf besar/kecil & spasi ekstra
+    // 2. Pendeteksi nama kolom kebal huruf besar/kecil & spasi ekstra (SISTEM PRIORITAS)
     function getVal(item, keywords) {
-        // Cek 1: Exact match (cek apakah nama kolomnya sama persis meski beda huruf besar/kecil)
-        for (let key in item) {
-            if (keywords.includes(key.toLowerCase().trim())) {
-                return item[key] ? item[key].toString().trim() : "";
+        // Cek 1: Exact match (Memprioritaskan urutan kata kunci di dalam array)
+        for (let i = 0; i < keywords.length; i++) {
+            let kw = keywords[i];
+            for (let key in item) {
+                if (key.toLowerCase().trim() === kw) {
+                    let val = item[key] ? item[key].toString().trim() : "";
+                    if (val !== "") return val; // Cuma ambil kalau sel-nya tidak kosong
+                }
             }
         }
-        // Cek 2: Partial match (cek apakah nama kolom MENGANDUNG kata kunci, misal: "Asal Sekolah Siswa")
-        for (let key in item) {
-            let lowerKey = key.toLowerCase();
-            if (keywords.some(kw => lowerKey.includes(kw))) {
-                return item[key] ? item[key].toString().trim() : "";
+        // Cek 2: Partial match (Memprioritaskan urutan kata kunci)
+        for (let i = 0; i < keywords.length; i++) {
+            let kw = keywords[i];
+            for (let key in item) {
+                let lowerKey = key.toLowerCase();
+                if (lowerKey.includes(kw)) {
+                    let val = item[key] ? item[key].toString().trim() : "";
+                    if (val !== "") return val;
+                }
             }
         }
         return "";
@@ -462,7 +470,8 @@
                                 
                                 if (!nameMap.has(cleanKey)) {
                                     // Ubah teks ke format rapi (Capitalize Each Word) biar sedap dipandang
-                                    const neatName = originalName.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
+                                    // Diperbarui: handle data yang full kapital dari Google Sheet
+                                    const neatName = originalName.trim().toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
                                     nameMap.set(cleanKey, neatName);
                                 }
                             }
