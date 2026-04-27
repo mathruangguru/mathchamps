@@ -1,6 +1,5 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
+
+<!DOCTYPE html><html lang="id"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Math Champs - Presentasi Interaktif</title>
@@ -125,10 +124,18 @@
         .animate-fade-in-down {
             animation: fadeInDown 0.3s ease-out forwards;
         }
+
+        /* Blob animations for material slides */
+        .blob-bg {
+            position: absolute;
+            filter: blur(60px);
+            opacity: 0.4;
+            z-index: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
-
     <!-- CUSTOM TOAST NOTIFICATION -->
     <div id="toast-container" class="fixed top-5 right-5 z-[1000] flex flex-col gap-3 pointer-events-none"></div>
 
@@ -223,6 +230,7 @@
                                 <h3 class="font-bold text-gray-800 text-base md:text-xl leading-tight mb-2">Bilangan & Aritmetika</h3>
                                 <p class="text-xs md:text-sm font-semibold text-blue-500 bg-blue-50 px-4 py-1.5 rounded-full">Lower Primary</p>
                             </button>
+                            <!-- Kancing topik lainnya dibiarkan sama -->
                             <button onclick="pilihTopik('Geometri dan Pengukuran (Lower Primary)')" class="group bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-200 hover:border-green-500 hover:shadow-lg transition-all flex flex-col items-center text-center transform hover:-translate-y-1">
                                 <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-green-50 flex items-center justify-center text-3xl md:text-4xl mb-4 group-hover:scale-110 transition-transform">📐</div>
                                 <h3 class="font-bold text-gray-800 text-base md:text-xl leading-tight mb-2">Geometri & Pengukuran</h3>
@@ -306,7 +314,7 @@
                         <div id="submit-status" class="text-base md:text-lg font-bold text-gray-500 mb-8 bg-gray-50 py-3 px-8 rounded-full inline-block">Menyimpan rekam jejak...</div>
 
                         <div class="mt-4">
-                            <button onclick="goToSlide(1)" class="bg-gray-900 hover:bg-black text-white font-bold py-4 md:py-5 px-10 md:px-12 rounded-full text-xl md:text-2xl transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 inline-flex items-center gap-3">
+                            <button onclick="resetApp()" class="bg-gray-900 hover:bg-black text-white font-bold py-4 md:py-5 px-10 md:px-12 rounded-full text-xl md:text-2xl transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 inline-flex items-center gap-3">
                                 <span>Selesai & Kembali</span>
                             </button>
                         </div>
@@ -348,7 +356,7 @@
 
     <script>
         // --- 1. STATE MANAGEMENT (Terpusat) ---
-        const App = {
+        let App = {
             slide: { current: 1, total: 2 },
             user: { name: "", email: "", password: "" },
             course: { topic: "", mode: "" },
@@ -357,6 +365,25 @@
             slidesData: [],
             isReviewMode: false
         };
+
+        const STATE_KEY = 'mathChampsSessionState';
+
+        function saveState() {
+            sessionStorage.setItem(STATE_KEY, JSON.stringify(App));
+        }
+
+        function restoreState() {
+            const saved = sessionStorage.getItem(STATE_KEY);
+            if (saved) {
+                try {
+                    App = JSON.parse(saved);
+                    return true;
+                } catch (e) {
+                    console.error("Gagal membaca session state:", e);
+                }
+            }
+            return false;
+        }
 
         // URL APPS SCRIPT
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzGHZV40VvnIlZWpksiySYqWF5ToGDyGcjvRa3Y4EnMkQBgXFPmByj_kFsckyvRM6c/exec";
@@ -423,7 +450,7 @@
             App.slidesData.forEach((slide, idx) => {
                 const slideNum = idx + 2;
                 const btn = document.createElement('button');
-                btn.innerText = idx + 1; 
+                btn.innerText = idx + 1;
                 
                 const rawType = getVal(slide, ['tipe slide', 'tipe soal', 'tipe']).toString().trim().toUpperCase();
                 
@@ -517,6 +544,7 @@
                         App.user = { name: finalName, email, password: pass };
                         $('final-name').innerText = finalName;
                         $('display-nama').innerText = finalName;
+                        saveState(); // SAVE
                         switchView('step-login', 'step-topic');
                         showToast(`Selamat datang, ${finalName}!`, "success");
                     } else {
@@ -540,6 +568,7 @@
         function pilihTopik(topik) {
             App.course.topic = topik;
             $('display-topic').innerText = topik;
+            saveState(); // SAVE
             switchView('step-topic', 'step-mode');
         }
 
@@ -549,6 +578,7 @@
 
         async function pilihMode(mode) {
             App.course.mode = mode;
+            saveState(); // SAVE
             
             const title = document.querySelector('#step-mode h1');
             const btns = document.querySelectorAll('#step-mode button');
@@ -578,6 +608,7 @@
                 }
 
                 renderDynamicSlides(App.slidesData);
+                saveState(); // SAVE WITH SLIDES
                 
                 $('total-pages').innerText = App.slide.total;
                 
@@ -627,31 +658,37 @@
             const uid = `${prefix}_${slideIndex}`;
             
             const getBadge = () => {
-                if(prefix === 'pretest') return `<span class="bg-indigo-100 text-indigo-700 px-3 py-1.5 md:px-4 rounded-full text-xs md:text-sm font-bold tracking-widest uppercase">PRE-TEST</span>`;
-                if(prefix === 'posttest') return `<span class="bg-rose-100 text-rose-700 px-3 py-1.5 md:px-4 rounded-full text-xs md:text-sm font-bold tracking-widest uppercase">POST-TEST</span>`;
-                return `<span class="bg-orange-100 text-orange-700 px-3 py-1.5 md:px-4 rounded-full text-xs md:text-sm font-bold tracking-widest uppercase">LATIHAN</span>`;
+                if(prefix === 'pretest') return `<span class="bg-indigo-100 text-indigo-700 px-3 py-1.5 md:px-4 rounded-full text-xs md:text-sm font-bold tracking-widest uppercase shadow-sm">PRE-TEST</span>`;
+                if(prefix === 'posttest') return `<span class="bg-rose-100 text-rose-700 px-3 py-1.5 md:px-4 rounded-full text-xs md:text-sm font-bold tracking-widest uppercase shadow-sm">POST-TEST</span>`;
+                return `<span class="bg-orange-100 text-orange-700 px-3 py-1.5 md:px-4 rounded-full text-xs md:text-sm font-bold tracking-widest uppercase shadow-sm">LATIHAN</span>`;
             };
 
             const ans = App.tracking.answers[uid] || null; 
             const isLocked = App.isReviewMode || App.tracking.answered[uid];
 
+            /* --- COLORFUL & DENSER LAYOUTS FOR MATERI --- */
+            
             if (t === 'MATERI_JUDUL') {
                 return `
-                    <div class="flex flex-col justify-center p-6 md:p-12 border-l-[12px] md:border-l-[20px] border-blue-600 h-full bg-white content-scroll overflow-y-auto">
-                        <div class="max-w-5xl mx-auto w-full">
-                            <h3 class="text-xl md:text-3xl font-semibold text-blue-600 mb-4 uppercase tracking-widest">${subKontenVal}</h3>
-                            <h1 class="text-4xl md:text-6xl font-black text-gray-900 leading-tight mb-8 tracking-tight">${judulVal}</h1>
-                            <div class="text-lg md:text-xl text-gray-600 border-l-[6px] border-gray-300 pl-6 py-3 leading-relaxed">${kontenVal}</div>
+                    <div class="flex flex-col justify-center p-6 md:p-12 border-l-[12px] md:border-l-[24px] border-blue-500 h-full bg-gradient-to-br from-indigo-50 via-blue-50 to-white content-scroll overflow-y-auto relative">
+                        <div class="blob-bg bg-blue-200 w-96 h-96 rounded-full top-10 right-10"></div>
+                        <div class="max-w-5xl mx-auto w-full relative z-10">
+                            <div class="bg-white/80 backdrop-blur-sm p-8 md:p-12 rounded-[2rem] shadow-lg border border-white">
+                                <h3 class="inline-block text-sm md:text-lg font-bold text-blue-600 mb-6 bg-blue-100 px-4 py-2 rounded-full uppercase tracking-widest">${subKontenVal}</h3>
+                                <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-tight mb-8 tracking-tight drop-shadow-sm">${judulVal}</h1>
+                                <div class="text-lg md:text-2xl text-gray-700 border-l-[6px] border-blue-300 pl-6 py-3 leading-relaxed font-medium">${kontenVal}</div>
+                            </div>
                         </div>
                     </div>`;
             }
 
             if (t === 'MATERI_LIST') {
                 return `
-                    <div class="flex flex-col p-6 md:p-12 h-full bg-white">
-                        <div class="max-w-5xl mx-auto w-full h-full flex flex-col">
-                            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 border-b-[3px] border-gray-100 pb-6 tracking-tight">${judulVal}</h2>
-                            <div class="content-scroll flex-1 overflow-y-auto pr-4 text-lg md:text-xl text-gray-700 leading-relaxed space-y-6">
+                    <div class="flex flex-col p-6 md:p-12 h-full bg-gradient-to-br from-slate-50 to-blue-50 relative">
+                        <div class="blob-bg bg-indigo-200 w-64 h-64 rounded-full bottom-10 left-10"></div>
+                        <div class="max-w-5xl mx-auto w-full h-full flex flex-col relative z-10">
+                            <h2 class="text-3xl md:text-4xl font-black text-blue-900 mb-8 border-b-[4px] border-blue-200 pb-6 tracking-tight drop-shadow-sm">${judulVal}</h2>
+                            <div class="content-scroll flex-1 overflow-y-auto pr-4 text-lg md:text-xl text-gray-700 leading-relaxed space-y-6 bg-white p-8 rounded-3xl shadow-sm border border-indigo-50">
                                 ${kontenVal}
                             </div>
                         </div>
@@ -660,52 +697,62 @@
 
             if (t === 'MATERI_IMG_TENGAH') {
                 return `
-                    <div class="flex flex-col p-6 md:p-10 items-center justify-center h-full bg-white content-scroll overflow-y-auto">
+                    <div class="flex flex-col p-6 md:p-10 items-center justify-center h-full bg-gradient-to-br from-white via-blue-50 to-indigo-50 content-scroll overflow-y-auto">
                         <div class="max-w-5xl mx-auto w-full flex flex-col items-center">
-                            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center w-full tracking-tight">${judulVal}</h2>
-                            <div class="w-full bg-gray-50 rounded-3xl border-4 border-dashed border-gray-300 flex items-center justify-center p-6 md:p-10 relative dedicated-image">
-                                <img src="${imgUrlVal}" class="max-w-full max-h-[40vh] md:max-h-[50vh] object-contain rounded-2xl shadow-sm border border-gray-200">
+                            <h2 class="text-3xl md:text-4xl font-black text-blue-900 mb-8 text-center w-full tracking-tight drop-shadow-sm">${judulVal}</h2>
+                            <div class="w-full bg-white rounded-[2rem] shadow-md border-4 border-dashed border-blue-200 flex items-center justify-center p-6 md:p-10 relative dedicated-image">
+                                <img src="${imgUrlVal}" class="max-w-full max-h-[40vh] md:max-h-[50vh] object-contain rounded-2xl relative z-10">
                             </div>
-                            <p class="text-gray-500 mt-6 text-lg md:text-xl italic text-center bg-gray-100 px-6 py-3 rounded-full">${subKontenVal}</p>
+                            <p class="mt-8 text-lg md:text-xl font-bold text-center bg-blue-600 text-white shadow-lg shadow-blue-200 px-8 py-3 rounded-full">${subKontenVal}</p>
                         </div>
                     </div>`;
             }
 
             if (t === 'MATERI_IMG_ATAS') {
                 return `
-                    <div class="flex flex-col p-6 md:p-12 h-full bg-white">
+                    <div class="flex flex-col p-6 md:p-12 h-full bg-gradient-to-br from-slate-50 to-indigo-50">
                         <div class="max-w-5xl mx-auto w-full h-full flex flex-col">
-                            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 tracking-tight">${judulVal}</h2>
-                            <div class="w-full h-[30vh] md:h-[40vh] bg-gray-50 rounded-3xl mb-8 flex items-center justify-center overflow-hidden dedicated-image shadow-inner border border-gray-100 shrink-0">
-                                <img src="${imgUrlVal}" class="w-full h-full object-contain p-4">
+                            <h2 class="text-3xl md:text-4xl font-black text-blue-900 mb-6 tracking-tight drop-shadow-sm">${judulVal}</h2>
+                            <div class="w-full h-[30vh] md:h-[40vh] bg-white rounded-[2rem] mb-8 flex items-center justify-center overflow-hidden dedicated-image shadow-md border border-indigo-100 shrink-0 relative">
+                                <img src="${imgUrlVal}" class="w-full h-full object-contain p-4 relative z-10">
                             </div>
-                            <div class="content-scroll flex-1 overflow-y-auto text-lg md:text-xl text-gray-700 leading-relaxed pr-4">
+                            <div class="content-scroll flex-1 overflow-y-auto text-lg md:text-xl text-gray-700 leading-relaxed pr-4 bg-white p-6 rounded-3xl shadow-sm border border-indigo-50">
                                 ${kontenVal}
                             </div>
                         </div>
                     </div>`;
             }
 
+            // PERBAIKAN LAYOUT UNTUK GAMBAR KIRI / KANAN AGAR LEBIH PADAT & MENARIK
             if (t === 'MATERI_IMG_KIRI' || t === 'MATERI_IMG_KANAN') {
+                const isKiri = t === 'MATERI_IMG_KIRI';
+                
                 const imgBlock = `
-                    <div class="w-full md:w-1/2 flex items-center justify-center p-6 dedicated-image bg-gray-50 rounded-3xl border border-gray-100 h-[35vh] md:h-auto">
-                        <img src="${imgUrlVal}" class="max-w-full max-h-[30vh] md:max-h-full object-contain rounded-2xl drop-shadow-md">
+                    <div class="w-full lg:w-[55%] flex items-center justify-center p-4 md:p-8 dedicated-image bg-white rounded-[2rem] shadow-md border-2 border-indigo-50 h-auto relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-40 h-40 bg-indigo-100 rounded-full blur-3xl opacity-60 -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
+                        <div class="absolute bottom-0 left-0 w-32 h-32 bg-blue-100 rounded-full blur-2xl opacity-60 -ml-10 -mb-10"></div>
+                        <img src="${imgUrlVal}" class="max-w-full max-h-[45vh] lg:max-h-[55vh] object-contain rounded-xl relative z-10 drop-shadow-sm">
                     </div>`;
+                    
                 const textBlock = `
-                    <div class="w-full md:w-1/2 content-scroll overflow-y-auto flex flex-col justify-center px-4 md:px-8 mt-6 md:mt-0">
-                        <div class="text-lg md:text-xl text-gray-700 leading-relaxed space-y-6">${kontenVal}</div>
+                    <div class="w-full lg:w-[45%] flex flex-col justify-center mt-6 lg:mt-0 relative">
+                        <div class="bg-white/90 backdrop-blur p-6 md:p-8 rounded-[2rem] shadow-lg border-l-[8px] border-blue-500 relative z-10">
+                            <div class="text-lg md:text-xl text-gray-700 leading-relaxed space-y-4 font-medium">${kontenVal}</div>
+                        </div>
                     </div>`;
                 
                 return `
-                    <div class="flex flex-col p-6 md:p-12 h-full bg-white">
-                        <div class="max-w-6xl mx-auto w-full h-full flex flex-col">
-                            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 border-b-[3px] border-gray-100 pb-6 tracking-tight">${judulVal}</h2>
-                            <div class="flex flex-col md:flex-row gap-8 flex-1 h-full items-stretch">
-                                ${t === 'MATERI_IMG_KIRI' ? imgBlock + textBlock : textBlock + imgBlock}
+                    <div class="flex flex-col p-6 md:p-10 h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+                        <div class="max-w-6xl mx-auto w-full h-full flex flex-col justify-center">
+                            <h2 class="text-3xl md:text-4xl lg:text-5xl font-black text-blue-900 mb-6 lg:mb-10 text-center tracking-tight drop-shadow-sm w-full">${judulVal}</h2>
+                            <div class="flex flex-col lg:flex-row gap-6 lg:gap-10 items-center justify-center flex-1">
+                                ${isKiri ? imgBlock + textBlock : textBlock + imgBlock}
                             </div>
                         </div>
                     </div>`;
             }
+
+            /* --- EVALUATION SLIDES (PG & ISIAN) KEEPS CLEAN WHITE BACKGROUND --- */
 
             if (t === 'PG' || t.includes('_PG') || t.includes('PILIHAN GANDA')) {
                 const safeA = getVal(slide, ['opsi a', 'pilihan a', 'a']).toString().trim();
@@ -818,7 +865,7 @@
             
             $('current-page').innerText = index;
 
-            // Kontrol visibilitas tombol "Daftar Soal" (hanya muncul setelah milih mode belajar)
+            // Kontrol visibilitas tombol "Daftar Soal"
             if (index > 1 && index < App.slide.total) {
                 $('btn-daftar-soal').classList.replace('hidden', 'flex');
             } else {
@@ -838,6 +885,9 @@
 
             if (index === 1) {
                 $('slide-1').classList.add('active'); 
+                // Render view step if returning to slide 1
+                if(App.user.name && !App.course.topic) switchView('step-login', 'step-topic');
+                else if(App.course.topic && !App.course.mode) switchView('step-topic', 'step-mode');
             } else if (index === App.slide.total) {
                 $('slide-12').classList.add('active'); 
 
@@ -853,6 +903,8 @@
                 const dSlide = $('dynamic-slide-' + index);
                 if (dSlide) dSlide.classList.add('active');
             }
+
+            saveState(); // SAVE ON SLIDE CHANGE
         }
 
         function prevSlide() { if (App.slide.current > 1) goToSlide(App.slide.current - 1); }
@@ -872,6 +924,11 @@
             } catch (err) { console.warn("Fullscreen error:", err); }
         }
 
+        function resetApp() {
+            sessionStorage.removeItem(STATE_KEY);
+            location.reload();
+        }
+
         // --- 5. ASSESSMENT LOGIC ---
         function showExplanation(qId) {
             const exp = $('explanation-' + qId);
@@ -887,6 +944,7 @@
             else if (type.includes('PRE') || qId.includes('pretest')) App.scores.pre += 100;
             else if (type.includes('POST') || qId.includes('posttest')) App.scores.post += 100;
             else App.scores.class += 100;
+            saveState();
         }
 
         function checkPG(button, isCorrect, valueSelected, qId, type = '') {
@@ -911,7 +969,8 @@
             if(isCorrect) showToast("Wah, jawabanmu benar!", "success");
             else showToast("Sayang sekali, jawabanmu masih keliru.", "error");
 
-            renderNavigasi(); // Update status menu di daftar soal
+            saveState(); // SAVE ANSWER STATE
+            renderNavigasi();
         }
 
         function checkIsian(qId, kunci = "2/3", type = '') {
@@ -949,7 +1008,8 @@
                 btn.classList.remove('hover:scale-105', 'hover:shadow-purple-300', 'shadow-xl');
             }
 
-            renderNavigasi(); // Update status menu di daftar soal
+            saveState(); // SAVE ANSWER STATE
+            renderNavigasi();
         }
 
         function renderCustomImages() {
@@ -960,7 +1020,6 @@
             }
             nodesToReplace.forEach(node => {
                 const span = document.createElement('span');
-                // Mengubah batas maksimal gambar dari 45vh menjadi 30vh agar soal di bawahnya selalu kelihatan
                 span.innerHTML = node.nodeValue.replace(/\[GAMBAR:(.*?)\]/g, '<img src="$1" alt="Ilustrasi" class="block max-w-full h-auto max-h-[30vh] object-contain rounded-2xl shadow-sm my-4 md:my-6 mx-auto border border-gray-200">');
                 node.parentNode.replaceChild(span, node);
             });
@@ -1019,10 +1078,43 @@
             }
         };
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // --- INIT FUNCTION (Dipanggil saat halaman pertama kali dibuka/direfresh) ---
+        function initApp() {
+            const hasRestoredState = restoreState();
+            
+            if (hasRestoredState && App.user.name) {
+                // UI update untuk data yang sudah ada
+                $('student-name').value = App.user.name;
+                $('student-email').value = App.user.email;
+                $('teacher-password').value = App.user.password;
+                $('final-name').innerText = App.user.name;
+                $('display-nama').innerText = App.user.name;
+                
+                if (App.course.topic) {
+                    $('display-topic').innerText = App.course.topic;
+                    switchView('step-login', 'step-topic');
+                }
+                
+                if (App.course.mode) {
+                    switchView('step-topic', 'step-mode');
+                }
+
+                // Jika slides sudah ditarik dari server sebelumnya
+                if (App.slidesData && App.slidesData.length > 0) {
+                    $('total-pages').innerText = App.slide.total;
+                    renderDynamicSlides(App.slidesData);
+                    showSlide(App.slide.current);
+                } else {
+                    showSlide(1);
+                }
+            } else {
+                showSlide(1); // Mulai dari awal jika tidak ada state tersimpan
+            }
+            
             renderCustomImages();
-            showSlide(App.slide.current); 
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
 
     </script>
 </body>
