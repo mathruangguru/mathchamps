@@ -279,6 +279,7 @@
                 </div>
                 
                 <button class="btn btn-report" onclick="toggleReport()" id="btnReportToggle">📋 Lihat Detail Jawaban Salah</button>
+                <button class="btn" style="background: #7f8c8d; border-bottom-color: #34495e; color: white; margin-top: 15px;" onclick="clearAndReload()">🔄 KEMBALI KE HALAMAN AWAL</button>
                 
                 <div id="reportCard" class="report-card">
                     <div class="report-header">
@@ -399,7 +400,133 @@
         return getVal(item, ['kelas', 'jenjang', 'tingkat', 'rombel']);
     }
 
+    // ==========================================
+    // LOGIKA AUTO-SAVE (MENCEGAH REFRESH HILANG)
+    // ==========================================
+    function saveGameState() {
+        if (!studentName) return; // Jangan simpan kalau belum login
+        const state = {
+            studentName, schoolName, studentClass, studentEmail,
+            minIndex, maxIndex, currentLevelIndex, startLevelOverride,
+            currentQuestionPointer, currentLevelScore, currentLevelWrong,
+            totalCorrectAnswers, timeRemaining, bestLevelReached,
+            wrongAnswers, isAnswering, isOnCheckpoint
+        };
+        try {
+            localStorage.setItem('pt_dharmasraya_state', JSON.stringify(state));
+        } catch (e) {
+            console.warn("Fitur Auto-Save terblokir oleh pengaturan keamanan browser/iframe.");
+        }
+    }
+
+    function clearGameState() {
+        try {
+            localStorage.removeItem('pt_dharmasraya_state');
+        } catch (e) {}
+    }
+
+    window.doResumeGame = function() {
+        const saved = localStorage.getItem('pt_dharmasraya_state');
+        if (saved) {
+            const state = JSON.parse(saved);
+            studentName = state.studentName;
+            schoolName = state.schoolName;
+            studentClass = state.studentClass;
+            studentEmail = state.studentEmail;
+            minIndex = state.minIndex;
+            maxIndex = state.maxIndex;
+            currentLevelIndex = state.currentLevelIndex;
+            startLevelOverride = state.startLevelOverride;
+            currentQuestionPointer = state.currentQuestionPointer;
+            currentLevelScore = state.currentLevelScore;
+            currentLevelWrong = state.currentLevelWrong;
+            totalCorrectAnswers = state.totalCorrectAnswers;
+            timeRemaining = state.timeRemaining;
+            bestLevelReached = state.bestLevelReached;
+            wrongAnswers = state.wrongAnswers || [];
+            isAnswering = state.isAnswering;
+            isOnCheckpoint = state.isOnCheckpoint;
+
+            document.getElementById('inputNameScreen').classList.remove('active');
+            document.getElementById('startScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('gameScreen').classList.add('active');
+            document.getElementById('statusBar').style.visibility = 'visible';
+
+            // Mulai ulang timer dari sisa waktu sebelumnya
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                if(timeRemaining >= 0) {
+                    let m = Math.floor(timeRemaining / 60);
+                    let s = timeRemaining % 60;
+                    document.getElementById('timerDisplay').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+                }
+                if (timeRemaining % 5 === 0) saveGameState(); // Simpan timer setiap 5 detik
+                if (timeRemaining <= 0) finishGame();
+            }, 1000);
+            
+            // Langsung update layar tanpa nunggu 1 detik
+            let m = Math.floor(timeRemaining / 60);
+            let s = timeRemaining % 60;
+            document.getElementById('timerDisplay').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+
+            // Siapkan soal-soal di level saat ini
+            const levelName = LEVEL_ORDER[currentLevelIndex];
+            questionsInCurrentLevel = questions.filter(q => q.level === levelName);
+
+            // Logika Cerdas Melanjutkan Sesi
+            if (isOnCheckpoint) {
+                // Refresh pas layar penyesuaian level
+                const isPassed = currentLevelScore >= 4;
+                let titleMsg = isPassed ? "Luar Biasa! 🌟" : "Tetap Semangat! 💪";
+                let bodyMsg = isPassed 
+                    ? `Kamu berhasil menjawab <strong>${currentLevelScore} dari 5</strong> soal dengan benar!<br>Kemampuanmu keren banget. Yuk, kita coba tantangan berikutnya! 🚀`
+                    : `Kamu menjawab <strong>${currentLevelScore} dari 5</strong> soal dengan benar.<br>Tidak apa-apa, belajar itu proses! Kita cari soal yang lebih pas buat kamu ya. 😊`;
+                
+                if (minIndex > maxIndex) {
+                    titleMsg = "Tes Selesai! 🎉";
+                    bodyMsg = "Terima kasih sudah berjuang sampai akhir! Kita lihat hasilnya ya...";
+                }
+                
+                const checkpointMsg = document.getElementById('checkpointMsg');
+                checkpointMsg.innerText = isPassed ? "LEVEL UP ⬆️" : "ADJUSTING ⬇️";
+                checkpointMsg.style.color = isPassed ? "#27ae60" : "#f39c12";
+                checkpointMsg.style.display = (minIndex > maxIndex) ? 'none' : 'block';
+
+                document.querySelector('.checkpoint-content h2').innerText = titleMsg;
+                document.querySelector('.checkpoint-content p:nth-of-type(2)').innerHTML = bodyMsg;
+                document.getElementById('checkpointModal').style.display = 'flex';
+            } else if (!isAnswering) {
+                // Mencegah kecurangan: Jika refresh pas lihat jawaban benar/salah, langsung lempar ke soal berikutnya
+                nextQuestionLogic();
+            } else {
+                // Lanjutkan kerjakan soal saat ini
+                loadQuestion();
+            }
+        }
+    };
+
     window.addEventListener('DOMContentLoaded', () => {
+        // Cek apakah ada data ujian yang menggantung (refresh gak sengaja)
+        let savedState = null;
+        try {
+            savedState = localStorage.getItem('pt_dharmasraya_state');
+        } catch (e) {
+            console.warn("Local storage tidak bisa diakses di mode preview ini.");
+        }
+
+        if (savedState) {
+            try {
+                // Langsung resume game tanpa nanya (diam-diam kembali ke halaman terakhir)
+                setTimeout(() => {
+                    window.doResumeGame();
+                }, 50);
+            } catch(e) {
+                clearGameState();
+            }
+        }
+
         const schoolListEl = document.getElementById('schoolList');
         const schoolInput = document.getElementById('schoolInput');
         const nameListEl = document.getElementById('nameList');
@@ -1524,6 +1651,7 @@
     let isAnswering = true;
     let wrongAnswers = [];
     let bestLevelReached = "Foundation";
+    let isOnCheckpoint = false;
 
     // --- MAIN FUNCTIONS ---
     window.startGame = function() {
@@ -1550,6 +1678,7 @@
         totalCorrectAnswers = 0;
         wrongAnswers = [];
         bestLevelReached = "Placement Start";
+        isOnCheckpoint = false;
 
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
@@ -1559,6 +1688,7 @@
                 let s = timeRemaining % 60;
                 document.getElementById('timerDisplay').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
             }
+            if (timeRemaining % 5 === 0) saveGameState(); // Auto-save waktu setiap 5 detik
             if (timeRemaining <= 0) finishGame();
         }, 1000);
 
@@ -1621,6 +1751,8 @@
 
         if(window.innerWidth < 768) window.scrollTo({top:0, behavior:'smooth'});
         else document.querySelector('.game-stage').scrollTo({top:0, behavior:'smooth'});
+        
+        saveGameState(); // Auto-save posisi dan status saat ini
     }
 
     function checkAnswer(selectedIndex, btnElement) {
@@ -1658,6 +1790,8 @@
 
         feedbackArea.style.display = 'flex';
         document.getElementById('nextBtn').onclick = nextQuestionLogic;
+        
+        saveGameState(); // Auto-save saat jawaban diklik supaya tidak curang saat di-refresh
     }
 
     function nextQuestionLogic() {
@@ -1704,14 +1838,19 @@
         document.querySelector('.checkpoint-content h2').innerText = titleMsg;
         document.querySelector('.checkpoint-content p:nth-of-type(2)').innerHTML = bodyMsg;
         document.getElementById('checkpointModal').style.display = 'flex';
+        
+        isOnCheckpoint = true;
+        saveGameState(); // Auto-save saat level tes selesai dievaluasi
     }
 
     window.closeCheckpoint = function() {
+        isOnCheckpoint = false;
         document.getElementById('checkpointModal').style.display = 'none';
         startNextLevelBlock();
     };
 
     function finishGame() {
+        clearGameState(); // Langsung hapus riwayat simpanan tes saat selesai supaya bersih buat tes ulang
         clearInterval(timerInterval);
         document.getElementById('gameScreen').classList.remove('active');
         document.getElementById('resultScreen').classList.add('active');
@@ -1841,6 +1980,7 @@
     };
 
     window.clearAndReload = function() {
+        clearGameState(); // Hapus data simpanan jika tombol reload ditekan
         location.reload();
     }
 </script>
