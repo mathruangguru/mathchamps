@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -166,6 +165,12 @@
         .report-q-text svg, .report-q-text img { max-width: 100%; height: auto; display: block; margin: 10px auto; }
         .screen { display: none; width: 100%; }
         .screen.active { display: block; }
+        #gameScreen, #reportCard {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
         .result-level { font-size: clamp(2rem, 8vw, 3.5rem); font-weight: 900; color: white; text-shadow: 2px 2px 0 rgba(0,0,0,0.1); word-wrap: break-word; line-height: 1.1; }
         .result-card-inner {
             background: linear-gradient(135deg, #FF9F1C, #FF5E00); padding: 40px; border-radius: 30px;
@@ -202,7 +207,7 @@
                 <div id="inputContainer">
                     <div class="input-group">
                         <label class="input-label">Asal Sekolah</label>
-                        <input type="text" list="schoolList" id="schoolInput" class="name-input" placeholder="Ketik nama sekolahmu...">
+                        <input type="text" list="schoolList" id="schoolInput" class="name-input" placeholder="⏳ Sedang memuat data dari server..." disabled>
                         <datalist id="schoolList"></datalist>
                     </div>
 
@@ -280,6 +285,7 @@
                 </div>
                 
                 <button class="btn btn-report" onclick="toggleReport()" id="btnReportToggle">📋 Lihat Detail Jawaban Salah</button>
+                <button class="btn" style="background: #7f8c8d; border-bottom-color: #34495e; color: white; margin-top: 15px;" onclick="clearAndReload()">🔄 KEMBALI KE HALAMAN AWAL</button>
                 
                 <div id="reportCard" class="report-card">
                     <div class="report-header">
@@ -310,7 +316,25 @@
 
 <script>
     // ==========================================
+    // PENCEGAHAN KECURANGAN (Anti Copy-Paste & Klik Kanan)
+    // Hanya aktif saat mengerjakan tes atau melihat laporan soal
+    // ==========================================
+    const preventCheat = (e) => {
+        const inputScreen = document.getElementById('inputNameScreen');
+        // Kalau halaman awal (input nama) TIDAK SEDANG AKTIF, cegah copy-paste
+        if (inputScreen && !inputScreen.classList.contains('active')) {
+            e.preventDefault();
+        }
+    };
+    document.addEventListener('contextmenu', preventCheat); 
+    document.addEventListener('copy', preventCheat);        
+    document.addEventListener('cut', preventCheat);         
+    document.addEventListener('paste', preventCheat);       
+    document.addEventListener('dragstart', preventCheat);   
+
+    // ==========================================
     // 0. KUMPULAN 20 LINK LOAD BALANCER LU
+    // (DIKEMBALIKAN SEPERTI SEMULA, KHUSUS UNTUK SIMPAN DATA)
     // ==========================================
     const listGasUrls = [
         "https://script.google.com/macros/s/AKfycby3Jvvfmgecaw7t_gJi7_US4TGztG8HF2Cw8xqEonz1mQnWVAx-Z8wZ20oUeiQBxIUj/exec",
@@ -335,226 +359,7 @@
         "https://script.google.com/macros/s/AKfycbxdItZqYTdjcRsMvWm4XciLHXUKGXohqAyS2BDkOlY1hjalIfDZiG2EuKyD7ll4jUSC/exec"
     ];
 
-    let allStudentsData = []; 
-    let studentEmail = "";
-    let assignedGasUrl = "";
-
-    window.addEventListener('DOMContentLoaded', () => {
-        const schoolListEl = document.getElementById('schoolList');
-        const schoolInput = document.getElementById('schoolInput');
-        const nameListEl = document.getElementById('nameList');
-        const nameInput = document.getElementById('nameInput');
-        const btnCari = document.getElementById('btnCariSiswa');
-        
-        // AMBIL DATA DARI GITHUB
-        fetch('./data_siswa.json')
-            .then(res => res.json())
-            .then(data => {
-                allStudentsData = data;
-                
-                // Kumpulin semua nama sekolah biar ga dobel
-                const schools = [...new Set(data.map(item => item['Jenjang SD dan SMP']).filter(Boolean))].sort();
-                
-                schools.forEach(school => {
-                    const option = document.createElement('option');
-                    option.value = school;
-                    schoolListEl.appendChild(option);
-                });
-
-                // Pas sekolah dipilih, saring daftar namanya
-                schoolInput.addEventListener('input', function() {
-                    const selectedSchool = this.value;
-                    const studentsInSchool = allStudentsData.filter(s => s['Jenjang SD dan SMP'] === selectedSchool);
-                    
-                    nameListEl.innerHTML = ''; // Kosongin nama yg lama
-                    nameInput.value = ''; 
-                    
-                    if(studentsInSchool.length > 0) {
-                        nameInput.disabled = false;
-                        nameInput.placeholder = "Ketik & pilih namamu...";
-                        studentsInSchool.forEach(student => {
-                            if(student['Nama Siswa']) {
-                                const option = document.createElement('option');
-                                option.value = student['Nama Siswa'];
-                                nameListEl.appendChild(option);
-                            }
-                        });
-                    } else {
-                        nameInput.disabled = true;
-                        nameInput.placeholder = "Pilih sekolah dulu...";
-                    }
-                    validateInputs();
-                });
-
-                nameInput.addEventListener('input', validateInputs);
-
-                function validateInputs() {
-                    if(schoolInput.value && nameInput.value) {
-                        btnCari.disabled = false;
-                    } else {
-                        btnCari.disabled = true;
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-                alert("Gagal memuat data_siswa.json dari Github! Pastikan file sudah di-upload dengan benar.");
-            });
-    });
-
-    function cariDataSiswa() {
-        const schoolNameInput = document.getElementById('schoolInput').value;
-        const studentNameInput = document.getElementById('nameInput').value;
-        const btnCari = document.getElementById('btnCariSiswa');
-        const resultArea = document.getElementById('searchResultArea');
-        const pastResultAlert = document.getElementById('pastResultAlert');
-        const errorNotFound = document.getElementById('errorNotFound');
-
-        errorNotFound.style.display = 'none';
-
-        // CARI SISWA BERDASARKAN SEKOLAH DAN NAMA
-        let foundIndex = -1;
-        let foundData = null;
-
-        for(let i = 0; i < allStudentsData.length; i++) {
-            if(allStudentsData[i]['Nama Siswa'] === studentNameInput && allStudentsData[i]['Jenjang SD dan SMP'] === schoolNameInput) {
-                foundIndex = i;
-                foundData = allStudentsData[i];
-                break;
-            }
-        }
-
-        // Kalau anaknya iseng ngetik nama yg ga ada di list
-        if(!foundData) {
-            errorNotFound.style.display = 'block';
-            return;
-        }
-
-        btnCari.innerText = "⏳ Sedang mengecek data...";
-        btnCari.disabled = true;
-
-        // PEMBAGIAN BEBAN KE 20 URL (LOAD BALANCING)
-        const urlIndex = foundIndex % listGasUrls.length;
-        assignedGasUrl = listGasUrls[urlIndex];
-
-        // TANYA KE GOOGLE: DIA UDAH NGERJAIN BELUM?
-        const checkUrl = assignedGasUrl + "?nama=" + encodeURIComponent(foundData['Nama Siswa']);
-
-        fetch(checkUrl)
-            .then(res => res.json())
-            .then(response => {
-                // Sembunyikan box inputan
-                document.getElementById('inputContainer').style.display = 'none'; 
-                resultArea.style.display = 'block'; 
-
-                // Antisipasi kalau Kelas null, pakai Jenjang
-                let kelasValue = foundData['Kelas'] ? foundData['Kelas'] : foundData['Jenjang'];
-
-                window.tempStudentData = {
-                    nama: foundData['Nama Siswa'] || "-",
-                    sekolah: foundData['Jenjang SD dan SMP'] || "-",
-                    kelas: kelasValue || "-",
-                    email: foundData['Email Address'] || "-",
-                    pastResult: response.data 
-                };
-
-                if (window.tempStudentData.pastResult) {
-                    pastResultAlert.style.display = 'block';
-                } else {
-                    pastResultAlert.style.display = 'none';
-                }
-
-                document.getElementById('resNama').innerText = window.tempStudentData.nama;
-                document.getElementById('resSekolah').innerText = window.tempStudentData.sekolah;
-                document.getElementById('resKelas').innerText = window.tempStudentData.kelas;
-            })
-            .catch(err => {
-                alert("Gagal ngecek server Google. Pastikan internet stabil dan coba lagi!");
-                btnCari.innerText = "🔍 Cek Data";
-                btnCari.disabled = false;
-            });
-    }
-
-    function confirmData(isCorrect) {
-        if (isCorrect) {
-            if (window.tempStudentData.pastResult) {
-                document.getElementById('inputNameScreen').classList.remove('active');
-                showPastResult(window.tempStudentData.pastResult);
-            } else {
-                studentName = window.tempStudentData.nama;
-                schoolName = window.tempStudentData.sekolah;
-                studentClass = window.tempStudentData.kelas;
-                studentEmail = window.tempStudentData.email;
-                
-                document.getElementById('inputNameScreen').classList.remove('active');
-                document.getElementById('startScreen').classList.add('active');
-            }
-        } else {
-            // KALO TIDAK, BALIKIN LAGI KE MENU PILIH NAMA
-            document.getElementById('nameInput').value = '';
-            document.getElementById('searchResultArea').style.display = 'none';
-            document.getElementById('inputContainer').style.display = 'block';
-            
-            const btn = document.getElementById('btnCariSiswa');
-            btn.style.display = 'block';
-            btn.innerText = '🔍 Cek Data';
-            btn.disabled = true; 
-        }
-    }
-
-    function showPastResult(result) {
-        document.getElementById('resultScreen').classList.add('active');
-        document.getElementById('finalPlacement').innerText = (result['Level Akhir'] || "...").toUpperCase();
-        document.getElementById('finalScore').innerText = result['Skor Akhir'] || "0";
-        
-        let durasiText = result['Durasi'] ? String(result['Durasi']) : "00:00";
-        if (durasiText.startsWith("'")) durasiText = durasiText.substring(1);
-        if (durasiText.includes('T') && durasiText.includes('Z')) {
-            let dateObj = new Date(durasiText);
-            let h = dateObj.getHours();
-            let m = dateObj.getMinutes();
-            durasiText = `${h < 10 ? '0'+h : h}:${m < 10 ? '0'+m : m}`;
-        } else if (durasiText.split(':').length === 3) {
-            let parts = durasiText.split(':');
-            durasiText = `${parts[0]}:${parts[1]}`;
-        }
-        document.getElementById('timeUsed').innerText = durasiText;
-
-        wrongAnswers = []; 
-        let laporan = result['Laporan Salah'];
-        
-        if (laporan && laporan !== "Sempurna") {
-            let mistakes = laporan.split(' | ');
-            mistakes.forEach(m => {
-                let match = m.match(/\[Soal #(\d+)\|[^\]]+\](.*)\(Jawab:\s*(\d+)\)/);
-                if (match) {
-                    let globalQNum = parseInt(match[1]); 
-                    let userAnsNum = parseInt(match[3]); 
-                    let qIndex = globalQNum - 1; 
-                    
-                    if (questions[qIndex]) {
-                        let q = questions[qIndex];
-                        wrongAnswers.push({
-                            qNum: globalQNum,
-                            level: q.level,
-                            text: q.text,
-                            options: q.options,
-                            userIndex: userAnsNum - 1, 
-                            correctIndex: q.answer
-                        });
-                    }
-                }
-            });
-        }
-        
-        generateReportCard();
-        const btnReport = document.getElementById('btnReportToggle');
-        btnReport.innerHTML = "✅ HASIL TERSIMPAN | 📋 LIHAT DETAIL JAWABAN SALAH";
-        btnReport.disabled = false;
-        document.getElementById('reportCard').style.display = 'none'; 
-    }
-
-    // --- 1. DATA BANK SOAL (60 SOAL TERBARU) ---
+    // --- 1. DATA BANK SOAL (60 SOAL TERBARU) Pindah ke Atas ---
     const questions = [
         // --- Discovery 1 (Soal 1-5) ---
         {
@@ -1381,6 +1186,10 @@
     ];
 
     // 2. STATE
+    let allStudentsData = []; 
+    let studentEmail = "";
+    let assignedGasUrl = "";
+
     const LEVEL_ORDER = [
         "Discovery 1", "Discovery 2", "Discovery 3", "Discovery 4",
         "Exploration 1", "Exploration 2", "Exploration 3", "Exploration 4",
@@ -1404,24 +1213,452 @@
     let isAnswering = true;
     let wrongAnswers = [];
     let bestLevelReached = "Foundation";
+    let isOnCheckpoint = false;
+
+    // --- FUNGSI HELPER BARU UNTUK MEMBACA DATA SUPER AMAN ---
+    
+    // 1. Normalisasi data: Jaga-jaga kalau format dari Google Sheet berupa baris biasa (Array of Arrays)
+    function normalizeData(data) {
+        let arr = data.data ? data.data : data;
+        if (!Array.isArray(arr) || arr.length === 0) return [];
+        
+        // Cek apakah bentuknya array of arrays (baris pertama adalah baris header)
+        if (Array.isArray(arr[0])) {
+            let headers = arr[0];
+            let formatted = [];
+            for (let i = 1; i < arr.length; i++) {
+                let obj = {};
+                for (let j = 0; j < headers.length; j++) {
+                    obj[headers[j]] = arr[i][j];
+                }
+                formatted.push(obj);
+            }
+            return formatted;
+        }
+        return arr; // Kalau sudah format Object, langsung kembalikan
+    }
+
+    // 2. Pendeteksi nama kolom kebal huruf besar/kecil & spasi ekstra (SISTEM PRIORITAS)
+    function getVal(item, keywords) {
+        // Cek 1: Exact match (Memprioritaskan urutan kata kunci di dalam array)
+        for (let i = 0; i < keywords.length; i++) {
+            let kw = keywords[i];
+            for (let key in item) {
+                if (key.toLowerCase().trim() === kw) {
+                    let val = item[key] ? item[key].toString().trim() : "";
+                    if (val !== "") return val; // Cuma ambil kalau sel-nya tidak kosong
+                }
+            }
+        }
+        // Cek 2: Partial match (Memprioritaskan urutan kata kunci)
+        for (let i = 0; i < keywords.length; i++) {
+            let kw = keywords[i];
+            for (let key in item) {
+                let lowerKey = key.toLowerCase();
+                if (lowerKey.includes(kw)) {
+                    let val = item[key] ? item[key].toString().trim() : "";
+                    if (val !== "") return val;
+                }
+            }
+        }
+        return "";
+    }
+
+    function getSchoolGS(item) {
+        return getVal(item, ['asal sekolah', 'nama sekolah', 'sekolah', 'asal']);
+    }
+
+    function getStudentGS(item) {
+        return getVal(item, ['nama lengkap', 'nama siswa', 'nama', 'siswa', 'peserta']);
+    }
+
+    function getClassGS(item) {
+        return getVal(item, ['kelas', 'jenjang', 'tingkat', 'rombel']);
+    }
+
+    // ==========================================
+    // LOGIKA AUTO-SAVE (MENCEGAH REFRESH HILANG)
+    // ==========================================
+    function saveGameState() {
+        if (!studentName) return; // Jangan simpan kalau belum login
+        const state = {
+            studentName, schoolName, studentClass, studentEmail,
+            minIndex, maxIndex, currentLevelIndex, startLevelOverride,
+            currentQuestionPointer, currentLevelScore, currentLevelWrong,
+            totalCorrectAnswers, timeRemaining, bestLevelReached,
+            wrongAnswers, isAnswering, isOnCheckpoint, 
+            assignedGasUrl // PENTING: Link load balancer spesifik anak ini harus ikut disimpan!
+        };
+        try {
+            localStorage.setItem('pt_dharmasraya_state', JSON.stringify(state));
+        } catch (e) {
+            console.warn("Fitur Auto-Save terblokir oleh pengaturan keamanan browser/iframe.");
+        }
+    }
+
+    function clearGameState() {
+        try {
+            localStorage.removeItem('pt_dharmasraya_state');
+        } catch (e) {}
+    }
+
 
     // --- MAIN FUNCTIONS ---
+    window.doResumeGame = function() {
+        const saved = localStorage.getItem('pt_dharmasraya_state');
+        if (saved) {
+            const state = JSON.parse(saved);
+            studentName = state.studentName;
+            schoolName = state.schoolName;
+            studentClass = state.studentClass;
+            studentEmail = state.studentEmail;
+            minIndex = state.minIndex;
+            maxIndex = state.maxIndex;
+            currentLevelIndex = state.currentLevelIndex;
+            startLevelOverride = state.startLevelOverride;
+            currentQuestionPointer = state.currentQuestionPointer;
+            currentLevelScore = state.currentLevelScore;
+            currentLevelWrong = state.currentLevelWrong;
+            totalCorrectAnswers = state.totalCorrectAnswers;
+            timeRemaining = state.timeRemaining;
+            bestLevelReached = state.bestLevelReached;
+            wrongAnswers = state.wrongAnswers || [];
+            isAnswering = state.isAnswering;
+            isOnCheckpoint = state.isOnCheckpoint;
+            assignedGasUrl = state.assignedGasUrl; 
+
+            document.getElementById('inputNameScreen').classList.remove('active');
+            document.getElementById('startScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('gameScreen').classList.add('active');
+            document.getElementById('statusBar').style.visibility = 'visible';
+
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                if(timeRemaining >= 0) {
+                    let m = Math.floor(timeRemaining / 60);
+                    let s = timeRemaining % 60;
+                    document.getElementById('timerDisplay').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+                }
+                if (timeRemaining % 5 === 0) saveGameState(); 
+                if (timeRemaining <= 0) finishGame();
+            }, 1000);
+            
+            let m = Math.floor(timeRemaining / 60);
+            let s = timeRemaining % 60;
+            document.getElementById('timerDisplay').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+
+            const levelName = LEVEL_ORDER[currentLevelIndex];
+            questionsInCurrentLevel = questions.filter(q => q.level === levelName);
+
+            if (isOnCheckpoint) {
+                const isPassed = currentLevelScore >= 4;
+                let titleMsg = isPassed ? "Luar Biasa! 🌟" : "Tetap Semangat! 💪";
+                let bodyMsg = isPassed 
+                    ? `Kamu berhasil menjawab <strong>${currentLevelScore} dari 5</strong> soal dengan benar!<br>Kemampuanmu keren banget. Yuk, kita coba tantangan berikutnya! 🚀`
+                    : `Kamu menjawab <strong>${currentLevelScore} dari 5</strong> soal dengan benar.<br>Tidak apa-apa, belajar itu proses! Kita cari soal yang lebih pas buat kamu ya. 😊`;
+                
+                if (minIndex > maxIndex) {
+                    titleMsg = "Tes Selesai! 🎉";
+                    bodyMsg = "Terima kasih sudah berjuang sampai akhir! Kita lihat hasilnya ya...";
+                }
+                
+                const checkpointMsg = document.getElementById('checkpointMsg');
+                checkpointMsg.innerText = isPassed ? "LEVEL UP ⬆️" : "ADJUSTING ⬇️";
+                checkpointMsg.style.color = isPassed ? "#27ae60" : "#f39c12";
+                checkpointMsg.style.display = (minIndex > maxIndex) ? 'none' : 'block';
+
+                document.querySelector('.checkpoint-content h2').innerText = titleMsg;
+                document.querySelector('.checkpoint-content p:nth-of-type(2)').innerHTML = bodyMsg;
+                document.getElementById('checkpointModal').style.display = 'flex';
+            } else if (!isAnswering) {
+                window.nextQuestionLogic();
+            } else {
+                window.loadQuestion();
+            }
+        }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+        let savedState = null;
+        try {
+            savedState = localStorage.getItem('pt_dharmasraya_state');
+        } catch (e) {
+            console.warn("Local storage tidak bisa diakses di mode preview ini.");
+        }
+
+        if (savedState) {
+            try {
+                window.doResumeGame();
+                return; 
+            } catch(e) {
+                clearGameState();
+            }
+        }
+
+        const schoolListEl = document.getElementById('schoolList');
+        const schoolInput = document.getElementById('schoolInput');
+        const nameListEl = document.getElementById('nameList');
+        const nameInput = document.getElementById('nameInput');
+        const btnCari = document.getElementById('btnCariSiswa');
+        const errorNotFound = document.getElementById('errorNotFound');
+        
+        schoolInput.disabled = true;
+        schoolInput.placeholder = "⏳ Sedang memuat data dari server...";
+
+        const masterDataUrl = "https://script.google.com/macros/s/AKfycbza7vMguEX1QTcfeT3_SY2VU-4TurLV6T0159krttiLUaHE5GR6ZtkhWK5sOHTanzr6/exec";
+        
+        fetch(masterDataUrl)
+            .then(res => res.json())
+            .then(data => {
+                allStudentsData = normalizeData(data);
+                
+                schoolInput.disabled = false;
+                schoolInput.placeholder = "Ketik nama sekolahmu...";
+
+                const schools = [...new Set(allStudentsData.map(item => getSchoolGS(item)).filter(Boolean))].sort();
+                
+                schools.forEach(school => {
+                    const option = document.createElement('option');
+                    option.value = school;
+                    schoolListEl.appendChild(option);
+                });
+
+                schoolInput.addEventListener('input', function() {
+                    const selectedSchool = this.value.trim().toLowerCase(); 
+                    
+                    if (selectedSchool.length === 0) {
+                        nameListEl.innerHTML = '';
+                        nameInput.value = ''; 
+                        nameInput.disabled = true;
+                        nameInput.placeholder = "Pilih sekolah dulu...";
+                        validateInputs();
+                        return;
+                    }
+
+                    const studentsInSchool = allStudentsData.filter(s => {
+                         const namaSekolahGS = getSchoolGS(s).trim().toLowerCase();
+                         return namaSekolahGS.includes(selectedSchool);
+                    });
+                    
+                    nameListEl.innerHTML = ''; 
+                    
+                    if(studentsInSchool.length > 0) {
+                        nameInput.disabled = false;
+                        nameInput.placeholder = "Ketik & pilih namamu...";
+                        
+                        const nameMap = new Map();
+                        studentsInSchool.forEach(s => {
+                            const originalName = getStudentGS(s);
+                            if (originalName) {
+                                const cleanKey = originalName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                                if (!nameMap.has(cleanKey)) {
+                                    const neatName = originalName.trim().toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+                                    nameMap.set(cleanKey, neatName);
+                                }
+                            }
+                        });
+
+                        const uniqueNames = Array.from(nameMap.values()).sort((a, b) => a.localeCompare(b, 'id', {sensitivity: 'base'}));
+                        
+                        uniqueNames.forEach(nama => {
+                            const option = document.createElement('option');
+                            option.value = nama;
+                            nameListEl.appendChild(option);
+                        });
+                    } else {
+                        nameInput.disabled = true;
+                        nameInput.placeholder = "Sekolah tidak ditemukan...";
+                    }
+                    validateInputs();
+                });
+
+                nameInput.addEventListener('input', validateInputs);
+
+                function validateInputs() {
+                    if(schoolInput.value && nameInput.value) {
+                        btnCari.disabled = false;
+                    } else {
+                        btnCari.disabled = true;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                schoolInput.placeholder = "⚠️ Gagal memuat data!";
+                errorNotFound.innerText = "❌ Gagal memuat data dari Google Sheet! Pastikan internet stabil.";
+                errorNotFound.style.display = 'block';
+            });
+    });
+
+    window.cariDataSiswa = function() {
+        const schoolNameInput = document.getElementById('schoolInput').value;
+        const studentNameInput = document.getElementById('nameInput').value;
+        const btnCari = document.getElementById('btnCariSiswa');
+        const resultArea = document.getElementById('searchResultArea');
+        const pastResultAlert = document.getElementById('pastResultAlert');
+        const errorNotFound = document.getElementById('errorNotFound');
+
+        errorNotFound.style.display = 'none';
+
+        let foundIndex = -1;
+        let foundData = null;
+
+        const cleanSchoolInput = schoolNameInput.trim().toLowerCase();
+        const cleanStudentNameInput = studentNameInput.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        for(let i = 0; i < allStudentsData.length; i++) {
+            const namaSiswaGS = getStudentGS(allStudentsData[i]).toLowerCase().replace(/[^a-z0-9]/g, '');
+            const namaSekolahGS = getSchoolGS(allStudentsData[i]).trim().toLowerCase();
+
+            if(namaSiswaGS === cleanStudentNameInput && namaSekolahGS.includes(cleanSchoolInput)) {
+                foundIndex = i;
+                foundData = allStudentsData[i];
+                break;
+            }
+        }
+
+        if(!foundData) {
+            errorNotFound.innerText = "❌ Data kamu tidak berada di sistem kami. Silakan periksa kembali ketikanmu atau hubungi guru pembimbing.";
+            errorNotFound.style.display = 'block';
+            return;
+        }
+
+        btnCari.innerText = "⏳ Sedang mengecek data...";
+        btnCari.disabled = true;
+
+        const urlIndex = foundIndex % listGasUrls.length;
+        assignedGasUrl = listGasUrls[urlIndex];
+
+        const checkUrl = assignedGasUrl + "?nama=" + encodeURIComponent(foundData['Nama Siswa'] || getStudentGS(foundData));
+
+        fetch(checkUrl)
+            .then(res => res.json())
+            .then(response => {
+                document.getElementById('inputContainer').style.display = 'none'; 
+                resultArea.style.display = 'block'; 
+
+                let kelasValue = getClassGS(foundData);
+
+                window.tempStudentData = {
+                    nama: getStudentGS(foundData) || "-",
+                    sekolah: getSchoolGS(foundData) || "-",
+                    kelas: kelasValue || "-",
+                    email: getVal(foundData, ['email', 'surel']) || "-", 
+                    pastResult: response.data 
+                };
+
+                if (window.tempStudentData.pastResult) {
+                    pastResultAlert.style.display = 'block';
+                } else {
+                    pastResultAlert.style.display = 'none';
+                }
+
+                document.getElementById('resNama').innerText = window.tempStudentData.nama;
+                document.getElementById('resSekolah').innerText = window.tempStudentData.sekolah;
+                document.getElementById('resKelas').innerText = window.tempStudentData.kelas;
+            })
+            .catch(err => {
+                errorNotFound.innerText = "❌ Gagal ngecek server Google. Pastikan internet stabil dan coba lagi!";
+                errorNotFound.style.display = 'block';
+                btnCari.innerText = "🔍 Cek Data";
+                btnCari.disabled = false;
+            });
+    }
+
+    window.confirmData = function(isCorrect) {
+        if (isCorrect) {
+            if (window.tempStudentData.pastResult) {
+                document.getElementById('inputNameScreen').classList.remove('active');
+                window.showPastResult(window.tempStudentData.pastResult);
+            } else {
+                studentName = window.tempStudentData.nama;
+                schoolName = window.tempStudentData.sekolah;
+                studentClass = window.tempStudentData.kelas;
+                studentEmail = window.tempStudentData.email;
+                
+                document.getElementById('inputNameScreen').classList.remove('active');
+                document.getElementById('startScreen').classList.add('active');
+            }
+        } else {
+            document.getElementById('nameInput').value = '';
+            document.getElementById('searchResultArea').style.display = 'none';
+            document.getElementById('inputContainer').style.display = 'block';
+            
+            const btn = document.getElementById('btnCariSiswa');
+            btn.style.display = 'block';
+            btn.innerText = '🔍 Cek Data';
+            btn.disabled = true; 
+        }
+    }
+
+    window.showPastResult = function(result) {
+        document.getElementById('resultScreen').classList.add('active');
+        document.getElementById('finalPlacement').innerText = (result['Level Akhir'] || "...").toUpperCase();
+        document.getElementById('finalScore').innerText = result['Skor Akhir'] || "0";
+        
+        let durasiText = result['Durasi'] ? String(result['Durasi']) : "00:00";
+        if (durasiText.startsWith("'")) durasiText = durasiText.substring(1);
+        if (durasiText.includes('T') && durasiText.includes('Z')) {
+            let dateObj = new Date(durasiText);
+            let h = dateObj.getHours();
+            let m = dateObj.getMinutes();
+            durasiText = `${h < 10 ? '0'+h : h}:${m < 10 ? '0'+m : m}`;
+        } else if (durasiText.split(':').length === 3) {
+            let parts = durasiText.split(':');
+            durasiText = `${parts[0]}:${parts[1]}`;
+        }
+        document.getElementById('timeUsed').innerText = durasiText;
+
+        wrongAnswers = []; 
+        let laporan = result['Laporan Salah'];
+        
+        if (laporan && laporan !== "Sempurna") {
+            let mistakes = laporan.split(' | ');
+            mistakes.forEach(m => {
+                let match = m.match(/\[Soal #(\d+)\|[^\]]+\](.*)\(Jawab:\s*(\d+)\)/);
+                if (match) {
+                    let globalQNum = parseInt(match[1]); 
+                    let userAnsNum = parseInt(match[3]); 
+                    let qIndex = globalQNum - 1; 
+                    
+                    if (questions[qIndex]) {
+                        let q = questions[qIndex];
+                        wrongAnswers.push({
+                            qNum: globalQNum,
+                            level: q.level,
+                            text: q.text,
+                            options: q.options,
+                            userIndex: userAnsNum - 1, 
+                            correctIndex: q.answer
+                        });
+                    }
+                }
+            });
+        }
+        
+        window.generateReportCard();
+        const btnReport = document.getElementById('btnReportToggle');
+        btnReport.innerHTML = "✅ HASIL TERSIMPAN | 📋 LIHAT DETAIL JAWABAN SALAH";
+        btnReport.disabled = false;
+        document.getElementById('reportCard').style.display = 'none'; 
+    }
+
     window.startGame = function() {
         document.getElementById('startScreen').classList.remove('active');
         document.getElementById('gameScreen').classList.add('active');
         document.getElementById('statusBar').style.visibility = 'visible';
 
-        // LOGIKA PENENTUAN LEVEL AWAL (Aman dari JSON yang kelasnya null/huruf)
         let classVal = parseInt(studentClass); 
         if (!isNaN(classVal) && classVal >= 1 && classVal <= 9) {
             startLevelOverride = classVal - 1;
         } else {
-            // Kalau Kelas bentuknya teks atau null (misal cuma isi Jenjang: "SD" atau "SMP")
             let jStr = (studentClass || "").toString().toUpperCase();
             if (jStr.includes("SMP")) {
-                startLevelOverride = 4; // Anak SMP otomatis lompat ke Exploration 1
+                startLevelOverride = 4; 
             } else {
-                startLevelOverride = 0; // Anak SD atau data error mulai dari Discovery 1
+                startLevelOverride = 0; 
             }
         }
 
@@ -1430,6 +1667,7 @@
         totalCorrectAnswers = 0;
         wrongAnswers = [];
         bestLevelReached = "Placement Start";
+        isOnCheckpoint = false;
 
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
@@ -1439,15 +1677,16 @@
                 let s = timeRemaining % 60;
                 document.getElementById('timerDisplay').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
             }
+            if (timeRemaining % 5 === 0) saveGameState(); 
             if (timeRemaining <= 0) finishGame();
         }, 1000);
 
-        startNextLevelBlock();
+        window.startNextLevelBlock();
     };
 
-    function startNextLevelBlock() {
+    window.startNextLevelBlock = function() {
         if (minIndex > maxIndex) {
-            finishGame();
+            window.finishGame();
             return;
         }
 
@@ -1465,10 +1704,10 @@
         currentLevelScore = 0;
         currentLevelWrong = 0;
 
-        loadQuestion();
-    }
+        window.loadQuestion();
+    };
 
-    function loadQuestion() {
+    window.loadQuestion = function() {
         document.getElementById('feedbackArea').style.display = 'none';
         isAnswering = true;
 
@@ -1486,7 +1725,7 @@
             const btn = document.createElement('button');
             btn.className = 'option-btn';
             btn.innerHTML = opt;
-            btn.onclick = () => checkAnswer(index, btn);
+            btn.onclick = () => window.checkAnswer(index, btn);
             optionsContainer.appendChild(btn);
         });
 
@@ -1501,9 +1740,11 @@
 
         if(window.innerWidth < 768) window.scrollTo({top:0, behavior:'smooth'});
         else document.querySelector('.game-stage').scrollTo({top:0, behavior:'smooth'});
-    }
+        
+        saveGameState(); 
+    };
 
-    function checkAnswer(selectedIndex, btnElement) {
+    window.checkAnswer = function(selectedIndex, btnElement) {
         if (!isAnswering) return;
         isAnswering = false;
 
@@ -1537,19 +1778,21 @@
         }
 
         feedbackArea.style.display = 'flex';
-        document.getElementById('nextBtn').onclick = nextQuestionLogic;
-    }
+        document.getElementById('nextBtn').onclick = window.nextQuestionLogic;
+        
+        saveGameState(); 
+    };
 
-    function nextQuestionLogic() {
+    window.nextQuestionLogic = function() {
         currentQuestionPointer++;
         if (currentQuestionPointer >= questionsInCurrentLevel.length) {
-            evaluateLevelBlock();
+            window.evaluateLevelBlock();
         } else {
-            loadQuestion();
+            window.loadQuestion();
         }
-    }
+    };
 
-    function evaluateLevelBlock() {
+    window.evaluateLevelBlock = function() {
         const isPassed = currentLevelScore >= 4;
         const currentLevelName = LEVEL_ORDER[currentLevelIndex];
         let titleMsg = "";
@@ -1584,14 +1827,19 @@
         document.querySelector('.checkpoint-content h2').innerText = titleMsg;
         document.querySelector('.checkpoint-content p:nth-of-type(2)').innerHTML = bodyMsg;
         document.getElementById('checkpointModal').style.display = 'flex';
-    }
-
-    window.closeCheckpoint = function() {
-        document.getElementById('checkpointModal').style.display = 'none';
-        startNextLevelBlock();
+        
+        isOnCheckpoint = true;
+        saveGameState(); 
     };
 
-    function finishGame() {
+    window.closeCheckpoint = function() {
+        isOnCheckpoint = false;
+        document.getElementById('checkpointModal').style.display = 'none';
+        window.startNextLevelBlock();
+    };
+
+    window.finishGame = function() {
+        clearGameState(); 
         clearInterval(timerInterval);
         document.getElementById('gameScreen').classList.remove('active');
         document.getElementById('resultScreen').classList.add('active');
@@ -1611,18 +1859,15 @@
         document.getElementById('finalScore').innerText = totalCorrectAnswers;
         document.getElementById('timeUsed').innerText = timeString;
 
-        generateReportCard();
-        
-        sendToGoogleSheet(timeString);
-    }
+        window.generateReportCard();
+        window.sendToGoogleSheet(timeString);
+    };
     
-    // --- FUNGSI MENGIRIM DATA KE GOOGLE SHEETS ---
-    function sendToGoogleSheet(timeString) {
+    window.sendToGoogleSheet = function(timeString) {
         const btnReport = document.getElementById('btnReportToggle');
         btnReport.innerText = "⏳ Sedang menyimpan hasil ujian...";
         btnReport.disabled = true;
 
-        // Proses format "Laporan Salah" untuk di spreadsheet
         let laporanFormat = "Sempurna";
         if (wrongAnswers.length > 0) {
             laporanFormat = wrongAnswers.map(w => {
@@ -1643,7 +1888,6 @@
             laporan_salah: laporanFormat
         };
 
-        // KIRIM KE LINK YANG DITUNJUK OLEH LOAD BALANCER
         fetch(assignedGasUrl, {
             method: 'POST',
             body: JSON.stringify(dataToSend)
@@ -1663,9 +1907,9 @@
             btnReport.innerText = "⚠️ Gagal Simpan | 📋 Lihat Detail Jawaban Salah";
             btnReport.disabled = false;
         });
-    }
+    };
 
-    function generateReportCard() {
+    window.generateReportCard = function() {
         const list = document.getElementById('reportList');
         list.innerHTML = '';
 
@@ -1704,7 +1948,7 @@
                 {left: '\\[', right: '\\]', display: true}
             ]});
         }
-    }
+    };
 
     window.toggleReport = function() {
         const rc = document.getElementById('reportCard');
@@ -1721,8 +1965,9 @@
     };
 
     window.clearAndReload = function() {
+        clearGameState(); 
         location.reload();
-    }
+    };
 </script>
 </body>
 </html>
