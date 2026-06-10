@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Aplikasi 4 Kubus Interaktif + Download PNG</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; 
+            touch-action: none;
+        }
+
+        /* --- Navigasi Tab --- */
+        .nav-bar {
+            margin-top: 20px;
+            display: flex;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 10px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 10;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            background: transparent;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #fff;
+            color: #222;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        /* --- Tombol Download --- */
+        .action-bar {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .download-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            background: #4CAF50;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background 0.3s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .download-btn:hover {
+            background: #45a049;
+        }
+
+        .download-btn:active {
+            transform: scale(0.95);
+        }
+
+        .instruction {
+            margin-top: 15px;
+            color: #444;
+            font-size: 1.1rem;
+            font-weight: 500;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        /* --- Container Halaman --- */
+        .page {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        /* --- Pengaturan 3D Umum --- */
+        .capture-area {
+            padding: 100px; /* PERBAIKAN: Diperbesar dari 40px ke 100px agar sudut rotasi 3D tidak terpotong */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent; 
+        }
+
+        .scene {
+            width: 250px;
+            height: 250px;
+            perspective: 1000px;
+        }
+
+        .cube {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: translateZ(-125px) rotateX(-20deg) rotateY(-30deg);
+            cursor: grab;
+            transition: cursor 0.2s;
+        }
+
+        .cube:active {
+            cursor: grabbing;
+        }
+
+        .face {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            background: #ffffff;
+            border: 3px solid #222;
+            box-sizing: border-box;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backface-visibility: hidden; 
+        }
+
+        /* Posisi Sisi Kubus 3D */
+        .front  { transform: rotateY(  0deg) translateZ(125px); }
+        .back   { transform: rotateY(180deg) translateZ(125px); } 
+        .left   { transform: rotateY(-90deg) translateZ(125px); } 
+        .right  { transform: rotateY( 90deg) translateZ(125px); } 
+        .top    { transform: rotateX( 90deg) translateZ(125px); } 
+        .bottom { transform: rotateX(-90deg) translateZ(125px); } 
+
+        /* --- Styling Khusus Kubus 1 (Titik/Pips) --- */
+        .face-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 25px;
+        }
+
+        .pip {
+            width: 45px;
+            height: 45px;
+            background: #222;
+            border-radius: 50%;
+            justify-self: center;
+            align-self: center;
+            box-shadow: inset -2px -2px 4px rgba(255,255,255,0.3), 2px 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .p1 { grid-area: 1 / 1; } .p2 { grid-area: 1 / 2; } .p3 { grid-area: 1 / 3; }
+        .p4 { grid-area: 2 / 1; } .p5 { grid-area: 2 / 2; } .p6 { grid-area: 2 / 3; }
+        .p7 { grid-area: 3 / 1; } .p8 { grid-area: 3 / 2; } .p9 { grid-area: 3 / 3; }
+
+        /* --- Styling Khusus Kubus Bentuk/Simbol --- */
+        svg.shape {
+            width: 140px;
+            height: 140px;
+            overflow: visible;
+        }
+        .rotated-180 { transform: rotate(180deg); }
+        .rotated-90 { transform: rotate(90deg); }
+        .rotated-minus-90 { transform: rotate(-90deg); }
+
+        /* --- Styling Khusus Kubus 3 (Alfabet Yunani / Simbol Math) --- */
+        .math-symbol {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 110px;
+            line-height: 1;
+            color: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+        .italic { font-style: italic; }
+        .upright { font-style: normal; }
+        
+        /* Modal Loading Overlay */
+        #loadingOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigasi Halaman -->
+    <div class="nav-bar">
+        <button class="tab-btn active" id="btn-page1">1 (Titik)</button>
+        <button class="tab-btn" id="btn-page2">2 (Bentuk)</button>
+        <button class="tab-btn" id="btn-page3">3 (Simbol)</button>
+        <button class="tab-btn" id="btn-page4">4 (Edukasi)</button>
+    </div>
+
+    <!-- Tombol Aksi -->
+    <div class="action-bar">
+        <button class="download-btn" id="btn-download" title="Unduh gambar kubus yang sedang aktif">
+            📸 Download PNG
+        </button>
+    </div>
+
+    <div class="instruction">👈 Sentuh & Geser kubus untuk memutar 👉<br><small style="font-size: 0.8rem; color:#666;">Klik 'Download PNG' untuk menyimpan posisi saat ini</small></div>
+
+    <!-- HALAMAN 1: KUBUS TITIK -->
+    <div class="page active" id="page1">
+        <div class="capture-area" id="capture1">
+            <div class="scene">
+                <div class="cube interactive-cube">
+                    <div class="face top face-grid"><div class="pip p5"></div></div>
+                    <div class="face left face-grid">
+                        <div class="pip p1"></div><div class="pip p2"></div><div class="pip p3"></div>
+                        <div class="pip p4"></div>                          <div class="pip p6"></div>
+                        <div class="pip p7"></div><div class="pip p8"></div><div class="pip p9"></div>
+                    </div>
+                    <div class="face front face-grid">
+                                                  <div class="pip p2"></div>
+                        <div class="pip p4"></div><div class="pip p5"></div><div class="pip p6"></div>
+                                                  <div class="pip p8"></div>
+                    </div>
+                    <div class="face right face-grid">
+                        <div class="pip p1"></div>                          <div class="pip p3"></div>
+                        <div class="pip p7"></div>                          <div class="pip p9"></div>
+                    </div>
+                    <div class="face bottom face-grid">
+                        <div class="pip p1"></div>                          <div class="pip p3"></div>
+                                                  <div class="pip p5"></div>
+                        <div class="pip p7"></div>                          <div class="pip p9"></div>
+                    </div>
+                    <div class="face back face-grid">
+                                                  <div class="pip p2"></div>
+                        <div class="pip p4"></div>                          <div class="pip p6"></div>
+                                                  <div class="pip p8"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HALAMAN 2: KUBUS BENTUK -->
+    <div class="page" id="page2">
+        <div class="capture-area" id="capture2">
+            <div class="scene">
+                <div class="cube interactive-cube">
+                    <div class="face front">
+                        <svg class="shape" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="none" stroke="#222" stroke-width="8"/></svg>
+                    </div>
+                    <div class="face left">
+                        <svg class="shape" viewBox="0 0 100 100"><polygon points="25,20 25,80 85,50" fill="none" stroke="#222" stroke-width="8" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="face top">
+                        <svg class="shape" viewBox="0 0 100 100"><rect x="25" y="25" width="50" height="50" fill="none" stroke="#222" stroke-width="8" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="face bottom">
+                        <svg class="shape" viewBox="0 0 100 100"><polygon points="50,15 61,35 85,35 66,50 73,75 50,60 27,75 34,50 15,35 39,35" fill="none" stroke="#222" stroke-width="8" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="face back">
+                        <svg class="shape" viewBox="0 0 100 100"><path d="M 20 20 L 80 20 L 80 55 L 50 85 L 20 55 Z" fill="none" stroke="#222" stroke-width="8" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="face right">
+                        <svg class="shape" viewBox="0 0 100 100"><polygon points="50,15 85,40 75,85 25,85 15,40" fill="none" stroke="#222" stroke-width="8" stroke-linejoin="round"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HALAMAN 3: KUBUS SIMBOL MATEMATIKA -->
+    <div class="page" id="page3">
+        <div class="capture-area" id="capture3">
+            <div class="scene">
+                <div class="cube interactive-cube">
+                    <div class="face front"><div class="math-symbol italic" style="transform: rotate(-90deg);">&xi;</div></div>
+                    <div class="face left"><div class="math-symbol italic">&beta;</div></div>
+                    <div class="face top"><div class="math-symbol italic">&lambda;</div></div>
+                    <div class="face right"><div class="math-symbol italic" style="transform: rotate(-90deg);">&alpha;</div></div>
+                    <div class="face bottom"><div class="math-symbol upright" style="transform: rotate(90deg);">&Psi;</div></div>
+                    <div class="face back"><div class="math-symbol upright" style="transform: rotate(-90deg);">&#981;</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HALAMAN 4: KUBUS EDUKASI -->
+    <div class="page" id="page4">
+        <div class="capture-area" id="capture4">
+            <div class="scene">
+                <div class="cube interactive-cube">
+                    <!-- Depan: Katrol -->
+                    <div class="face front">
+                        <svg class="shape" viewBox="0 0 100 100">
+                            <line x1="20" y1="15" x2="80" y2="15" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+                            <rect x="45" y="15" width="10" height="15" fill="#222"/>
+                            <circle cx="50" cy="40" r="15" fill="none" stroke="#222" stroke-width="6"/>
+                            <circle cx="50" cy="40" r="4" fill="#222"/>
+                            <line x1="35" y1="40" x2="35" y2="70" stroke="#222" stroke-width="6"/>
+                            <rect x="25" y="70" width="20" height="15" fill="none" stroke="#222" stroke-width="6" stroke-linejoin="round"/>
+                            <line x1="65" y1="40" x2="65" y2="60" stroke="#222" stroke-width="6"/>
+                            <polyline points="58,53 65,60 72,53" fill="none" stroke="#222" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <!-- Kiri: Matematika -->
+                    <div class="face left">
+                        <svg class="shape" viewBox="0 0 100 100">
+                            <rect x="15" y="15" width="70" height="70" rx="8" fill="none" stroke="#222" stroke-width="6"/>
+                            <line x1="50" y1="15" x2="50" y2="85" stroke="#222" stroke-width="6"/>
+                            <line x1="15" y1="50" x2="85" y2="50" stroke="#222" stroke-width="6"/>
+                            <!-- Minus --> <line x1="25" y1="32.5" x2="40" y2="32.5" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+                            <!-- Plus --> <line x1="60" y1="25" x2="60" y2="40" stroke="#222" stroke-width="6" stroke-linecap="round"/> <line x1="52.5" y1="32.5" x2="67.5" y2="32.5" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+                            <!-- Multiply --> <line x1="27.5" y1="60" x2="37.5" y2="70" stroke="#222" stroke-width="6" stroke-linecap="round"/> <line x1="37.5" y1="60" x2="27.5" y2="70" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+                            <!-- Divide --> <circle cx="60" cy="58" r="3.5" fill="#222"/> <line x1="52.5" y1="65" x2="67.5" y2="65" stroke="#222" stroke-width="6" stroke-linecap="round"/> <circle cx="60" cy="72" r="3.5" fill="#222"/>
+                        </svg>
+                    </div>
+                    <!-- Atas: Globe -->
+                    <div class="face top">
+                        <svg class="shape" viewBox="0 0 100 100">
+                            <circle cx="45" cy="50" r="30" fill="none" stroke="#222" stroke-width="6"/>
+                            <path d="M 45 20 C 60 20, 60 80, 45 80" fill="none" stroke="#222" stroke-width="4"/>
+                            <path d="M 15 50 C 15 65, 75 65, 75 50" fill="none" stroke="#222" stroke-width="4"/>
+                            <path d="M 30 25 C 25 35, 35 45, 45 40 C 55 35, 55 25, 45 25 Z" fill="none" stroke="#222" stroke-width="4"/>
+                            <path d="M 35 60 C 40 75, 60 70, 55 60 Z" fill="none" stroke="#222" stroke-width="4"/>
+                            <line x1="45" y1="10" x2="45" y2="20" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+                            <line x1="45" y1="80" x2="45" y2="90" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+                            <path d="M 45 10 A 40 40 0 0 1 85 50" fill="none" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+                            <line x1="85" y1="50" x2="95" y2="50" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <!-- Bawah: Tabung Kimia -->
+                    <div class="face bottom">
+                        <svg class="shape rotated-minus-90" viewBox="0 0 100 100">
+                            <path d="M 40 15 L 60 15 M 45 15 L 45 35 L 15 80 L 85 80 L 55 35 L 55 15" fill="none" stroke="#222" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+                            <line x1="22" y1="70" x2="78" y2="70" stroke="#222" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="35" cy="75" r="3" fill="#222"/>
+                            <circle cx="50" cy="55" r="5" fill="none" stroke="#222" stroke-width="4"/>
+                            <circle cx="65" cy="72" r="4" fill="#222"/>
+                            <circle cx="45" cy="65" r="2" fill="#222"/>
+                        </svg>
+                    </div>
+                    <!-- Belakang: Kepala -->
+                    <div class="face back">
+                        <svg class="shape rotated-180" viewBox="0 0 100 100">
+                            <path d="M 45 15 C 30 15, 25 25, 25 35 L 15 50 L 25 55 C 20 60, 25 70, 35 70 L 35 85 L 50 85 C 65 85, 75 65, 70 40 C 65 20, 55 15, 45 15 Z" fill="none" stroke="#222" stroke-width="6" stroke-linejoin="round"/>
+                            <line x1="30" y1="40" x2="35" y2="40" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+                            <!-- Mahkota -->
+                            <path d="M 35 20 Q 50 30 65 45 M 40 15 Q 55 25 70 40" fill="none" stroke="#222" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <!-- Kanan: Koin & Persen -->
+                    <div class="face right">
+                        <svg class="shape rotated-180" viewBox="0 0 100 100">
+                            <circle cx="35" cy="50" r="22" fill="none" stroke="#222" stroke-width="6"/>
+                            <line x1="25" y1="60" x2="45" y2="40" stroke="#222" stroke-width="5" stroke-linecap="round"/>
+                            <circle cx="28" cy="43" r="3.5" fill="#222"/>
+                            <circle cx="42" cy="57" r="3.5" fill="#222"/>
+                            <ellipse cx="75" cy="35" rx="15" ry="6" fill="none" stroke="#222" stroke-width="6"/>
+                            <path d="M 60 35 L 60 50 A 15 6 0 0 0 90 50 L 90 35" fill="none" stroke="#222" stroke-width="6"/>
+                            <path d="M 60 50 L 60 65 A 15 6 0 0 0 90 65 L 90 50" fill="none" stroke="#222" stroke-width="6"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay Loading -->
+    <div id="loadingOverlay">Memperbaiki sisi 3D & menyimpan gambar...</div>
+
+    <script>
+        // --- LOGIKA PERPINDAHAN HALAMAN (TABS) ---
+        const pages = [
+            document.getElementById('page1'), 
+            document.getElementById('page2'), 
+            document.getElementById('page3'),
+            document.getElementById('page4')
+        ];
+        const btns = [
+            document.getElementById('btn-page1'), 
+            document.getElementById('btn-page2'), 
+            document.getElementById('btn-page3'),
+            document.getElementById('btn-page4')
+        ];
+
+        let activePageIndex = 0;
+
+        btns.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                pages.forEach(p => p.classList.remove('active'));
+                btns.forEach(b => b.classList.remove('active'));
+                
+                pages[index].classList.add('active');
+                btn.classList.add('active');
+                activePageIndex = index;
+            });
+        });
+
+        // --- LOGIKA INTERAKSI 3D ---
+        const cubes = document.querySelectorAll('.interactive-cube');
+        
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let currentX = -20; 
+        let currentY = -30;
+        
+        function startInteraction(e) {
+            if (e.target.tagName.toLowerCase() === 'button') return;
+            isDragging = true;
+            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        }
+
+        function moveInteraction(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+
+            let clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            let clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+            let deltaX = clientX - startX;
+            let deltaY = clientY - startY;
+
+            currentY += deltaX * 0.5;
+            currentX -= deltaY * 0.5;
+
+            cubes.forEach(cube => {
+                cube.style.transform = `translateZ(-125px) rotateX(${currentX}deg) rotateY(${currentY}deg)`;
+            });
+
+            startX = clientX;
+            startY = clientY;
+        }
+
+        function endInteraction() {
+            isDragging = false;
+        }
+
+        document.addEventListener('mousedown', startInteraction);
+        document.addEventListener('mousemove', moveInteraction, { passive: false });
+        document.addEventListener('mouseup', endInteraction);
+        document.addEventListener('mouseleave', endInteraction);
+
+        document.addEventListener('touchstart', startInteraction, { passive: false });
+        document.addEventListener('touchmove', moveInteraction, { passive: false });
+        document.addEventListener('touchend', endInteraction);
+
+        // --- PERBAIKAN TOTAL: LOGIKA DOWNLOAD DENGAN BACKFACE CULLING MANUAL ---
+        const downloadBtn = document.getElementById('btn-download');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        downloadBtn.addEventListener('click', () => {
+            loadingOverlay.style.display = 'flex';
+
+            const targetId = `capture${activePageIndex + 1}`;
+            const targetElement = document.getElementById(targetId);
+            const activeCube = targetElement.querySelector('.cube');
+            const faces = Array.from(activeCube.querySelectorAll('.face'));
+
+            // 1. Ambil perhitungan rotasi Global menggunakan fitur DOMMatrix browser
+            const cubeStyle = window.getComputedStyle(activeCube);
+            const cubeMatrix = new DOMMatrix(cubeStyle.transform);
+
+            // 2. Evaluasi setiap sisi (face)
+            faces.forEach(face => {
+                const faceStyle = window.getComputedStyle(face);
+                const faceMatrix = new DOMMatrix(faceStyle.transform);
+                
+                // Kalikan koordinat pusat dengan koordinat wajah untuk mendapat posisi absolut 3D
+                const globalMatrix = cubeMatrix.multiply(faceMatrix);
+                
+                // globalMatrix.m33 adalah arah hadap ruang (Normal Z). 
+                // Jika < 0.01 berarti wajah itu sedang membelakangi kita (berada di pantat kubus).
+                if (globalMatrix.m33 <= 0.01) {
+                    // Sembunyikan sepenuhnya secara paksa agar tidak tembus/bocor saat difoto!
+                    face.style.visibility = 'hidden'; 
+                } else {
+                    face.style.visibility = 'visible';
+                    // Urutkan layer berdasarkan jarak pandang agar tidak saling timpa (Painter's Algorithm)
+                    face.style.zIndex = Math.round(globalMatrix.m43 + 1000); 
+                }
+            });
+
+            // 3. Jeda sedikit waktu (50 milidetik) agar browser memproses elemen yang baru kita sembunyikan
+            setTimeout(() => {
+                domtoimage.toPng(targetElement)
+                    .then(function (dataUrl) {
+                        loadingOverlay.style.display = 'none';
+                        const link = document.createElement('a');
+                        link.download = `Kubus_3D_Hasil_Render_${activePageIndex + 1}.png`;
+                        link.href = dataUrl;
+                        link.click();
+                        
+                        // Kembalikan ke normal
+                        restoreFaces();
+                    })
+                    .catch(function (error) {
+                        loadingOverlay.style.display = 'none';
+                        console.error("Gagal membuat gambar:", error);
+                        alert("Maaf, terjadi kesalahan saat membuat gambar PNG.");
+                        
+                        // Kembalikan ke normal
+                        restoreFaces();
+                    });
+            }, 50);
+
+            // Fungsi untuk mereset perubahan style
+            function restoreFaces() {
+                faces.forEach(face => {
+                    face.style.visibility = '';
+                    face.style.zIndex = '';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
