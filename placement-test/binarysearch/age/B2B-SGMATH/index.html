@@ -19,7 +19,7 @@
             --accent: #E71D36;
             --dark: #011627;
             --light: #FDFFFC;
-            /* Mengubah tema warna background menjadi Dark Teal sesuai screenshot */
+            /* Tema Dark Teal */
             --bg-gradient: linear-gradient(135deg, #184649 0%, #2a6f73 100%);
             --header-bg: #113638;
             --text-main: #2c3e50;
@@ -35,7 +35,6 @@
         }
         .app-container {
             display: flex; flex-direction: column; width: 100vw;
-            /* Pola titik-titik transparan agar mirip dengan pattern di screenshot */
             background-image: radial-gradient(rgba(255,255,255,0.07) 2px, transparent 2px), radial-gradient(rgba(255,255,255,0.07) 2px, transparent 2px);
             background-position: 0 0, 25px 25px; background-size: 50px 50px; background-color: transparent;
         }
@@ -234,8 +233,6 @@
                 <button class="btn" onclick="saveNameAndContinue()">MULAI SEKARANG 🚀</button>
             </div>
 
-            <!-- SCREEN 1: START (Dihapus agar langsung mulai tes setelah isi data) -->
-
             <!-- SCREEN 2: GAME -->
             <div id="gameScreen" class="screen">
                 <div class="progress-container">
@@ -294,8 +291,7 @@
 
 <script>
     // --- CONFIG ---
-    // [PENTING] PASTIKAN URL INI ADALAH URL WEB APP B2B TERBARUMU
-    const googleScriptURL = 'https://script.google.com/macros/s/AKfycbx8ggm1XmmFpycbNdtnR7JBDZCwb_JHYzoNdxG5xqg97RcX6PdP1b6XEOdKWXmXhYiZBw/exec'; 
+    const googleScriptURL = 'https://script.google.com/macros/s/AKfycbxGiq1UEWn9FLiIByDVmZSeLdxX9ESWOZg9CK37occD_4KSJWbyY1jSrDnOBJy6UG4t/exec'; 
 
     // --- 0. DATA CABANG & SOAL ---
     const branches = [
@@ -496,21 +492,18 @@
     let bestLevelReached = "Foundation";
 
     // --- MAIN FUNCTIONS ---
-    window.onload = function() {
+    document.addEventListener("DOMContentLoaded", function() {
         minIndex = 0;
         maxIndex = LEVEL_ORDER.length - 1;
         populateBranchList();
-    };
+    });
 
     function populateBranchList() {
         const select = document.getElementById('branchInput');
+        if (!select) return; // Mencegah error jika elemen belum ada
+
         // Tambahkan opsi default kosong
-        const defaultOption = document.createElement('option');
-        defaultOption.value = "";
-        defaultOption.text = "-- Pilih Cabang --";
-        defaultOption.disabled = true;
-        defaultOption.selected = true;
-        select.appendChild(defaultOption);
+        select.innerHTML = '<option value="" disabled selected>-- Pilih Cabang --</option>';
 
         branches.forEach(branch => {
             const option = document.createElement('option');
@@ -662,4 +655,198 @@
                 level: q.level,
                 text: q.text,
                 options: q.options,
-                userIndex:
+                userIndex: selectedIndex,
+                correctIndex: q.answer
+            });
+        }
+
+        feedbackArea.style.display = 'flex';
+        document.getElementById('nextBtn').onclick = nextQuestionLogic;
+    }
+
+    function nextQuestionLogic() {
+        currentQuestionPointer++;
+        if (currentQuestionPointer >= questionsInCurrentLevel.length) {
+            evaluateLevelBlock();
+        } else {
+            loadQuestion();
+        }
+    }
+
+    function evaluateLevelBlock() {
+        const isPassed = currentLevelScore >= 4;
+        const currentLevelName = LEVEL_ORDER[currentLevelIndex];
+        let titleMsg = "";
+        let bodyMsg = "";
+
+        if (isPassed) {
+            bestLevelReached = currentLevelName;
+            minIndex = currentLevelIndex + 1;
+            titleMsg = "Luar Biasa! 🌟";
+            bodyMsg = `Kamu berhasil menjawab <strong>${currentLevelScore} dari 5</strong> soal dengan benar!<br>Kemampuanmu keren banget. Yuk, kita coba tantangan berikutnya! 🚀`;
+        } else {
+            maxIndex = currentLevelIndex - 1;
+            titleMsg = "Tetap Semangat! 💪";
+            bodyMsg = `Kamu menjawab <strong>${currentLevelScore} dari 5</strong> soal dengan benar.<br>Tidak apa-apa, belajar itu proses! Kita cari soal yang lebih pas buat kamu ya. 😊`;
+        }
+
+        if (minIndex > maxIndex) {
+            titleMsg = "Tes Selesai! 🎉";
+            bodyMsg = "Terima kasih sudah berjuang sampai akhir! Kita lihat hasilnya ya...";
+        }
+
+        const checkpointMsg = document.getElementById('checkpointMsg');
+        checkpointMsg.innerText = isPassed ? "LEVEL UP ⬆️" : "ADJUSTING ⬇️";
+        checkpointMsg.style.color = isPassed ? "#27ae60" : "#f39c12";
+
+        if (minIndex > maxIndex) {
+            checkpointMsg.style.display = 'none';
+        } else {
+            checkpointMsg.style.display = 'block';
+        }
+
+        document.querySelector('.checkpoint-content h2').innerText = titleMsg;
+        document.querySelector('.checkpoint-content p:nth-of-type(2)').innerHTML = bodyMsg;
+        document.getElementById('checkpointModal').style.display = 'flex';
+    }
+
+    window.closeCheckpoint = function() {
+        document.getElementById('checkpointModal').style.display = 'none';
+        startNextLevelBlock();
+    };
+
+    function finishGame() {
+        clearInterval(timerInterval);
+        document.getElementById('gameScreen').classList.remove('active');
+        document.getElementById('resultScreen').classList.add('active');
+        document.getElementById('statusBar').style.visibility = 'hidden';
+        document.getElementById('feedbackArea').style.display = 'none';
+
+        let timeUsedSeconds = 3600 - timeRemaining;
+        let m = Math.floor(timeUsedSeconds / 60);
+        let s = timeUsedSeconds % 60;
+        let timeString = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+
+        if (bestLevelReached === "Placement Start" && maxIndex < 0) {
+            bestLevelReached = "Discovery 1";
+        }
+
+        document.getElementById('finalPlacement').innerText = bestLevelReached.toUpperCase();
+        document.getElementById('finalScore').innerText = totalCorrectAnswers;
+        document.getElementById('timeUsed').innerText = timeString;
+
+        generateReportCard();
+        
+        // KIRIM DATA REAL
+        sendToGoogleSheet(timeString);
+    }
+
+    function sendToGoogleSheet(timeString) {
+        let laporanSalah = "";
+        if(wrongAnswers.length > 0) {
+            laporanSalah = wrongAnswers.map(w => `[Soal #${w.qNum}|${w.level}] ${w.text.substring(0, 20)}... (Jawab: ${w.options[w.userIndex]})`).join(" | ");
+        } else {
+            laporanSalah = "Sempurna";
+        }
+
+        const dataToSend = {
+            nama_siswa: studentName,
+            kelas: studentClass,
+            email: studentEmail,
+            nama_sekolah: schoolName, 
+            cabang: branchName,    
+            level_akhir: bestLevelReached,
+            skor_total: totalCorrectAnswers,
+            waktu: timeString,
+            laporan_salah: laporanSalah
+        };
+
+        const btnReport = document.getElementById('btnReportToggle');
+        const originalText = btnReport.innerText;
+        
+        if(googleScriptURL.includes('PASTE_URL')) {
+            alert("URL Script belum diset! Data tidak akan terkirim. Mohon edit kode HTML.");
+            console.log("Data:", dataToSend);
+            return;
+        }
+
+        btnReport.innerText = "⏳ Menyimpan ke Server...";
+        btnReport.disabled = true;
+
+        fetch(googleScriptURL, {
+            method: 'POST',
+            mode: 'no-cors', // Penting untuk Apps Script
+            cache: 'no-cache',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            redirect: 'follow',
+            body: JSON.stringify(dataToSend)
+        })
+        .then(response => {
+            btnReport.innerText = "✅ Tersimpan! " + originalText;
+            btnReport.disabled = false;
+            setTimeout(() => {
+                btnReport.innerText = originalText;
+            }, 3000);
+            console.log("Data terkirim ke Sheet!");
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            btnReport.innerText = "⚠️ Gagal Simpan (Cek Koneksi)";
+            btnReport.disabled = false;
+        });
+    }
+
+    function generateReportCard() {
+        const list = document.getElementById('reportList');
+        list.innerHTML = '';
+
+        if (wrongAnswers.length === 0) {
+            list.innerHTML = '<li class="report-item" style="text-align:center; color:#27ae60;">Sempurna! Tidak ada kesalahan pada soal yang dikerjakan.</li>';
+            return;
+        }
+
+        wrongAnswers.forEach((item, idx) => {
+            const li = document.createElement('li');
+            li.className = 'report-item';
+
+            let gridHtml = `<div class="report-grid">`;
+            item.options.forEach((opt, optIdx) => {
+                let statusClass = '';
+                if (optIdx === item.correctIndex) statusClass = 'correct';
+                else if (optIdx === item.userIndex) statusClass = 'wrong';
+
+                gridHtml += `<div class="option-btn report-variant ${statusClass}">${opt}</div>`;
+            });
+            gridHtml += `</div>`;
+
+            li.innerHTML = `
+                <div class="report-meta">No. ${item.qNum} • ${item.level}</div>
+                <div class="report-q-text">${item.text}</div>
+                ${gridHtml}
+            `;
+            list.appendChild(li);
+        });
+
+        if(window.renderMathInElement) { 
+            renderMathInElement(list);
+        }
+    }
+
+    window.toggleReport = function() {
+        const rc = document.getElementById('reportCard');
+        const btn = document.getElementById('btnReportToggle');
+
+        if (rc.style.display === 'block') {
+            rc.style.display = 'none';
+            btn.innerText = '📋 Lihat Detail Jawaban Salah';
+        } else {
+            rc.style.display = 'block';
+            btn.innerText = '🔼 Tutup Detail';
+            setTimeout(() => rc.scrollIntoView({ behavior: 'smooth' }), 100);
+        }
+    };
+</script>
+</body>
+</html>
